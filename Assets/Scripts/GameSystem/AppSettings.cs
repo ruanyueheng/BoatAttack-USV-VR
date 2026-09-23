@@ -181,6 +181,7 @@ namespace BoatAttack
 
         public static void LoadScene(string scenePath, LoadSceneMode mode = LoadSceneMode.Single)
         {
+            scenePath = NormalizeScenePath(scenePath);
             Application.backgroundLoadingPriority = ThreadPriority.Low;
             switch (mode)
             {
@@ -195,8 +196,25 @@ namespace BoatAttack
             }
         }
 
+        private static string NormalizeScenePath(string scenePath)
+        {
+            if (string.IsNullOrWhiteSpace(scenePath))
+                return scenePath;
+
+            // ConstantData historically stored paths without the Assets/ prefix.
+            // Unity 2022's EditorSceneManager requires a project-relative Assets path.
+            if (scenePath.StartsWith("scenes/", StringComparison.OrdinalIgnoreCase))
+                scenePath = "Assets/" + scenePath;
+
+            if (!scenePath.EndsWith(".unity", StringComparison.OrdinalIgnoreCase))
+                scenePath += ".unity";
+
+            return scenePath;
+        }
+
         private static IEnumerator LoadSceneInternal(string scenePath)
         {
+            scenePath = NormalizeScenePath(scenePath);
             var loadingScreenLoading = Instance.loadingScreen.InstantiateAsync();
             yield return loadingScreenLoading;
             Instance.loadingScreenObject = loadingScreenLoading.Result;
@@ -239,9 +257,16 @@ namespace BoatAttack
 #else
             load = SceneManager.LoadSceneAsync(scenePath);
 #endif
+            if (load == null)
+            {
+                Debug.LogError($"[BoatAttack] Scene load returned null for '{scenePath}'. Check that the scene exists and is included in the active build settings.");
+                yield break;
+            }
+
             while (!load.isDone)
             {
-                Instance.loadingScreenObject.SendMessage("SetLoad", load.progress * 0.5f + 0.5f);
+                if (Instance.loadingScreenObject)
+                    Instance.loadingScreenObject.SendMessage("SetLoad", load.progress * 0.5f + 0.5f);
                 yield return null;
             }
         }
@@ -301,7 +326,7 @@ namespace BoatAttack
 
         public static string GetLevelName(int level)
         {
-            return $"scenes/_levels/level_{Levels[level]}";
+            return $"Assets/scenes/_levels/level_{Levels[level]}.unity";
         }
 
         public static readonly string[] AiNames =
@@ -361,6 +386,19 @@ namespace BoatAttack
 
             if (_colorPaletteRaw == null)
                 _colorPaletteRaw = Resources.Load<Texture2D>("textures/colorSwatch");
+
+            if (_colorPaletteRaw == null)
+            {
+                Debug.LogError("[BoatAttack] Resources/textures/colorSwatch.png could not be loaded. Using a fallback palette.");
+                ColorPalette = new[]
+                {
+                    new Color(0.88f, 0.10f, 0.10f), new Color(0.11f, 0.87f, 0.18f),
+                    new Color(0.10f, 0.90f, 0.87f), new Color(0.15f, 0.21f, 0.85f),
+                    new Color(0.93f, 0.72f, 0.07f), new Color(0.87f, 0.87f, 0.87f),
+                    new Color(0.14f, 0.14f, 0.14f), Color.white
+                };
+                return;
+            }
 
             ColorPalette = _colorPaletteRaw.GetPixels();
             Debug.Log($"Found {ColorPalette.Length} colors.");

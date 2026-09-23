@@ -1,77 +1,57 @@
-﻿using UnityEngine;
-using UnityEngine.InputSystem;
+using UnityEngine;
+using BoatAttack.VR;
 
 namespace BoatAttack
 {
-    /// <summary>
-    /// This sends input controls to the boat engine if 'Human'
-    /// </summary>
+    /// <summary>One controller for desktop and XR input; Boat.Setup still creates this component.</summary>
     public class HumanController : BaseController
     {
-        private InputControls _controls;
-
-        private float _throttle;
-        private float _steering;
-
+        private USVInputRouter _input;
         private bool _paused;
-        
-        private void Awake()
-        {
-            _controls = new InputControls();
-            
-            _controls.BoatControls.Trottle.performed += context => _throttle = context.ReadValue<float>();
-            _controls.BoatControls.Trottle.canceled += context => _throttle = 0f;
-            
-            _controls.BoatControls.Steering.performed += context => _steering = context.ReadValue<float>();
-            _controls.BoatControls.Steering.canceled += context => _steering = 0f;
+        private float _resumeTimeScale = 1f;
 
-            _controls.BoatControls.Reset.performed += ResetBoat;
-            _controls.BoatControls.Pause.performed += FreezeBoat;
-
-            _controls.DebugControls.TimeOfDay.performed += SelectTime;
-        }
-
+        private void Awake() { _input = USVInputRouter.EnsureInstance(); }
         public override void OnEnable()
         {
             base.OnEnable();
-            _controls.BoatControls.Enable();
+            if (_input == null) _input = USVInputRouter.EnsureInstance();
+        }
+
+        private void Update()
+        {
+            if (_input == null) return;
+            // Commands run in Update: a paused game has no FixedUpdate to unpause it.
+            if (_input.Current.pause)
+            {
+                if (!_paused) { _resumeTimeScale = Time.timeScale; Time.timeScale = 0f; }
+                else Time.timeScale = _resumeTimeScale;
+                _paused = !_paused;
+            }
+            if (_input.Current.reset && controller != null) controller.ResetPosition();
+        }
+
+        private void FixedUpdate()
+        {
+            if (_input == null || engine == null) return;
+            var state = _input.Current;
+            // Original Engine supports forward thrust only. Reverse is not implemented here.
+            engine.Accelerate(Mathf.Max(0f, state.throttle));
+            engine.Turn(state.steering);
+            if (engine.RB != null && state.brake > 0f)
+            {
+                // Slow horizontal motion only, preserving vertical buoyancy response.
+                var velocity = engine.RB.velocity;
+                var horizontal = new Vector3(velocity.x, 0f, velocity.z);
+                horizontal = Vector3.MoveTowards(horizontal, Vector3.zero,
+                    _input.Settings.brakeDeceleration * state.brake * Time.fixedDeltaTime);
+                engine.RB.velocity = new Vector3(horizontal.x, velocity.y, horizontal.z);
+            }
         }
 
         private void OnDisable()
         {
-            _controls.BoatControls.Disable();
-        }
-
-        private void ResetBoat(InputAction.CallbackContext context)
-        {
-            controller.ResetPosition();
-        }
-
-        private void FreezeBoat(InputAction.CallbackContext context)
-        {
-            _paused = !_paused;
-            if(_paused)
-            {
-                Time.timeScale = 0f;
-            }
-            else
-            {
-                Time.timeScale = 1f;
-            }
-        }
-
-        private void SelectTime(InputAction.CallbackContext context)
-        {
-            var value = context.ReadValue<float>();
-            Debug.Log($"changing day time, input:{value}");
-            DayNightController.SelectPreset(value);
-        }
-
-        void FixedUpdate()
-        {
-            engine.Accelerate(_throttle);
-            engine.Turn(_steering);
+            if (_paused) Time.timeScale = _resumeTimeScale;
+            _paused = false;
         }
     }
 }
-

@@ -1,0 +1,19 @@
+PASS: Desktop works without HMD
+PASS: Desktop ignores connected HMD
+PASS: Auto chooses desktop without loader
+PASS: Auto chooses XR with active loader
+PASS: Forced XR without loader stays neutral
+PASS: Lost focus always stops input
+PASS: All command press edges emitted
+PASS: Held commands do not repeat
+PASS: Releases are not presses
+PASS: Second press unpauses without physics ticks
+PASS: Source switch suppresses held commands
+PASS: Deadzone removes joystick drift
+PASS: Axes rescale outside deadzone
+PASS: Out-of-range values clamp
+PASS: Invalid values cannot enter physics
+PASS: Lost runtime clears every control
+PASS: Reconnect held buttons suppressed
+PASS: Explicit reset clears history
+TOTAL: 18 passed. Pure input logic only; not Unity/device validation.

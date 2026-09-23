@@ -45,4 +45,13 @@ Assets/BuildReports
 SerializedBuildInfo
 SwitchIL2CPP*
 Assets/ActualImages*
-Packages/packages-lock.json
+
+# Per-user/editor state - never share between collaborators
+/UserSettings/
+/.vscode/
+
+# Unity-generated local diagnostics and build output
+/Logs/
+/MemoryCaptures/
+/BuildReports/
+/Recordings/
