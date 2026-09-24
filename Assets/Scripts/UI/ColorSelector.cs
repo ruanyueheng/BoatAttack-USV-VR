@@ -21,7 +21,7 @@ namespace BoatAttack.UI
 
         private void Awake()
         {
-            _currentOption = startOption;
+            _currentOption = ValidateIndex(startOption);
             UpdateColor();
         }
 
@@ -57,12 +57,13 @@ namespace BoatAttack.UI
 
         private int ValidateIndex(int index)
         {
+            var count = ConstantData.PaletteCount;
             if (loop)
             {
-                return (int) Mathf.Repeat(index, ConstantData.ColorPalette.Length);
+                return (int) Mathf.Repeat(index, count);
             }
 
-            return Mathf.Clamp(index, 0, ConstantData.ColorPalette.Length);
+            return Mathf.Clamp(index, 0, count - 1);
         }
     }
 }

@@ -27,6 +27,16 @@ namespace BoatAttack.UI
             boatTrimColorSelector.updateVal += UpdateTrimColor;
         }
 
+        private void OnDisable()
+        {
+            if (levelSelector != null) levelSelector.updateVal -= SetLevel;
+            if (lapSelector != null) lapSelector.updateVal -= SetLaps;
+            if (reverseSelector != null) reverseSelector.updateVal -= SetReverse;
+            if (boatHullSelector != null) boatHullSelector.updateVal -= UpdateBoat;
+            if (boatPrimaryColorSelector != null) boatPrimaryColorSelector.updateVal -= UpdatePrimaryColor;
+            if (boatTrimColorSelector != null) boatTrimColorSelector.updateVal -= UpdateTrimColor;
+        }
+
         private void SetupDefaults()
         {
             // level stuff

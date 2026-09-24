@@ -21,7 +21,7 @@ namespace BoatAttack
         private float3[] _heights = new float3[1]; // engine submerged check
         private float3[] _normals = new float3[1]; // engine submerged check
         private int _guid;
-        private float _yHeight;
+        private float _yHeight = float.NegativeInfinity;
 
         public Vector3 enginePosition;
         private Vector3 _engineDir;
@@ -30,20 +30,35 @@ namespace BoatAttack
 
         private void Awake()
         {
-			if(engineSound)
-				engineSound.time = UnityEngine.Random.Range(0f, engineSound.clip.length); // randomly start the engine sound
+            RandomizeAudioStart(engineSound);
+            RandomizeAudioStart(waterSound);
+            _guid = GetInstanceID();
+            if (RB == null) RB = GetComponentInParent<Rigidbody>();
+        }
 
-			if(waterSound)
-				waterSound.time = UnityEngine.Random.Range(0f, waterSound.clip.length); // randomly start the water sound
+        private static void RandomizeAudioStart(AudioSource source)
+        {
+            if (source != null && source.clip != null && source.clip.length > 0f)
+                source.time = UnityEngine.Random.Range(0f, source.clip.length);
+        }
 
-            _guid = GetInstanceID(); // Get the engines GUID for the buoyancy system
-            _point = new NativeArray<float3>(1, Allocator.Persistent);
+        private void OnEnable()
+        {
+            // OnDisable releases this buffer; pooled/re-enabled boats need a fresh one.
+            if (!_point.IsCreated) _point = new NativeArray<float3>(1, Allocator.Persistent);
+            _yHeight = float.NegativeInfinity;
         }
 
         private void FixedUpdate()
         {
-            VelocityMag = RB.velocity.sqrMagnitude; // get the sqr mag
-            engineSound.pitch = Mathf.Max(VelocityMag * 0.01f, 0.3f); // use some magice numbers to control the pitch of the engine sound
+            if (RB == null) return;
+            VelocityMag = RB.velocity.sqrMagnitude;
+            if (engineSound != null) engineSound.pitch = Mathf.Max(VelocityMag * 0.01f, 0.3f);
+            if (!_point.IsCreated || !GerstnerWavesJobs.Initialized)
+            {
+                _yHeight = float.NegativeInfinity;
+                return;
+            }
 
             // Get the water level from the engines position and store it
             _point[0] = transform.TransformPoint(enginePosition);
@@ -54,7 +69,8 @@ namespace BoatAttack
 
         private void OnDisable()
         {
-            _point.Dispose();
+            if (_point.IsCreated) _point.Dispose();
+            _yHeight = float.NegativeInfinity;
         }
         
         /// <summary>
@@ -63,7 +79,7 @@ namespace BoatAttack
         /// <param name="modifier">Acceleration modifier, adds force in the 0-1 range</param>
         public void Accelerate(float modifier)
         {
-            if (_yHeight > -0.1f) // if the engine is deeper than 0.1
+            if (RB != null && _yHeight > -0.1f) // if the engine is deeper than 0.1
             {
                 modifier = Mathf.Clamp(modifier, 0f, 1f); // clamp for reasonable values
                 var forward = RB.transform.forward;
@@ -80,7 +96,7 @@ namespace BoatAttack
         /// <param name="modifier">Steering modifier, positive for right, negative for negative</param>
         public void Turn(float modifier)
         {
-            if (_yHeight > -0.1f) // if the engine is deeper than 0.1
+            if (RB != null && _yHeight > -0.1f) // if the engine is deeper than 0.1
             {
                 modifier = Mathf.Clamp(modifier, -1f, 1f); // clamp for reasonable values
                 RB.AddRelativeTorque(new Vector3(0f, steeringTorque, -steeringTorque * 0.5f) * modifier, ForceMode.Acceleration); // add torque based on input and torque amount
@@ -91,7 +107,7 @@ namespace BoatAttack
                 ref _turnVel, 
                 0.5f, 
                 10f,
-                Time.fixedTime);
+                Time.fixedDeltaTime);
             transform.localEulerAngles = new Vector3(0f, _currentAngle, 0f);
         }
 
