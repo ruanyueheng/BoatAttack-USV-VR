@@ -1,3 +1,16 @@
+# BoatAttack USV VR — team development
+
+This fork builds on Unity's Boat Attack. Baseline: **Unity 2022.3.62f1 / URP 14.0.12**. Desktop and XR input share a common interface; a complete PICO game is **not yet validated**. New gameplay is currently in design discussion only.
+
+- [Current integration status](Docs/INTEGRATION_STATUS.md)
+- [Team collaboration and synchronization](Docs/TEAM_COLLABORATION.md)
+- [Validation commands and limits](Docs/TESTING.md)
+- [Gameplay candidates — not implemented](Docs/GAMEPLAY_OPTIONS.md)
+
+The original project description and credits follow below.
+
+---
+
 **_Note:This repository uses GitLFS, to use this repo you need to pull via Git and make sure GitLFS is installed locally_**
 
 # Boat Attack

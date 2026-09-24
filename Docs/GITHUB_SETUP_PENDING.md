@@ -1,13 +1,16 @@
-# GitHub setup pending
+# GitHub setup — completed
 
-The local repository currently has the official Unity BoatAttack remote. Before the first push, rename that remote to `upstream` and add the team's own GitHub repository as `origin`.
+Updated: 2026-09-24. This historical filename remains for existing references; setup is no longer pending.
 
-Required input for the final remote step: the team's GitHub repository URL, or a GitHub CLI login.
+- Team repository: https://github.com/ruanyueheng/BoatAttack-USV-VR (private).
+- origin: https://github.com/ruanyueheng/BoatAttack-USV-VR.git
+- upstream: https://github.com/Unity-Technologies/BoatAttack.git (reference only; never push there).
+- Default branch: main; earlier development baseline: vr-usv-dev.
 
-```powershell
-git remote rename origin upstream
-git remote add origin <TEAM_REPOSITORY_URL>
-git push -u origin main
-```
+Each collaborator needs their own GitHub access and authentication. The owner must invite friends to the private repository. Never share credentials or commit tokens.
 
-Do not push to `upstream`; it is the public Unity Technologies reference repository.
+Always select the repository explicitly with GitHub CLI: automatic detection in this checkout can select the upstream Unity project instead of the team repository.
+
+Example: `gh pr list --repo ruanyueheng/BoatAttack-USV-VR`.
+
+Follow TEAM_COLLABORATION.md and TESTING.md. A pushed feature branch is available to friends but is not merged into main. Do not mark untested gameplay or device work as validated.

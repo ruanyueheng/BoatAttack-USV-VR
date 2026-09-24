@@ -34,6 +34,15 @@ git push -u origin feature/<short-name>
 
 Open a Pull Request from the feature branch to `main`. Do not merge if the project cannot open, compile, or enter the demo scene on the agreed Unity version.
 
+## Every completed development iteration
+
+- Run the applicable checks in TESTING.md; record what was not tested.
+- Commit reviewed files and push the feature/fix branch to origin so friends can fetch the work. Do not leave a completed iteration only on this computer.
+- Open/update a PR to the team's main; keep it draft if manual acceptance is outstanding. Do not automatically merge unvalidated changes.
+- Always use `--repo ruanyueheng/BoatAttack-USV-VR` with gh commands: implicit selection can resolve to the official upstream.
+- Report branch, commit, push status, PR URL and verification limits. If authentication/network prevents pushing, state that synchronization is incomplete; never force-push as a workaround.
+- Never push to upstream or commit generated/unrelated files. Friends need an invitation to the private team repository and their own authentication.
+
 ## Unity conflict rules
 
 - Only one person edits a given `.unity` scene at a time.

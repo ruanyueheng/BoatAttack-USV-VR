@@ -44,9 +44,83 @@ internal static class Program
             Check("Reconnect held buttons suppressed", NoPress(p.Process(All(true),USVInputSourceKind.XR,0.12f)));
             p.Reset();
             Check("Explicit reset clears history", NoPress(p.Process(All(true),USVInputSourceKind.Desktop,0.12f)));
+            CheckRoutingMatrix();
+            CheckAxisBoundaries();
+            CheckIndependentCommands();
+            CheckAxisInvariants();
             Console.WriteLine("TOTAL: " + _passed + " passed. Pure input logic only; not Unity/device validation.");
             return 0;
         }
         catch(Exception ex) { Console.Error.WriteLine(ex); return 1; }
+    }
+
+    private static void CheckRoutingMatrix()
+    {
+        foreach (USVInputMode mode in Enum.GetValues(typeof(USVInputMode)))
+        {
+            foreach (bool xrActive in new[] { false, true })
+            {
+                Check(mode + " clears input when unfocused (XR=" + xrActive + ")",
+                    USVInputProcessor.Resolve(mode, xrActive, false) == USVInputSourceKind.None);
+                var expected = mode == USVInputMode.Desktop ? USVInputSourceKind.Desktop
+                    : xrActive ? USVInputSourceKind.XR
+                    : mode == USVInputMode.Auto ? USVInputSourceKind.Desktop : USVInputSourceKind.None;
+                Check(mode + " resolves focused input (XR=" + xrActive + ")",
+                    USVInputProcessor.Resolve(mode, xrActive, true) == expected);
+            }
+        }
+    }
+
+    private static void CheckAxisBoundaries()
+    {
+        var p = new USVInputProcessor();
+        var s = p.Process(new USVInputState { throttle = 0.12f, steering = -0.12f, brake = -1f },
+            USVInputSourceKind.Desktop, 0.12f);
+        Check("Exact deadzone boundary and negative brake are zero", s.throttle == 0f && s.steering == 0f && s.brake == 0f);
+        s = p.Process(new USVInputState { throttle = 1f, steering = -1f, brake = 1f }, USVInputSourceKind.XR, 0.95f);
+        Check("Full axis range remains available with maximum deadzone", s.throttle == 1f && s.steering == -1f && s.brake == 1f);
+        s = p.Process(new USVInputState { throttle = 0.5f, steering = -0.5f }, USVInputSourceKind.XR, -5f);
+        Check("Negative deadzone clamps to zero", s.throttle == 0.5f && s.steering == -0.5f);
+        s = p.Process(new USVInputState { throttle = 0.5f, steering = -0.5f }, USVInputSourceKind.XR, 8f);
+        Check("Oversized deadzone clamps below one", s.throttle == 0f && s.steering == 0f);
+        foreach (float invalid in new[] { float.NaN, float.PositiveInfinity, float.NegativeInfinity })
+        {
+            s = p.Process(new USVInputState { throttle = invalid, steering = invalid, brake = invalid }, USVInputSourceKind.XR, 0.12f);
+            Check("Non-finite axes and brake are neutral: " + invalid, s.throttle == 0f && s.steering == 0f && s.brake == 0f);
+            s = p.Process(new USVInputState { throttle = 0.5f, steering = -0.5f }, USVInputSourceKind.XR, invalid);
+            Check("Non-finite deadzone safely falls back to zero: " + invalid, s.throttle == 0.5f && s.steering == -0.5f);
+        }
+    }
+
+    private static void CheckIndependentCommands()
+    {
+        var p = new USVInputProcessor();
+        p.Process(default(USVInputState), USVInputSourceKind.Desktop, 0f);
+        var s = p.Process(new USVInputState { interact = true }, USVInputSourceKind.Desktop, 0f);
+        Check("Interact emits independently", s.interact && !s.pause && !s.reset && !s.map);
+        s = p.Process(new USVInputState { interact = true, pause = true }, USVInputSourceKind.Desktop, 0f);
+        Check("Pause emits while interact is held", s.pause && !s.interact && !s.reset && !s.map);
+        p.Process(All(true), USVInputSourceKind.None, 0f);
+        Check("Focus recovery suppresses every held command", NoPress(p.Process(All(true), USVInputSourceKind.Desktop, 0f)));
+        p.Process(All(false), USVInputSourceKind.Desktop, 0f);
+        s = p.Process(All(true), USVInputSourceKind.Desktop, 0f);
+        Check("Commands work after recovery and release", s.reset && s.pause && s.interact && s.map);
+    }
+
+    private static void CheckAxisInvariants()
+    {
+        var random = new Random(20260924);
+        var p = new USVInputProcessor();
+        for (int i = 0; i < 2000; i++)
+        {
+            float axis = (float)(random.NextDouble() * 6d - 3d);
+            float brake = (float)(random.NextDouble() * 6d - 3d);
+            float deadzone = (float)(random.NextDouble() * 3d - 1d);
+            var s = p.Process(new USVInputState { throttle = axis, steering = -axis, brake = brake }, USVInputSourceKind.Desktop, deadzone);
+            if (float.IsNaN(s.throttle) || float.IsInfinity(s.throttle) || Math.Abs(s.throttle) > 1f
+                || !Near(s.throttle, -s.steering) || s.brake < 0f || s.brake > 1f)
+                throw new Exception("Axis invariant failed at deterministic sample " + i);
+        }
+        Check("2000 deterministic axis samples stay finite, bounded and symmetric", true);
     }
 }
