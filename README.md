@@ -7,6 +7,7 @@ This fork builds on Unity's Boat Attack. Baseline: **Unity 2022.3.62f1 / URP 14.
 - [Team collaboration and synchronization](Docs/TEAM_COLLABORATION.md)
 - [Validation commands and limits](Docs/TESTING.md)
 - [Gameplay candidates — not implemented](Docs/GAMEPLAY_OPTIONS.md)
+- [How to Fish research and fishing prototype proposal — not implemented](Docs/HOW_TO_FISH_RESEARCH.md)
 
 The original project description and credits follow below.
 
