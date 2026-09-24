@@ -16,4 +16,48 @@ PASS: Invalid values cannot enter physics
 PASS: Lost runtime clears every control
 PASS: Reconnect held buttons suppressed
 PASS: Explicit reset clears history
-TOTAL: 18 passed. Pure input logic only; not Unity/device validation.
+PASS: Auto clears input when unfocused (XR=False)
+PASS: Auto resolves focused input (XR=False)
+PASS: Auto clears input when unfocused (XR=True)
+PASS: Auto resolves focused input (XR=True)
+PASS: Desktop clears input when unfocused (XR=False)
+PASS: Desktop resolves focused input (XR=False)
+PASS: Desktop clears input when unfocused (XR=True)
+PASS: Desktop resolves focused input (XR=True)
+PASS: XR clears input when unfocused (XR=False)
+PASS: XR resolves focused input (XR=False)
+PASS: XR clears input when unfocused (XR=True)
+PASS: XR resolves focused input (XR=True)
+PASS: Exact deadzone boundary and negative brake are zero
+PASS: Full axis range remains available with maximum deadzone
+PASS: Negative deadzone clamps to zero
+PASS: Oversized deadzone clamps below one
+PASS: Non-finite axes and brake are neutral: NaN
+PASS: Non-finite deadzone safely falls back to zero: NaN
+PASS: Non-finite axes and brake are neutral: ∞
+PASS: Non-finite deadzone safely falls back to zero: ∞
+PASS: Non-finite axes and brake are neutral: -∞
+PASS: Non-finite deadzone safely falls back to zero: -∞
+PASS: Interact emits independently
+PASS: Pause emits while interact is held
+PASS: Focus recovery suppresses every held command
+PASS: Commands work after recovery and release
+PASS: 2000 deterministic axis samples stay finite, bounded and symmetric
+PASS: Slow frame reduces scale at 30 FPS
+PASS: Fast frame increases scale at 30 FPS
+PASS: Exact frame budget holds scale at 30 FPS
+PASS: Slow frame reduces scale at 60 FPS
+PASS: Fast frame increases scale at 60 FPS
+PASS: Exact frame budget holds scale at 60 FPS
+PASS: Slow frame reduces scale at 120 FPS
+PASS: Fast frame increases scale at 120 FPS
+PASS: Exact frame budget holds scale at 120 FPS
+PASS: Invalid frame duration holds scale: 0
+PASS: Invalid frame duration holds scale: -1
+PASS: Invalid frame duration holds scale: NaN
+PASS: Invalid frame duration holds scale: ∞
+PASS: Invalid frame duration holds scale: -∞
+PASS: Invalid target FPS holds scale
+PASS: Invalid step holds scale
+PASS: A 20ms frame exceeds a 60 FPS budget
+TOTAL: 62 passed. Pure input/render policy logic only; not Unity/device validation.

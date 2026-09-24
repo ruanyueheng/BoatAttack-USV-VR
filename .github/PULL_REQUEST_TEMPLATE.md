@@ -11,8 +11,9 @@
 
 ## Verification
 
-- [ ] Hardware-free input regression passed (see Docs/TESTING.md)
-- [ ] Unity batch import/scene structures passed (not Play Mode or device acceptance)
+- [ ] Hardware-free input/render-policy regression passed (see Docs/TESTING.md)
+- [ ] Unity batch import/scene structures and component regression passed
+- [ ] Headless Play Mode flow passed (not visual, hardware-input, build or device acceptance)
 
 - [ ] Project opens without compile errors
 - [ ] `demo_Island` enters Play Mode

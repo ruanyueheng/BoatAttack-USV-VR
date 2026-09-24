@@ -3,6 +3,7 @@
 This fork builds on Unity's Boat Attack. Baseline: **Unity 2022.3.62f1 / URP 14.0.12**. Desktop and XR input share a common interface; a complete PICO game is **not yet validated**. New gameplay is currently in design discussion only.
 
 - [Current integration status](Docs/INTEGRATION_STATUS.md)
+- [Reproduced fixes and remaining risks](Docs/PROJECT_HEALTH_CHECK.md)
 - [Team collaboration and synchronization](Docs/TEAM_COLLABORATION.md)
 - [Validation commands and limits](Docs/TESTING.md)
 - [Gameplay candidates — not implemented](Docs/GAMEPLAY_OPTIONS.md)

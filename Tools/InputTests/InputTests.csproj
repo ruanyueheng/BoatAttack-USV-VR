@@ -9,5 +9,6 @@
   <ItemGroup>
     <Compile Include="../../Assets/Scripts/VR/USVInputState.cs" Link="USVInputState.cs" />
     <Compile Include="../../Assets/Scripts/VR/USVInputProcessor.cs" Link="USVInputProcessor.cs" />
+    <Compile Include="../../Assets/Scripts/GameSystem/DynamicResolutionPolicy.cs" Link="DynamicResolutionPolicy.cs" />
   </ItemGroup>
 </Project>

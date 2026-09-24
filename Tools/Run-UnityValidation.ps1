@@ -1,5 +1,7 @@
 param(
     [string]$EditorRoot,
+    [ValidateSet("Structure", "Regression", "PlayMode")]
+    [string]$Suite = "Structure",
     [ValidateRange(60, 7200)]
     [int]$TimeoutSeconds = 1200
 )
@@ -21,8 +23,18 @@ $logDirectory = Join-Path $repo 'Logs'
 [IO.Directory]::CreateDirectory($logDirectory) | Out-Null
 # Unique logs cannot accidentally satisfy this run with a previous PASS marker.
 $log = Join-Path $logDirectory ("usv-validation-" + [Guid]::NewGuid().ToString('N') + '.log')
-$arguments = '-batchmode -nographics -buildTarget StandaloneWindows64 -projectPath "' + $repo + '" -executeMethod BoatAttack.EditorTools.USVProjectValidation.Run -logFile "' + $log + '"'
-Write-Output "Running Unity desktop import/scene validation. Log: $log"
+$method = switch ($Suite) {
+    'Structure' { 'BoatAttack.EditorTools.USVProjectValidation.Run' }
+    'Regression' { 'BoatAttack.EditorTools.USVRuntimeRegression.Run' }
+    'PlayMode' { 'BoatAttack.EditorTools.USVPlayModeSmoke.Run' }
+}
+$marker = switch ($Suite) {
+    'Structure' { '[USV-VALIDATION]' }
+    'Regression' { '[USV-REGRESSION]' }
+    'PlayMode' { '[USV-PLAYMODE]' }
+}
+$arguments = '-batchmode -nographics -buildTarget StandaloneWindows64 -projectPath "' + $repo + '" -executeMethod ' + $method + ' -logFile "' + $log + '"'
+Write-Output "Running Unity $Suite validation. Log: $log"
 $process = Start-Process -FilePath $editor -ArgumentList $arguments -WindowStyle Hidden -PassThru
 try {
     if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
@@ -33,10 +45,10 @@ try {
     }
     $process.Refresh()
     if ($process.ExitCode -ne 0) { throw "Unity validation failed (exit $($process.ExitCode)). See $log" }
-    if (-not (Select-String -LiteralPath $log -SimpleMatch '[USV-VALIDATION] PASS:' -Quiet)) {
+    if (-not (Select-String -LiteralPath $log -SimpleMatch ($marker + ' PASS:') -Quiet)) {
         throw "Unity exited without executing all validation checks. See $log"
     }
-    Select-String -LiteralPath $log -SimpleMatch '[USV-VALIDATION]' | ForEach-Object { $_.Line }
+    Select-String -LiteralPath $log -SimpleMatch $marker | ForEach-Object { $_.Line }
 }
 finally {
     $process.Dispose()
