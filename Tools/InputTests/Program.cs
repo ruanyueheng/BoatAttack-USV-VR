@@ -1,5 +1,6 @@
 using System;
 using BoatAttack.VR;
+using BoatAttack;
 
 internal static class Program
 {
@@ -48,7 +49,8 @@ internal static class Program
             CheckAxisBoundaries();
             CheckIndependentCommands();
             CheckAxisInvariants();
-            Console.WriteLine("TOTAL: " + _passed + " passed. Pure input logic only; not Unity/device validation.");
+            CheckFrameBudgets();
+            Console.WriteLine("TOTAL: " + _passed + " passed. Pure input/render policy logic only; not Unity/device validation.");
             return 0;
         }
         catch(Exception ex) { Console.Error.WriteLine(ex); return 1; }
@@ -122,5 +124,20 @@ internal static class Program
                 throw new Exception("Axis invariant failed at deterministic sample " + i);
         }
         Check("2000 deterministic axis samples stay finite, bounded and symmetric", true);
+    }
+
+    private static void CheckFrameBudgets()
+    {
+        foreach (int fps in new[] { 30, 60, 120 })
+        {
+            Check("Slow frame reduces scale at " + fps + " FPS", DynamicResolutionPolicy.GetAdjustment(2f / fps, fps, 0.1f) == -0.1f);
+            Check("Fast frame increases scale at " + fps + " FPS", DynamicResolutionPolicy.GetAdjustment(0.5f / fps, fps, 0.1f) == 0.1f);
+            Check("Exact frame budget holds scale at " + fps + " FPS", DynamicResolutionPolicy.GetAdjustment(1f / fps, fps, 0.1f) == 0f);
+        }
+        foreach (float invalid in new[] { 0f, -1f, float.NaN, float.PositiveInfinity, float.NegativeInfinity })
+            Check("Invalid frame duration holds scale: " + invalid, DynamicResolutionPolicy.GetAdjustment(invalid, 60, 0.1f) == 0f);
+        Check("Invalid target FPS holds scale", DynamicResolutionPolicy.GetAdjustment(0.02f, 0, 0.1f) == 0f);
+        Check("Invalid step holds scale", DynamicResolutionPolicy.GetAdjustment(0.02f, 60, float.NaN) == 0f);
+        Check("A 20ms frame exceeds a 60 FPS budget", DynamicResolutionPolicy.GetAdjustment(0.020f, 60, 0.1f) < 0f);
     }
 }

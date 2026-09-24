@@ -144,17 +144,16 @@ namespace BoatAttack
             {
                 MainCamera.allowDynamicResolution = true;
 
-                var offset = 0f;
-                var currentFrametime = Time.deltaTime;
-                const float rate = 0.1f;
-
-                offset = targetFramerate switch
+                // deltaTime is in seconds. Use unscaled time so pausing gameplay
+                // does not make the renderer think frames are infinitely fast.
+                var targetFps = targetFramerate switch
                 {
-                    Framerate._30 => currentFrametime > (1000f / 30f) ? -rate : rate,
-                    Framerate._60 => currentFrametime > (1000f / 60f) ? -rate : rate,
-                    Framerate._120 => currentFrametime > (1000f / 120f) ? -rate : rate,
-                    _ => offset
+                    Framerate._30 => 30,
+                    Framerate._60 => 60,
+                    Framerate._120 => 120,
+                    _ => 30
                 };
+                var offset = DynamicResolutionPolicy.GetAdjustment(Time.unscaledDeltaTime, targetFps, 0.1f);
 
                 currentDynamicScale = Mathf.Clamp(currentDynamicScale + offset, minScale, 1f);
 
@@ -363,6 +362,11 @@ namespace BoatAttack
 
         public static Color[] ColorPalette;
         private static Texture2D _colorPaletteRaw;
+
+        public static int PaletteCount
+        {
+            get { GenerateColors(); return ColorPalette.Length; }
+        }
 
         public static Color GetPaletteColor(int index)
         {

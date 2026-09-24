@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using BoatAttack.VR;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -39,6 +40,12 @@ namespace BoatAttack.EditorTools
                 Require(!float.IsNaN(settings.brakeDeceleration) && !float.IsInfinity(settings.brakeDeceleration)
                     && settings.brakeDeceleration >= 0f, "Default braking must be finite and nonnegative.");
                 Debug.Log("[USV-VALIDATION] Shared input settings loaded.");
+
+                var buildScenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(scene => scene.path).ToArray();
+                Require(buildScenes.Length > 0 && buildScenes[0] == "Assets/scenes/main_menu.unity",
+                    "Desktop builds must start at the main menu, not a demo or benchmark.");
+                Require(buildScenes.Contains("Assets/scenes/_levels/level_Island.unity"), "Island missing from enabled build scenes.");
+                Debug.Log("[USV-VALIDATION] Desktop build scene entries include menu and island.");
 
                 foreach (var path in new[] {
                     "Assets/scenes/main_menu.unity",

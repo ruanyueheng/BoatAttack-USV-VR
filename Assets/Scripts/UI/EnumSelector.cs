@@ -17,12 +17,12 @@ namespace BoatAttack.UI
 
         private void ValueUpdate(int i)
         {
-            updateVal?.Invoke(i);
+            if (options != null && options.Length > 0) updateVal?.Invoke(i);
         }
 
         private void Awake()
         {
-            _currentOption = startOption;
+            _currentOption = ValidateIndex(startOption);
             UpdateText();
         }
 
@@ -53,17 +53,19 @@ namespace BoatAttack.UI
 
         private void UpdateText()
         {
-            text.text = options[_currentOption];
+            if (text != null)
+                text.text = options != null && options.Length > 0 ? options[_currentOption] : string.Empty;
         }
 
         private int ValidateIndex(int index)
         {
+            if (options == null || options.Length == 0) return 0;
             if (loop)
             {
                 return (int) Mathf.Repeat(index, options.Length);
             }
 
-            return Mathf.Clamp(index, 0, options.Length);
+            return Mathf.Clamp(index, 0, options.Length - 1);
         }
     }
 }

@@ -286,7 +286,8 @@ namespace BoatAttack
             }
 
             Instance.Reset();
-            AppSettings.LoadScene(0, LoadSceneMode.Single);
+            // The menu must not depend on which demo a developer put at build index zero.
+            AppSettings.LoadScene("Assets/scenes/main_menu.unity", LoadSceneMode.Single);
         }
         
         public static void SetHull(int player, int hull) => RaceData.boats[player].boatPrefab = Instance.boats[hull];

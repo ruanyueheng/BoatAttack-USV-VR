@@ -1,53 +1,52 @@
 # Validation guide
 
-Run commands from the repository root. Green input tests are not playable-game or VR certification.
+Run commands from the repository root. These checks cover different layers; none certifies a complete VR game.
 
-## Hardware-free input regression
+## 1. Hardware-free core logic
 
-Install the .NET 10 SDK (separate from Unity's runtime), then run:
+Install .NET 10 SDK (separate from Unity's runtime):
 
 ```powershell
 dotnet run --project Tools/InputTests/InputTests.csproj --configuration Release
 ```
 
-The hand-authored project directly compiles runtime USVInputState and USVInputProcessor sources. No Unity editor, headset, NuGet test framework or LFS binaries are needed. A failed assertion returns a nonzero exit code; compiler warnings are errors.
+The hand-authored project directly compiles the runtime input state/processor and dynamic-resolution policy. No Unity license, headset, NuGet test framework or LFS binaries are needed. Failed assertions return a nonzero exit code; compiler warnings are errors.
 
-Current suite: 45 assertions including 2,000 deterministic axis samples. Covers routing, focus recovery, source switches, independent command edges, deadzone boundaries, invalid floats, brake limits and axis invariants.
+Current suite: 62 assertions, including 2,000 deterministic input-axis samples and 17 frame-budget tests. The existing Input regression GitHub workflow runs this suite on Windows and Linux. It does not run Unity; private-repository Actions settings/allowance can affect execution.
 
-The Input regression GitHub Actions workflow runs this command on Windows and Linux for pushes/PRs. It does not compile or run Unity. Private-repository Actions settings and allowance can affect execution.
+## 2. Unity batch checks (Windows)
 
-## Unity import and scene structures (Windows)
-
-Install the exact editor from ProjectVersion.txt, activate its license in Unity Hub, obtain LFS assets and close Unity:
+Install the exact editor from ProjectVersion.txt, activate its license in Unity Hub, obtain LFS assets and close all Unity editors:
 
 ```powershell
-./Tools/Run-UnityValidation.ps1
-# For another installation location:
-./Tools/Run-UnityValidation.ps1 -EditorRoot 'D:/Unity/2022.3.62f1'
+# Import, input asset, desktop build entries and primary scene structures:
+./Tools/Run-UnityValidation.ps1 -Suite Structure
+# Real component methods in edit mode, including lifecycle/boundary regressions:
+./Tools/Run-UnityValidation.ps1 -Suite Regression
+# Real Play Mode: menu -> race -> menu -> race, with engine disable/re-enable:
+./Tools/Run-UnityValidation.ps1 -Suite PlayMode
 ```
 
-The helper starts a hidden batch editor targeting Windows, validates shared input defaults and opens three primary scenes without saving. It checks missing scripts and Unity errors during the validation method. Both exit code zero and a success marker in a unique ignored Logs/ file are required.
+Default suite is Structure. For another editor location, add `-EditorRoot 'D:/Unity/2022.3.62f1'`.
 
-Default timeout: 20 minutes; use -TimeoutSeconds 3600 for a long first import. On timeout only the helper it started is stopped. It refuses to run while any Unity editor is open. It does not change the package manifest or install SDKs; Unity can still import/resolve existing project dependencies normally.
+The helper checks the editor version before opening the project, starts a hidden Windows-target batch editor and requires both exit code zero and the suite's explicit success marker in a unique ignored Logs/ file. It does not save scenes. The timeout defaults to 20 minutes (`-TimeoutSeconds 3600` for a long first import); PlayMode also has an internal flow timeout. On timeout only its own helper is stopped. Unity can import/resolve the already-configured dependencies normally; no manifest or SDK installation is performed by the helper.
 
-Not covered: Play Mode, dynamic Addressables instantiation, complete serialized-reference integrity, rendering (uses -nographics), player builds, actual controller input, frame rate or headset compatibility. Editor scene opening is not the in-game menu transition.
+### What each suite proves
 
-## Manual desktop acceptance — still required
+- Structure: scripts compile, input defaults load, desktop menu/island build entries exist, and three scenes open without missing script components. Not full serialized-reference integrity.
+- Regression: 14 component checks for enum/color bounds, initialization, empty lists, menu callbacks, optional audio, native sample buffer re-enable and steering timestep. It invokes lifecycle methods in edit mode; it does not substitute for live runtime tests.
+- PlayMode: MainMenuHelper starts single-player races, four Addressable boats initialize, countdown completes, live engine re-enable survives, and returning to the menu permits another race. Unexpected logged errors fail the run. It does not synthesize hardware input or validate race completion/scoring.
 
-1. Open Assets/scenes/main_menu.unity in Unity 2022.3.62f1.
-2. Enter Play Mode and click Start Race; verify the island loads without exceptions.
-3. Verify player keyboard/gamepad controls, braking, pause/resume, reset and focus recovery. The direct demo may use spectator/AI defaults; it does not prove human input works.
-4. Inspect water, reflections, buoyancy, UI, sound and race completion.
-5. Build Addressables, make a Windows player and repeat the flow outside the editor.
-6. Record commit, settings, environment, result and limitations in the PR.
+All suites use -nographics. They do not prove visual rendering, frame rate, actual keyboard/gamepad behavior, content/player builds or headset compatibility.
 
-PICO loader/rig integration and APK/device acceptance remain separate. Do not tick desktop/device acceptance merely because the automated checks passed.
+## 3. Manual desktop acceptance — still required
 
-## Local evidence (2026-09-24)
+1. Open Assets/scenes/main_menu.unity, enter Play Mode and use the actual menu UI to start a race.
+2. Drive with keyboard/gamepad; check braking, pause/resume, reset, focus recovery and race completion.
+3. Inspect water, reflections, buoyancy, UI and sound. Dynamic-resolution device performance still needs measurement.
+4. Build Addressables, make a Windows player and repeat outside the editor.
+5. Record commit, environment, settings and limits in the PR.
 
-- Input suite: 45 passed.
-- Unity 2022.3.62f1 batch import/compiler: exit code 0.
-- Shared input asset and three scene structures: explicit PASS, exit code 0.
-- Play Mode, Windows build, APK, visuals and headset: not tested this iteration.
+The build list now boots the normal main menu and includes the island. Demo/benchmark entries are retained but disabled; opening them directly in the editor remains possible.
 
-Raw logs stay under ignored Logs/; do not commit editor caches or per-machine diagnostics.
+PICO loader/rig, ARM64 APK and device acceptance remain separate. Do not tick those checkboxes merely because the automated checks pass. Latest findings and remaining risks: PROJECT_HEALTH_CHECK.md.
