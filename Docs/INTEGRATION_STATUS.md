@@ -1,39 +1,41 @@
 # 集成状态与下一次接续
 
-检查日期：2026-09-23。不要将本文件作为已完成运行验收的证明。
+更新：2026-09-24。代码接入、自动检查通过与可玩验收是不同层次。
 
-## 已完成
+## 当前决策
 
-- 创建 vr-usv-dev 分支，保留原版基准提交。
-- 共享输入状态、键鼠/普通手柄输入、Unity XR 手柄输入、模式选择及输入处理器。
-- 将 HumanController 接到共享路由，继续使用原 Boat/Engine，避免两个控制器同时施加推进力。
-- 编辑器菜单与默认 Desktop / Windows Desktop / Android XR 设置资产。
-- 18 项纯 C# 回归测试通过；Unity 相关适配器尚未经过 Unity 编译与运行验证。
-- 检查 2022.3.62f1 的 Unity、Android SDK、NDK、OpenJDK 路径存在。
-- ADB devices 检查成功，未发现已连接设备。
-- 本轮未经验证的依赖改动撤回；SDK 和示例 prefab 移出活动 Unity 工程。
+用户要求先讨论更多玩法，暂不进行玩法开发。GAMEPLAY_OPTIONS.md 全部是候选，不代表选定货运、救援或其他主线。本轮未新增任务、关卡、货损或评分逻辑。
 
-## 尚未完成
+## 已接入并纳入版本管理
 
-- Unity 2022.3 / URP 14 导入升级；当前版本标识和依赖仍是原始版本。
-- PICO 4 Ultra 固件与 SDK 支持矩阵核对。
-- PICO loader、XR Origin、座舱相机、World Space UI 与双眼水面。
-- 原版水面、RenderPass 和 Addressables 在目标编辑器下回归。
-- Windows 可执行程序、Android ARM64 APK，以及真实运行验收。
-- 新玩法；所有候选只是设计，不默认实施救援主线。
+- Unity 2022.3.62f1 / URP 14.0.12，已提交 Packages/packages-lock.json；不再是原始 2020.3 / URP 10 配置。
+- 共用输入状态、桌面/普通手柄适配、Unity XR 输入适配、模式选择与处理器。
+- HumanController 使用共用输入路由与原 Boat / Engine；发动机目前仍不支持倒车。
+- 输入默认设置、编辑器菜单及先前的主菜单场景路径修复。
+- 团队仓库 ruanyueheng/BoatAttack-USV-VR；origin 指向团队仓库，upstream 保留 Unity 官方仓库。
 
-## 具体阻碍
+## 2026-09-24 本地检查结果
 
-- Unity 自动启动调用被执行策略拒绝；没有成功运行 Unity，不能靠更换启动器绕过。
-- 当前可见工具只有 PICO 知识图谱，没有 pico_xr_package / pico_xr_status 等 Unity MCP 编辑器工具。
-- GUI 连接也不可用（auth token unavailable），没有用其他技术绕过 UI 限制。
-- 没有已连接的 ADB 设备，不能核对固件或实测 APK。
+- 纯 C# 输入测试 45 项通过，包含 2,000 组固定随机种子的轴值检查。
+- 手工维护的测试 .csproj 已加入 Git 白名单，朋友克隆后可直接运行。
+- Unity 2022.3.62f1 无图形批处理导入/脚本编译成功。
+- 共用输入设置可加载；main_menu、demo_Island、_levels/level_Island 三场景可在编辑模式打开，无丢失脚本组件。
+- 新增 Windows / Linux GitHub Actions 输入测试配置；云端结果以 PR 检查为准。
 
-## 继续顺序
+## 仍未验收
 
-1. 用户打开 Unity 编辑器并连接 Unity/PICO MCP；保留首次导入 Console 和包解析错误。
-2. 在开发分支内进行可回退的 Unity 2022.3 / URP 14 迁移，用 Package Manager 逐项修依赖。
-3. 先验收原海岛 PC Play Mode -> Addressables -> Windows build。
-4. 按 PICO 4 Ultra 实际系统选 SDK，先最小 XR 场景再海岛，最后 APK 真机验收。
-5. 将最终解析成功的依赖锁文件纳入版本管理（原 .gitignore 忽略它，目前不产生伪造锁文件）。
-6. PC 与 VR 用同一地图/任务/船只逻辑，不维护两个玩法分支。
+- 本轮没有进入 Play Mode；旧菜单加载异常仍需点击 Start Race 做端到端回归。
+- 未做 Addressables 内容构建、Windows 可执行程序、Android ARM64 APK。
+- 未做水面渲染、性能、温度、舒适性或头显实测。
+- PICO 4 Ultra 固件与 SDK 支持矩阵未核对；未配置/验收 loader、XR Origin、座舱、World Space UI 与双眼水面。
+- 新玩法仍是设计候选，不要直接开始实现。
+
+## 接续顺序
+
+1. 先与用户讨论和选择玩法，确认前不改任务、关卡或核心规则。
+2. 技术验收先做原版 PC：Play Mode、主菜单到海岛、Addressables、Windows build。
+3. 玩法获确认后，仅做一个核心循环的小型灰盒，不同时上天气、经营、联网和强化学习。
+4. VR 单独做最小 XR 场景、座舱与海岛、APK 真机验收。
+5. 每次完成的开发迭代都检查、提交、推送 origin 功能分支，报告提交/PR 及未验证内容，不自动合并未验收代码。
+
+命令和检查边界见 TESTING.md，团队流程见 TEAM_COLLABORATION.md。

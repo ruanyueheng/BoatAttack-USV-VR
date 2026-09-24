@@ -11,6 +11,9 @@
 
 ## Verification
 
+- [ ] Hardware-free input regression passed (see Docs/TESTING.md)
+- [ ] Unity batch import/scene structures passed (not Play Mode or device acceptance)
+
 - [ ] Project opens without compile errors
 - [ ] `demo_Island` enters Play Mode
 - [ ] Git LFS assets are present

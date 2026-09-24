@@ -1,0 +1,35 @@
+name: Input regression
+
+on:
+  push:
+    branches: [main, vr-usv-dev, 'feature/**', 'fix/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: input-regression-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  input-tests:
+    name: Input tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # These pure C# tests need no Unity binaries, license, or LFS assets.
+          lfs: false
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Run hardware-free input regression
+        run: dotnet run --project Tools/InputTests/InputTests.csproj --configuration Release
