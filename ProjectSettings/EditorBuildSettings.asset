@@ -17,6 +17,11 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/scenes/Testing/benchmark_island-static.unity
     guid: bf8529d52d0dac843b94245ecf955d4a
+  - enabled: 1
+    path: Assets/scenes/Fishing/fishing_Island.unity
+    guid: 7a28272060828204cac9b5c1c849df46
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 3f119a19757f84dac85ee298b9dd65d3,
+      type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 6260f3e6e4ec7e64f9249776b88aca0c,
       type: 2}

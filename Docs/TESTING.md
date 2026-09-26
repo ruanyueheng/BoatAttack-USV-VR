@@ -50,3 +50,20 @@ All suites use -nographics. They do not prove visual rendering, frame rate, actu
 The build list now boots the normal main menu and includes the island. Demo/benchmark entries are retained but disabled; opening them directly in the editor remains possible.
 
 PICO loader/rig, ARM64 APK and device acceptance remain separate. Do not tick those checkboxes merely because the automated checks pass. Latest findings and remaining risks: PROJECT_HEALTH_CHECK.md.
+
+
+## 4. Fishing prototype (2026-09-25)
+
+The separate prototype adds 50 hardware-free catch/economy assertions:
+
+```powershell
+dotnet run --project Tools/FishingTests/FishingTests.csproj --configuration Release
+./Tools/Run-UnityValidation.ps1 -Suite FishingSmoke
+./Tools/Run-UnityValidation.ps1 -Suite FishingBuild -TimeoutSeconds 3600
+```
+
+The same Windows/Linux CI job runs the fishing rules as well as the original 62 core checks. FishingSmoke exercises three species, claiming each catch once, inventory, selling, upgrading, save round trips and backup recovery in a dedicated temporary save. It uses operation-level automation, not OS keyboard/mouse injection.
+
+The normal generated scene is committed; only regenerate deliberately with FishingGenerate, because custom edits to that generated scene are replaced. Runtime art is original procedural geometry. No commercial How to Fish assets are included. See FISHING_PROTOTYPE.md for player controls, visual scope and current limitations.
+
+The first full player/content build serialized existing URP 14 and Burst assets to their current formats and generated an empty XR settings container (no loader). The Unity, URP and package versions were not changed. Addressables content-state/linker output and player builds are ignored; generic settings/materials and the source scene are tracked.
