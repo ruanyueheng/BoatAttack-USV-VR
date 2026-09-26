@@ -1,6 +1,6 @@
 param(
     [string]$EditorRoot,
-    [ValidateSet("Structure", "Regression", "PlayMode")]
+    [ValidateSet("Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild")]
     [string]$Suite = "Structure",
     [ValidateRange(60, 7200)]
     [int]$TimeoutSeconds = 1200
@@ -27,13 +27,20 @@ $method = switch ($Suite) {
     'Structure' { 'BoatAttack.EditorTools.USVProjectValidation.Run' }
     'Regression' { 'BoatAttack.EditorTools.USVRuntimeRegression.Run' }
     'PlayMode' { 'BoatAttack.EditorTools.USVPlayModeSmoke.Run' }
+    'FishingGenerate' { 'BoatAttack.EditorTools.FishingPrototypeEditor.Generate' }
+    'FishingSmoke' { 'BoatAttack.EditorTools.FishingPrototypeSmoke.Run' }
+    'FishingBuild' { 'BoatAttack.EditorTools.FishingPrototypeEditor.Build' }
 }
 $marker = switch ($Suite) {
     'Structure' { '[USV-VALIDATION]' }
     'Regression' { '[USV-REGRESSION]' }
     'PlayMode' { '[USV-PLAYMODE]' }
+    'FishingGenerate' { '[FISHING]' }
+    'FishingSmoke' { '[FISHING]' }
+    'FishingBuild' { '[FISHING]' }
 }
 $arguments = '-batchmode -nographics -buildTarget StandaloneWindows64 -projectPath "' + $repo + '" -executeMethod ' + $method + ' -logFile "' + $log + '"'
+if ($Suite -eq 'FishingSmoke') { $arguments += ' -fishing-autoplay' }
 Write-Output "Running Unity $Suite validation. Log: $log"
 $process = Start-Process -FilePath $editor -ArgumentList $arguments -WindowStyle Hidden -PassThru
 try {

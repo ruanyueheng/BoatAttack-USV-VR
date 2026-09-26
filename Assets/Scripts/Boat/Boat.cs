@@ -20,6 +20,8 @@ namespace BoatAttack
         public Engine engine;
         private Matrix4x4 _spawnPosition;
 
+        [NonSerialized] public bool ParticipateInRaces = true;
+
         // RaceStats
         [NonSerialized] public int Place = 0;
         [NonSerialized] public float LapPercentage;
@@ -80,6 +82,7 @@ namespace BoatAttack
 
         private void Update()
         {
+            if (!ParticipateInRaces) return;
             if (RaceManager.RaceStarted)
             {
                 UpdateLaps();
@@ -94,6 +97,7 @@ namespace BoatAttack
 
         private void LateUpdate()
         {
+            if (!ParticipateInRaces) return;
             if (cam)
             {
                 var fov = Mathf.SmoothStep(80f, 100f, engine.VelocityMag * 0.005f);
@@ -103,6 +107,7 @@ namespace BoatAttack
 
         private void FixedUpdate()
         {
+            if (!ParticipateInRaces) return;
             if (!RaceManager.RaceStarted)
             {
                 if(WaypointGroup.Instance) AlignBoatWithStartingLine();
@@ -140,6 +145,7 @@ namespace BoatAttack
 
         private void OnTriggerEnter(Collider other)
         {
+            if (!ParticipateInRaces) return;
             if (!other.CompareTag("waypoint") || MatchComplete) return;
 
             var wp = WaypointGroup.Instance.GetTriggersWaypoint(other as BoxCollider);
