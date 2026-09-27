@@ -43,7 +43,7 @@ internal static class Program
             Check(!c.Upgrade(),"Upgrade cannot repeat");
             Check(FishingCareer.TryRestore(c.Snapshot(),out var loaded) && loaded.RodLevel==1,"Progress restores");
             record.value=30;Check(!loaded.Store(record),"Sold ID remains deduplicated after restore");
-            Check(!FishingCareer.TryRestore(new FishingSaveData{version=2},out _),"Unknown save version rejected");
+            Check(!FishingCareer.TryRestore(new FishingSaveData{version=99},out _),"Unknown save version rejected");
             Check(!FishingCareer.TryRestore(new FishingSaveData{coins=-1},out _),"Negative balance rejected");
             for(int i=0;i<FishingCareer.Capacity;i++)Check(c.Store(new CatchRecord{id="extra"+i,kind=FishKind.Coral,value=10}),"Fill inventory "+i);
             Check(!c.Store(new CatchRecord{id="overflow",kind=FishKind.Coral,value=10}),"Hold capacity enforced");
@@ -88,6 +88,8 @@ internal static class Program
             Check(lookGate.Update(true,false,false,true),"Fresh look drag accepted");
             lookGate.Reset();Check(!lookGate.Update(true,false,false,true),"Look drag cannot jump on resume");
             Check(lookGate.Update(true,false,false,false),"Look release rearms drag");
+            VoyageTests.Run(Check);
+            ClimateTests.Run(Check);
             Console.WriteLine("TOTAL: "+count+" passed. Pure fishing rules only.");return 0;
         }
         catch(Exception ex){Console.Error.WriteLine(ex);return 1;}

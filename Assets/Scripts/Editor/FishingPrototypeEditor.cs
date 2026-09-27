@@ -115,8 +115,8 @@ namespace BoatAttack.EditorTools
                 if(!File.Exists(ScenePath))throw new Exception("Generate the fishing scene first.");
                 AddressableAssetSettings.BuildPlayerContent(out var content);
                 if(!string.IsNullOrEmpty(content.Error))throw new Exception("Addressables: "+content.Error);
-                string output=Path.GetFullPath("Builds/FishingPrototype-v0.2/FishingPrototype.exe");Directory.CreateDirectory(Path.GetDirectoryName(output));
-                var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{ScenePath},locationPathName=output,target=BuildTarget.StandaloneWindows64,options=BuildOptions.Development});
+                string output=Path.GetFullPath("Builds/FishingPrototype-v0.3.1/FishingPrototype.exe");Directory.CreateDirectory(Path.GetDirectoryName(output));
+                var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{ScenePath},locationPathName=output,target=BuildTarget.StandaloneWindows64,options=BuildOptions.None});
                 if(report.summary.result!=BuildResult.Succeeded)throw new Exception("Build failed: "+report.summary.result);
                 Debug.Log("[FISHING] PASS: Windows prototype built: "+output);EditorApplication.Exit(0);
             }

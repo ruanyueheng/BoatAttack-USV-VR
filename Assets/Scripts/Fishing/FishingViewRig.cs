@@ -49,7 +49,9 @@ namespace BoatAttack.Fishing
                 _lookPitch = Mathf.Clamp(_lookPitch - delta.y * 0.12f, -45f, 50f);
             }
             if (_reset || teleported) { _waterY = boat.position.y; _waterVelocity = 0f; _velocity = Vector3.zero; }
-            _waterY = Mathf.SmoothDamp(_waterY, boat.position.y, ref _waterVelocity, 0.6f);
+            // A pause/resume in one frame can leave deltaTime=0 even while Paused=false.
+            // SmoothDamp may divide by zero on its overshoot path and poison the next frame.
+            if (Time.deltaTime > 0f) _waterY = Mathf.SmoothDamp(_waterY, boat.position.y, ref _waterVelocity, c.ComfortMode ? 2.5f : 0.6f);
             var stableOrigin = new Vector3(boat.position.x, _waterY, boat.position.z);
             if (FirstPerson)
             {
@@ -69,7 +71,7 @@ namespace BoatAttack.Fishing
                 var orbit = Quaternion.AngleAxis(_lookYaw, Vector3.up);
                 desired = look + orbit * (desired - look) + Vector3.up * _lookPitch * 0.07f;
                 desired=ConstrainToVisibleSegment(look,desired,boat);
-                var smoothed=(_reset||teleported)?desired:Vector3.SmoothDamp(c.viewCamera.transform.position,desired,ref _velocity,0.22f);
+                var smoothed=(_reset||teleported)?desired:Time.deltaTime<=0f?c.viewCamera.transform.position:Vector3.SmoothDamp(c.viewCamera.transform.position,desired,ref _velocity,0.22f);
                 // Damping is allowed away from obstacles, never through them. A newly blocked view
                 // must retract immediately rather than interpolate from behind a wall for several frames.
                 var safe=ConstrainToVisibleSegment(look,smoothed,boat);

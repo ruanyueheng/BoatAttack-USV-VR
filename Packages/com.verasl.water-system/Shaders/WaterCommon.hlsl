@@ -66,7 +66,7 @@ half3 Absorption(half depth)
 
 float2 AdjustedDepth(half2 uvs, half4 additionalData)
 {
-	float rawD = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_ScreenTextures_linear_clamp, uvs);
+	float rawD = SAMPLE_TEXTURE2D_X(_CameraDepthTexture, sampler_ScreenTextures_linear_clamp, UnityStereoTransformScreenSpaceTex(uvs)).r;
 	float d = LinearEyeDepth(rawD, _ZBufferParams);
 
 	// TODO: Changing the usage of UNITY_REVERSED_Z this way to fix testing, but I'm not sure the original code is correct anyway.
@@ -96,7 +96,7 @@ float3 WaterDepth(float3 posWS, half4 additionalData, half2 screenUVs)// x = sea
 
 half3 Refraction(half2 distortion, half depth, real depthMulti)
 {
-	half3 output = SAMPLE_TEXTURE2D_LOD(_CameraOpaqueTexture, sampler_CameraOpaqueTexture_linear_clamp, distortion, depth * 0.25).rgb;
+	half3 output = SAMPLE_TEXTURE2D_X_LOD(_CameraOpaqueTexture, sampler_CameraOpaqueTexture_linear_clamp, UnityStereoTransformScreenSpaceTex(distortion), depth * 0.25).rgb;
 	output *= Absorption((depth) * depthMulti);
 	return output;
 }
@@ -152,7 +152,7 @@ WaterVertexOutput WaveVertexOperations(WaterVertexOutput input)
 #endif
 
     // Dynamic displacement
-	half4 waterFX = SAMPLE_TEXTURE2D_LOD(_WaterFXMap, sampler_ScreenTextures_linear_clamp, screenUV.xy, 0);
+	half4 waterFX = SAMPLE_TEXTURE2D_X_LOD(_WaterFXMap, sampler_ScreenTextures_linear_clamp, UnityStereoTransformScreenSpaceTex(screenUV.xy), 0);
 	input.posWS.y += waterFX.w * 2 - 1;
 
 	// After waves
@@ -196,10 +196,11 @@ WaterVertexOutput WaterVertex(WaterVertexInput v)
 // Fragment for water
 half4 WaterFragment(WaterVertexOutput IN) : SV_Target
 {
-	UNITY_SETUP_INSTANCE_ID(IN);
+    UNITY_SETUP_INSTANCE_ID(IN);
+    UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
 	half3 screenUV = IN.shadowCoord.xyz / IN.shadowCoord.w;//screen UVs
 
-	half4 waterFX = SAMPLE_TEXTURE2D(_WaterFXMap, sampler_ScreenTextures_linear_clamp, IN.preWaveSP.xy);
+	half4 waterFX = SAMPLE_TEXTURE2D_X(_WaterFXMap, sampler_ScreenTextures_linear_clamp, UnityStereoTransformScreenSpaceTex(IN.preWaveSP.xy));
 
 	// Depth
 	float3 depth = WaterDepth(IN.posWS, IN.additionalData, screenUV.xy);// TODO - hardcoded shore depth UVs

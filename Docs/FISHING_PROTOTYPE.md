@@ -1,6 +1,6 @@
-# 怪鱼航线 — 桌面试玩（当前 v0.2）
+# 怪鱼航线 — 桌面试玩（当前 v0.3.1）
 
-模型与第一人称更新见 [FISHING_V02.md](FISHING_V02.md)。下文基础捕捞循环仍适用。
+天气、生物与新模型见 [FISHING_LIVING_BAY.md](FISHING_LIVING_BAY.md)。第三版基础玩法、UI 与 PICO 适配边界见 [FISHING_V03.md](FISHING_V03.md)。第二版记录保留在 FISHING_V02.md。
 
 本版本是基于 BoatAttack 的独立捕鱼灰盒，不是《How to Fish》的资源移植。鱼、鱼竿、抄网、鱼箱、市场小站和提示音均由本项目代码生成；海岛、船只、水面和原有环境素材沿用 BoatAttack，保留其授权与署名。
 
@@ -8,7 +8,7 @@
 
 - Unity 2022.3.62f1：菜单 **BoatAttack > Fishing > Open prototype**，然后按 Play。
 - 或直接打开 `Assets/scenes/Fishing/fishing_Island.unity`。
-- Windows 试玩程序构建位置：`Builds/FishingPrototype-v0.2/FishingPrototype.exe`。运行时必须保留相邻 Data 文件夹和 DLL，不能只复制 exe。
+- Windows 试玩程序构建位置：`Builds/FishingPrototype-v0.3.1/FishingPrototype.exe`。运行时必须保留相邻 Data 文件夹和 DLL，不能只复制 exe。
 - 普通启动是玩家模式；没有自动驾驶/自动收鱼。命令行自动演示只用于验收和截图。
 
 ## 第一段体验
@@ -19,15 +19,17 @@
 4. 按住左键收线，张力过高时松开；不要一直放线。
 5. 鱼到船边后，指针进入绿色区域时按 **E** 抄鱼。
 6. 鱼进入六格鱼箱。可以继续抛竿，或 **Q** 收起工具继续航行。
-7. 返回青色市场，低速靠近后按 **E** 出售；有 30 金币后按 **U** 升级鱼线。
+7. 返回青色市场，低速靠近后按 **E**：订单已集齐则交付并领奖，否则普通出售；有 30 金币后按 **U** 升级鱼线。
 
 ## 控制与便利操作
 
 - W / 上箭头 / 空格：前进；A、D / 左右箭头：转向。
 - S / 下箭头 / Shift：刹车。当前发动机不支持倒车。
-- E：附近场景交互（渔区停船、抄鱼、港口出售）。
+- E：附近场景交互（渔区停船、抄鱼、港口交付订单或出售）。
 - 鼠标左键：抛竿、提竿、按住收线；松开放线。
 - Q：取消当前捕捞并起航。
+- T：看向 28m 内的野生生物进行观察；日志可切换自然观察页。左侧按钮也能打开图鉴、设置和切换视角。
+- B：换饵（捕捞进行中不可换）；N：切换航点；J：图鉴与订单日志；O：在港口尝试提交订单。
 - U：在港口升级鱼线。
 - R：救援回港，已入箱鱼和金币保留。这是灰盒便利功能，尚未做航行成本平衡。
 - C：第一/第三人称切换；按住右键环顾；V 视线回正；H 简洁界面。
@@ -53,7 +55,7 @@
 
 ## 保存位置
 
-Windows 默认在 Unity 的 `Application.persistentDataPath` 下，文件名 `boatattack-fishing-v1.json`，旁边有 `.bak` 备份。自动测试和截图用独立测试路径，不读写玩家进度。UI 会提示保存权限错误；不要把存档或用户目录提交到仓库。
+Windows 默认在 Unity 的 `Application.persistentDataPath` 下，文件名 `boatattack-fishing-v1.json`，旁边有 `.bak` 备份。第三版内部格式为 version=2，可读取旧版但写入后不能由第二版直接读取，请在回退前保留旧存档副本。自动测试和截图用独立测试路径，不读写玩家进度。UI 会提示保存权限错误；不要把存档或用户目录提交到仓库。
 
 ## 重建与验证
 
@@ -71,7 +73,7 @@ dotnet run --project Tools/InputTests/InputTests.csproj --configuration Release
 
 FishingSmoke 在真正的 Play Mode 中自动完成三种鱼捕获、入箱、出售、升级、进度重读和备份恢复。它通过显式测试驱动调用游戏操作，不等于真人键鼠、VR 或帧率验收。
 
-构建先生成 Addressables 内容，再打包只以捕鱼场景启动的 Windows Development Player。构建、截图和本地日志不进入 Git；朋友通过源码和上述命令重建。
+构建先生成 Addressables 内容，再打包只以捕鱼场景启动的 Windows Release Player（v0.3.1 起关闭 Development）。构建、截图和本地日志不进入 Git；朋友通过源码和上述命令重建。
 
 
 ## 实现与构建说明
@@ -83,7 +85,7 @@ FishingSmoke 在真正的 Play Mode 中自动完成三种鱼捕获、入箱、�
 - 临时日志、截图、可执行程序和 Addressables 构建状态不提交到 Git。不要从 Windows 包直接推断 Android 或 VR 兼容性。
 
 
-## 收尾验证（2026-09-27）
+## 第二版历史验收（2026-09-27，第三版见 FISHING_V03.md）
 
 - 73 项捕鱼/鼠标、手柄与环顾恢复逻辑断言、62 项原输入/渲染策略断言；GitHub CI 执行同一组代码。
 - 捕鱼 Play Mode 自动验收覆盖三类鱼、即时入箱、防重复抄取/出售、升级、存档和坏主存档的备份恢复。

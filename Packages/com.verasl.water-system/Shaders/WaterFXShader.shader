@@ -1,4 +1,4 @@
-﻿Shader "BoatAttack/WaterFXShader"
+Shader "BoatAttack/WaterFXShader"
 {
 	Properties
 	{
@@ -22,6 +22,7 @@
 			Name "WaterFX"
 			Tags{"LightMode" = "WaterFX"}
 			HLSLPROGRAM
+			#pragma multi_compile_instancing
 			#pragma vertex WaterFXVertex
 			#pragma fragment WaterFXFragment
 			#pragma shader_feature _INVERT_ON
@@ -31,6 +32,7 @@
 			struct Attributes
 			{
 				float3 positionOS : POSITION;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
 				float3 normalOS : NORMAL;
     			float4 tangentOS : TANGENT;
 				half4 color : COLOR;
@@ -45,6 +47,7 @@
     			half4 bitangent : TEXCOORD3;    // xyz: binormal, w: viewDir.z
 				half4 color : TEXCOORD4;
 				float4 vertex : SV_POSITION;
+                UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			sampler2D _MainTex;
@@ -52,6 +55,8 @@
 			Varyings WaterFXVertex (Attributes input)
 			{
 				Varyings output = (Varyings)0;
+                UNITY_SETUP_INSTANCE_ID(input);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 				
 				VertexPositionInputs vertexPosition = GetVertexPositionInputs(input.positionOS.xyz);
                 VertexNormalInputs vertexTBN = GetVertexNormalInputs(input.normalOS, input.tangentOS);
@@ -73,6 +78,7 @@
 			
 			half4 WaterFXFragment (Varyings input) : SV_Target
 			{
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 				half4 col = tex2D(_MainTex, input.uv);
 
 				half foamMask = col.r * input.color.r;

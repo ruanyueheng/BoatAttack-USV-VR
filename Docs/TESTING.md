@@ -69,4 +69,56 @@ The normal generated scene is committed; only regenerate deliberately with Fishi
 The first full player/content build serialized existing URP 14 and Burst assets to their current formats and generated an empty XR settings container (no loader). The Unity, URP and package versions were not changed. Addressables content-state/linker output and player builds are ignored; generic settings/materials and the source scene are tracked.
 
 
-v0.2 adds mouse/gamepad/look focus/pause recovery assertions and live checks that first-/third-person switching preserves the catch phase/inventory and keeps a level horizon. Before teleporting to a fishing area, it checks the initial harbor spawn and 12m forward first-person clearance. It also verifies immediate third-person camera retraction at a newly inserted obstacle, restoration of the previous time scale, staged net deployment, nonzero fish mesh normals and four viewport safe areas. The same FishingSmoke/FishingBuild commands apply; the build now goes to Builds/FishingPrototype-v0.2 to preserve the old player. See FISHING_V02.md for XR boundaries and manual visual/comfort acceptance.
+v0.2 adds mouse/gamepad/look focus/pause recovery assertions and live checks that first-/third-person switching preserves the catch phase/inventory and keeps a level horizon. Before teleporting to a fishing area, it checks the initial harbor spawn and 12m forward first-person clearance. It also verifies immediate third-person camera retraction at a newly inserted obstacle, restoration of the previous time scale, staged net deployment, nonzero fish mesh normals and four viewport safe areas. The same FishingSmoke/FishingBuild commands apply; the v0.2 build went to Builds/FishingPrototype-v0.2; v0.3 now uses its own directory. See FISHING_V02.md for XR boundaries and manual visual/comfort acceptance.
+
+## 5. v0.3 validation (2026-09-27)
+
+The current desktop player is `Builds/FishingPrototype-v0.3/FishingPrototype.exe`. Older build directories are retained. `FishingGenerate` is **not** required: v0.3 scenery and UI are generated at runtime in the existing fishing scene.
+
+Executed locally:
+
+- `dotnet run --project Tools/FishingTests/FishingTests.csproj --configuration Release`: **125 passed**. Includes all nine bait/species combinations, readable windup/rest/surge cycles, invalid bait rejection, atomic mixed-species deliveries, bonus accounting, normal-before-rare consumption, repeat-delivery rejection, persistent discoveries, v1 migration, v2 validation and the old catch/input recovery cases.
+- `dotnet run --project Tools/InputTests/InputTests.csproj --configuration Release`: **62 passed**.
+- Unity `Regression`: **14 passed**, zero failed; `Structure`: input settings and three original scenes passed.
+- Unity `FishingSmoke`: three species with three baits, first-/third-person cameras, journal pause/restore, navigation cycling, bait-change lock during a cast, order delivery, remaining-cargo sale, upgrade, extended save round trip and backup recovery passed.
+- Static procedural scenery budget check: at most 40 combined renderers and 60,000 combined vertices; observed 26 / 34,627, including the old market meshes. LineRenderer, text, island and water are outside this count.
+- A Windows Development Player was built and its explicit autoplay completed the same extended gameplay checks. Test progress uses an isolated temporary save.
+
+Visual QA boundaries:
+
+- The real, foreground Windows player rendered the water/islands and v0.3 first-person main HUD successfully.
+- The hidden-process `-fishing-capture` run produced black images. Those images are **not visual evidence**, even though its gameplay assertions passed. Do not redistribute them as screenshots of the game.
+- OS-injected C/J shortcut checks did not confirm a state change in the observed preview; no claim of full physical keyboard/mouse acceptance is made. The operation-level camera/journal tests did pass. Confirm these keys physically during the next player test.
+- Journal/pause layout, all harbor viewpoints, long routes, movement comfort, gamepad behavior and sustained performance still need interactive review. Aspect-ratio tests check layout bounds, not typography or rendering at every resolution.
+- No PICO loader, tracked rig, PICO tool interaction, ARM64 APK or headset test was performed. Desktop shader compilation is not Vulkan/GLES/Multiview device validation. See FISHING_V03.md for the stereo rendering changes and device checklist.
+
+A reproducible screenshot command remains available, but a genuinely rendering interactive window is required on this machine:
+
+```powershell
+# Run interactively when reviewing the actual Windows viewport:
+./Builds/FishingPrototype-v0.3/FishingPrototype.exe -screen-fullscreen 0 -screen-width 1600 -screen-height 900 -force-d3d11 -fishing-capture ./Builds/FishingV03ManualPreview
+```
+
+The screenshot driver is opt-in; normal game startup does not autoplay. No cloud CI result is implied by the local test results.
+
+Final v0.3 additional regression: original `PlayMode` menu → race → menu → second race, four Addressable boats, countdown and engine re-enable passed. The original racing entry flow remains intact.
+
+## 6. Living bay / v0.3.1 checks (2026-09-27)
+
+The release player now lives in `Builds/FishingPrototype-v0.3.1/`. It uses `BuildOptions.None`, not Development; the single-player feature requires no network access. An earlier Development preview triggered a Windows firewall dialog; the agent did not approve or change firewall settings and closed its own preview process.
+
+- Pure fishing suite: **192 assertions passed** (125 prior + 67 climate/wildlife cases). Includes all five climates × three catchable species, transition lock, pause and nonfinite delta handling, fixed/automatic cycling, chance/wait modifiers, view-cone/distance/occlusion policy, exactly-once wildlife discoveries, no coin farming and old v2 default-field compatibility.
+- Extended Unity `FishingSmoke`: passed five visual climate preset applications, safe fog bounds, cloned-sky lifecycle restoration, 96/32 rain budgets, fixed wildlife population, sight-based turtle discovery, persisted observation, and rejection of observing an unseen ray through an actual collider, plus the complete fishing flow.
+- Original scene dressing: **22 combined renderers / 37,463 vertices**. Ecology: **9 wildlife renderers + 3 habitat meshes / 8,464 unique mesh vertices**. Rain: **96 maximum quads**, only **32 nondegenerate quads** with reduced effects or active XR. These counts exclude the original island/water/boat/tool/text renderers; no device FPS claim is inferred.
+- Found and fixed a zero-delta camera bug during pause/resume in the first living-bay smoke run. That failed run is not counted as a pass. The subsequent smoke run completed cleanly, including exiting Play Mode.
+- A D3D11 Windows player/content build compiled the custom palette shader successfully. This does not prove Vulkan/GLES/Multiview output on a PICO headset.
+
+Manual review focus: weather brightness and rain visibility; marine animal shapes and path placement; the new journal tab and clickable toolbar; relative UI readability at smaller resolutions; animal observation from first-person; sound level and comfort. Test weather changes from pause, resume for the 12-second transition, then pause again before selecting another preset. Do not accept hidden-window black captures as screenshots.
+
+### Off-screen render evidence
+
+`-fishing-capture <directory>` now also writes `scene-*.png`, `wildlife-*.png` and `weather-*.png` using an explicit camera → RenderTexture render, with camera target/pose and temporary resources restored afterward. This works when the normal desktop backbuffer is black. It is opt-in automation only; the normal game does not capture files.
+
+These are actual D3D11 scene/model renders, **not HUD screenshots**. The sky/lights/water/new meshes can be inspected without granting network access or operating a Windows security dialog. Complete UI/keyboard/gamepad acceptance still requires an interactive review. The Windows firewall prompt was not approved or modified by the agent.
+
+Final image QA additionally caught and corrected the island sky property's `_SkyTint`/`_Tint` mismatch and excessive inherited exposure (4). Fishing's cloned sky caps exposure at 1.4; original assets are unchanged. Vertex palettes now explicitly convert sRGB to linear, and rain streaks use a light unlit palette instead of dark lit geometry. The sky cap is asserted in the live acceptance driver.

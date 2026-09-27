@@ -30,6 +30,8 @@ namespace WaterSystem
             {
                 // no need for a depth buffer
                 cameraTextureDescriptor.depthBufferBits = 0;
+                cameraTextureDescriptor.msaaSamples = 1; // sampled texture, not an MSAA color attachment
+                cameraTextureDescriptor.bindMS = false;
                 // Half resolution
                 cameraTextureDescriptor.width /= 2;
                 cameraTextureDescriptor.height /= 2;
@@ -37,7 +39,7 @@ namespace WaterSystem
                 cameraTextureDescriptor.colorFormat = RenderTextureFormat.Default;
                 // get a temp RT for rendering into
                 cmd.GetTemporaryRT(m_WaterFX.id, cameraTextureDescriptor, FilterMode.Bilinear);
-                ConfigureTarget(m_WaterFX.Identifier());
+                ConfigureTarget(new RenderTargetIdentifier(m_WaterFX.id, 0, CubemapFace.Unknown, -1));
                 // clear the screen with a specific color for the packed data
                 ConfigureClear(ClearFlag.Color, m_ClearColor);
             }
@@ -83,7 +85,7 @@ namespace WaterSystem
             {
                 var cam = renderingData.cameraData.camera;
                 // Stop the pass rendering in the preview or material missing
-                if (cam.cameraType == CameraType.Preview || !WaterCausticMaterial)
+                if (cam.cameraType == CameraType.Preview || cam.stereoEnabled || !WaterCausticMaterial)
                     return;
 
                 CommandBuffer cmd = CommandBufferPool.Get();
