@@ -27,7 +27,7 @@ namespace BoatAttack.Fishing
             if(Completed || Failure!=null)return;
             try
             {
-                if(Time.realtimeSinceStartup-_started>150f)throw new Exception("Fishing automation timed out, phase "+Controller.Session.Phase);
+                if(Time.realtimeSinceStartup-_started>210f)throw new Exception("Fishing automation timed out, phase "+Controller.Session.Phase);
                 switch(_stage)
                 {
                     case -2:
@@ -53,7 +53,15 @@ namespace BoatAttack.Fishing
                         if(Controller.Paused || Time.timeScale!=0.5f)throw new Exception("Resume did not restore prior time scale.");
                         Time.timeScale=1f;
                         if(_fishCount==0)ValidateCameraObstruction();
-                        if(!Controller.Cast())throw new Exception("Could not cast.");_stage=1;break;
+                        Controller.ToggleJournal();
+                        if(!Controller.Paused || !Controller.JournalOpen)throw new Exception("Journal did not pause simulation.");
+                        Controller.ToggleJournal();
+                        if(Controller.Paused || Controller.JournalOpen || Time.timeScale!=1f)throw new Exception("Journal did not restore simulation.");
+                        if(_fishCount>0)Controller.CycleBait();
+                        if(!Controller.Cast())throw new Exception("Could not cast.");
+                        var bait=Controller.Bait;Controller.CycleBait();
+                        if(Controller.Bait!=bait)throw new Exception("Bait changed during an active cast.");
+                        _stage=1;break;
                     case 1:
                         if(Controller.Session.Phase==CatchPhase.Bite)Controller.Hook();
                         Controller.AutomationReel=Controller.Session.Tension<0.6f;
@@ -101,11 +109,16 @@ namespace BoatAttack.Fishing
                     case 3:
                         if(Time.realtimeSinceStartup<_captureAt)return;
                         int value=Controller.Career.HoldValue;
-                        if(Controller.Sell()!=value || value<48 || Controller.Career.Count!=0)throw new Exception("Sale failed.");
+                        if(value<48 || !Controller.Career.OrderReady)throw new Exception("Mixed-species order not ready.");
+                        int payout=Controller.DeliverOrder();
+                        if(payout<=24 || Controller.Career.Count!=1 || Controller.Career.OrdersCompleted!=1)throw new Exception("Order delivery failed.");
+                        if(Controller.DeliverOrder()!=0)throw new Exception("Duplicate order paid twice.");
+                        int remaining=Controller.Sell();
+                        if(payout+remaining!=value+24 || Controller.Career.Count!=0)throw new Exception("Order/sale total failed.");
                         if(Controller.Sell()!=0)throw new Exception("Duplicate sale paid twice.");
                         if(!Controller.BuyUpgrade() || Controller.Career.RodLevel!=1)throw new Exception("Upgrade failed.");
                         var reloaded=FishingSaveStore.Load(Controller.SavePath,out var note);
-                        if(reloaded.Coins!=Controller.Career.Coins || reloaded.RodLevel!=1 || reloaded.Count!=0 || note.Length>0)throw new Exception("Save round trip failed.");
+                        if(reloaded.Coins!=Controller.Career.Coins || reloaded.RodLevel!=1 || reloaded.Count!=0 || reloaded.OrdersCompleted!=1 || reloaded.Catches!=3 || reloaded.DiscoveryMask!=Controller.Career.DiscoveryMask || note.Length>0)throw new Exception("Save round trip failed.");
                         // Force a backup and verify recovery in the isolated test save, never player progress.
                         FishingSaveStore.Save(Controller.SavePath,Controller.Career);
                         File.WriteAllText(Controller.SavePath,"corrupt test payload");
@@ -180,6 +193,11 @@ namespace BoatAttack.Fishing
                     if(float.IsNaN(normal.sqrMagnitude) || normal.sqrMagnitude<0.5f)throw new Exception("Fish contains invalid/cancelled surface normals.");
             }
             if(fishMeshes<3)throw new Exception("Three modeled species must be present in market display.");
+            var scenery=Controller.GetComponent<FishingScenery>();
+            if(scenery==null || scenery.CombinedRenderers>40 || scenery.CombinedVertices>60000)throw new Exception("V03 added scenery exceeded its static geometry budget.");
+            if(Controller.GetComponent<FishingWorldInstruments>()==null || FishingWorldInstruments.ReferenceDistance<2f)throw new Exception("World instrument comfort setup missing.");
+            int target=Controller.NavigationTarget;for(int i=0;i<4;i++)Controller.CycleNavigation();
+            if(Controller.NavigationTarget!=target)throw new Exception("Navigation cycle failed.");
             Debug.Log("[FISHING] Presentation checks: 4 viewport safe areas, readable sign orientation, fish surface normals.");
         }
         private IEnumerator Capture(string name)
@@ -193,8 +211,20 @@ namespace BoatAttack.Fishing
         private IEnumerator Finish()
         {
             yield return Capture("05-harbor.png");
+            Controller.ToggleJournal();
+            if(!Controller.Paused || !Controller.JournalOpen)throw new Exception("Journal capture state failed.");
+            if(!string.IsNullOrEmpty(_captureDirectory))yield return new WaitForSecondsRealtime(0.4f);
+            yield return Capture("06-journal.png");
+            Controller.ToggleJournal();Controller.TogglePause();
+            if(!string.IsNullOrEmpty(_captureDirectory))yield return new WaitForSecondsRealtime(0.4f);
+            yield return Capture("07-comfort-settings.png");
+            Controller.TogglePause();Controller.ToggleInstruments();
+            if(!Controller.FirstPerson)Controller.ToggleView();
+            if(!string.IsNullOrEmpty(_captureDirectory))yield return new WaitForSecondsRealtime(0.5f);
+            yield return Capture("08-world-instruments.png");
+            Controller.ToggleInstruments();
             if(!string.IsNullOrEmpty(_captureDirectory))yield return new WaitForSecondsRealtime(1.5f);
-            Completed=true;Debug.Log("[FISHING] PASS: 3 species, both views, immediate camera obstruction recovery, level horizon, pause/time-scale recovery, net staging, mesh normals, HUD safe areas, inventory, sale, upgrade, save and backup recovery. Automation did not test real input or VR.");
+            Completed=true;Debug.Log("[FISHING] PASS: 3 species, both views, immediate camera obstruction recovery, level horizon, pause/time-scale recovery, net staging, mesh normals, HUD safe areas, inventory, three baits, order delivery, discovery persistence, journal pause, navigation, geometry budget, sale, upgrade, save and backup recovery. Automation did not test real input or VR.");
             if(!Application.isEditor)Application.Quit(0);
         }
         private void CaptureError(string message,string stack,LogType type)

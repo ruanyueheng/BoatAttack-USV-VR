@@ -89,17 +89,20 @@ half3 SampleReflections(half3 normalWS, half3 viewDirectionWS, half2 screenUV, h
     half3 reflectVector = reflect(-viewDirectionWS, normalWS);
     reflection = GlossyEnvironmentReflection(reflectVector, 0, 1);
 #elif _REFLECTION_PLANARREFLECTION
-
-    // get the perspective projection
-    float2 p11_22 = float2(unity_CameraInvProjection._11, unity_CameraInvProjection._22) * 10;
-    // conver the uvs into view space by "undoing" projection
-    float3 viewDir = -(float3((screenUV * 2 - 1) / p11_22, -1));
-
-    half3 viewNormal = mul(normalWS, (float3x3)GetWorldToViewMatrix()).xyz;
-    half3 reflectVector = reflect(-viewDir, viewNormal);
-
-    half2 reflectionUV = screenUV + normalWS.zx * half2(0.02, 0.15);
-    reflection += SAMPLE_TEXTURE2D_LOD(_PlanarReflectionTexture, sampler_ScreenTextures_linear_clamp, reflectionUV, 6 * roughness).rgb;//planar reflection
+    // The old planar target is mono: both single-pass and multi-pass stereo
+    // use an environment probe rather than sharing a single-eye projection.
+    half3 reflectVector = reflect(-viewDirectionWS, normalWS);
+#if defined(UNITY_STEREO_INSTANCING_ENABLED) || defined(UNITY_STEREO_MULTIVIEW_ENABLED) || defined(UNITY_SINGLE_PASS_STEREO)
+    reflection = GlossyEnvironmentReflection(reflectVector, roughness, 1);
+#else
+    if (_WaterStereoCamera > 0.5)
+        reflection = GlossyEnvironmentReflection(reflectVector, roughness, 1);
+    else
+    {
+        half2 reflectionUV = screenUV + normalWS.zx * half2(0.02, 0.15);
+        reflection = SAMPLE_TEXTURE2D_LOD(_PlanarReflectionTexture, sampler_ScreenTextures_linear_clamp, reflectionUV, 6 * roughness).rgb;
+    }
+#endif
 #endif
     //do backup
     //return reflectVector.yyy;

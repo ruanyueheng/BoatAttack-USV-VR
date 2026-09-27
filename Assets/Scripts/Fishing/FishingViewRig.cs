@@ -49,7 +49,7 @@ namespace BoatAttack.Fishing
                 _lookPitch = Mathf.Clamp(_lookPitch - delta.y * 0.12f, -45f, 50f);
             }
             if (_reset || teleported) { _waterY = boat.position.y; _waterVelocity = 0f; _velocity = Vector3.zero; }
-            _waterY = Mathf.SmoothDamp(_waterY, boat.position.y, ref _waterVelocity, 0.6f);
+            _waterY = Mathf.SmoothDamp(_waterY, boat.position.y, ref _waterVelocity, c.ComfortMode ? 2.5f : 0.6f);
             var stableOrigin = new Vector3(boat.position.x, _waterY, boat.position.z);
             if (FirstPerson)
             {

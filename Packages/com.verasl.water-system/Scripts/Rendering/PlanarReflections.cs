@@ -242,6 +242,8 @@ namespace UnityEngine.Rendering.Universal
             if (camera.cameraType == CameraType.Reflection || camera.cameraType == CameraType.Preview)
                 return;
 
+            Shader.SetGlobalFloat("_WaterStereoCamera", camera.stereoEnabled ? 1f : 0f);
+            if (camera.stereoEnabled) return; // Water shader falls back to probes in XR.
             UpdateReflectionCamera(camera); // create reflected camera
             PlanarReflectionTexture(camera); // create and assign RenderTexture
 

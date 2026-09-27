@@ -69,4 +69,36 @@ The normal generated scene is committed; only regenerate deliberately with Fishi
 The first full player/content build serialized existing URP 14 and Burst assets to their current formats and generated an empty XR settings container (no loader). The Unity, URP and package versions were not changed. Addressables content-state/linker output and player builds are ignored; generic settings/materials and the source scene are tracked.
 
 
-v0.2 adds mouse/gamepad/look focus/pause recovery assertions and live checks that first-/third-person switching preserves the catch phase/inventory and keeps a level horizon. Before teleporting to a fishing area, it checks the initial harbor spawn and 12m forward first-person clearance. It also verifies immediate third-person camera retraction at a newly inserted obstacle, restoration of the previous time scale, staged net deployment, nonzero fish mesh normals and four viewport safe areas. The same FishingSmoke/FishingBuild commands apply; the build now goes to Builds/FishingPrototype-v0.2 to preserve the old player. See FISHING_V02.md for XR boundaries and manual visual/comfort acceptance.
+v0.2 adds mouse/gamepad/look focus/pause recovery assertions and live checks that first-/third-person switching preserves the catch phase/inventory and keeps a level horizon. Before teleporting to a fishing area, it checks the initial harbor spawn and 12m forward first-person clearance. It also verifies immediate third-person camera retraction at a newly inserted obstacle, restoration of the previous time scale, staged net deployment, nonzero fish mesh normals and four viewport safe areas. The same FishingSmoke/FishingBuild commands apply; the v0.2 build went to Builds/FishingPrototype-v0.2; v0.3 now uses its own directory. See FISHING_V02.md for XR boundaries and manual visual/comfort acceptance.
+
+## 5. v0.3 validation (2026-09-27)
+
+The current desktop player is `Builds/FishingPrototype-v0.3/FishingPrototype.exe`. Older build directories are retained. `FishingGenerate` is **not** required: v0.3 scenery and UI are generated at runtime in the existing fishing scene.
+
+Executed locally:
+
+- `dotnet run --project Tools/FishingTests/FishingTests.csproj --configuration Release`: **125 passed**. Includes all nine bait/species combinations, readable windup/rest/surge cycles, invalid bait rejection, atomic mixed-species deliveries, bonus accounting, normal-before-rare consumption, repeat-delivery rejection, persistent discoveries, v1 migration, v2 validation and the old catch/input recovery cases.
+- `dotnet run --project Tools/InputTests/InputTests.csproj --configuration Release`: **62 passed**.
+- Unity `Regression`: **14 passed**, zero failed; `Structure`: input settings and three original scenes passed.
+- Unity `FishingSmoke`: three species with three baits, first-/third-person cameras, journal pause/restore, navigation cycling, bait-change lock during a cast, order delivery, remaining-cargo sale, upgrade, extended save round trip and backup recovery passed.
+- Static procedural scenery budget check: at most 40 combined renderers and 60,000 combined vertices; observed 26 / 34,627, including the old market meshes. LineRenderer, text, island and water are outside this count.
+- A Windows Development Player was built and its explicit autoplay completed the same extended gameplay checks. Test progress uses an isolated temporary save.
+
+Visual QA boundaries:
+
+- The real, foreground Windows player rendered the water/islands and v0.3 first-person main HUD successfully.
+- The hidden-process `-fishing-capture` run produced black images. Those images are **not visual evidence**, even though its gameplay assertions passed. Do not redistribute them as screenshots of the game.
+- OS-injected C/J shortcut checks did not confirm a state change in the observed preview; no claim of full physical keyboard/mouse acceptance is made. The operation-level camera/journal tests did pass. Confirm these keys physically during the next player test.
+- Journal/pause layout, all harbor viewpoints, long routes, movement comfort, gamepad behavior and sustained performance still need interactive review. Aspect-ratio tests check layout bounds, not typography or rendering at every resolution.
+- No PICO loader, tracked rig, PICO tool interaction, ARM64 APK or headset test was performed. Desktop shader compilation is not Vulkan/GLES/Multiview device validation. See FISHING_V03.md for the stereo rendering changes and device checklist.
+
+A reproducible screenshot command remains available, but a genuinely rendering interactive window is required on this machine:
+
+```powershell
+# Run interactively when reviewing the actual Windows viewport:
+./Builds/FishingPrototype-v0.3/FishingPrototype.exe -screen-fullscreen 0 -screen-width 1600 -screen-height 900 -force-d3d11 -fishing-capture ./Builds/FishingV03ManualPreview
+```
+
+The screenshot driver is opt-in; normal game startup does not autoplay. No cloud CI result is implied by the local test results.
+
+Final v0.3 additional regression: original `PlayMode` menu → race → menu → second race, four Addressable boats, countdown and engine re-enable passed. The original racing entry flow remains intact.
