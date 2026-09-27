@@ -62,6 +62,32 @@ internal static class Program
             for(int i=0;i<3000 && noLanding.Phase==CatchPhase.Fighting;i++)noLanding.Tick(0.02f,noLanding.Tension<0.6f);
             for(int i=0;i<600;i++)noLanding.Tick(0.02f,false);
             Check(noLanding.Phase==CatchPhase.Escaped,"Landing deadline enforced");
+            var gate=new FishingPointerGate();
+            Check(!gate.Update(true,false,true,false),"Held pointer suppressed on startup");
+            Check(gate.Update(true,false,false,false),"Release arms pointer");
+            Check(gate.Update(true,false,true,false),"Normal held reeling accepted");
+            Check(!gate.Update(false,false,true,false),"Focus loss clears pointer");
+            Check(!gate.Update(true,false,true,false),"Focus recovery with held button stays neutral");
+            Check(!gate.Update(true,false,false,true),"Held look button also requires release");
+            Check(gate.Update(true,false,false,false),"Both buttons released restore input");
+            Check(!gate.Update(true,true,false,false),"Pause clears pointer");
+            Check(!gate.Update(true,false,true,false),"Resume cannot reuse held reel");
+            Check(gate.Update(true,false,false,false),"Resume release permits next click");
+            gate.Reset();Check(!gate.Ready,"Explicit pointer reset");
+            var padGate=new FishingPointerGate();
+            Check(!padGate.Update(true,false,false,true),"Held gamepad trigger suppressed on startup");
+            Check(padGate.Update(true,false,false,false),"Released gamepad controls arm independently");
+            Check(padGate.Update(true,false,true,false),"New shoulder press accepted");
+            Check(!padGate.Update(true,true,true,true),"Pause clears gamepad controls");
+            Check(!padGate.Update(true,false,false,true),"Held trigger cannot resume reeling");
+            Check(padGate.Update(true,false,false,false),"Release rearms trigger");
+            Check(!padGate.Update(false,false,false,false),"Focus loss disarms gamepad even with neutral trigger");
+            Check(!padGate.Update(true,false,true,false),"Focus recovery with held shoulder cannot cast");
+            var lookGate=new FishingPointerGate();
+            Check(lookGate.Update(true,false,false,false),"Neutral look input arms");
+            Check(lookGate.Update(true,false,false,true),"Fresh look drag accepted");
+            lookGate.Reset();Check(!lookGate.Update(true,false,false,true),"Look drag cannot jump on resume");
+            Check(lookGate.Update(true,false,false,false),"Look release rearms drag");
             Console.WriteLine("TOTAL: "+count+" passed. Pure fishing rules only.");return 0;
         }
         catch(Exception ex){Console.Error.WriteLine(ex);return 1;}

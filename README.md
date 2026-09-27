@@ -1,8 +1,9 @@
 # BoatAttack USV VR — team development
 
-This fork builds on Unity's Boat Attack. Baseline: **Unity 2022.3.62f1 / URP 14.0.12**. Desktop and XR input share a common interface; a complete PICO game is **not yet validated**. A first desktop fishing prototype is now available; it is not a finished VR build.
+This fork builds on Unity's Boat Attack. Baseline: **Unity 2022.3.62f1 / URP 14.0.12**. Desktop and XR input share a common interface; a complete PICO game is **not yet validated**. A v0.2 desktop fishing prototype with detailed procedural props and switchable first-/third-person views is available; it is not a finished VR build.
 
 - [Play the fishing prototype / 捕鱼试玩说明](Docs/FISHING_PROTOTYPE.md)
+- [v0.2 modeling, presentation and first-person desktop view](Docs/FISHING_V02.md)
 - [Current integration status](Docs/INTEGRATION_STATUS.md)
 - [Reproduced fixes and remaining risks](Docs/PROJECT_HEALTH_CHECK.md)
 - [Team collaboration and synchronization](Docs/TEAM_COLLABORATION.md)

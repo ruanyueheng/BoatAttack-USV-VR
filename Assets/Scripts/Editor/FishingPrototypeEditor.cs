@@ -59,13 +59,13 @@ namespace BoatAttack.EditorTools
                 mode.fishingSpots=new Vector3[3];
                 for(int i=0;i<3;i++){mode.fishingSpots[i]=ClearWater(seeds[i],15f,reserved.ToArray());reserved.Add(mode.fishingSpots[i]);}
                 mode.fishingSpots=mode.fishingSpots.OrderBy(p=>FishingPrototype.FlatDistance(p,mode.spawnPosition)).ToArray();
-                mode.wood=Material("Dock wood",new Color(0.42f,0.26f,0.14f));
-                mode.cream=Material("Warm cream",new Color(0.98f,0.94f,0.8f));
+                mode.wood=Material("Dock wood",new Color(0.36f,0.23f,0.12f));
+                mode.cream=Material("Warm cream",new Color(0.90f,0.86f,0.72f));
                 mode.dark=Material("Tool charcoal",new Color(0.055f,0.11f,0.14f));
-                mode.orange=Material("Signal amber",new Color(1f,0.58f,0.12f));
-                mode.teal=Material("Harbor teal",new Color(0.03f,0.7f,0.57f));
+                mode.orange=Material("Signal amber",new Color(0.90f,0.46f,0.10f));
+                mode.teal=Material("Harbor teal",new Color(0.035f,0.42f,0.35f));
                 mode.lineMaterial=Material("Fishing line",new Color(0.9f,0.95f,0.85f));
-                mode.fishMaterials=new[]{Material("Coral fish",new Color(0.98f,0.32f,0.18f)),Material("Dart fish",new Color(0.07f,0.55f,0.78f)),Material("Puffer fish",new Color(0.79f,0.70f,0.15f))};
+                mode.fishMaterials=new[]{Material("Coral fish",new Color(0.92f,0.22f,0.08f)),Material("Dart fish",new Color(0.045f,0.38f,0.61f)),Material("Puffer fish",new Color(0.74f,0.54f,0.12f))};
                 EditorSceneManager.SaveScene(scene,ScenePath);
                 var buildScenes=EditorBuildSettings.scenes.ToList();if(!buildScenes.Any(s=>s.path==ScenePath))buildScenes.Add(new EditorBuildSettingsScene(ScenePath,true));EditorBuildSettings.scenes=buildScenes.ToArray();
                 AssetDatabase.SaveAssets();
@@ -106,7 +106,7 @@ namespace BoatAttack.EditorTools
             string path="Assets/Objects/FishingPrototype/Materials/"+name+".mat";
             var material=AssetDatabase.LoadAssetAtPath<Material>(path);
             if(material==null){material=new Material(Shader.Find("Universal Render Pipeline/Lit"));AssetDatabase.CreateAsset(material,path);}
-            material.SetColor("_BaseColor",color);material.SetFloat("_Smoothness",0.25f);EditorUtility.SetDirty(material);return material;
+            material.SetColor("_BaseColor",color);material.SetFloat("_Smoothness",name.Contains("fish")?0.4f:0.22f);EditorUtility.SetDirty(material);return material;
         }
         public static void Build()
         {
@@ -115,7 +115,7 @@ namespace BoatAttack.EditorTools
                 if(!File.Exists(ScenePath))throw new Exception("Generate the fishing scene first.");
                 AddressableAssetSettings.BuildPlayerContent(out var content);
                 if(!string.IsNullOrEmpty(content.Error))throw new Exception("Addressables: "+content.Error);
-                string output=Path.GetFullPath("Builds/FishingPrototype/FishingPrototype.exe");Directory.CreateDirectory(Path.GetDirectoryName(output));
+                string output=Path.GetFullPath("Builds/FishingPrototype-v0.2/FishingPrototype.exe");Directory.CreateDirectory(Path.GetDirectoryName(output));
                 var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{ScenePath},locationPathName=output,target=BuildTarget.StandaloneWindows64,options=BuildOptions.Development});
                 if(report.summary.result!=BuildResult.Succeeded)throw new Exception("Build failed: "+report.summary.result);
                 Debug.Log("[FISHING] PASS: Windows prototype built: "+output);EditorApplication.Exit(0);
