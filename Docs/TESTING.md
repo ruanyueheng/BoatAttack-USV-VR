@@ -54,7 +54,7 @@ PICO loader/rig, ARM64 APK and device acceptance remain separate. Do not tick th
 
 ## 4. Fishing prototype (2026-09-25)
 
-The separate prototype adds 50 hardware-free catch/economy assertions:
+The separate prototype adds 73 hardware-free catch/economy/input-recovery assertions:
 
 ```powershell
 dotnet run --project Tools/FishingTests/FishingTests.csproj --configuration Release
@@ -67,3 +67,6 @@ The same Windows/Linux CI job runs the fishing rules as well as the original 62 
 The normal generated scene is committed; only regenerate deliberately with FishingGenerate, because custom edits to that generated scene are replaced. Runtime art is original procedural geometry. No commercial How to Fish assets are included. See FISHING_PROTOTYPE.md for player controls, visual scope and current limitations.
 
 The first full player/content build serialized existing URP 14 and Burst assets to their current formats and generated an empty XR settings container (no loader). The Unity, URP and package versions were not changed. Addressables content-state/linker output and player builds are ignored; generic settings/materials and the source scene are tracked.
+
+
+v0.2 adds mouse/gamepad/look focus/pause recovery assertions and live checks that first-/third-person switching preserves the catch phase/inventory and keeps a level horizon. Before teleporting to a fishing area, it checks the initial harbor spawn and 12m forward first-person clearance. It also verifies immediate third-person camera retraction at a newly inserted obstacle, restoration of the previous time scale, staged net deployment, nonzero fish mesh normals and four viewport safe areas. The same FishingSmoke/FishingBuild commands apply; the build now goes to Builds/FishingPrototype-v0.2 to preserve the old player. See FISHING_V02.md for XR boundaries and manual visual/comfort acceptance.

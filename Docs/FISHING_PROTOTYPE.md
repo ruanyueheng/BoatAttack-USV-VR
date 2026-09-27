@@ -1,4 +1,6 @@
-# 怪鱼航线 — 第一版桌面试玩
+# 怪鱼航线 — 桌面试玩（当前 v0.2）
+
+模型与第一人称更新见 [FISHING_V02.md](FISHING_V02.md)。下文基础捕捞循环仍适用。
 
 本版本是基于 BoatAttack 的独立捕鱼灰盒，不是《How to Fish》的资源移植。鱼、鱼竿、抄网、鱼箱、市场小站和提示音均由本项目代码生成；海岛、船只、水面和原有环境素材沿用 BoatAttack，保留其授权与署名。
 
@@ -6,7 +8,7 @@
 
 - Unity 2022.3.62f1：菜单 **BoatAttack > Fishing > Open prototype**，然后按 Play。
 - 或直接打开 `Assets/scenes/Fishing/fishing_Island.unity`。
-- Windows 试玩程序构建位置：`Builds/FishingPrototype/FishingPrototype.exe`。运行时必须保留相邻 Data 文件夹和 DLL，不能只复制 exe。
+- Windows 试玩程序构建位置：`Builds/FishingPrototype-v0.2/FishingPrototype.exe`。运行时必须保留相邻 Data 文件夹和 DLL，不能只复制 exe。
 - 普通启动是玩家模式；没有自动驾驶/自动收鱼。命令行自动演示只用于验收和截图。
 
 ## 第一段体验
@@ -28,6 +30,7 @@
 - Q：取消当前捕捞并起航。
 - U：在港口升级鱼线。
 - R：救援回港，已入箱鱼和金币保留。这是灰盒便利功能，尚未做航行成本平衡。
+- C：第一/第三人称切换；按住右键环顾；V 视线回正；H 简洁界面。
 - F / Esc：暂停/恢复。关闭窗口退出桌面试玩。
 
 ## 已实现范围
@@ -80,9 +83,9 @@ FishingSmoke 在真正的 Play Mode 中自动完成三种鱼捕获、入箱、�
 - 临时日志、截图、可执行程序和 Addressables 构建状态不提交到 Git。不要从 Windows 包直接推断 Android 或 VR 兼容性。
 
 
-## 收尾验证（2026-09-26）
+## 收尾验证（2026-09-27）
 
-- 50 项捕鱼逻辑断言、62 项原输入/渲染策略断言；GitHub CI 执行同一组代码。
+- 73 项捕鱼/鼠标、手柄与环顾恢复逻辑断言、62 项原输入/渲染策略断言；GitHub CI 执行同一组代码。
 - 捕鱼 Play Mode 自动验收覆盖三类鱼、即时入箱、防重复抄取/出售、升级、存档和坏主存档的备份恢复。
 - 原竞速的两次比赛启动/返回菜单、14 项组件回归及场景结构检查独立运行。
 - 独立 Windows Player 使用 Direct3D 11 正常渲染，已查看捕鱼与渔港截图。首次隐藏窗口截图为黑屏，因此不拿隐藏截图作为画面验收；使用实际显示窗口复核。

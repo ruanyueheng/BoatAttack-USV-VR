@@ -6,6 +6,7 @@ using Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 
 namespace BoatAttack.Fishing
@@ -27,6 +28,9 @@ namespace BoatAttack.Fishing
         public bool Anchored { get; private set; }
         public bool Paused { get; private set; }
         public bool Automated { get; private set; }
+        public FishingViewRig View { get; private set; }
+        public bool FirstPerson => View != null && View.FirstPerson;
+        public bool ShowDetails { get; private set; } = true;
         public bool AutomationReel { get; set; }
         public int Spot { get; private set; }
         public string Message { get; private set; }
@@ -38,12 +42,12 @@ namespace BoatAttack.Fishing
         public bool AtHarbor => HarborDistance < 22f && Speed < 3f && !Anchored;
         public float SpotDistance { get; private set; }
         private USVInputRouter _input;
-        private Vector3 _anchor, _cameraVelocity, _catchStart;
+        private Vector3 _anchor, _catchStart;
         private Quaternion _anchorRotation;
         private readonly List<Object> _owned = new List<Object>();
         private readonly List<GameObject> _storedFish = new List<GameObject>();
         private GameObject _fish, _bobber;
-        private Transform _rodTip, _net, _box;
+        private Transform _rodTip, _net, _box, _reelCrank;
         private LineRenderer _line;
         private float _netMotion, _caughtAt, _messageUntil;
         private CatchPhase _previousPhase;
@@ -51,6 +55,12 @@ namespace BoatAttack.Fishing
         private AudioClip _biteTone, _successTone;
         private bool _recorded, _initialized;
         private int _previousTargetFrameRate = -1;
+        private float _resumeTimeScale = 1f;
+        private bool _reeling;
+        private readonly FishingPointerGate _pointerGate = new FishingPointerGate();
+        private readonly FishingPointerGate _gamepadGate = new FishingPointerGate();
+        private float _netDeployment;
+        public bool NetDeployed => _netDeployment > 0.95f;
 
         private void Start()
         {
@@ -66,6 +76,9 @@ namespace BoatAttack.Fishing
             Player=Instantiate(boatPrefab,spawnPosition,spawnRotation);
             Player.name="Fishing player boat";Player.ParticipateInRaces=false;
             Player.Setup(1,true,new BoatLivery {primaryColor=new Color(0.05f,0.65f,0.65f),trimColor=new Color(1f,0.58f,0.14f)});
+            // Buoyancy initialization temporarily moves the prefab to the origin for voxel sampling.
+            // Restore both the interpolated Rigidbody and Transform before the first physics step.
+            Teleport(spawnPosition,spawnRotation);
             // Exactly one driver applies forces: fishing mode uses the shared input router.
             Player.GetComponent<HumanController>().enabled=false;
             if(Player.cam!=null)Player.cam.gameObject.SetActive(false);
@@ -75,10 +88,12 @@ namespace BoatAttack.Fishing
             viewCamera.transform.SetPositionAndRotation(spawnPosition-spawnRotation*Vector3.forward*12f+Vector3.up*7f,
                 Quaternion.LookRotation(spawnRotation*Vector3.forward*16f-Vector3.up*5f));
             BuildWorld(); BuildEquipment();
+            View=gameObject.AddComponent<FishingViewRig>();View.Controller=this;
+            ConfigurePresentation();
             _feedback=gameObject.AddComponent<AudioSource>();_feedback.spatialBlend=0f;_feedback.volume=0.45f;
             _biteTone=Tone(780f,0.13f);_successTone=Tone(1150f,0.2f);
             gameObject.AddComponent<FishingHUD>().Controller=this;
-            Notice(string.IsNullOrEmpty(warning)?"欢迎船长！先驶向黄色浮标，在渔区内减速后按 E 停船。":warning,10f);
+            Notice(string.IsNullOrEmpty(warning)?"欢迎船长！C 切换视角，按住右键环顾。驶向浮标渔区，减速后按 E 停船。":warning,10f);
             _initialized=true;
             if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
             Debug.Log("[FISHING] Prototype initialized. Original procedural fish; desktop preview only.");
@@ -89,20 +104,29 @@ namespace BoatAttack.Fishing
             if(!_initialized)return;
             var k=Keyboard.current;var m=Mouse.current;var g=Gamepad.current;
             bool focused=Automated || Application.isFocused;
-            if(!Automated && _input.Current.pause) { Paused=!Paused;Time.timeScale=Paused?0f:1f; }
+            if(!Automated && _input.Current.pause) TogglePause();
+            bool leftHeld=m!=null && m.leftButton.isPressed;
+            bool rightHeld=m!=null && m.rightButton.isPressed;
+            bool pointerReady=_pointerGate.Update(focused,Paused,leftHeld,rightHeld);
+            bool gamepadReady=_gamepadGate.Update(focused,Paused,g!=null && g.rightShoulder.isPressed,g!=null && g.rightTrigger.ReadValue()>0.5f);
             if(!Paused && focused && !Automated)
             {
+                if(k!=null && k.cKey.wasPressedThisFrame)ToggleView();
+                if(k!=null && k.vKey.wasPressedThisFrame)View.ResetLook();
+                if(k!=null && k.hKey.wasPressedThisFrame)ShowDetails=!ShowDetails;
                 if(_input.Current.reset)ReturnToHarbor();
                 if(k!=null && k.qKey.wasPressedThisFrame)LeaveStation();
                 if(k!=null && k.uKey.wasPressedThisFrame)BuyUpgrade();
                 if(_input.Current.interact)Interact();
-                bool press=(m!=null && m.leftButton.wasPressedThisFrame) || (g!=null && g.rightShoulder.wasPressedThisFrame);
+                bool press=(pointerReady && !rightHeld && m!=null && m.leftButton.wasPressedThisFrame) || (gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame);
                 if(press && Anchored){if(Session.Phase==CatchPhase.Bite)Hook();else Cast();}
             }
             UpdateNearestSpot();
+            _reeling=false;
             if(Anchored && !Paused && focused)
             {
-                bool reel=Automated?AutomationReel:(m!=null && m.leftButton.isPressed)||(g!=null && g.rightTrigger.ReadValue()>0.5f);
+                bool reel=Automated?AutomationReel:(pointerReady && !rightHeld && leftHeld)||(gamepadReady && g!=null && g.rightTrigger.ReadValue()>0.5f);
+                _reeling=reel && Session.Phase==CatchPhase.Fighting;
                 Session.Tick(Time.deltaTime,reel);
                 if(Session.Phase!=_previousPhase)
                 {
@@ -117,7 +141,7 @@ namespace BoatAttack.Fishing
 
         private void FixedUpdate()
         {
-            if(!_initialized)return;
+            if(!_initialized || Paused)return;
             var rb=Player.engine.RB;
             if(Anchored)
             {
@@ -140,32 +164,43 @@ namespace BoatAttack.Fishing
 
         private void LateUpdate()
         {
-            if(!_initialized)return;
-            var t=Player.transform;
-            var yaw=Quaternion.Euler(0,t.eulerAngles.y,0);
-            Vector3 position,look;
-            if(Anchored)
-            {
-                position=t.position+yaw*new Vector3(-6.3f,7.0f,-5.0f);
-                look=t.position+yaw*new Vector3(2.7f,0.8f,1.0f);
-            }
-            else if(HarborDistance<25f)
-            {
-                position=t.position+yaw*new Vector3(-5,9,-13);
-                look=Vector3.Lerp(t.position,harbor,0.5f)+Vector3.up;
-            }
-            else
-            {
-                position=t.position+yaw*new Vector3(0,7.5f,-12.5f);
-                look=t.position+yaw*new Vector3(0,0.7f,5f);
-            }
-            viewCamera.transform.position=Vector3.SmoothDamp(viewCamera.transform.position,position,ref _cameraVelocity,0.35f);
-            viewCamera.transform.rotation=Quaternion.Slerp(viewCamera.transform.rotation,Quaternion.LookRotation(look-viewCamera.transform.position),Time.unscaledDeltaTime*5f);
+            if(_initialized)View.ApplyView();
+        }
+        public void ToggleView()
+        {
+            if(Paused)return;
+            View.Toggle();
+            Notice(FirstPerson?"第一人称 · 右键环顾 / V 视线回正 / C 切换":"第三人称 · 右键环绕 / V 回正 / C 切换",4f);
+        }
+        public void TogglePause()
+        {
+            if(!Paused){_resumeTimeScale=Time.timeScale;Time.timeScale=0f;Paused=true;}
+            else{Time.timeScale=_resumeTimeScale;Paused=false;}
+            ResetToolInput();
+        }
+        private void ResetToolInput()
+        {
+            _pointerGate.Reset();_gamepadGate.Reset();
+            if(View!=null)View.ResetInput();
+        }
+        private void OnApplicationFocus(bool focused){if(!focused)ResetToolInput();}
+        private void ConfigurePresentation()
+        {
+            // The grade is isolated to this desktop camera, not the original race or XR camera.
+            if(UnityEngine.XR.XRSettings.isDeviceActive)return;
+            var data=viewCamera.GetUniversalAdditionalCameraData();data.renderPostProcessing=true;data.volumeLayerMask=1<<30;
+            var grade=new GameObject("Fishing-only color grade");grade.layer=30;grade.transform.SetParent(transform);
+            var volume=grade.AddComponent<Volume>();volume.isGlobal=true;volume.priority=100;
+            var profile=ScriptableObject.CreateInstance<VolumeProfile>();profile.name="Fishing desktop grade";_owned.Add(profile);volume.sharedProfile=profile;
+            var tone=profile.Add<Tonemapping>(true);tone.mode.Override(TonemappingMode.ACES);_owned.Add(tone);
+            var color=profile.Add<ColorAdjustments>(true);color.postExposure.Override(0.15f);color.contrast.Override(5f);color.saturation.Override(4f);_owned.Add(color);
+            // Deliberately omit depth of field, motion blur and chromatic distortion.
         }
 
         public void Interact()
         {
             if(Paused)return;
+            UpdateNearestSpot();
             if(Anchored){if(Session.Phase==CatchPhase.Landing)Scoop();return;}
             if(AtHarbor){Sell();return;}
             if(SpotDistance>22f){Notice("先驶入任一黄色渔区，再按 E 停船。");return;}
@@ -180,13 +215,18 @@ namespace BoatAttack.Fishing
             if(!Anchored || Paused)return false;
             if(Career.Count>=FishingCareer.Capacity){Notice("鱼箱已满！按 Q 起航，返港按 E 出售。");return false;}
             bool cast=Session.Cast((FishKind)Spot,UnityEngine.Random.value<0.12f,Career.RodLevel,Guid.NewGuid().ToString("N"));
-            if(cast){_recorded=false;_previousPhase=CatchPhase.Waiting;_fish.GetComponentInChildren<MeshRenderer>().sharedMaterial=Session.Rare?orange:fishMaterials[Spot];}
+            if(cast)
+            {
+                _recorded=false;_previousPhase=CatchPhase.Waiting;
+                _fish.SetActive(false);Destroy(_fish);
+                _fish=FishingArt.Fish(transform,Session.Rare?orange:fishMaterials[Spot],cream,dark,_owned,(FishKind)Spot,Session.Rare);
+            }
             return cast;
         }
         public bool Hook()=>Anchored && !Paused && Session.Hook();
         public bool Scoop()
         {
-            if(!Anchored || Paused)return false;
+            if(!Anchored || Paused || Session.Phase!=CatchPhase.Landing)return false;
             _netMotion=1f;
             bool success=Session.Land();
             // Commit immediately, before another input in this frame can cast/cancel.
@@ -256,36 +296,18 @@ namespace BoatAttack.Fishing
                 }
             }
             FishingArt.Ring("Harbor safe zone",transform,new Vector3(harbor.x,0.25f,harbor.z),11f,teal);
-            var dock=new GameObject("Original prototype fish market").transform;dock.SetParent(transform);dock.position=harbor;
-            FishingArt.Shape("Floating deck",PrimitiveType.Cube,dock,new Vector3(0,0.5f,0),new Vector3(8,0.5f,6),wood,true);
-            foreach(float x in new[]{-3f,3f})foreach(float z in new[]{-2f,2f})
-                FishingArt.Shape("Market post",PrimitiveType.Cylinder,dock,new Vector3(x,2.1f,z),new Vector3(0.18f,2.1f,0.18f),cream);
-            FishingArt.Shape("Orange canopy",PrimitiveType.Cube,dock,new Vector3(0,4.2f,0),new Vector3(7,0.25f,5),orange);
-            FishingArt.Shape("Fish counter",PrimitiveType.Cube,dock,new Vector3(0,1.3f,1.4f),new Vector3(5,1.2f,1.2f),teal);
-            for(int i=0;i<3;i++){var f=FishingArt.Fish(dock,fishMaterials[i],cream,dark,_owned);f.transform.localPosition=new Vector3(i*1.4f-1.4f,2.2f,1.4f);f.transform.localRotation=Quaternion.Euler(0,90,0);}
+            FishingDetailArt.Market(this,_owned);
         }
 
         private void BuildEquipment()
         {
             var boat=Player.transform;
-            _box=new GameObject("Catch crate").transform;_box.SetParent(boat,false);_box.localPosition=new Vector3(0,0.85f,-1.3f);
-            FishingArt.Shape("Crate floor",PrimitiveType.Cube,_box,Vector3.zero,new Vector3(1.65f,0.1f,1.15f),wood);
-            foreach(float side in new[]{-1f,1f})
-            {
-                FishingArt.Shape("Crate side",PrimitiveType.Cube,_box,new Vector3(side*0.8f,0.3f,0),new Vector3(0.1f,0.65f,1.15f),teal);
-                FishingArt.Shape("Crate end",PrimitiveType.Cube,_box,new Vector3(0,0.3f,side*0.53f),new Vector3(1.65f,0.65f,0.1f),teal);
-            }
-            FishingArt.Pole("Fishing rod",boat,new Vector3(0.65f,0.8f,0.4f),new Vector3(2.5f,3.1f,1.2f),0.055f,dark);
-            _rodTip=new GameObject("Rod tip").transform;_rodTip.SetParent(boat,false);_rodTip.localPosition=new Vector3(2.5f,3.1f,1.2f);
-            FishingArt.Shape("Reel",PrimitiveType.Cylinder,boat,new Vector3(0.9f,1.25f,0.52f),new Vector3(0.24f,0.08f,0.24f),orange);
-            _net=new GameObject("Landing net").transform;_net.SetParent(boat,false);_net.localPosition=new Vector3(1.2f,1.0f,0.3f);
-            FishingArt.Pole("Net handle",_net,Vector3.zero,new Vector3(1.3f,0,0),0.045f,cream);
-            var hoop=FishingArt.Line("Net hoop",_net,teal,0.04f,false);hoop.positionCount=25;
-            for(int i=0;i<25;i++){float a=i*Mathf.PI*2f/24;hoop.SetPosition(i,new Vector3(1.8f+Mathf.Cos(a)*0.6f,0,Mathf.Sin(a)*0.6f));}
-            for(int i=0;i<5;i++){var strand=FishingArt.Line("Net strand",_net,cream,0.01f,false);strand.positionCount=3;float a=i*Mathf.PI*2/5;strand.SetPositions(new[]{new Vector3(1.8f+Mathf.Cos(a)*0.55f,0,Mathf.Sin(a)*0.55f),new Vector3(1.8f,-0.5f,0),new Vector3(1.8f-Mathf.Cos(a)*0.55f,0,-Mathf.Sin(a)*0.55f)});}
+            _box=FishingDetailArt.Crate(boat,new Vector3(0,0.85f,-1.3f),wood,teal,dark);
+            FishingDetailArt.Rod(boat,dark,wood,cream,orange,out _rodTip,out _reelCrank);
+            _net=FishingDetailArt.Net(boat,dark,teal,cream);
             _fish=FishingArt.Fish(transform,fishMaterials[0],cream,dark,_owned);
             _bobber=FishingArt.Shape("Float",PrimitiveType.Sphere,transform,Vector3.zero,Vector3.one*0.18f,orange);
-            _line=FishingArt.Line("Fishing line",transform,lineMaterial,0.016f);_line.positionCount=17;
+            _line=FishingArt.Line("Fishing line",transform,lineMaterial,0.011f);_line.positionCount=25;
             RefreshHold();
         }
         private void RefreshHold()
@@ -293,26 +315,31 @@ namespace BoatAttack.Fishing
             foreach(var f in _storedFish)Destroy(f);_storedFish.Clear();
             int i=0;foreach(var record in Career.Inventory)
             {
-                var f=FishingArt.Fish(_box,record.rare?orange:fishMaterials[(int)record.kind],cream,dark,_owned);
+                var f=FishingArt.Fish(_box,record.rare?orange:fishMaterials[(int)record.kind],cream,dark,_owned,record.kind,record.rare);
                 f.transform.localPosition=new Vector3((i%3-1)*0.45f,0.28f,(i/3-0.5f)*0.4f);f.transform.localRotation=Quaternion.Euler(0,90,80);f.transform.localScale=Vector3.one*0.55f;_storedFish.Add(f);i++;
             }
         }
         private void AnimateEquipment()
         {
             var phase=Session.Phase;
+            if(_reeling)_reelCrank.Rotate(Vector3.right,Time.deltaTime*400f,Space.Self);
             bool active=Anchored && phase!=CatchPhase.Idle && phase!=CatchPhase.Escaped;
             _line.enabled=active && phase!=CatchPhase.Caught;_bobber.SetActive(active && (phase==CatchPhase.Waiting || phase==CatchPhase.Bite));
             _fish.SetActive(active && (phase==CatchPhase.Fighting || phase==CatchPhase.Landing || (phase==CatchPhase.Caught && Time.time-_caughtAt<0.8f)));
             var t=Player.transform;var yaw=Quaternion.Euler(0,t.eulerAngles.y,0);
-            float distance=phase==CatchPhase.Fighting?3f+Session.Distance*0.35f:5.5f;
-            var target=t.position+yaw*new Vector3(distance,0,1.5f);target.y=phase==CatchPhase.Fighting?0.7f+Mathf.Abs(Mathf.Sin(Time.time*3f))*0.45f:0.35f+Mathf.Sin(Time.time*4f)*0.1f;
-            if(phase==CatchPhase.Landing)target=t.position+yaw*new Vector3(3.4f,1.2f+Mathf.Abs(Mathf.Sin(Time.time*5f))*0.7f,1.2f);
+            float distance=phase==CatchPhase.Fighting?3.4f+Session.Distance*0.24f:5.5f;
+            var target=t.position+yaw*new Vector3(distance,0,1.5f);target.y=phase==CatchPhase.Fighting?0.18f+Mathf.Abs(Mathf.Sin(Time.time*3f))*0.20f:0.25f+Mathf.Sin(Time.time*4f)*0.06f;
+            if(phase==CatchPhase.Landing)target=t.position+yaw*new Vector3(3.3f,0.85f+Mathf.Abs(Mathf.Sin(Time.time*5f))*0.25f,1.5f);
             _bobber.transform.position=target;
             _fish.transform.position=phase==CatchPhase.Caught?Vector3.Lerp(_catchStart,_box.position+Vector3.up*0.5f,Mathf.Clamp01((Time.time-_caughtAt)/0.7f))+Vector3.up*Mathf.Sin(Mathf.Clamp01((Time.time-_caughtAt)/0.7f)*Mathf.PI)*0.8f:target;
             _fish.transform.rotation=yaw*Quaternion.Euler(Mathf.Sin(Time.time*7)*18f,-90+Mathf.Sin(Time.time*9)*22f,Mathf.Sin(Time.time*6)*14f);
             _fish.transform.localScale=Vector3.one*(Spot==2?1.5f:1.25f);
-            for(int i=0;i<17;i++){float u=i/16f;_line.SetPosition(i,Vector3.Lerp(_rodTip.position,target,u)-Vector3.up*Mathf.Sin(u*Mathf.PI)*(phase==CatchPhase.Fighting?0.15f:0.5f));}
-            _netMotion=Mathf.MoveTowards(_netMotion,0,Time.deltaTime*2.8f);_net.localRotation=Quaternion.Euler(0,0,-Mathf.Sin(_netMotion*Mathf.PI)*35f);
+            for(int i=0;i<25;i++){float u=i/24f;_line.SetPosition(i,Vector3.Lerp(_rodTip.position,target,u)-Vector3.up*Mathf.Sin(u*Mathf.PI)*(phase==CatchPhase.Fighting?0.15f:0.5f));}
+            // Stow the basket alongside the hull until it is needed, rather than covering the fish.
+            _netDeployment=Mathf.MoveTowards(_netDeployment,Anchored && (phase==CatchPhase.Landing || _netMotion>0f)?1f:0f,Time.deltaTime*4f);
+            _netMotion=Mathf.MoveTowards(_netMotion,0,Time.deltaTime*2.8f);
+            _net.localPosition=Vector3.Lerp(new Vector3(1.15f,0.65f,-0.7f),new Vector3(1.15f,0.9f,-0.4f),_netDeployment);
+            _net.localRotation=Quaternion.Euler(0,Mathf.Lerp(85f,0f,_netDeployment),-Mathf.Sin(_netMotion*Mathf.PI)*35f);
         }
         private AudioClip Tone(float frequency,float seconds)
         {
@@ -321,7 +348,7 @@ namespace BoatAttack.Fishing
         }
         private void OnDestroy()
         {
-            if(Paused)Time.timeScale=1f;
+            if(Paused)Time.timeScale=_resumeTimeScale;
             Application.targetFrameRate=_previousTargetFrameRate;
             foreach(var o in _owned)if(o!=null)Destroy(o);
         }
