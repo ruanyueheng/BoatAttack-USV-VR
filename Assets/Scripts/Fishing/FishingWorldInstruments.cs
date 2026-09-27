@@ -49,7 +49,7 @@ namespace BoatAttack.Fishing
             {
                 var boat = c.Player.transform;
                 var yaw = Quaternion.Euler(0, boat.eulerAngles.y + (c.Anchored ? 66 : 0), 0);
-                _height = Mathf.SmoothDamp(_height, boat.position.y, ref _heightVelocity, 2.5f);
+                if (Time.deltaTime > 0f) _height = Mathf.SmoothDamp(_height, boat.position.y, ref _heightVelocity, 2.5f);
                 _canvas.transform.SetPositionAndRotation(new Vector3(boat.position.x, _height + 1.15f, boat.position.z) + yaw * new Vector3(-0.35f, 0, ReferenceDistance), yaw);
             }
             _fill.sizeDelta = new Vector2(c.Session.Tension * 400, 10);

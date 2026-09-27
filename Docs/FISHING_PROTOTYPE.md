@@ -1,6 +1,6 @@
-# 怪鱼航线 — 桌面试玩（当前 v0.3）
+# 怪鱼航线 — 桌面试玩（当前 v0.3.1）
 
-第三版玩法、场景、UI 与 PICO 适配边界见 [FISHING_V03.md](FISHING_V03.md)。第二版记录保留在 FISHING_V02.md。
+天气、生物与新模型见 [FISHING_LIVING_BAY.md](FISHING_LIVING_BAY.md)。第三版基础玩法、UI 与 PICO 适配边界见 [FISHING_V03.md](FISHING_V03.md)。第二版记录保留在 FISHING_V02.md。
 
 本版本是基于 BoatAttack 的独立捕鱼灰盒，不是《How to Fish》的资源移植。鱼、鱼竿、抄网、鱼箱、市场小站和提示音均由本项目代码生成；海岛、船只、水面和原有环境素材沿用 BoatAttack，保留其授权与署名。
 
@@ -8,7 +8,7 @@
 
 - Unity 2022.3.62f1：菜单 **BoatAttack > Fishing > Open prototype**，然后按 Play。
 - 或直接打开 `Assets/scenes/Fishing/fishing_Island.unity`。
-- Windows 试玩程序构建位置：`Builds/FishingPrototype-v0.3/FishingPrototype.exe`。运行时必须保留相邻 Data 文件夹和 DLL，不能只复制 exe。
+- Windows 试玩程序构建位置：`Builds/FishingPrototype-v0.3.1/FishingPrototype.exe`。运行时必须保留相邻 Data 文件夹和 DLL，不能只复制 exe。
 - 普通启动是玩家模式；没有自动驾驶/自动收鱼。命令行自动演示只用于验收和截图。
 
 ## 第一段体验
@@ -28,6 +28,7 @@
 - E：附近场景交互（渔区停船、抄鱼、港口交付订单或出售）。
 - 鼠标左键：抛竿、提竿、按住收线；松开放线。
 - Q：取消当前捕捞并起航。
+- T：看向 28m 内的野生生物进行观察；日志可切换自然观察页。左侧按钮也能打开图鉴、设置和切换视角。
 - B：换饵（捕捞进行中不可换）；N：切换航点；J：图鉴与订单日志；O：在港口尝试提交订单。
 - U：在港口升级鱼线。
 - R：救援回港，已入箱鱼和金币保留。这是灰盒便利功能，尚未做航行成本平衡。
@@ -72,7 +73,7 @@ dotnet run --project Tools/InputTests/InputTests.csproj --configuration Release
 
 FishingSmoke 在真正的 Play Mode 中自动完成三种鱼捕获、入箱、出售、升级、进度重读和备份恢复。它通过显式测试驱动调用游戏操作，不等于真人键鼠、VR 或帧率验收。
 
-构建先生成 Addressables 内容，再打包只以捕鱼场景启动的 Windows Development Player。构建、截图和本地日志不进入 Git；朋友通过源码和上述命令重建。
+构建先生成 Addressables 内容，再打包只以捕鱼场景启动的 Windows Release Player（v0.3.1 起关闭 Development）。构建、截图和本地日志不进入 Git；朋友通过源码和上述命令重建。
 
 
 ## 实现与构建说明

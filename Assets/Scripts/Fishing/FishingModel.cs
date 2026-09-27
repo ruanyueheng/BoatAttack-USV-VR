@@ -24,6 +24,7 @@ namespace BoatAttack.Fishing
         public bool Rare { get; private set; }
         public float Tension { get; private set; }
         public BaitKind Bait { get; private set; }
+        public BayWeather WeatherAtCast { get; private set; }
         public FishBeat Beat => FishingVoyage.Beat(Kind, _timer);
         public float BeatProgress => _timer % FishingVoyage.BeatDuration(Kind) / FishingVoyage.BeatDuration(Kind);
         public float Distance { get; private set; }
@@ -37,16 +38,16 @@ namespace BoatAttack.Fishing
         private int _rodLevel, _misses;
         private bool _claimed;
 
-        public bool Cast(FishKind kind, bool rare, int rodLevel, string id, BaitKind bait = BaitKind.Balanced)
+        public bool Cast(FishKind kind, bool rare, int rodLevel, string id, BaitKind bait = BaitKind.Balanced, BayWeather weather = BayWeather.Clear)
         {
             if (Phase != CatchPhase.Idle && Phase != CatchPhase.Caught && Phase != CatchPhase.Escaped) return false;
-            if (!Enum.IsDefined(typeof(BaitKind), bait)) return false;
+            if (!Enum.IsDefined(typeof(BayWeather), weather) || !Enum.IsDefined(typeof(BaitKind), bait)) return false;
             if (string.IsNullOrWhiteSpace(id) || id.Length > 64 || !Enum.IsDefined(typeof(FishKind), kind)) return false;
-            Bait = bait; Kind = kind; Rare = rare; _id = id; _rodLevel = Math.Max(0, Math.Min(1, rodLevel));
+            WeatherAtCast = weather; Bait = bait; Kind = kind; Rare = rare; _id = id; _rodLevel = Math.Max(0, Math.Min(1, rodLevel));
             _claimed = false; _misses = 0; _overload = _slack = 0f; Tension = 0.3f;
             MaxDistance = Distance = 10f + (int)kind * 2f;
             Failure = string.Empty;
-            Enter(CatchPhase.Waiting, 2.2f + (int)kind * 0.35f);
+            Enter(CatchPhase.Waiting, (2.2f + (int)kind * 0.35f) * BayClimate.BiteScale(weather, kind));
             return true;
         }
 
@@ -116,6 +117,7 @@ namespace BoatAttack.Fishing
     {
         public int version = 2;
         public int discoveryMask;
+        public int wildlifeMask;
         public int catches;
         public int ordersCompleted;
         public int coins;
@@ -130,6 +132,13 @@ namespace BoatAttack.Fishing
         public const int UpgradeCost = 30;
         public int Coins { get; private set; }
         public int DiscoveryMask { get; private set; }
+        public int WildlifeMask { get; private set; }
+        public bool Seen(MarineKind kind) => Enum.IsDefined(typeof(MarineKind), kind) && (WildlifeMask & (1 << (int)kind)) != 0;
+        public bool Observe(MarineKind kind)
+        {
+            if (!Enum.IsDefined(typeof(MarineKind), kind) || Seen(kind)) return false;
+            WildlifeMask |= 1 << (int)kind; return true;
+        }
         public int Catches { get; private set; }
         public int OrdersCompleted { get; private set; }
         public bool Discovered(FishKind kind, bool rare = false) => (DiscoveryMask & (1 << ((int)kind + (rare ? 3 : 0)))) != 0;
@@ -180,7 +189,7 @@ namespace BoatAttack.Fishing
         }
         public FishingSaveData Snapshot()
         {
-            var result = new FishingSaveData { coins = Coins, rodLevel = RodLevel, discoveryMask = DiscoveryMask, catches = Catches, ordersCompleted = OrdersCompleted, recordedIds = new List<string>(_recorded) };
+            var result = new FishingSaveData { coins = Coins, rodLevel = RodLevel, discoveryMask = DiscoveryMask, wildlifeMask = WildlifeMask, catches = Catches, ordersCompleted = OrdersCompleted, recordedIds = new List<string>(_recorded) };
             foreach (var item in _inventory) result.inventory.Add(item.Copy());
             return result;
         }
@@ -188,7 +197,7 @@ namespace BoatAttack.Fishing
         {
             career = null;
             if (data == null || (data.version != 1 && data.version != 2) || data.coins < 0 || data.coins > 100000000 || data.rodLevel < 0 || data.rodLevel > 1
-                || data.discoveryMask < 0 || data.discoveryMask > 63 || data.catches < 0 || data.catches > 100000000 || data.ordersCompleted < 0 || data.ordersCompleted > 1000000
+                || data.wildlifeMask < 0 || data.wildlifeMask > 31 || data.discoveryMask < 0 || data.discoveryMask > 63 || data.catches < 0 || data.catches > 100000000 || data.ordersCompleted < 0 || data.ordersCompleted > 1000000
                 || data.inventory == null || data.inventory.Count > Capacity || data.recordedIds == null) return false;
             var result = new FishingCareer();
             foreach (var item in data.inventory) if (!result.Store(item)) return false;
@@ -201,7 +210,7 @@ namespace BoatAttack.Fishing
             if (data.version == 2)
             {
                 if ((data.discoveryMask & result.DiscoveryMask) != result.DiscoveryMask || data.catches < result.Count) return false;
-                result.DiscoveryMask = data.discoveryMask; result.Catches = data.catches; result.OrdersCompleted = data.ordersCompleted;
+                result.WildlifeMask = data.wildlifeMask; result.DiscoveryMask = data.discoveryMask; result.Catches = data.catches; result.OrdersCompleted = data.ordersCompleted;
             }
             result.Coins = data.coins; result.RodLevel = data.rodLevel;
             career = result; return true;

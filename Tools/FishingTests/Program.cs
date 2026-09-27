@@ -89,6 +89,7 @@ internal static class Program
             lookGate.Reset();Check(!lookGate.Update(true,false,false,true),"Look drag cannot jump on resume");
             Check(lookGate.Update(true,false,false,false),"Look release rearms drag");
             VoyageTests.Run(Check);
+            ClimateTests.Run(Check);
             Console.WriteLine("TOTAL: "+count+" passed. Pure fishing rules only.");return 0;
         }
         catch(Exception ex){Console.Error.WriteLine(ex);return 1;}

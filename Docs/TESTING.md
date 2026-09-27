@@ -102,3 +102,23 @@ A reproducible screenshot command remains available, but a genuinely rendering i
 The screenshot driver is opt-in; normal game startup does not autoplay. No cloud CI result is implied by the local test results.
 
 Final v0.3 additional regression: original `PlayMode` menu → race → menu → second race, four Addressable boats, countdown and engine re-enable passed. The original racing entry flow remains intact.
+
+## 6. Living bay / v0.3.1 checks (2026-09-27)
+
+The release player now lives in `Builds/FishingPrototype-v0.3.1/`. It uses `BuildOptions.None`, not Development; the single-player feature requires no network access. An earlier Development preview triggered a Windows firewall dialog; the agent did not approve or change firewall settings and closed its own preview process.
+
+- Pure fishing suite: **192 assertions passed** (125 prior + 67 climate/wildlife cases). Includes all five climates × three catchable species, transition lock, pause and nonfinite delta handling, fixed/automatic cycling, chance/wait modifiers, view-cone/distance/occlusion policy, exactly-once wildlife discoveries, no coin farming and old v2 default-field compatibility.
+- Extended Unity `FishingSmoke`: passed five visual climate preset applications, safe fog bounds, cloned-sky lifecycle restoration, 96/32 rain budgets, fixed wildlife population, sight-based turtle discovery, persisted observation, and rejection of observing an unseen ray through an actual collider, plus the complete fishing flow.
+- Original scene dressing: **22 combined renderers / 37,463 vertices**. Ecology: **9 wildlife renderers + 3 habitat meshes / 8,464 unique mesh vertices**. Rain: **96 maximum quads**, only **32 nondegenerate quads** with reduced effects or active XR. These counts exclude the original island/water/boat/tool/text renderers; no device FPS claim is inferred.
+- Found and fixed a zero-delta camera bug during pause/resume in the first living-bay smoke run. That failed run is not counted as a pass. The subsequent smoke run completed cleanly, including exiting Play Mode.
+- A D3D11 Windows player/content build compiled the custom palette shader successfully. This does not prove Vulkan/GLES/Multiview output on a PICO headset.
+
+Manual review focus: weather brightness and rain visibility; marine animal shapes and path placement; the new journal tab and clickable toolbar; relative UI readability at smaller resolutions; animal observation from first-person; sound level and comfort. Test weather changes from pause, resume for the 12-second transition, then pause again before selecting another preset. Do not accept hidden-window black captures as screenshots.
+
+### Off-screen render evidence
+
+`-fishing-capture <directory>` now also writes `scene-*.png`, `wildlife-*.png` and `weather-*.png` using an explicit camera → RenderTexture render, with camera target/pose and temporary resources restored afterward. This works when the normal desktop backbuffer is black. It is opt-in automation only; the normal game does not capture files.
+
+These are actual D3D11 scene/model renders, **not HUD screenshots**. The sky/lights/water/new meshes can be inspected without granting network access or operating a Windows security dialog. Complete UI/keyboard/gamepad acceptance still requires an interactive review. The Windows firewall prompt was not approved or modified by the agent.
+
+Final image QA additionally caught and corrected the island sky property's `_SkyTint`/`_Tint` mismatch and excessive inherited exposure (4). Fishing's cloned sky caps exposure at 1.4; original assets are unchanged. Vertex palettes now explicitly convert sRGB to linear, and rain streaks use a light unlit palette instead of dark lit geometry. The sky cap is asserted in the live acceptance driver.

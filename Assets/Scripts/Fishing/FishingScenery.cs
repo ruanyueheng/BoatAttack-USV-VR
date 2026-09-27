@@ -9,7 +9,6 @@ namespace BoatAttack.Fishing
     public sealed class FishingScenery : MonoBehaviour
     {
         private FishingPrototype _controller;
-        private readonly List<Transform> _gulls = new List<Transform>();
         private readonly List<Transform> _zones = new List<Transform>();
         private float _nextCull;
         public int CombinedRenderers { get; private set; }
@@ -18,7 +17,7 @@ namespace BoatAttack.Fishing
         public void Build(FishingPrototype c, List<Object> owned)
         {
             _controller = c;
-            Material stone = Palette("Salt-washed limestone", new Color(0.37f, 0.48f, 0.48f), owned);
+            Material stone = new Material(c.PaletteShader) { name="Stratified reef palette", enableInstancing=true }; owned.Add(stone);
             Material coral = Palette("Terracotta coral", new Color(0.83f, 0.31f, 0.22f), owned);
             Material blue = Palette("Deep sea enamel", new Color(0.10f, 0.32f, 0.45f), owned);
             Mesh rock = RockMesh(); owned.Add(rock);
@@ -81,13 +80,6 @@ namespace BoatAttack.Fishing
                     FishingArt.Shape("Habitat tally", PrimitiveType.Cube, root, sign + new Vector3(0, 2.7f - bar * 0.28f, 0), new Vector3(1.5f, 0.16f, 0.2f), color);
                 Combine(root, owned);
             }
-            for (int i = 0; i < 4; i++)
-            {
-                Transform bird = Root("Distant coastal gull", c.harbor + Vector3.up * 12);
-                FishingArt.Pole("Gull left wing", bird, new Vector3(-0.7f, 0.16f, 0), Vector3.zero, 0.045f, c.cream);
-                FishingArt.Pole("Gull right wing", bird, Vector3.zero, new Vector3(0.7f, 0.16f, 0), 0.045f, c.cream);
-                Combine(bird, owned); _gulls.Add(bird);
-            }
             Debug.Log("[FISHING] V03 scenery combined: " + CombinedRenderers + " renderers, " + CombinedVertices + " vertices (market included).");
         }
         private Transform Root(string name, Vector3 position)
@@ -102,13 +94,8 @@ namespace BoatAttack.Fishing
                 _nextCull = Time.time + 0.4f;
                 foreach (var zone in _zones) zone.gameObject.SetActive((_controller.Player.transform.position - zone.position).sqrMagnitude < 240f * 240f);
             }
-            for (int i = 0; i < _gulls.Count; i++)
-            {
-                float a = Time.time * 0.11f + i * 1.57f;
-                _gulls[i].position = _controller.harbor + new Vector3(Mathf.Cos(a) * (17 + i * 2), 11 + Mathf.Sin(a * 2 + i) * 0.7f, Mathf.Sin(a) * 17);
-                _gulls[i].rotation = Quaternion.Euler(0, -a * Mathf.Rad2Deg, Mathf.Sin(a * 3) * 9);
-            }
         }
+
         private static Material Palette(string name, Color color, List<Object> owned)
         {
             var mat = new Material(Shader.Find("Universal Render Pipeline/Lit")); mat.name = name; mat.SetColor("_BaseColor", color); mat.SetFloat("_Smoothness", 0.18f); mat.enableInstancing = true; owned.Add(mat); return mat;
@@ -120,14 +107,7 @@ namespace BoatAttack.Fishing
             var go = new GameObject("Faceted limestone", typeof(MeshFilter), typeof(MeshRenderer)); go.transform.SetParent(root, false); go.transform.localPosition = position; go.transform.localScale = scale;
             go.GetComponent<MeshFilter>().sharedMesh = mesh; go.GetComponent<MeshRenderer>().sharedMaterial = material;
         }
-        private static Mesh RockMesh()
-        {
-            var points = new[] { Vector3.up, Vector3.right, Vector3.forward, Vector3.left, Vector3.back, Vector3.down };
-            int[] faces = { 0,2,1, 0,3,2, 0,4,3, 0,1,4, 5,1,2, 5,2,3, 5,3,4, 5,4,1 };
-            var vertices = new Vector3[24]; var indices = new int[24];
-            for (int i = 0; i < 24; i++) { vertices[i] = points[faces[i]]; indices[i] = i; }
-            var mesh = new Mesh { name = "Original flat-shaded reef rock", vertices = vertices, triangles = indices }; mesh.RecalculateNormals(); mesh.RecalculateBounds(); return mesh;
-        }
+        private static Mesh RockMesh() => FishingMeshBuilder.ReefRock();
         private void Combine(Transform root, List<Object> owned)
         {
             var groups = new Dictionary<Material, List<CombineInstance>>();

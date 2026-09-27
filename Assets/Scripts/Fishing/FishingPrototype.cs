@@ -29,6 +29,9 @@ namespace BoatAttack.Fishing
         public bool Paused { get; private set; }
         public bool Automated { get; private set; }
         public FishingViewRig View { get; private set; }
+        public FishingWeather Weather { get; private set; }
+        public FishingEcology Ecology { get; private set; }
+        public Shader PaletteShader { get; private set; }
         public bool FirstPerson => View != null && View.FirstPerson;
         public bool ShowDetails { get; private set; } = true;
         public BaitKind Bait { get; private set; }
@@ -102,7 +105,11 @@ namespace BoatAttack.Fishing
             if(!_xrActive)viewCamera.fieldOfView=58f;
             if(!_xrActive)viewCamera.transform.SetPositionAndRotation(spawnPosition-spawnRotation*Vector3.forward*12f+Vector3.up*7f,
                 Quaternion.LookRotation(spawnRotation*Vector3.forward*16f-Vector3.up*5f));
+            PaletteShader=Resources.Load<Shader>("FishingPalette");
+            if(PaletteShader==null)throw new InvalidOperationException("FishingPalette shader missing.");
             BuildWorld(); BuildEquipment();
+            Weather=gameObject.AddComponent<FishingWeather>();Weather.Controller=this;
+            Ecology=gameObject.AddComponent<FishingEcology>();Ecology.Controller=this;
             View=gameObject.AddComponent<FishingViewRig>();View.Controller=this;
             ConfigurePresentation();
             _feedback=gameObject.AddComponent<AudioSource>();_feedback.spatialBlend=0f;_feedback.volume=0.45f;
@@ -130,6 +137,7 @@ namespace BoatAttack.Fishing
             bool focused=Automated || Application.isFocused;
             if(!Automated && _input.Current.pause) { if(JournalOpen)ToggleJournal();else TogglePause(); }
             if(!Automated && focused && k!=null && k.jKey.wasPressedThisFrame && (!Paused || JournalOpen))ToggleJournal();
+            bool overTools=m!=null && FishingHUD.BlocksToolPointer(m.position.ReadValue(),Screen.width,Screen.height);
             bool leftHeld=m!=null && m.leftButton.isPressed;
             bool rightHeld=m!=null && m.rightButton.isPressed;
             bool pointerReady=_pointerGate.Update(focused,Paused,leftHeld,rightHeld);
@@ -142,18 +150,19 @@ namespace BoatAttack.Fishing
                 if(k!=null && k.bKey.wasPressedThisFrame)CycleBait();
                 if(k!=null && k.nKey.wasPressedThisFrame)CycleNavigation();
                 if(k!=null && k.oKey.wasPressedThisFrame)DeliverOrder();
+                if(k!=null && k.tKey.wasPressedThisFrame)Ecology.Observe();
                 if(_input.Current.reset)ReturnToHarbor();
                 if(k!=null && k.qKey.wasPressedThisFrame)LeaveStation();
                 if(k!=null && k.uKey.wasPressedThisFrame)BuyUpgrade();
                 if(_input.Current.interact)Interact();
-                bool press=(pointerReady && !rightHeld && m!=null && m.leftButton.wasPressedThisFrame) || (gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame);
+                bool press=(pointerReady && !overTools && !rightHeld && m!=null && m.leftButton.wasPressedThisFrame) || (gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame);
                 if(press && Anchored){if(Session.Phase==CatchPhase.Bite)Hook();else Cast();}
             }
             UpdateNearestSpot();
             _reeling=false;
             if(Anchored && !Paused && focused)
             {
-                bool reel=Automated?AutomationReel:(pointerReady && !rightHeld && leftHeld)||(gamepadReady && g!=null && g.rightTrigger.ReadValue()>0.5f);
+                bool reel=Automated?AutomationReel:(pointerReady && !overTools && !rightHeld && leftHeld)||(gamepadReady && g!=null && g.rightTrigger.ReadValue()>0.5f);
                 _reeling=reel && Session.Phase==CatchPhase.Fighting;
                 Session.Tick(Time.deltaTime,reel);
                 if(Session.Phase!=_previousPhase)
@@ -243,7 +252,7 @@ namespace BoatAttack.Fishing
         {
             if(!Anchored || Paused)return false;
             if(Career.Count>=FishingCareer.Capacity){Notice("鱼箱已满！按 Q 起航，返港按 E 出售。");return false;}
-            bool cast=Session.Cast((FishKind)Spot,UnityEngine.Random.value<FishingVoyage.RareChance(Bait),Career.RodLevel,Guid.NewGuid().ToString("N"),Bait);
+            bool cast=Session.Cast((FishKind)Spot,UnityEngine.Random.value<Mathf.Clamp01(FishingVoyage.RareChance(Bait)+BayClimate.RareBonus(Weather.Climate.Current,(FishKind)Spot)),Career.RodLevel,Guid.NewGuid().ToString("N"),Bait,Weather.Climate.Current);
             if(cast)
             {
                 _recorded=false;_previousPhase=CatchPhase.Waiting;
@@ -288,6 +297,11 @@ namespace BoatAttack.Fishing
             if(!AtHarbor || Paused){Notice("请先回到青色港口，再按 U 升级。");return false;}
             bool ok=Career.Upgrade();if(ok){Save();Notice("轻量鱼线已升级！收线时张力增长降低 28%。",8f);}
             else Notice(Career.RodLevel==1?"本次试玩的鱼线升级已完成。":"需要 30 金币。先捕鱼、返港出售吧。");return ok;
+        }
+        public bool RecordWildlife(MarineKind kind)
+        {
+            if(Paused || !Career.Observe(kind))return false;
+            Save();Notice("自然观察 + "+BayClimate.MarineName(kind)+" · 已收录日志，不捕捞野生伙伴。",6f);return true;
         }
         public void CycleBait()
         {

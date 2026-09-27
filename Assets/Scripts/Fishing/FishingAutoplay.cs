@@ -34,6 +34,7 @@ namespace BoatAttack.Fishing
                         if(Time.realtimeSinceStartup<_captureAt)return;
                         ValidateDeparture();
                         ValidatePresentation();
+                        ValidateLivingBay();
                         StartCoroutine(Capture("00-first-person-driving.png"));
                         _captureAt=Time.realtimeSinceStartup+1f;_stage=-1;break;
                     case -1:
@@ -200,17 +201,113 @@ namespace BoatAttack.Fishing
             if(Controller.NavigationTarget!=target)throw new Exception("Navigation cycle failed.");
             Debug.Log("[FISHING] Presentation checks: 4 viewport safe areas, readable sign orientation, fish surface normals.");
         }
+        private void ValidateLivingBay()
+        {
+            var c=Controller;var weather=c.Weather;
+            if(c.Ecology.CreatureCount!=9 || c.Ecology.MeshVertices>16000)throw new Exception("Ecology population/geometry budget exceeded.");
+            int baseBudget=weather.RainQuadBudget;weather.ToggleReducedEffects();
+            if(weather.RainQuadBudget!=32)throw new Exception("Reduced rain budget failed.");
+            weather.ToggleReducedEffects();if(weather.RainQuadBudget!=baseBudget)throw new Exception("Rain budget restore failed.");
+            var climate=weather.Climate;
+            foreach(BayWeather preset in Enum.GetValues(typeof(BayWeather)))
+            {
+                if(!climate.Select(preset))throw new Exception("Weather selection failed.");
+                for(int i=0;i<48;i++)climate.Tick(.25f,false);
+                weather.ApplyEnvironment();
+                if(RenderSettings.skybox.HasProperty("_Exposure") && RenderSettings.skybox.GetFloat("_Exposure")>1.41f)throw new Exception("Fishing sky exposure is not capped.");
+                if(RenderSettings.fogEndDistance<180 || RenderSettings.sun.intensity<=0)throw new Exception("Weather made navigability unsafe.");
+            }
+            climate.Select(BayWeather.Clear,true);for(int i=0;i<48;i++)climate.Tick(.25f,false);weather.ApplyEnvironment();
+            float age=climate.Age;climate.Tick(1,true);if(climate.Age!=age)throw new Exception("Paused weather advanced.");
+            // Component lifecycle must not leave a tinted shared sky or suspended race writers behind.
+            var sky=RenderSettings.skybox;weather.enabled=false;
+            if(RenderSettings.skybox==sky)throw new Exception("Weather did not restore the original sky.");
+            weather.enabled=true;weather.ApplyEnvironment();
+            if(RenderSettings.skybox==sky || RenderSettings.skybox==null)throw new Exception("Weather did not recreate an isolated sky.");
+            var camera=c.viewCamera.transform;Vector3 p=camera.position;Quaternion q=camera.rotation;
+            var turtle=c.Ecology.FindCreatureForValidation(MarineKind.Turtle);
+            if(turtle==null)throw new Exception("Turtle model missing.");
+            try
+            {
+                camera.position=turtle.position+Vector3.up*3;camera.rotation=Quaternion.LookRotation(turtle.position-camera.position);
+                int coins=c.Career.Coins;
+                if(!c.Ecology.Observe() || !c.Career.Seen(MarineKind.Turtle))throw new Exception("Sight-based wildlife discovery failed.");
+                if(c.Ecology.Observe() || c.Career.Coins!=coins)throw new Exception("Repeated wildlife observation paid or duplicated.");
+                var restored=FishingSaveStore.Load(c.SavePath,out var warning);
+                if(warning.Length>0 || !restored.Seen(MarineKind.Turtle))throw new Exception("Wildlife record did not persist.");
+                var wall=GameObject.CreatePrimitive(PrimitiveType.Cube);
+                try
+                {
+                    // A second unseen species behind an actual collider must not be observable.
+                    var ray=c.Ecology.FindCreatureForValidation(MarineKind.Ray);camera.position=ray.position+Vector3.up*3;camera.rotation=Quaternion.LookRotation(Vector3.down);
+                    wall.transform.position=ray.position+Vector3.up*1.5f;wall.transform.localScale=new Vector3(12,.3f,12);Physics.SyncTransforms();
+                    if(c.Ecology.Observe() || c.Career.Seen(MarineKind.Ray))throw new Exception("Wildlife observed through an obstruction.");
+                }
+                finally{wall.GetComponent<Collider>().enabled=false;Destroy(wall);}
+            }
+            finally{camera.SetPositionAndRotation(p,q);}
+            if(!FishingHUD.BlocksToolPointer(new Vector2(60,900-230),1600,900) || FishingHUD.BlocksToolPointer(new Vector2(800,450),1600,900))throw new Exception("Clickable HUD does not gate tool input.");
+            Debug.Log("[FISHING] Living bay checks: 5 weather presets, pause, environment restoration, rain/population budgets, visible wildlife discovery, occlusion rejection and save persistence.");
+        }
         private IEnumerator Capture(string name)
         {
             if(string.IsNullOrEmpty(_captureDirectory))yield break;
             // WaitForEndOfFrame is unsupported in batchmode; capture is for the real Windows player.
             yield return new WaitForEndOfFrame();
             ScreenCapture.CaptureScreenshot(Path.Combine(_captureDirectory,name));
+            CaptureSceneOnly("scene-"+name);
             Debug.Log("[FISHING] Screenshot requested: "+name);
+        }
+        // Explicit off-screen camera render: unlike the desktop backbuffer this works
+        // with a hidden test window. These images intentionally exclude the IMGUI HUD.
+        private void CaptureSceneOnly(string name)
+        {
+            if(string.IsNullOrEmpty(_captureDirectory))return;
+            var camera=Controller.viewCamera;var previousTarget=camera.targetTexture;var previousActive=RenderTexture.active;
+            var target=RenderTexture.GetTemporary(1280,720,24,RenderTextureFormat.ARGB32);
+            Texture2D image=null;
+            try
+            {
+                camera.targetTexture=target;camera.Render();RenderTexture.active=target;
+                image=new Texture2D(1280,720,TextureFormat.RGB24,false);image.ReadPixels(new Rect(0,0,1280,720),0,0);image.Apply();
+                File.WriteAllBytes(Path.Combine(_captureDirectory,name),image.EncodeToPNG());
+            }
+            finally{camera.targetTexture=previousTarget;RenderTexture.active=previousActive;RenderTexture.ReleaseTemporary(target);if(image!=null)Destroy(image);}
+        }
+        private IEnumerator CaptureWildlifeGallery()
+        {
+            if(string.IsNullOrEmpty(_captureDirectory))yield break;
+            yield return new WaitForEndOfFrame();
+            var camera=Controller.viewCamera.transform;var position=camera.position;var rotation=camera.rotation;
+            try
+            {
+                foreach(MarineKind kind in Enum.GetValues(typeof(MarineKind)))
+                {
+                    var creature=Controller.Ecology.FindCreatureForValidation(kind);bool active=creature.gameObject.activeSelf;creature.gameObject.SetActive(true);
+                    try
+                    {
+                        var pose=creature.position+creature.rotation*new Vector3(2.1f,2.2f,2.6f);
+                        camera.SetPositionAndRotation(pose,Quaternion.LookRotation(creature.position-pose));
+                        CaptureSceneOnly("wildlife-"+kind+".png");
+                    }
+                    finally{creature.gameObject.SetActive(active);}
+                }
+            }
+            finally{camera.SetPositionAndRotation(position,rotation);}
+            var climate=Controller.Weather.Climate;
+            for(int i=0;i<48;i++)climate.Tick(.25f,false);
+            foreach(BayWeather preset in Enum.GetValues(typeof(BayWeather)))
+            {
+                if(!climate.Select(preset))throw new Exception("Capture weather selection failed.");
+                for(int i=0;i<48;i++)climate.Tick(.25f,false);
+                Controller.Weather.RefreshForCapture();CaptureSceneOnly("weather-"+preset+".png");
+            }
+            climate.Select(BayWeather.Clear,true);for(int i=0;i<48;i++)climate.Tick(.25f,false);Controller.Weather.RefreshForCapture();
         }
         private IEnumerator Finish()
         {
             yield return Capture("05-harbor.png");
+            yield return CaptureWildlifeGallery();
             Controller.ToggleJournal();
             if(!Controller.Paused || !Controller.JournalOpen)throw new Exception("Journal capture state failed.");
             if(!string.IsNullOrEmpty(_captureDirectory))yield return new WaitForSecondsRealtime(0.4f);
@@ -224,7 +321,7 @@ namespace BoatAttack.Fishing
             yield return Capture("08-world-instruments.png");
             Controller.ToggleInstruments();
             if(!string.IsNullOrEmpty(_captureDirectory))yield return new WaitForSecondsRealtime(1.5f);
-            Completed=true;Debug.Log("[FISHING] PASS: 3 species, both views, immediate camera obstruction recovery, level horizon, pause/time-scale recovery, net staging, mesh normals, HUD safe areas, inventory, three baits, order delivery, discovery persistence, journal pause, navigation, geometry budget, sale, upgrade, save and backup recovery. Automation did not test real input or VR.");
+            Completed=true;Debug.Log("[FISHING] PASS: 3 species, both views, immediate camera obstruction recovery, level horizon, pause/time-scale recovery, net staging, mesh normals, HUD safe areas, inventory, three baits, order delivery, discovery persistence, journal pause, navigation, geometry budget, weather lifecycle, wildlife sight/occlusion/persistence, sale, upgrade, save and backup recovery. Automation did not test real input or VR.");
             if(!Application.isEditor)Application.Quit(0);
         }
         private void CaptureError(string message,string stack,LogType type)

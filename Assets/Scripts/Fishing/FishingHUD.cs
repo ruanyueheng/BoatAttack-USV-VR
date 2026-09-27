@@ -9,6 +9,7 @@ namespace BoatAttack.Fishing
         public FishingPrototype Controller;
         private Font _font;
         private GUIStyle _label, _button;
+        private bool _naturePage;
         private float _height, _scale, _offset;
         public static float LayoutScale(int width, int height) => Mathf.Max(0.01f, Mathf.Min(width / 1600f, height / 900f));
         private static readonly Color Ink = new Color(0.025f, 0.07f, 0.095f, 0.95f);
@@ -32,7 +33,7 @@ namespace BoatAttack.Fishing
             }
             Panel(28, 24, 308, 91);
             Label(48, 33, 265, 43, "怪鱼航线", 30, Color.white, true);
-            Label(49, 81, 266, 22, "TIDE & FIN   /   海湾探索  0.3", 14, Mint);
+            Label(49, 81, 266, 22, "TIDE & FIN   /   活海湾  0.3.1", 14, Mint);
             Panel(356, 24, 732, 91);
             DrawNavigation();
             Panel(1108, 24, 464, 91);
@@ -46,6 +47,7 @@ namespace BoatAttack.Fishing
             Panel(28, 130, 308, 68);
             Label(47, 139, 280, 30, c.Anchored ? "已停船  /  捕捞工作站" : (c.Speed * 3.6f).ToString("0.0") + "  km/h  /  " + (c.ComfortMode ? "舒适航行" : "标准航行"), 21, Color.white, true);
             Label(48, 173, 265, 22, (c.FirstPerson ? "第一人称" : "第三人称") + "   C 切换  ·  右键环顾", 14, Muted);
+            DrawClimate();
             if (c.ShowDetails)
             {
                 DrawOrder();
@@ -59,7 +61,7 @@ namespace BoatAttack.Fishing
             if (c.ShowDetails)
             {
                 Fill(0, _height - 35, 1600, 35, Ink);
-                Label(30, _height - 29, 1540, 28, "W 前进  A/D 转向  S/Shift 刹车    E 停船/交易/抄鱼    左键 抛竿/提竿/收线    Q 起航    B 换饵    N 航点    J 图鉴    U 升级    R 救援    H 简洁    Esc 设置", 14, Muted);
+                Label(30, _height - 29, 1540, 28, "W 前进  A/D 转向  S/Shift 刹车    E 停船/交易/抄鱼    左键 抛竿/提竿/收线    Q 起航    B 换饵    N 航点    J 图鉴    T 观察    U 升级    R 救援    H 简洁    Esc 设置", 14, Muted);
             }
             if (c.JournalOpen) DrawJournal();
             else if (c.Paused) DrawPause();
@@ -155,8 +157,23 @@ namespace BoatAttack.Fishing
         {
             var c = Controller; float y = (_height - 624) / 2;
             Dim(); Panel(132, y, 1336, 624);
-            Label(164, y + 26, 840, 46, "航海日志  /  每一条鱼都值得记住", 30, Color.white, true);
+            Label(164, y + 26, 840, 46, "航海日志  /  鱼获与海湾伙伴", 30, Color.white, true);
             Label(165, y + 82, 850, 30, "已暂停 · 普通与珍珠变体分别收录，售出后不会丢失记录。", 18, Muted);
+            if(GUI.Button(new Rect(1022,y+30,196,44),"鱼获图鉴",_button))_naturePage=false;
+            if(GUI.Button(new Rect(1230,y+30,196,44),"自然观察",_button))_naturePage=true;
+            if(_naturePage)
+            {
+                for(int i=0;i<5;i++)
+                {
+                    float row=y+138+i*76;bool seen=c.Career.Seen((MarineKind)i);
+                    Fill(164,row,820,64,new Color(.055f,.13f,.16f));
+                    Label(184,row+10,240,28,BayClimate.MarineName((MarineKind)i),22,seen?Mint:Color.white,true);
+                    Label(422,row+9,535,27,BayClimate.MarineHint((MarineKind)i),17,Muted);
+                    Label(184,row+39,700,24,seen?"已观察 · 记录永久保留":"未记录 · 28m 内看向它，按 T 观察",15,seen?Mint:Gold);
+                }
+            }
+            else
+            {
             for (int i = 0; i < 3; i++)
             {
                 float row = y + 138 + i * 126; Fill(164, row, 820, 108, new Color(0.055f, 0.13f, 0.16f));
@@ -165,24 +182,56 @@ namespace BoatAttack.Fishing
                 Label(264, row + 51, 700, 28, FishingVoyage.Habitat((FishKind)i), 17, Muted);
                 Label(264, row + 80, 700, 25, (c.Career.Discovered((FishKind)i) ? "普通已收录" : "普通未发现") + "    ·    " + (c.Career.Discovered((FishKind)i, true) ? "珍珠已收录" : "珍珠未发现") + "    ·    鱼箱 " + c.Career.Owned((FishKind)i), 15, Mint);
             }
+            }
             Label(1022, y + 137, 412, 34, FishingVoyage.OrderName(c.Career.OrdersCompleted), 27, Gold, true);
             Label(1022, y + 187, 410, 95, "集齐委托鱼货后返港按 E。\n优先交付普通鱼，保留多余鱼货。\n奖励 = 鱼货原价 + " + FishingVoyage.OrderBonus(c.Career.OrdersCompleted) + " 金币", 18, Color.white);
             Label(1022, y + 303, 410, 80, "累计捕获 " + c.Career.Catches + " 条\n完成委托 " + c.Career.OrdersCompleted + " 份", 23, Mint);
             Label(1022, y + 408, 410, 105, "珍珠饵更容易吸引稀有鱼，\n但需要更细心地控制张力。\n舒缓饵适合练习收放线。", 17, Muted);
-            Label(165, y + 551, 800, 42, "旧存档只补录鱼箱内的鱼；历史售出鱼种无法推断。", 16, Muted);
+            Label(165, y + 551, 800, 42, "自然观察不占鱼箱、不奖励金币；请保持距离，勿追赶野生伙伴。", 16, Muted);
             if (GUI.Button(new Rect(1174, y + 551, 252, 46), "J / Esc  返回海湾", _button)) c.ToggleJournal();
         }
         private void DrawPause()
         {
-            var c = Controller; float y = (_height - 514) / 2; Dim(); Panel(490, y, 620, 514);
-            Label(526, y + 27, 548, 45, "慢一点，海还在这里。", 30, Color.white, true);
-            Label(527, y + 83, 545, 54, "世界已暂停。恢复时先松开鼠标，避免误抛竿。", 18, Muted);
-            if (GUI.Button(new Rect(527, y + 151, 546, 48), "舒适航行：" + (c.ComfortMode ? "开 · 缓转向 / 稳定海平线" : "关 · 标准动力"), _button)) c.ToggleComfort();
-            if (GUI.Button(new Rect(527, y + 211, 546, 48), "世界空间仪表预览：" + (c.WorldInstruments ? "开" : "关"), _button)) c.ToggleInstruments();
-            if (GUI.Button(new Rect(527, y + 271, 546, 48), "捕鱼提示音：" + (c.QuietMode ? "静音" : "开启"), _button)) c.ToggleQuiet();
-            Label(527, y + 343, 546, 59, "桌面预览不等于 VR 模式。PICO 真机还需接入头部跟踪、手柄与双眼渲染验收。", 16, Muted);
-            if (GUI.Button(new Rect(527, y + 430, 258, 48), "继续航行", _button)) c.TogglePause();
-            if (GUI.Button(new Rect(815, y + 430, 258, 48), "退出游戏", _button)) Application.Quit();
+            var c=Controller;float y=(_height-710)/2;Dim();Panel(450,y,700,710);
+            Label(484,y+25,630,44,"海湾设置 / 世界已暂停",29,Color.white,true);
+            Label(484,y+77,630,44,"天气变化在继续航行后缓慢进行，不添加雷闪、镜头抖动或海浪推船。",17,Muted);
+            if(GUI.Button(new Rect(484,y+133,632,46),"舒适航行："+(c.ComfortMode?"开启":"标准动力"),_button))c.ToggleComfort();
+            if(GUI.Button(new Rect(484,y+188,632,46),"天气："+BayClimate.Name(c.Weather.Climate.Current)+"  /  点击切换下一种",_button))c.Weather.CyclePreview();
+            if(GUI.Button(new Rect(484,y+243,632,46),"天气循环："+(c.Weather.Climate.Automatic?"自动":"固定")+"  /  点击切换",_button))
+            {if(c.Weather.Climate.Automatic)c.Weather.Climate.Hold();else c.Weather.Climate.ResumeCycle();}
+            if(GUI.Button(new Rect(484,y+298,632,46),"环境特效："+(c.Weather.ReducedEffects?"精简雨量":"标准雨量")+"（XR 自动精简）",_button))c.Weather.ToggleReducedEffects();
+            if(GUI.Button(new Rect(484,y+353,632,46),"世界空间仪表预览："+(c.WorldInstruments?"开":"关"),_button))c.ToggleInstruments();
+            if(GUI.Button(new Rect(484,y+408,632,46),"捕鱼 / 环境音："+(c.QuietMode?"静音":"开启"),_button))c.ToggleQuiet();
+            Label(484,y+480,630,65,"天气对咬钩的加成在抛竿时锁定，不会中途改变已上钩的鱼。世界空间仪表是预览；PICO 仍须真机验收。",17,Muted);
+            Label(484,y+558,630,48,"恢复时先松开鼠标。J 查看鱼获与自然观察记录。",17,Mint);
+            if(GUI.Button(new Rect(484,y+634,300,46),"继续航行",_button))c.TogglePause();
+            if(GUI.Button(new Rect(816,y+634,300,46),"退出游戏",_button))Application.Quit();
+        }
+        private void DrawClimate()
+        {
+            var c=Controller;
+            if(!c.Paused)
+            {
+                if(GUI.Button(new Rect(28,210,95,40),"图鉴 J",_button))c.ToggleJournal();
+                if(GUI.Button(new Rect(132,210,95,40),"设置",_button))c.TogglePause();
+                if(GUI.Button(new Rect(236,210,100,40),"视角 C",_button))c.ToggleView();
+            }
+            if(!c.ShowDetails)return;
+            var w=c.Weather.Climate;Panel(28,266,308,144);
+            Label(46,279,272,30,BayClimate.Name(w.Current),22,Color.white,true);
+            Label(46,318,272,28,c.FishNames[(int)BayClimate.Favored(w.Current)]+"活跃 · 咬钩更快 / 稀有 +4%",14,Mint);
+            string forecast=w.Blend<1?"正在过渡 · "+(w.Blend*100).ToString("0")+"%":w.Automatic?"下一个："+BayClimate.Name(w.Forecast)+"  "+w.Remaining.ToString("0")+"s":"天气已固定 · 设置中恢复自动循环";
+            Label(46,360,272,42,forecast,15,Muted);
+            if(c.Ecology.Candidate.HasValue && !c.Paused)
+            {
+                if(GUI.Button(new Rect(28,422,308,44),"T 观察 · "+BayClimate.MarineName(c.Ecology.Candidate.Value),_button))c.Ecology.Observe();
+            }
+        }
+        public static bool BlocksToolPointer(Vector2 screen,int width,int height)
+        {
+            float scale=LayoutScale(width,height);float offset=(width-1600*scale)*.5f;
+            var p=new Vector2((screen.x-offset)/scale,(height-screen.y)/scale);
+            return new Rect(28,210,308,256).Contains(p);
         }
         private void Dim() => Fill(-_offset / _scale, 0, Screen.width / _scale, _height, new Color(0.01f, 0.025f, 0.04f, 0.83f));
         private void Panel(float x, float y, float width, float height)
