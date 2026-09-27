@@ -11,9 +11,20 @@ using Object = UnityEngine.Object;
 
 namespace BoatAttack.Fishing
 {
+    /// <summary>The most recent landed fish, for the HUD's catch card.</summary>
+    public struct CatchCard
+    {
+        public CatchRecord Fish;
+        public float ShownAt;
+        public bool Discovery;
+        public bool PersonalBest;
+        public int Bounty;
+    }
+
     [DefaultExecutionOrder(100)]
     public sealed class FishingPrototype : MonoBehaviour
     {
+        public const string Version = "0.4";
         public Boat boatPrefab;
         public Camera viewCamera;
         public Vector3 spawnPosition;
@@ -41,16 +52,18 @@ namespace BoatAttack.Fishing
         public bool QuietMode { get; private set; }
         public int NavigationTarget { get; private set; }
         public Vector3 NavigationPosition => NavigationTarget == 0 ? harbor : fishingSpots[NavigationTarget - 1];
-        public string NavigationName => NavigationTarget == 0 ? "潮汐渔港" : SpotNames[NavigationTarget - 1];
+        public string NavigationName => NavigationTarget == 0 ? "潮汐渔港" : FishingSpecies.AreaName(NavigationTarget - 1);
         public bool CanChangeBait => Session.Phase == CatchPhase.Idle || Session.Phase == CatchPhase.Caught || Session.Phase == CatchPhase.Escaped;
+        public CatchCard LastCatch { get; private set; }
+        public bool LegendTrophy => Career != null && Career.LegendCatches > 0;
+        /// <summary>Automation-only switch that removes the legend's strike chance; ignored in normal play.</summary>
+        public bool ForceLegendForAutomation { get; set; }
         private bool _xrActive;
         public bool AutomationReel { get; set; }
         public int Spot { get; private set; }
         public string Message { get; private set; }
         public string SavePath { get; private set; }
         public string SaveWarning { get; private set; } = string.Empty;
-        public string[] SpotNames = { "珊瑚浅湾", "飞梭水道", "鼓鼓礁" };
-        public string[] FishNames = { "珊瑚鱼", "飞梭鱼", "鼓鼓鱼" };
         public float Speed => Player == null ? 0f : Vector3.ProjectOnPlane(Player.engine.RB.velocity,Vector3.up).magnitude;
         public float HarborDistance => Player == null ? 999f : FlatDistance(Player.engine.RB.position,harbor);
         public bool AtHarbor => HarborDistance < 22f && Speed < 3f && !Anchored;
@@ -60,13 +73,13 @@ namespace BoatAttack.Fishing
         private Quaternion _anchorRotation;
         private readonly List<Object> _owned = new List<Object>();
         private readonly List<GameObject> _storedFish = new List<GameObject>();
-        private GameObject _fish, _bobber;
+        private GameObject _fish, _bobber, _trophy;
         private Transform _rodTip, _net, _box, _reelCrank;
         private LineRenderer _line;
         private float _netMotion, _caughtAt, _messageUntil;
         private CatchPhase _previousPhase;
         private AudioSource _feedback;
-        private AudioClip _biteTone, _successTone;
+        private AudioClip _biteTone, _successTone, _legendTone;
         private bool _recorded, _initialized;
         private int _previousTargetFrameRate = -1;
         private float _resumeTimeScale = 1f;
@@ -75,6 +88,7 @@ namespace BoatAttack.Fishing
         private readonly FishingPointerGate _gamepadGate = new FishingPointerGate();
         private float _netDeployment;
         public bool NetDeployed => _netDeployment > 0.95f;
+        private bool ForceLegend => Automated && ForceLegendForAutomation;
 
         private void Start()
         {
@@ -114,13 +128,15 @@ namespace BoatAttack.Fishing
             ConfigurePresentation();
             _feedback=gameObject.AddComponent<AudioSource>();_feedback.spatialBlend=0f;_feedback.volume=0.45f;
             _biteTone=Tone(780f,0.13f);_successTone=Tone(1150f,0.2f);
+            _legendTone=Chime(new[]{523f,659f,784f,1047f},0.11f);
             gameObject.AddComponent<FishingHUD>().Controller=this;
             gameObject.AddComponent<FishingWorldInstruments>().Controller=this;
             _feedback.mute=QuietMode;
-            Notice(string.IsNullOrEmpty(warning)?"第三次出航！N 选择航点，J 查看图鉴与订单。驶近浮标、减速后按 E 停船。":warning,10f);
+            if(LegendTrophy)BuildTrophy();
+            Notice(string.IsNullOrEmpty(warning)?"金帆传说版！N 选择航点，J 查看图鉴、委托与传说线索。驶近浮标、减速后按 E 停船。":warning,10f);
             _initialized=true;
             if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
-            Debug.Log("[FISHING] Prototype initialized. Original procedural fish; desktop preview only.");
+            Debug.Log("[FISHING] Prototype v"+Version+" initialized. Original procedural fish; desktop preview only.");
         }
 
         private void Update()
@@ -153,7 +169,10 @@ namespace BoatAttack.Fishing
                 if(k!=null && k.tKey.wasPressedThisFrame)Ecology.Observe();
                 if(_input.Current.reset)ReturnToHarbor();
                 if(k!=null && k.qKey.wasPressedThisFrame)LeaveStation();
-                if(k!=null && k.uKey.wasPressedThisFrame)BuyUpgrade();
+                if(k!=null && (k.uKey.wasPressedThisFrame || k.digit1Key.wasPressedThisFrame))BuyUpgrade(UpgradeTrack.Line);
+                if(k!=null && k.digit2Key.wasPressedThisFrame)BuyUpgrade(UpgradeTrack.Reel);
+                if(k!=null && k.digit3Key.wasPressedThisFrame)BuyUpgrade(UpgradeTrack.Hold);
+                if(k!=null && k.xKey.wasPressedThisFrame)SellAll();
                 if(_input.Current.interact)Interact();
                 bool press=(pointerReady && !overTools && !rightHeld && m!=null && m.leftButton.wasPressedThisFrame) || (gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame);
                 if(press && Anchored){if(Session.Phase==CatchPhase.Bite)Hook();else Cast();}
@@ -167,8 +186,13 @@ namespace BoatAttack.Fishing
                 Session.Tick(Time.deltaTime,reel);
                 if(Session.Phase!=_previousPhase)
                 {
-                    if(Session.Phase==CatchPhase.Bite)_feedback.PlayOneShot(_biteTone);
-                    if(Session.Phase==CatchPhase.Escaped)Notice(Session.Failure,8f);
+                    if(Session.Phase==CatchPhase.Bite)
+                    {
+                        bool legend=Session.Species.Legendary;
+                        _feedback.PlayOneShot(legend?_legendTone:_biteTone);
+                        if(legend)Notice("金帆旗鱼咬钩了！提竿后看到“跃出水面”立刻松开，别硬拉。",7f);
+                    }
+                    if(Session.Phase==CatchPhase.Escaped)Notice(FishingText.Failure(Session.Failure),8f);
                     _previousPhase=Session.Phase;
                 }
                 StoreLandedCatch();
@@ -251,13 +275,22 @@ namespace BoatAttack.Fishing
         public bool Cast()
         {
             if(!Anchored || Paused)return false;
-            if(Career.Count>=FishingCareer.Capacity){Notice("鱼箱已满！按 Q 起航，返港按 E 出售。");return false;}
-            bool cast=Session.Cast((FishKind)Spot,UnityEngine.Random.value<Mathf.Clamp01(FishingVoyage.RareChance(Bait)+BayClimate.RareBonus(Weather.Climate.Current,(FishKind)Spot)),Career.RodLevel,Guid.NewGuid().ToString("N"),Bait,Weather.Climate.Current);
+            if(Career.Count>=Career.Capacity){Notice("鱼箱已满！按 Q 起航，返港按 E 出售。");return false;}
+            var weather=Weather.Climate.Current;
+            var kind=FishingSpecies.AreaSpecies(Spot);
+            bool legend=LegendRules.CanStrike(Spot,weather,Bait,Career.LineLevel) && (ForceLegend || UnityEngine.Random.value<LegendRules.StrikeChance);
+            bool rare=!legend && UnityEngine.Random.value<Mathf.Clamp01(FishingVoyage.RareChance(Bait)+BayClimate.RareBonus(weather,kind));
+            if(legend)kind=FishKind.Sailfish;
+            // Two uniform rolls: average fish are common and record-sized fish stay rare.
+            float size=(UnityEngine.Random.value+UnityEngine.Random.value)*0.5f;
+            bool cast=Session.Cast(kind,rare,Career.LineLevel,Guid.NewGuid().ToString("N"),Bait,weather,size,Career.ReelLevel);
             if(cast)
             {
                 _recorded=false;_previousPhase=CatchPhase.Waiting;
                 _fish.SetActive(false);Destroy(_fish);
-                _fish=FishingArt.Fish(transform,Session.Rare?orange:fishMaterials[Spot],cream,dark,_owned,(FishKind)Spot,Session.Rare);
+                _fish=MakeFish(transform,kind,rare);
+                if(!legend && LegendRules.Conditions(Spot,weather,Bait) && Career.LineLevel==0)
+                    Notice("水下掠过一道金色的影子……鱼线太细，它不屑一顾。回港升级鱼线吧。",7f);
             }
             return cast;
         }
@@ -276,27 +309,64 @@ namespace BoatAttack.Fishing
         {
             if(Session.Phase!=CatchPhase.Caught || _recorded)return;
             var record=Session.Claim();
-            bool discovery=record!=null && !Career.Discovered(record.kind,record.rare);
-            if(record==null || !Career.Store(record))return;
+            if(record==null)return;
+            bool legend=FishingSpecies.Of(record.kind).Legendary;
+            bool discovery=!Career.Discovered(record.kind,record.rare);
+            int previousBest=Career.BestGrams(record.kind);
+            int bounty=0;
+            if(legend){bounty=Career.RecordLegend(record);if(bounty<=0)return;}
+            else if(!Career.Store(record))return;
             _recorded=true;_caughtAt=Time.time;_catchStart=_fish.transform.position;
-            RefreshHold();Save();_feedback.PlayOneShot(_successTone);
-            Notice((discovery?"图鉴发现！":record.rare?"稀有！":"捕获成功！")+FishNames[(int)record.kind]+" 已入箱，价值 "+record.value+" 金币。",6f);
+            bool best=previousBest>0 && record.grams>previousBest;
+            LastCatch=new CatchCard{Fish=record.Copy(),ShownAt=Time.unscaledTime,Discovery=discovery,PersonalBest=best,Bounty=bounty};
+            RefreshHold();Save();_feedback.PlayOneShot(legend?_legendTone:_successTone);
+            string name=FishingSpecies.Name(record.kind)+" "+FishingText.Weight(record.grams);
+            if(legend)
+            {
+                if(_trophy==null)BuildTrophy();
+                Notice("传说！"+name+" 已测量并放生，海洋站奖励 "+bounty+" 金币。灯塔顶升起了金帆风向标。",9f);
+            }
+            else Notice((discovery?"图鉴发现！":best?"新纪录！":record.rare?"稀有！":"捕获成功！")+name+" 已入箱，价值 "+record.value+" 金币。",6f);
         }
         public void LeaveStation()
         {
-            if(Paused)return;Anchored=false;Session.Cancel();AutomationReel=false;Notice("工具已收起，W 前进，A/D 转向，S/Shift 刹车；青色港口按 E 出售。");
+            if(Paused)return;Anchored=false;Session.Cancel();AutomationReel=false;Notice("工具已收起，W 前进，A/D 转向，S/Shift 刹车；青色港口按 E 交易。");
         }
         public int Sell()
         {
             if(!AtHarbor || Paused)return 0;
-            int sold=Career.Sell();if(sold>0){Save();RefreshHold();_feedback.PlayOneShot(_successTone);Notice("出售成功 +"+sold+" 金币！在港口按 U 升级鱼线（30 金币）。",7f);}
-            else Notice("鱼箱还是空的。前往黄色渔区捕捞，带回这里出售。");return sold;
+            int reserved=Career.ReservedCount;
+            int sold=Career.Sell();
+            if(sold>0)
+            {
+                Save();RefreshHold();_feedback.PlayOneShot(_successTone);
+                Notice("出售成功 +"+sold+" 金币"+(reserved>0?"，已为委托保留 "+reserved+" 条鱼（X 可全部出售）。":"！数字键 1/2/3 在交易台升级。"),7f);
+            }
+            else Notice(reserved>0?"鱼货都在为委托保留。凑齐后按 E 交付，或按 X 全部出售。":"鱼箱还是空的。前往黄色渔区捕捞，带回这里出售。");
+            return sold;
         }
-        public bool BuyUpgrade()
+        public int SellAll()
         {
-            if(!AtHarbor || Paused){Notice("请先回到青色港口，再按 U 升级。");return false;}
-            bool ok=Career.Upgrade();if(ok){Save();Notice("轻量鱼线已升级！收线时张力增长降低 28%。",8f);}
-            else Notice(Career.RodLevel==1?"本次试玩的鱼线升级已完成。":"需要 30 金币。先捕鱼、返港出售吧。");return ok;
+            if(!AtHarbor || Paused){Notice("请先回到青色港口再出售。");return 0;}
+            int sold=Career.SellAll();
+            if(sold>0){Save();RefreshHold();_feedback.PlayOneShot(_successTone);Notice("全部出售 +"+sold+" 金币。",6f);}
+            else Notice("鱼箱还是空的。");
+            return sold;
+        }
+        public bool BuyUpgrade(UpgradeTrack track)
+        {
+            if(!AtHarbor || Paused){Notice("请先回到青色港口，再在交易台升级。");return false;}
+            int cost=Career.NextUpgradeCost(track);
+            if(cost<=0){Notice(FishingText.UpgradeName(track)+"已经升到满级。",4f);return false;}
+            bool ok=Career.Upgrade(track);
+            if(ok)
+            {
+                Save();if(track==UpgradeTrack.Hold)RefreshHold();_feedback.PlayOneShot(_successTone);
+                int level=Career.Level(track);
+                Notice(FishingText.UpgradeName(track)+" 升至 Lv."+level+" · "+FishingText.UpgradeEffect(track,level),7f);
+            }
+            else Notice("需要 "+cost+" 金币。先捕鱼、返港出售或交付委托吧。");
+            return ok;
         }
         public bool RecordWildlife(MarineKind kind)
         {
@@ -329,9 +399,10 @@ namespace BoatAttack.Fishing
         public int DeliverOrder()
         {
             if(Paused || !AtHarbor)return 0;
+            var order=Career.CurrentOrder;
             int payout=Career.DeliverOrder();
-            if(payout>0){Save();RefreshHold();_feedback.PlayOneShot(_successTone);Notice("订单完成 +"+payout+" 金币（含鱼价及奖金）！下一份订单已刷新。",7f);}
-            else Notice("订单鱼货尚未集齐。按 J 查看需求；按 E 可普通出售。",5f);
+            if(payout>0){Save();RefreshHold();_feedback.PlayOneShot(_successTone);Notice("委托“"+order.Name+"”完成 +"+payout+" 金币（含鱼价及奖金）！新的委托已贴上公告板。",7f);}
+            else Notice("委托鱼货尚未集齐。按 J 查看需求；按 E 出售其他鱼货。",5f);
             return payout;
         }
         public void ReturnToHarbor()
@@ -342,6 +413,11 @@ namespace BoatAttack.Fishing
         {
             if(!Automated)throw new InvalidOperationException("Automation-only helper.");
             Teleport(fishingSpots[index]+Vector3.up,spawnRotation);UpdateNearestSpot();
+        }
+        public void SetBaitForAutomation(BaitKind bait)
+        {
+            if(!Automated)throw new InvalidOperationException("Automation-only helper.");
+            for(int i=0;i<3 && Bait!=bait;i++)CycleBait();
         }
         private void Teleport(Vector3 p,Quaternion q){var rb=Player.engine.RB;rb.velocity=rb.angularVelocity=Vector3.zero;Player.transform.SetPositionAndRotation(p,q);rb.position=p;rb.rotation=q;Physics.SyncTransforms();}
         private void UpdateNearestSpot()
@@ -381,19 +457,35 @@ namespace BoatAttack.Fishing
             _box=FishingDetailArt.Crate(boat,new Vector3(0,0.85f,-1.3f),wood,teal,dark);
             FishingDetailArt.Rod(boat,dark,wood,cream,orange,out _rodTip,out _reelCrank);
             _net=FishingDetailArt.Net(boat,dark,teal,cream);
-            _fish=FishingArt.Fish(transform,fishMaterials[0],cream,dark,_owned);
+            _fish=MakeFish(transform,FishKind.Coral,false);
             _bobber=FishingArt.Shape("Float",PrimitiveType.Sphere,transform,Vector3.zero,Vector3.one*0.18f,orange);
             _line=FishingArt.Line("Fishing line",transform,lineMaterial,0.018f);_line.positionCount=25;
             RefreshHold();
+        }
+        private GameObject MakeFish(Transform parent,FishKind kind,bool rare)
+        {
+            var body=rare || kind==FishKind.Sailfish?orange:fishMaterials[Mathf.Clamp((int)kind,0,fishMaterials.Length-1)];
+            return FishingArt.Fish(parent,body,cream,dark,_owned,kind,rare);
         }
         private void RefreshHold()
         {
             foreach(var f in _storedFish)Destroy(f);_storedFish.Clear();
             int i=0;foreach(var record in Career.Inventory)
             {
-                var f=FishingArt.Fish(_box,record.rare?orange:fishMaterials[(int)record.kind],cream,dark,_owned,record.kind,record.rare);
-                f.transform.localPosition=new Vector3((i%3-1)*0.45f,0.28f,(i/3-0.5f)*0.4f);f.transform.localRotation=Quaternion.Euler(0,90,80);f.transform.localScale=Vector3.one*0.55f;_storedFish.Add(f);i++;
+                var f=MakeFish(_box,record.kind,record.rare);
+                // Six fish per layer; an upgraded hold stacks a second layer instead of spilling over the crate.
+                int slot=i%6,layer=i/6;
+                f.transform.localPosition=new Vector3((slot%3-1)*0.45f,0.28f+layer*0.17f,(slot/3-0.5f)*0.4f);f.transform.localRotation=Quaternion.Euler(0,90,80);f.transform.localScale=Vector3.one*0.55f;_storedFish.Add(f);i++;
             }
+        }
+        /// <summary>A golden-sail weather vane on the lighthouse marks the first released legend.</summary>
+        private void BuildTrophy()
+        {
+            if(_trophy!=null)return;
+            _trophy=new GameObject("Golden sail trophy vane");_trophy.transform.SetParent(transform,false);
+            _trophy.transform.position=harbor+new Vector3(5.4f,8.35f,2.5f);
+            var fish=MakeFish(_trophy.transform,FishKind.Sailfish,false);
+            fish.transform.localScale=Vector3.one*1.1f;fish.transform.localRotation=Quaternion.Euler(-12f,0,0);
         }
         private void AnimateEquipment()
         {
@@ -403,24 +495,38 @@ namespace BoatAttack.Fishing
             _line.enabled=active && phase!=CatchPhase.Caught;_bobber.SetActive(active && (phase==CatchPhase.Waiting || phase==CatchPhase.Bite));
             _fish.SetActive(active && (phase==CatchPhase.Fighting || phase==CatchPhase.Landing || (phase==CatchPhase.Caught && Time.time-_caughtAt<0.8f)));
             var t=Player.transform;var yaw=Quaternion.Euler(0,t.eulerAngles.y,0);
+            bool legend=Session.Species.Legendary;
             float distance=phase==CatchPhase.Fighting?3.4f+Session.Distance*0.24f:5.5f;
             var target=t.position+yaw*new Vector3(distance,0,1.5f);target.y=phase==CatchPhase.Fighting?0.18f+Mathf.Abs(Mathf.Sin(Time.time*3f))*0.20f:0.25f+Mathf.Sin(Time.time*4f)*0.06f;
+            float leap=phase==CatchPhase.Fighting?Session.LeapProgress:0f;
+            // The legend clears the water in a readable arc; the HUD warns before the line would snap.
+            if(leap>0f)target.y=0.2f+Mathf.Sin(leap*Mathf.PI)*2.4f;
             if(phase==CatchPhase.Landing)target=t.position+yaw*new Vector3(3.3f,0.85f+Mathf.Abs(Mathf.Sin(Time.time*5f))*0.25f,1.5f);
             _bobber.transform.position=target;
             _fish.transform.position=phase==CatchPhase.Caught?Vector3.Lerp(_catchStart,_box.position+Vector3.up*0.5f,Mathf.Clamp01((Time.time-_caughtAt)/0.7f))+Vector3.up*Mathf.Sin(Mathf.Clamp01((Time.time-_caughtAt)/0.7f)*Mathf.PI)*0.8f:target;
-            _fish.transform.rotation=yaw*Quaternion.Euler(Mathf.Sin(Time.time*7)*18f,-90+Mathf.Sin(Time.time*9)*22f,Mathf.Sin(Time.time*6)*14f);
-            _fish.transform.localScale=Vector3.one*(Spot==2?1.5f:1.25f);
+            _fish.transform.rotation=leap>0f?yaw*Quaternion.Euler(-Mathf.Cos(leap*Mathf.PI)*50f,-90f,Mathf.Sin(leap*Mathf.PI*2f)*20f)
+                :yaw*Quaternion.Euler(Mathf.Sin(Time.time*7)*18f,-90+Mathf.Sin(Time.time*9)*22f,Mathf.Sin(Time.time*6)*14f);
+            _fish.transform.localScale=Vector3.one*(legend?1.1f:Session.Kind==FishKind.Puffer?1.5f:1.25f);
             for(int i=0;i<25;i++){float u=i/24f;_line.SetPosition(i,Vector3.Lerp(_rodTip.position,target,u)-Vector3.up*Mathf.Sin(u*Mathf.PI)*(phase==CatchPhase.Fighting?0.15f:0.5f));}
             // Stow the basket alongside the hull until it is needed, rather than covering the fish.
             _netDeployment=Mathf.MoveTowards(_netDeployment,Anchored && (phase==CatchPhase.Landing || _netMotion>0f)?1f:0f,Time.deltaTime*4f);
             _netMotion=Mathf.MoveTowards(_netMotion,0,Time.deltaTime*2.8f);
             _net.localPosition=Vector3.Lerp(new Vector3(1.15f,0.65f,-0.7f),new Vector3(1.15f,0.9f,-0.4f),_netDeployment);
             _net.localRotation=Quaternion.Euler(0,Mathf.Lerp(85f,0f,_netDeployment),-Mathf.Sin(_netMotion*Mathf.PI)*35f);
+            if(_trophy!=null)_trophy.transform.rotation=Quaternion.Euler(0,Mathf.Sin(Time.time*0.23f)*70f+Time.time*6f,0);
         }
         private AudioClip Tone(float frequency,float seconds)
         {
             int samples=(int)(22050*seconds);var data=new float[samples];for(int i=0;i<samples;i++)data[i]=Mathf.Sin(i*frequency*Mathf.PI*2/22050f)*Mathf.Sin(i/(float)samples*Mathf.PI)*0.25f;
             var clip=AudioClip.Create("Original prototype feedback tone",samples,1,22050,false);clip.SetData(data,0);_owned.Add(clip);return clip;
+        }
+        /// <summary>Rising arpeggio reserved for the legend, so its bite is recognisable by ear alone.</summary>
+        private AudioClip Chime(float[] notes,float noteSeconds)
+        {
+            int per=(int)(22050*noteSeconds);var data=new float[per*notes.Length];
+            for(int n=0;n<notes.Length;n++)for(int i=0;i<per;i++)
+                data[n*per+i]=Mathf.Sin(i*notes[n]*Mathf.PI*2/22050f)*Mathf.Sin(i/(float)per*Mathf.PI)*0.22f;
+            var clip=AudioClip.Create("Original legend chime",data.Length,1,22050,false);clip.SetData(data,0);_owned.Add(clip);return clip;
         }
         private void OnDestroy()
         {

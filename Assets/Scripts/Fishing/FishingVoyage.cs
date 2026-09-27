@@ -1,10 +1,10 @@
-using System;
 namespace BoatAttack.Fishing
 {
     public enum BaitKind { Balanced, Gentle, Pearl }
-    public enum FishBeat { Rest, Windup, Surge }
+    // Leap only occurs for legendary fish; appended so earlier values keep their meaning.
+    public enum FishBeat { Rest, Windup, Surge, Leap }
 
-    /// <summary>Platform-independent tuning, shared by the desktop and future tracked tools.</summary>
+    /// <summary>Platform-independent bait and fight rhythm, shared by the desktop and future tracked tools.</summary>
     public static class FishingVoyage
     {
         public static string BaitName(BaitKind bait) => bait == BaitKind.Gentle ? "舒缓饵" : bait == BaitKind.Pearl ? "珍珠饵" : "均衡饵";
@@ -12,18 +12,21 @@ namespace BoatAttack.Fishing
         public static float RareChance(BaitKind bait) => bait == BaitKind.Pearl ? 0.25f : 0.12f;
         public static float TensionScale(BaitKind bait) => bait == BaitKind.Gentle ? 0.8f : bait == BaitKind.Pearl ? 1.18f : 1f;
         public static float ReelScale(BaitKind bait) => bait == BaitKind.Gentle ? 0.85f : 1f;
-        public static string OrderName(int completed) => completed % 3 == 0 ? "海湾早餐" : completed % 3 == 1 ? "远航补给" : "海岛盛宴";
-        public static int OrderBonus(int completed) => completed % 3 == 0 ? 24 : completed % 3 == 1 ? 32 : 50;
-        public static int Required(int completed, FishKind kind)
-        {
-            int order = completed % 3;
-            return order == 0 ? (kind == FishKind.Puffer ? 0 : 1) : order == 1 ? (kind == FishKind.Coral ? 0 : 1) : 1;
-        }
-        public static string Habitat(FishKind kind) => kind == FishKind.Coral ? "浅湾环礁 · 短冲刺，适合初学" : kind == FishKind.Dart ? "航标水道 · 冲刺频繁，提前放线" : "鼓鼓礁群 · 蓄力较久，冲刺更强";
-        public static float BeatDuration(FishKind kind) => kind == FishKind.Dart ? 3.6f : kind == FishKind.Puffer ? 6.4f : 5.4f;
+        public static float BeatDuration(FishKind kind) => FishingSpecies.Of(kind).BeatSeconds;
+        // The legend's leap window inside its beat cycle; the airborne arc uses the same bounds.
+        public const float LeapStart = 0.55f;
+        public const float LeapEnd = 0.72f;
+
+        /// <summary>
+        /// Common fish: rest, windup, surge. The legend adds a leap between windup and surge,
+        /// during which reeling snaps the line.
+        /// </summary>
         public static FishBeat Beat(FishKind kind, float time)
         {
-            float phase = time % BeatDuration(kind) / BeatDuration(kind);
+            var species = FishingSpecies.Of(kind);
+            float phase = time % species.BeatSeconds / species.BeatSeconds;
+            if (species.Legendary)
+                return phase < 0.4f ? FishBeat.Rest : phase < LeapStart ? FishBeat.Windup : phase < LeapEnd ? FishBeat.Leap : FishBeat.Surge;
             return phase < 0.55f ? FishBeat.Rest : phase < 0.76f ? FishBeat.Windup : FishBeat.Surge;
         }
     }

@@ -54,8 +54,19 @@ namespace BoatAttack.Fishing
             }
             _fill.sizeDelta = new Vector2(c.Session.Tension * 400, 10);
             if (Time.unscaledTime < _nextText) return; _nextText = Time.unscaledTime + 0.1f;
-            _status.text = c.Anchored ? "FISHING  /  " + c.Session.Phase.ToString().ToUpperInvariant() + "\nLINE " + (c.Session.Tension * 100).ToString("0") + "%   HOLD " + c.Career.Count + "/6" : "TIDE & FIN   /   HELM\n" + (c.Speed * 3.6f).ToString("0") + " km/h    HOLD " + c.Career.Count + "/6";
-            _hint.text = c.Paused ? "PAUSED" : c.Anchored && c.Session.Phase == CatchPhase.Fighting ? (c.Session.Beat == FishBeat.Rest ? "REST - REEL IN" : c.Session.Beat == FishBeat.Windup ? "WINDUP - PREPARE TO RELEASE" : "SURGE - EASE THE LINE") : "HARBOR " + c.HarborDistance.ToString("0") + "m";
+            string hold = "HOLD " + c.Career.Count + "/" + c.Career.Capacity;
+            _status.text = c.Anchored ? "FISHING  /  " + c.Session.Phase.ToString().ToUpperInvariant() + "\nLINE " + (c.Session.Tension * 100).ToString("0") + "%   " + hold : "TIDE & FIN   /   HELM\n" + (c.Speed * 3.6f).ToString("0") + " km/h    " + hold;
+            _hint.text = c.Paused ? "PAUSED" : c.Anchored && c.Session.Phase == CatchPhase.Fighting ? BeatHint(c.Session.Beat) : "HARBOR " + c.HarborDistance.ToString("0") + "m";
+        }
+        private static string BeatHint(FishBeat beat)
+        {
+            switch (beat)
+            {
+                case FishBeat.Rest: return "REST - REEL IN";
+                case FishBeat.Windup: return "WINDUP - PREPARE TO RELEASE";
+                case FishBeat.Leap: return "LEAP - RELEASE NOW";
+                default: return "SURGE - EASE THE LINE";
+            }
         }
     }
 }

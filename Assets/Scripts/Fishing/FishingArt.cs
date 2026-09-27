@@ -19,6 +19,7 @@ namespace BoatAttack.Fishing
         {
             var root = new GameObject("Original " + kind + (rare ? " pearl variant" : " fish"));
             root.transform.SetParent(parent, false);
+            if (kind == FishKind.Sailfish) kind = FishKind.Dart;
             var mesh = CachedMesh(kind, owned);
             var bodyGo = new GameObject("Fish body", typeof(MeshFilter), typeof(MeshRenderer));
             bodyGo.transform.SetParent(root.transform, false);

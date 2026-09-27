@@ -38,18 +38,18 @@ internal static class Program
             Check(strong.Tension<weak.Tension,"Upgrade reduces tension growth");
             var c=new FishingCareer();var record=new CatchRecord{id="fish-1",kind=FishKind.Coral,rare=true,value=30};
             Check(c.Store(record),"Store valid catch");Check(!c.Store(record),"Duplicate catch rejected");record.value=999;
-            Check(c.HoldValue==30,"Stored data copied");Check(c.Sell()==30 && c.Coins==30 && c.Count==0,"Sell updates coins and empties hold");
-            Check(c.Sell()==0 && c.Coins==30,"Sell cannot pay twice");Check(c.Upgrade() && c.RodLevel==1 && c.Coins==0,"Upgrade spends exact cost");
-            Check(!c.Upgrade(),"Upgrade cannot repeat");
-            Check(FishingCareer.TryRestore(c.Snapshot(),out var loaded) && loaded.RodLevel==1,"Progress restores");
+            Check(c.HoldValue==30,"Stored data copied");Check(c.SellAll()==30 && c.Coins==30 && c.Count==0,"Sell all updates coins and empties hold");
+            Check(c.Sell()==0 && c.Coins==30,"Sell cannot pay twice");Check(c.Upgrade(UpgradeTrack.Line) && c.LineLevel==1 && c.Coins==0,"Upgrade spends exact cost");
+            Check(!c.Upgrade(UpgradeTrack.Line) && c.NextUpgradeCost(UpgradeTrack.Line)==90,"Second line level waits for 90 coins");
+            Check(FishingCareer.TryRestore(c.Snapshot(),out var loaded) && loaded.LineLevel==1,"Progress restores");
             record.value=30;Check(!loaded.Store(record),"Sold ID remains deduplicated after restore");
             Check(!FishingCareer.TryRestore(new FishingSaveData{version=99},out _),"Unknown save version rejected");
             Check(!FishingCareer.TryRestore(new FishingSaveData{coins=-1},out _),"Negative balance rejected");
-            for(int i=0;i<FishingCareer.Capacity;i++)Check(c.Store(new CatchRecord{id="extra"+i,kind=FishKind.Coral,value=10}),"Fill inventory "+i);
+            for(int i=0;i<c.Capacity;i++)Check(c.Store(new CatchRecord{id="extra"+i,kind=FishKind.Coral,value=10}),"Fill inventory "+i);
             Check(!c.Store(new CatchRecord{id="overflow",kind=FishKind.Coral,value=10}),"Hold capacity enforced");
             Check(FishingCareer.TryRestore(c.Snapshot(),out loaded) && loaded.Count==6 && loaded.HoldValue==60,"Inventory round trip");
             Check(!new CatchSession().Cast(FishKind.Coral,false,0,new string('x',65)),"Oversized catch ID rejected at cast");
-            Check(!new FishingCareer().Upgrade(),"Upgrade without coins rejected");
+            Check(!new FishingCareer().Upgrade(UpgradeTrack.Line),"Upgrade without coins rejected");
             var malformed=new FishingCareer();Check(!malformed.Store(new CatchRecord{id="bad",kind=FishKind.Coral,value=999}),"Forged sale value rejected");
             var duplicateSave=new FishingSaveData();duplicateSave.inventory.Add(new CatchRecord{id="duplicate",kind=FishKind.Coral,value=10});duplicateSave.inventory.Add(new CatchRecord{id="duplicate",kind=FishKind.Coral,value=10});
             Check(!FishingCareer.TryRestore(duplicateSave,out _),"Duplicate inventory in save rejected");
@@ -90,6 +90,7 @@ internal static class Program
             Check(lookGate.Update(true,false,false,false),"Look release rearms drag");
             VoyageTests.Run(Check);
             ClimateTests.Run(Check);
+            ProgressionTests.Run(Check);
             Console.WriteLine("TOTAL: "+count+" passed. Pure fishing rules only.");return 0;
         }
         catch(Exception ex){Console.Error.WriteLine(ex);return 1;}

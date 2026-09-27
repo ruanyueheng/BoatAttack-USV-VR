@@ -7,12 +7,13 @@ namespace BoatAttack.Fishing
     /// <summary>Explicit command-line-only test driver. Never enabled in a normal game.</summary>
     public sealed class FishingAutoplay : MonoBehaviour
     {
+        public const float TimeoutSeconds = 320f;
         public FishingPrototype Controller;
         public static bool Completed { get; private set; }
         public static string Failure { get; private set; }
-        private int _stage,_fishCount;
+        private int _stage,_fishCount,_legendCoins,_legendHold;
         private float _started,_captureAt,_landingCaptureAt;
-        private bool _captured, _thirdCaptured, _landingCaptured, _pufferCaptured;
+        private bool _captured, _thirdCaptured, _landingCaptured, _pufferCaptured, _leapSeen, _leapCaptured;
         private string _captureDirectory;
         private void Start()
         {
@@ -27,7 +28,7 @@ namespace BoatAttack.Fishing
             if(Completed || Failure!=null)return;
             try
             {
-                if(Time.realtimeSinceStartup-_started>210f)throw new Exception("Fishing automation timed out, phase "+Controller.Session.Phase);
+                if(Time.realtimeSinceStartup-_started>TimeoutSeconds)throw new Exception("Fishing automation timed out, stage "+_stage+", phase "+Controller.Session.Phase);
                 switch(_stage)
                 {
                     case -2:
@@ -60,6 +61,7 @@ namespace BoatAttack.Fishing
                         if(Controller.Paused || Controller.JournalOpen || Time.timeScale!=1f)throw new Exception("Journal did not restore simulation.");
                         if(_fishCount>0)Controller.CycleBait();
                         if(!Controller.Cast())throw new Exception("Could not cast.");
+                        if(Controller.Session.Kind!=FishingSpecies.AreaSpecies(_fishCount))throw new Exception("Area cast the wrong species: "+Controller.Session.Kind);
                         var bait=Controller.Bait;Controller.CycleBait();
                         if(Controller.Bait!=bait)throw new Exception("Bait changed during an active cast.");
                         _stage=1;break;
@@ -87,8 +89,11 @@ namespace BoatAttack.Fishing
                             int before=Controller.Career.Count;
                             if(!Controller.Scoop() || Controller.Career.Count!=before+1)throw new Exception("Scoop did not commit inventory immediately.");
                             if(Controller.Scoop() || Controller.Career.Count!=before+1)throw new Exception("Repeated scoop duplicated a catch.");
+                            var landed=Controller.LastCatch.Fish;
+                            if(landed==null || landed.grams<=0 || !FishingSpecies.ValidGrams(landed.kind,landed.grams) || landed.value!=FishingSpecies.Value(landed.kind,landed.rare,landed.grams))
+                                throw new Exception("Landed catch lacks a valid measured weight/price.");
                         }
-                        if(Controller.Session.Phase==CatchPhase.Escaped)throw new Exception(Controller.Session.Failure);
+                        if(Controller.Session.Phase==CatchPhase.Escaped)throw new Exception(FishingText.Failure(Controller.Session.Failure));
                         if(Controller.Career.Count>_fishCount)
                         {
                             _fishCount++;
@@ -109,29 +114,98 @@ namespace BoatAttack.Fishing
                         break;
                     case 3:
                         if(Time.realtimeSinceStartup<_captureAt)return;
-                        int value=Controller.Career.HoldValue;
-                        if(value<48 || !Controller.Career.OrderReady)throw new Exception("Mixed-species order not ready.");
-                        int payout=Controller.DeliverOrder();
-                        if(payout<=24 || Controller.Career.Count!=1 || Controller.Career.OrdersCompleted!=1)throw new Exception("Order delivery failed.");
-                        if(Controller.DeliverOrder()!=0)throw new Exception("Duplicate order paid twice.");
-                        int remaining=Controller.Sell();
-                        if(payout+remaining!=value+24 || Controller.Career.Count!=0)throw new Exception("Order/sale total failed.");
-                        if(Controller.Sell()!=0)throw new Exception("Duplicate sale paid twice.");
-                        if(!Controller.BuyUpgrade() || Controller.Career.RodLevel!=1)throw new Exception("Upgrade failed.");
-                        var reloaded=FishingSaveStore.Load(Controller.SavePath,out var note);
-                        if(reloaded.Coins!=Controller.Career.Coins || reloaded.RodLevel!=1 || reloaded.Count!=0 || reloaded.OrdersCompleted!=1 || reloaded.Catches!=3 || reloaded.DiscoveryMask!=Controller.Career.DiscoveryMask || note.Length>0)throw new Exception("Save round trip failed.");
-                        // Force a backup and verify recovery in the isolated test save, never player progress.
-                        FishingSaveStore.Save(Controller.SavePath,Controller.Career);
-                        File.WriteAllText(Controller.SavePath,"corrupt test payload");
-                        reloaded=FishingSaveStore.Load(Controller.SavePath,out note);
-                        if(reloaded.RodLevel!=1 || note.Length==0)throw new Exception("Backup recovery failed.");
+                        ValidateHarborTrade();
                         _captureAt=Time.realtimeSinceStartup+2f;_stage=4;break;
                     case 4:
                         if(Time.realtimeSinceStartup<_captureAt)return;
-                        StartCoroutine(Finish());_stage=5;break;
+                        BeginLegend();_stage=5;break;
+                    case 5:
+                        FightLegend();break;
+                    case 6:
+                        if(Time.realtimeSinceStartup<_captureAt)return;
+                        var climate=Controller.Weather.Climate;
+                        Controller.ForceLegendForAutomation=false;
+                        Controller.ReturnToHarbor();
+                        if(!climate.Select(BayWeather.Clear,true))throw new Exception("Could not restore clear weather after the legend.");
+                        for(int i=0;i<48;i++)climate.Tick(.25f,false);
+                        Controller.Weather.ApplyEnvironment();
+                        _captureAt=Time.realtimeSinceStartup+2f;_stage=7;break;
+                    case 7:
+                        if(Time.realtimeSinceStartup<_captureAt)return;
+                        StartCoroutine(Finish());_stage=8;break;
                 }
             }
             catch(Exception ex){Failure=ex.ToString();Debug.LogError("[FISHING] FAIL: "+Failure);if(!Application.isEditor)Application.Quit(1);}
+        }
+        /// <summary>Order delivery, reserving sale, sell-all, upgrades, save round trip and backup recovery.</summary>
+        private void ValidateHarborTrade()
+        {
+            var career=Controller.Career;
+            if(!Controller.AtHarbor)throw new Exception("Rescue did not return to the harbor trade desk.");
+            int value=career.HoldValue;var order=career.CurrentOrder;
+            if(career.Count!=3 || !career.OrderReady)throw new Exception("Mixed-species order not ready.");
+            int expected=order.Bonus;
+            foreach(var fish in career.Inventory)if(order.Required(fish.kind)>0)expected+=fish.value;
+            int payout=Controller.DeliverOrder();
+            if(payout!=expected || career.Count!=1 || career.OrdersCompleted!=1)throw new Exception("Order delivery failed: "+payout+" != "+expected);
+            if(Controller.DeliverOrder()!=0)throw new Exception("Duplicate order paid twice.");
+            // The next request needs the remaining puffer, so a normal sale must keep it aboard.
+            if(career.CurrentOrder.Required(FishKind.Puffer)>0 && (Controller.Sell()!=0 || career.Count!=1))throw new Exception("Normal sale sold fish reserved for the next order.");
+            int remaining=Controller.SellAll();
+            if(payout+remaining!=value+order.Bonus || career.Count!=0)throw new Exception("Order/sale total failed.");
+            if(Controller.SellAll()!=0 || Controller.Sell()!=0)throw new Exception("Duplicate sale paid twice.");
+            int coins=career.Coins;
+            if(!Controller.BuyUpgrade(UpgradeTrack.Line) || career.LineLevel!=1 || career.Coins!=coins-30)throw new Exception("Line upgrade failed.");
+            coins=career.Coins;bool affordable=coins>=FishingCareer.UpgradeCost(UpgradeTrack.Reel,0);
+            if(Controller.BuyUpgrade(UpgradeTrack.Reel)!=affordable || career.Coins!=(affordable?coins-40:coins))throw new Exception("Reel upgrade did not respect the price.");
+            var reloaded=FishingSaveStore.Load(Controller.SavePath,out var note);
+            if(reloaded.Coins!=career.Coins || reloaded.LineLevel!=1 || reloaded.ReelLevel!=career.ReelLevel || reloaded.Count!=0 || reloaded.OrdersCompleted!=1 || reloaded.Catches!=3 || reloaded.DiscoveryMask!=career.DiscoveryMask || note.Length>0)throw new Exception("Save round trip failed.");
+            for(int i=0;i<3;i++)if(reloaded.BestGrams((FishKind)i)!=career.BestGrams((FishKind)i) || career.BestGrams((FishKind)i)<=0)throw new Exception("Personal records did not persist.");
+            // Force a backup and verify recovery in the isolated test save, never player progress.
+            FishingSaveStore.Save(Controller.SavePath,career);
+            File.WriteAllText(Controller.SavePath,"corrupt test payload");
+            reloaded=FishingSaveStore.Load(Controller.SavePath,out note);
+            if(reloaded.LineLevel!=1 || note.Length==0)throw new Exception("Backup recovery failed.");
+            Debug.Log("[FISHING] Harbor trade checks: order payout, reserved sale, sell-all, priced upgrades, records, save and backup recovery.");
+        }
+        /// <summary>Sets up the legend's documented conditions: channel, golden sunset, pearl bait, reinforced line.</summary>
+        private void BeginLegend()
+        {
+            var climate=Controller.Weather.Climate;
+            if(climate.Blend<1f)for(int i=0;i<48;i++)climate.Tick(.25f,false);
+            if(!climate.Select(BayWeather.Sunset))throw new Exception("Could not select sunset for the legend.");
+            for(int i=0;i<48;i++)climate.Tick(.25f,false);
+            Controller.Weather.ApplyEnvironment();
+            Controller.MoveToSpotForAutomation(FishingSpecies.LegendArea);Controller.Interact();
+            if(!Controller.Anchored || Controller.Spot!=FishingSpecies.LegendArea)throw new Exception("Could not anchor in the legend channel.");
+            Controller.SetBaitForAutomation(BaitKind.Pearl);
+            if(Controller.Bait!=BaitKind.Pearl || Controller.Career.LineLevel<1)throw new Exception("Legend tackle not prepared.");
+            _legendCoins=Controller.Career.Coins;_legendHold=Controller.Career.Count;
+            Controller.ForceLegendForAutomation=true;
+            if(!Controller.Cast() || Controller.Session.Kind!=FishKind.Sailfish)throw new Exception("Legend conditions did not produce the golden sail.");
+        }
+        /// <summary>Hooks, releases during every leap, lands in the narrower window and checks the release bounty.</summary>
+        private void FightLegend()
+        {
+            var s=Controller.Session;
+            if(s.Phase==CatchPhase.Bite)Controller.Hook();
+            bool leap=s.Phase==CatchPhase.Fighting && s.Beat==FishBeat.Leap;
+            _leapSeen|=leap && s.LeapProgress>0f;
+            Controller.AutomationReel=!leap && s.Tension<0.6f;
+            if(leap && !_leapCaptured && s.LeapProgress>0.35f){_leapCaptured=true;StartCoroutine(Capture("09-legend-leap.png"));}
+            if(s.Phase==CatchPhase.Escaped)throw new Exception("Legend escaped: "+FishingText.Failure(s.Failure));
+            if(s.Phase==CatchPhase.Landing && s.CanLand)Controller.Scoop();
+            if(s.Phase!=CatchPhase.Caught)return;
+            var career=Controller.Career;var card=Controller.LastCatch;
+            if(!_leapSeen)throw new Exception("Legend fight never showed a leap.");
+            if(career.LegendCatches!=1 || career.Count!=_legendHold || card.Bounty<=0 || career.Coins!=_legendCoins+card.Bounty || card.Fish==null || card.Fish.kind!=FishKind.Sailfish)
+                throw new Exception("Legend release/bounty failed.");
+            if(Controller.transform.Find("Golden sail trophy vane")==null)throw new Exception("Legend trophy vane missing.");
+            var reloaded=FishingSaveStore.Load(Controller.SavePath,out var note);
+            if(reloaded.LegendCatches!=1 || !reloaded.Discovered(FishKind.Sailfish) || reloaded.BestGrams(FishKind.Sailfish)!=card.Fish.grams || note.Length>0)throw new Exception("Legend save round trip failed.");
+            Debug.Log("[FISHING] Legend checks: sunset/pearl/channel strike, leap release, narrow landing, bounty "+card.Bounty+", trophy vane and save.");
+            StartCoroutine(Capture("10-legend-release.png"));
+            _captureAt=Time.realtimeSinceStartup+2.5f;_stage=6;
         }
         private void ValidateDeparture()
         {
@@ -308,10 +382,17 @@ namespace BoatAttack.Fishing
         {
             yield return Capture("05-harbor.png");
             yield return CaptureWildlifeGallery();
+            var hud=Controller.GetComponent<FishingHUD>();
             Controller.ToggleJournal();
             if(!Controller.Paused || !Controller.JournalOpen)throw new Exception("Journal capture state failed.");
-            if(!string.IsNullOrEmpty(_captureDirectory))yield return new WaitForSecondsRealtime(0.4f);
-            yield return Capture("06-journal.png");
+            for(int page=0;page<3;page++)
+            {
+                hud.JournalPage=page;
+                if(hud.JournalPage!=page)throw new Exception("Journal page selection failed.");
+                if(!string.IsNullOrEmpty(_captureDirectory))yield return new WaitForSecondsRealtime(0.4f);
+                yield return Capture("06-journal-"+page+".png");
+            }
+            hud.JournalPage=0;
             Controller.ToggleJournal();Controller.TogglePause();
             if(!string.IsNullOrEmpty(_captureDirectory))yield return new WaitForSecondsRealtime(0.4f);
             yield return Capture("07-comfort-settings.png");
@@ -321,7 +402,7 @@ namespace BoatAttack.Fishing
             yield return Capture("08-world-instruments.png");
             Controller.ToggleInstruments();
             if(!string.IsNullOrEmpty(_captureDirectory))yield return new WaitForSecondsRealtime(1.5f);
-            Completed=true;Debug.Log("[FISHING] PASS: 3 species, both views, immediate camera obstruction recovery, level horizon, pause/time-scale recovery, net staging, mesh normals, HUD safe areas, inventory, three baits, order delivery, discovery persistence, journal pause, navigation, geometry budget, weather lifecycle, wildlife sight/occlusion/persistence, sale, upgrade, save and backup recovery. Automation did not test real input or VR.");
+            Completed=true;Debug.Log("[FISHING] PASS: 3 species with measured weights, both views, immediate camera obstruction recovery, level horizon, pause/time-scale recovery, net staging, mesh normals, HUD safe areas, inventory, three baits, order delivery, reserved sale, sell-all, priced upgrades, personal records, golden-sail legend (sunset/pearl/channel, leap release, bounty, trophy), discovery persistence, journal pages, navigation, geometry budget, weather lifecycle, wildlife sight/occlusion/persistence, save and backup recovery. Automation did not test real input or VR.");
             if(!Application.isEditor)Application.Quit(0);
         }
         private void CaptureError(string message,string stack,LogType type)
