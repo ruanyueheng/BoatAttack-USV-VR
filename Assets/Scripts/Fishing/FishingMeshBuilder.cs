@@ -4,7 +4,7 @@ using UnityEngine;
 namespace BoatAttack.Fishing
 {
     /// <summary>Small original mesh toolkit: vertex-colored curved surfaces, not separate primitive renderers.</summary>
-    public sealed class FishingMeshBuilder
+    public sealed partial class FishingMeshBuilder
     {
         private readonly List<Vector3> _vertices=new List<Vector3>();
         private readonly List<Color> _colors=new List<Color>();

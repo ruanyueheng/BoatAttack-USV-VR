@@ -262,18 +262,32 @@ namespace BoatAttack.Fishing
             foreach(var filter in Controller.GetComponentsInChildren<MeshFilter>())
             {
                 var mesh=filter.sharedMesh;
-                if(mesh==null || !mesh.name.StartsWith("Fishing v0.2 mesh "))continue;
+                if(mesh==null || !mesh.name.StartsWith(FishingMeshBuilder.FishMeshPrefix))continue;
                 fishMeshes++;
-                foreach(var normal in mesh.normals)
-                    if(float.IsNaN(normal.sqrMagnitude) || normal.sqrMagnitude<0.5f)throw new Exception("Fish contains invalid/cancelled surface normals.");
+                if(filter.GetComponentsInChildren<Renderer>().Length!=1)throw new Exception("A fish must draw as a single renderer.");
+                ValidateFishMesh(mesh);
             }
             if(fishMeshes<3)throw new Exception("Three modeled species must be present in market display.");
+            // The legend and pearl variants are built on demand, so check their geometry directly.
+            foreach(FishKind kind in Enum.GetValues(typeof(FishKind)))
+                foreach(bool rare in new[]{false,true})
+                {
+                    if(rare && FishingSpecies.Of(kind).Legendary)continue;
+                    var mesh=FishingMeshBuilder.Fish(kind,rare);
+                    try{ValidateFishMesh(mesh);}finally{Destroy(mesh);}
+                }
             var scenery=Controller.GetComponent<FishingScenery>();
             if(scenery==null || scenery.CombinedRenderers>40 || scenery.CombinedVertices>60000)throw new Exception("V03 added scenery exceeded its static geometry budget.");
             if(Controller.GetComponent<FishingWorldInstruments>()==null || FishingWorldInstruments.ReferenceDistance<2f)throw new Exception("World instrument comfort setup missing.");
             int target=Controller.NavigationTarget;for(int i=0;i<4;i++)Controller.CycleNavigation();
             if(Controller.NavigationTarget!=target)throw new Exception("Navigation cycle failed.");
-            Debug.Log("[FISHING] Presentation checks: 4 viewport safe areas, readable sign orientation, fish surface normals.");
+            Debug.Log("[FISHING] Presentation checks: 4 viewport safe areas, readable sign orientation, single-renderer fish, fish normals and vertex budget.");
+        }
+        private static void ValidateFishMesh(Mesh mesh)
+        {
+            if(mesh.vertexCount>4000)throw new Exception(mesh.name+" exceeds the 4000-vertex fish budget: "+mesh.vertexCount);
+            foreach(var normal in mesh.normals)
+                if(float.IsNaN(normal.sqrMagnitude) || normal.sqrMagnitude<0.5f)throw new Exception(mesh.name+" contains invalid/cancelled surface normals.");
         }
         private void ValidateLivingBay()
         {
@@ -328,9 +342,13 @@ namespace BoatAttack.Fishing
             if(string.IsNullOrEmpty(_captureDirectory))yield break;
             // WaitForEndOfFrame is unsupported in batchmode; capture is for the real Windows player.
             yield return new WaitForEndOfFrame();
-            ScreenCapture.CaptureScreenshot(Path.Combine(_captureDirectory,name));
+            // Read the composed backbuffer (scene plus IMGUI HUD) and write it ourselves: CaptureScreenshot
+            // resolves relative paths on its own and fails silently in some launch contexts.
+            var shot=ScreenCapture.CaptureScreenshotAsTexture();
+            try{File.WriteAllBytes(Path.Combine(_captureDirectory,name),shot.EncodeToPNG());}
+            finally{Destroy(shot);}
             CaptureSceneOnly("scene-"+name);
-            Debug.Log("[FISHING] Screenshot requested: "+name);
+            Debug.Log("[FISHING] Screenshot captured: "+name+" "+Screen.width+"x"+Screen.height+" focused="+Application.isFocused);
         }
         // Explicit off-screen camera render: unlike the desktop backbuffer this works
         // with a hidden test window. These images intentionally exclude the IMGUI HUD.

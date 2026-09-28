@@ -41,7 +41,9 @@ namespace BoatAttack.Fishing
                         motion.SetVector("_FinMotion",new Vector4(kind==4?.2f:kind==1?.16f:.07f,kind==4?3.2f:2f,.25f,i));
                         go.GetComponent<MeshRenderer>().SetPropertyBlock(motion);
                     }
-                    _creatures.Add(new Creature{transform=go.transform,kind=(MarineKind)kind,home=home,radius=kind==4?10:kind==2?5.5f:kind==3?3.8f:4.6f,phase=i*2.1f+kind*.65f});
+                    // Surface swimmers circle between the 9 m station ring and the reef rocks (~10.8 m inner edge),
+                    // inside the 15 m radius the scene generator verified as open water. Schools stay underwater.
+                    _creatures.Add(new Creature{transform=go.transform,kind=(MarineKind)kind,home=home,radius=kind==4?10:kind==2?10.5f:kind==3?7.5f:10f,phase=i*2.1f+kind*.65f});
                 }
             }
             for(int i=0;i<3;i++)BuildReef(i);
@@ -114,7 +116,8 @@ namespace BoatAttack.Fishing
                 {
                     float leap=Mathf.Max(0,Mathf.Sin(a*3));pos.y=.02f+leap*activity*.95f;pitch=-Mathf.Cos(a*3)*leap*27;
                 }
-                else {pos.y=c.kind==MarineKind.School?-.06f:.10f;roll=Mathf.Sin(a*4)*(c.kind==MarineKind.Ray?9:4);}
+                // The turtle rides low so only its shell breaks the surface.
+                else {pos.y=c.kind==MarineKind.School?-.06f:c.kind==MarineKind.Turtle?-.04f:.04f;roll=Mathf.Sin(a*4)*(c.kind==MarineKind.Ray?9:4);}
                 c.transform.SetPositionAndRotation(pos,Quaternion.Euler(pitch,-a*Mathf.Rad2Deg,roll));
             }
             if(Time.time<_nextSense)return;_nextSense=Time.time+.25f;Sense();

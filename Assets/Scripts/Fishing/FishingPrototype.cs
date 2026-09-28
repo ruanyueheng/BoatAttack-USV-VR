@@ -73,6 +73,7 @@ namespace BoatAttack.Fishing
         private Quaternion _anchorRotation;
         private readonly List<Object> _owned = new List<Object>();
         private readonly List<GameObject> _storedFish = new List<GameObject>();
+        private readonly List<Transform> _buoys = new List<Transform>();
         private GameObject _fish, _bobber, _trophy;
         private Transform _rodTip, _net, _box, _reelCrank;
         private LineRenderer _line;
@@ -442,8 +443,8 @@ namespace BoatAttack.Fishing
                 FishingArt.Ring("Fishing area "+i,transform,new Vector3(fishingSpots[i].x,0.22f,fishingSpots[i].z),9f,orange);
                 for(int j=0;j<4;j++)
                 {
-                    var pos=fishingSpots[i]+Quaternion.Euler(0,j*90,0)*new Vector3(9,0,0);pos.y=0.25f;
-                    FishingArt.Shape("Marker buoy",PrimitiveType.Sphere,transform,pos,new Vector3(0.7f,0.5f,0.7f),orange);
+                    var pos=fishingSpots[i]+Quaternion.Euler(0,j*90,0)*new Vector3(9,0,0);pos.y=0f;
+                    _buoys.Add(FishingArt.Buoy(transform,_owned,PaletteShader,pos,0.85f).transform);
                 }
             }
             FishingArt.Ring("Harbor safe zone",transform,new Vector3(harbor.x,0.25f,harbor.z),11f,teal);
@@ -462,11 +463,7 @@ namespace BoatAttack.Fishing
             _line=FishingArt.Line("Fishing line",transform,lineMaterial,0.018f);_line.positionCount=25;
             RefreshHold();
         }
-        private GameObject MakeFish(Transform parent,FishKind kind,bool rare)
-        {
-            var body=rare || kind==FishKind.Sailfish?orange:fishMaterials[Mathf.Clamp((int)kind,0,fishMaterials.Length-1)];
-            return FishingArt.Fish(parent,body,cream,dark,_owned,kind,rare);
-        }
+        private GameObject MakeFish(Transform parent,FishKind kind,bool rare)=>FishingArt.Fish(parent,_owned,PaletteShader,kind,rare);
         private void RefreshHold()
         {
             foreach(var f in _storedFish)Destroy(f);_storedFish.Clear();
@@ -485,7 +482,7 @@ namespace BoatAttack.Fishing
             _trophy=new GameObject("Golden sail trophy vane");_trophy.transform.SetParent(transform,false);
             _trophy.transform.position=harbor+new Vector3(5.4f,8.35f,2.5f);
             var fish=MakeFish(_trophy.transform,FishKind.Sailfish,false);
-            fish.transform.localScale=Vector3.one*1.1f;fish.transform.localRotation=Quaternion.Euler(-12f,0,0);
+            fish.transform.localScale=Vector3.one*0.8f;fish.transform.localRotation=Quaternion.Euler(-12f,0,0);
         }
         private void AnimateEquipment()
         {
@@ -506,7 +503,7 @@ namespace BoatAttack.Fishing
             _fish.transform.position=phase==CatchPhase.Caught?Vector3.Lerp(_catchStart,_box.position+Vector3.up*0.5f,Mathf.Clamp01((Time.time-_caughtAt)/0.7f))+Vector3.up*Mathf.Sin(Mathf.Clamp01((Time.time-_caughtAt)/0.7f)*Mathf.PI)*0.8f:target;
             _fish.transform.rotation=leap>0f?yaw*Quaternion.Euler(-Mathf.Cos(leap*Mathf.PI)*50f,-90f,Mathf.Sin(leap*Mathf.PI*2f)*20f)
                 :yaw*Quaternion.Euler(Mathf.Sin(Time.time*7)*18f,-90+Mathf.Sin(Time.time*9)*22f,Mathf.Sin(Time.time*6)*14f);
-            _fish.transform.localScale=Vector3.one*(legend?1.1f:Session.Kind==FishKind.Puffer?1.5f:1.25f);
+            _fish.transform.localScale=Vector3.one*(legend?0.85f:Session.Kind==FishKind.Puffer?1.5f:1.25f);
             for(int i=0;i<25;i++){float u=i/24f;_line.SetPosition(i,Vector3.Lerp(_rodTip.position,target,u)-Vector3.up*Mathf.Sin(u*Mathf.PI)*(phase==CatchPhase.Fighting?0.15f:0.5f));}
             // Stow the basket alongside the hull until it is needed, rather than covering the fish.
             _netDeployment=Mathf.MoveTowards(_netDeployment,Anchored && (phase==CatchPhase.Landing || _netMotion>0f)?1f:0f,Time.deltaTime*4f);
@@ -514,6 +511,12 @@ namespace BoatAttack.Fishing
             _net.localPosition=Vector3.Lerp(new Vector3(1.15f,0.65f,-0.7f),new Vector3(1.15f,0.9f,-0.4f),_netDeployment);
             _net.localRotation=Quaternion.Euler(0,Mathf.Lerp(85f,0f,_netDeployment),-Mathf.Sin(_netMotion*Mathf.PI)*35f);
             if(_trophy!=null)_trophy.transform.rotation=Quaternion.Euler(0,Mathf.Sin(Time.time*0.23f)*70f+Time.time*6f,0);
+            // Marker buoys ride a gentle swell; scaled time keeps them still while paused.
+            for(int i=0;i<_buoys.Count;i++)
+            {
+                float swell=Time.time*1.3f+i*1.7f;var b=_buoys[i];var p=b.position;p.y=Mathf.Sin(swell)*0.07f;
+                b.SetPositionAndRotation(p,Quaternion.Euler(Mathf.Sin(swell*0.8f)*4f,i*37f,Mathf.Cos(swell*0.9f)*4f));
+            }
         }
         private AudioClip Tone(float frequency,float seconds)
         {

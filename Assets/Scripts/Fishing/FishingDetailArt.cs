@@ -95,7 +95,7 @@ namespace BoatAttack.Fishing
             for(int i=0;i<3;i++)
             {
                 var tray=Crate(dock,new Vector3(i*1.8f-1.8f,1.90f,0.55f),c.wood,c.teal,c.dark);tray.localScale=Vector3.one*0.9f;
-                var fish=FishingArt.Fish(tray,c.fishMaterials[i],c.cream,c.dark,owned,(FishKind)i);fish.transform.localPosition=new Vector3(0,0.18f,0);fish.transform.localRotation=Quaternion.Euler(0,90,65);fish.transform.localScale=Vector3.one*0.7f;
+                var fish=FishingArt.Fish(tray,owned,c.PaletteShader,(FishKind)i);fish.transform.localPosition=new Vector3(0,0.18f,0);fish.transform.localRotation=Quaternion.Euler(0,90,65);fish.transform.localScale=Vector3.one*0.7f;
             }
             for(int i=0;i<2;i++){var crate=Crate(dock,new Vector3(2.7f,0.73f,-1.4f+i*0.9f),c.wood,c.teal,c.dark);crate.localScale=Vector3.one*0.65f;}
             FishingArt.Shape("Market sign board",PrimitiveType.Cube,dock,new Vector3(0,2.60f,-1.78f),new Vector3(2.9f,0.61f,0.08f),c.dark);
