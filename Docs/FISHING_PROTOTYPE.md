@@ -1,6 +1,6 @@
-# 怪鱼航线 — 桌面试玩（当前 v0.3.1）
+# 怪鱼航线 — 桌面试玩（当前 v0.4.2）
 
-天气、生物与新模型见 [FISHING_LIVING_BAY.md](FISHING_LIVING_BAY.md)。第三版基础玩法、UI 与 PICO 适配边界见 [FISHING_V03.md](FISHING_V03.md)。第二版记录保留在 FISHING_V02.md。
+本次聚焦 HUD、航海图与验证边界见 [FISHING_V042_REVIEW.md](FISHING_V042_REVIEW.md)，第四版成长系统审查见 [FISHING_V04_REVIEW.md](FISHING_V04_REVIEW.md)。天气、生物与新模型见 [FISHING_LIVING_BAY.md](FISHING_LIVING_BAY.md)。第三版基础玩法、UI 与 PICO 适配边界见 [FISHING_V03.md](FISHING_V03.md)。第二版记录保留在 FISHING_V02.md。
 
 本版本是基于 BoatAttack 的独立捕鱼灰盒，不是《How to Fish》的资源移植。鱼、鱼竿、抄网、鱼箱、市场小站和提示音均由本项目代码生成；海岛、船只、水面和原有环境素材沿用 BoatAttack，保留其授权与署名。
 
@@ -8,7 +8,7 @@
 
 - Unity 2022.3.62f1：菜单 **BoatAttack > Fishing > Open prototype**，然后按 Play。
 - 或直接打开 `Assets/scenes/Fishing/fishing_Island.unity`。
-- Windows 试玩程序构建位置：`Builds/FishingPrototype-v0.3.1/FishingPrototype.exe`。运行时必须保留相邻 Data 文件夹和 DLL，不能只复制 exe。
+- Windows 试玩程序构建位置：`Builds/FishingPrototype-v0.4.2/FishingPrototype.exe`。运行时必须保留相邻 Data 文件夹和 DLL，不能只复制 exe。
 - 普通启动是玩家模式；没有自动驾驶/自动收鱼。命令行自动演示只用于验收和截图。
 
 ## 第一段体验
@@ -18,8 +18,8 @@
 3. 点击鼠标左键抛竿，听到咬钩提示后再次点击提竿。
 4. 按住左键收线，张力过高时松开；不要一直放线。
 5. 鱼到船边后，指针进入绿色区域时按 **E** 抄鱼。
-6. 鱼进入六格鱼箱。可以继续抛竿，或 **Q** 收起工具继续航行。
-7. 返回青色市场，低速靠近后按 **E**：订单已集齐则交付并领奖，否则普通出售；有 30 金币后按 **U** 升级鱼线。
+6. 普通鱼进入初始六格鱼箱（可升级至十格）；传说鱼测量后放生领奖。可以继续抛竿，或 **Q** 收起工具继续航行。
+7. 返回青色市场，低速靠近后按 **E**：订单已集齐则交付并领奖，否则出售非预留鱼货。按 **Tab** 打开交易台查看订单和三条升级路线；首级鱼线需要 30 金币。
 
 ## 控制与便利操作
 
@@ -28,18 +28,20 @@
 - E：附近场景交互（渔区停船、抄鱼、港口交付订单或出售）。
 - 鼠标左键：抛竿、提竿、按住收线；松开放线。
 - Q：取消当前捕捞并起航。
-- T：看向 28m 内的野生生物进行观察；日志可切换自然观察页。左侧按钮也能打开图鉴、设置和切换视角。
+- T：看向 28m 内的野生生物进行观察；日志可切换自然观察页。右上工具栏可打开日志、设置和切换视角。
 - B：换饵（捕捞进行中不可换）；N：切换航点；J：图鉴与订单日志；O：在港口尝试提交订单。
-- U：在港口升级鱼线。
+- 1 / 2 / 3：在港口升级鱼线、卷线器、鱼箱；U 仍是升级鱼线的快捷键。X 全部出售会一并卖掉预留的委托鱼。
 - R：救援回港，已入箱鱼和金币保留。这是灰盒便利功能，尚未做航行成本平衡。
-- C：第一/第三人称切换；按住右键环顾；V 视线回正；H 简洁界面。
+- C：第一/第三人称切换；按住右键环顾；V 视线回正。
+- H：展开/收起委托与传说详情；Tab：靠港低速时打开/收起交易台。两种面板互斥、默认关闭。
+- M：展开/收起航海图；点击范围按钮切换 80/160/320 m，点击地图标记选航点。北向固定、目标线仅指示方位，不负责避礁。停船自动收起地图，起航恢复。
 - F / Esc：暂停/恢复。关闭窗口退出桌面试玩。
 
 ## 已实现范围
 
-- 原海岛上的三个渔区和三种行为参数：珊瑚鱼、飞梭鱼、鼓鼓鱼。
+- 原海岛上的三个渔区和三种普通鱼：珊瑚鱼、飞梭鱼、鼓鼓鱼；另有满足海域/夕照/鱼饵/装备条件才能遇见的金帆旗鱼。
 - 等待、咬钩、收线/放线、抄鱼、成功/挣脱的完整状态。
-- 稀有变体、六格鱼箱、出售、一次功能升级（张力增长降低 28%）。
+- 稀有变体、克级体重与个人纪录、委托预留/交付、普通/全部出售，以及鱼线、卷线器、鱼箱三条各两级升级路线。
 - 本地进度保存及备份恢复；保存的是真实库存/金币数据，鱼箱里的模型只是表现。
 - 独立相机与 HUD、原创建模和程序化提示音。
 - 原竞速默认行为保留；新增 Boat 的运行时竞速参与开关，捕鱼不伪装成无限圈比赛。
@@ -55,14 +57,14 @@
 
 ## 保存位置
 
-Windows 默认在 Unity 的 `Application.persistentDataPath` 下，文件名 `boatattack-fishing-v1.json`，旁边有 `.bak` 备份。第三版内部格式为 version=2，可读取旧版但写入后不能由第二版直接读取，请在回退前保留旧存档副本。自动测试和截图用独立测试路径，不读写玩家进度。UI 会提示保存权限错误；不要把存档或用户目录提交到仓库。
+Windows 默认在 Unity 的 `Application.persistentDataPath` 下，文件名 `boatattack-fishing-v1.json`，旁边有 `.bak` 备份。第四版内部格式为 version=3，可迁移 version=1/2；v0.4.2 不再更改格式。请勿用旧版程序写回第四版存档，回退前先保留副本。自动测试和截图用独立测试路径，不读写玩家进度。UI 会提示保存权限错误；不要把存档或用户目录提交到仓库。
 
 ## 重建与验证
 
 ```powershell
 # 无 Unity/无头显的逻辑测试
-dotnet run --project Tools/FishingTests/FishingTests.csproj --configuration Release
-dotnet run --project Tools/InputTests/InputTests.csproj --configuration Release
+dotnet run --project Tools/FishingTests/FishingTests.csproj --configuration Release -p:BuildInParallel=false
+dotnet run --project Tools/InputTests/InputTests.csproj --configuration Release -p:BuildInParallel=false
 
 # 已提交生成后的场景，普通克隆无需重复 Generate。
 ./Tools/Run-UnityValidation.ps1 -Suite FishingGenerate

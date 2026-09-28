@@ -43,6 +43,10 @@ namespace BoatAttack.Fishing
                         Controller.MoveToSpotForAutomation(0);Controller.Interact();_stage=0;break;
                     case 0:
                         if(!Controller.Anchored)throw new Exception("Could not enter fishing station. Spot distance="+Controller.SpotDistance+" harbor="+Controller.HarborDistance+" speed="+Controller.Speed+" message="+Controller.Message);
+                        if(Controller.ChartExpanded || Controller.ShowDetails || Controller.HarborDeskOpen)
+                            throw new Exception("Anchoring did not collapse the optional HUD panels.");
+                        Controller.ToggleHarborDesk();
+                        if(Controller.HarborDeskOpen)throw new Exception("Harbor desk opened away from the harbor.");
                         if(!Controller.View.OwnsCamera)throw new Exception("Desktop test unexpectedly found active XR.");
                         var phase=Controller.Session.Phase;int inventory=Controller.Career.Count;bool view=Controller.FirstPerson;
                         Controller.ToggleView();Controller.View.ApplyView();
@@ -96,6 +100,7 @@ namespace BoatAttack.Fishing
                         if(Controller.Session.Phase==CatchPhase.Escaped)throw new Exception(FishingText.Failure(Controller.Session.Failure));
                         if(Controller.Career.Count>_fishCount)
                         {
+                            if(_fishCount==0)ValidateCatchFeedback();
                             _fishCount++;
                             // Capture before the following stage teleports to the next area.
                             if(_fishCount==1)StartCoroutine(Capture("02b-catch.png"));
@@ -265,6 +270,7 @@ namespace BoatAttack.Fishing
                 if(layout.Panel.yMax>850f || layout.Delivery.y<layout.OrderY+lines*FishingHUD.OrderLineHeight)
                     throw new Exception("Harbor content exceeds its safe area for "+lines+" order lines.");
             }
+            ValidateFocusedHud();
             var sign=Controller.transform.Find("Tide and Fin floating fish market/Market name");
             if(sign==null || Quaternion.Angle(sign.localRotation,Quaternion.identity)>0.01f)throw new Exception("Market sign is facing backwards.");
             int fishMeshes=0;
@@ -292,6 +298,92 @@ namespace BoatAttack.Fishing
             if(Controller.NavigationTarget!=target)throw new Exception("Navigation cycle failed.");
             Debug.Log("[FISHING] Presentation checks: 4 viewport safe areas, 1/2/3-line harbor layouts, readable sign orientation, single-renderer fish, fish normals and vertex budget.");
         }
+        private void ValidateFocusedHud()
+        {
+            var c=Controller;
+            if(c.ShowDetails || c.HarborDeskOpen)throw new Exception("Default HUD must not open detail/trading cards.");
+            foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1366,768),new Vector2Int(2560,1080),new Vector2Int(1280,1024)})
+            {
+                float scale=FishingHUD.LayoutScale(size.x,size.y),height=size.y/scale,offset=(size.x-1600*scale)*.5f;
+                var layout=new FishingHUD.FocusLayout(height,true,CatchPhase.Fighting);
+                var clear=new Rect(376,150,844,height-390);
+                foreach(var rect in new[]{layout.Heading,layout.Pocket,layout.Toolbar,layout.Chart,layout.Action,layout.Notice,layout.Catch})
+                    if(rect.Overlaps(clear) || rect.y<0 || rect.yMax>height || rect.x<0 || rect.xMax>1600)
+                        throw new Exception("Focused HUD obstructs the central view or leaves its safe area: "+size);
+                var button=new Vector2(offset+layout.Toolbar.center.x*scale,size.y-layout.Toolbar.center.y*scale);
+                if(!FishingHUD.BlocksToolPointer(button,size.x,size.y))throw new Exception("Scaled toolbar leaks pointer input: "+size);
+                ValidatePointerRegions(size);
+                var middle=new Vector2(offset+800*scale,size.y-400*scale);
+                if(FishingHUD.BlocksToolPointer(middle,size.x,size.y))throw new Exception("Central fishing view is blocked: "+size);
+            }
+            c.ToggleDetails();if(!c.ShowDetails)throw new Exception("Details cannot be opened.");c.ToggleDetails();
+            c.ToggleChart();if(c.ChartExpanded)throw new Exception("Chart cannot be collapsed.");c.ToggleChart();
+            int range=c.ChartRangeMeters;for(int i=0;i<3;i++)c.CycleChartRange();
+            if(c.ChartRangeMeters!=range)throw new Exception("Chart zoom does not cycle.");
+            c.ToggleHarborDesk();if(!c.HarborDeskOpen)throw new Exception("Harbor desk cannot be explicitly opened.");
+            c.ToggleDetails();if(c.HarborDeskOpen || !c.ShowDetails)throw new Exception("Details and harbor panels overlap.");c.ToggleDetails();
+            int target=c.NavigationTarget;c.SelectNavigation(-1);c.SelectNavigation(99);
+            if(c.NavigationTarget!=target)throw new Exception("Invalid map target accepted.");
+            c.TogglePause();
+            try
+            {
+                c.ToggleDetails();c.ToggleChart();c.CycleChartRange();c.ToggleHarborDesk();c.SelectNavigation((target+1)%4);
+                if(c.ShowDetails || !c.ChartExpanded || c.ChartRangeMeters!=range || c.HarborDeskOpen || c.NavigationTarget!=target)
+                    throw new Exception("Paused HUD controls changed gameplay state.");
+            }
+            finally{c.TogglePause();}
+            Debug.Log("[FISHING] Focused HUD checks: central clear zone, expanded/collapsed and conditional pointer gates at 4 viewport sizes, default-closed cards, chart zoom, explicit harbor controls and pause guards.");
+        }
+        private static void ValidatePointerRegions(Vector2Int size)
+        {
+            float scale=FishingHUD.LayoutScale(size.x,size.y),offset=(size.x-1600*scale)*.5f;
+            var layout=new FishingHUD.FocusLayout(size.y/scale,false,CatchPhase.Idle);
+            void Gate(Vector2 logical,bool expected,bool chart=true,bool details=false,bool harbor=false,bool atHarbor=false,bool observe=false)
+            {
+                var screen=new Vector2(offset+logical.x*scale,size.y-logical.y*scale);
+                if(FishingHUD.BlocksToolPointer(screen,size.x,size.y,chart,details,harbor,atHarbor,observe)!=expected)
+                    throw new Exception("HUD pointer region disagrees with visibility at "+logical+" in "+size);
+            }
+            Gate(layout.Chart.center,true);
+            Gate(layout.Chart.center,false,chart:false);
+            Gate(layout.ChartTab.center,true,chart:false);
+            Gate(layout.Heading.center,false);
+            Gate(layout.Pocket.center,false);
+            Gate(new Vector2(1400,160),false);
+            Gate(new Vector2(1400,160),true,details:true);
+            Gate(new Vector2(1140,200),false);
+            Gate(new Vector2(1140,200),true,harbor:true);
+            Gate(layout.Observe.center,false);
+            Gate(layout.Observe.center,true,observe:true);
+            Gate(layout.HarborButton.center,false);
+            Gate(layout.HarborButton.center,true,atHarbor:true);
+            Gate(new Vector2(800,400),false,details:true,harbor:true,atHarbor:true,observe:true);
+            for(int lines=1;lines<=3;lines++)
+            {
+                var trade=new FishingHUD.HarborLayout(lines);
+                Gate(trade.Delivery.center,true,harbor:true);
+                Gate(trade.Sale.center,true,harbor:true);
+                Gate(new Vector2(trade.Panel.xMax-90,trade.UpgradeY(2)+23),true,harbor:true);
+            }
+        }
+
+        private void ValidateCatchFeedback()
+        {
+            var c=Controller;var hud=c.GetComponent<FishingHUD>();
+            if(c.LastCatch.Fish==null || c.SaveWarning.Length>0 || hud.NoticeText.Length>0)
+                throw new Exception("Catch feedback test requires a fresh catch and a hidden duplicate notice.");
+            string catchNotice=c.Message;
+            var bait=c.Bait;c.CycleBait();
+            if(c.Bait==bait || hud.NoticeText!=c.VisibleMessage || hud.NoticeText.Length==0)
+                throw new Exception("Fresh catch toast suppresses subsequent bait feedback.");
+            c.SetBaitForAutomation(bait);
+            c.Notice("鱼箱已满！按 Q 起航，返港按 E 出售。",2f);
+            if(hud.NoticeText!=c.VisibleMessage)
+                throw new Exception("Fresh catch toast suppresses subsequent action feedback.");
+            c.Notice(catchNotice,6f,catchNotice:true);
+            Debug.Log("[FISHING] Catch feedback checks: duplicate catch copy hidden; subsequent bait/action notices remain visible.");
+        }
+
         private static void ValidateFishMesh(Mesh mesh)
         {
             if(mesh.vertexCount>4000)throw new Exception(mesh.name+" exceeds the 4000-vertex fish budget: "+mesh.vertexCount);
@@ -343,7 +435,7 @@ namespace BoatAttack.Fishing
                 finally{wall.GetComponent<Collider>().enabled=false;Destroy(wall);}
             }
             finally{camera.SetPositionAndRotation(p,q);}
-            if(!FishingHUD.BlocksToolPointer(new Vector2(60,900-230),1600,900) || FishingHUD.BlocksToolPointer(new Vector2(800,450),1600,900))throw new Exception("Clickable HUD does not gate tool input.");
+            if(!FishingHUD.BlocksToolPointer(new Vector2(1280,900-90),1600,900) || FishingHUD.BlocksToolPointer(new Vector2(800,450),1600,900))throw new Exception("Clickable HUD does not gate tool input.");
             Debug.Log("[FISHING] Living bay checks: 5 weather presets, pause, environment restoration, rain/population budgets, visible wildlife discovery, occlusion rejection and save persistence.");
         }
         private IEnumerator Capture(string name)
