@@ -173,12 +173,12 @@ namespace BoatAttack.Fishing
             var career = Controller.Career;
             var order = career.CurrentOrder;
             bool ready = FishingOrders.Select(order, career.Inventory, _picked, _perLine);
-            var r = new Rect(1242, y, 330, 110 + order.LineCount * 32);
+            var r = new Rect(1242, y, 330, 110 + order.LineCount * OrderLineHeight);
             Card(r, ready ? Mint : Gold);
             Label(r.x + 20, r.y + 18, 290, 18, order.Client, 13, Muted);
             Label(r.x + 20, r.y + 36, 290, 28, "委托 · " + order.Name, 20, Color.white, true);
             DrawOrderLines(order, r.x + 18, r.y + 72, 294);
-            Label(r.x + 20, r.y + 78 + order.LineCount * 32, 290, 22, ready ? "已集齐 · 返港按 E 交付" : "奖金 +" + order.Bonus + " · 鱼价另计", 14, ready ? Mint : Gold, true);
+            Label(r.x + 20, r.y + 78 + order.LineCount * OrderLineHeight, 290, 22, ready ? "已集齐 · 返港按 E 交付" : "奖金 +" + order.Bonus + " · 鱼价另计", 14, ready ? Mint : Gold, true);
             return r.yMax;
         }
 
@@ -187,10 +187,13 @@ namespace BoatAttack.Fishing
             for (int i = 0; i < order.LineCount; i++)
             {
                 var line = order.Line(i);
-                float ly = y + i * 32;
+                float ly = y + i * OrderLineHeight;
                 bool done = _perLine[i] >= line.Count;
                 FishGlyph(new Rect(x, ly, 38, 26), line.Kind, line.Rare);
-                Label(x + 46, ly + 3, width - 120, 22, line.Describe(), 15, done ? Mint : Color.white);
+                Label(x + 46, ly + 1, width - 120, 22, FishingSpecies.Name(line.Kind) + " ×" + line.Count, 15, done ? Mint : Color.white);
+                string requirement = line.MinGrams > 0 ? "至少 " + FishingText.Weight(line.MinGrams) : "普通 / 珍珠均可";
+                if (line.Rare) requirement = line.MinGrams > 0 ? requirement + " · 珍珠变体" : "仅珍珠变体";
+                Label(x + 46, ly + 22, width - 52, 20, requirement, 14, done ? Mint : Muted);
                 Label(new Rect(x + width - 76, ly + 3, 76, 22), _perLine[i] + " / " + line.Count, 15, done ? Mint : Muted, true, TextAnchor.UpperRight);
             }
         }
@@ -228,31 +231,31 @@ namespace BoatAttack.Fishing
             var career = c.Career;
             var order = career.CurrentOrder;
             bool ready = FishingOrders.Select(order, career.Inventory, _picked, _perLine);
-            var r = new Rect(1122, 130, 450, 600);
+            var layout = new HarborLayout(order.LineCount);
+            var r = layout.Panel;
             Card(r, Mint);
             float x = r.x + 22, w = r.width - 44;
             Label(x, r.y + 18, w, 30, "潮汐渔港 · 交易台", 22, Color.white, true);
             Label(x, r.y + 50, w, 20, "E 优先交付委托，其次出售并保留委托鱼", 13, Muted);
             float y = r.y + 82;
             Section(x, y, w, "委托 · " + order.Name, order.Client);
-            y += 34;
-            DrawOrderLines(order, x, y, w);
-            y += order.LineCount * 32 + 4;
+            DrawOrderLines(order, x, layout.OrderY, w);
+            y = layout.Delivery.y;
             if (Button(new Rect(x, y, w, 40), ready ? "E  交付委托 · 奖金 +" + order.Bonus : "委托未集齐 · 奖金 +" + order.Bonus, ready, ready)) c.DeliverOrder();
-            y += 56;
+            y = layout.SaleHeadingY;
             Section(x, y, w, "出售鱼货", "鱼箱 " + career.Count + "/" + career.Capacity + " · 货值 " + career.HoldValue);
-            y += 34;
+            y = layout.Sale.y;
             int sale = career.SaleValue;
             int reserved = career.ReservedCount;
             if (Button(new Rect(x, y, w * 0.5f - 5, 40), "E  出售 +" + sale, sale > 0)) c.Sell();
             if (Button(new Rect(x + w * 0.5f + 5, y, w * 0.5f - 5, 40), "X  全部出售 +" + career.HoldValue, career.Count > 0)) c.SellAll();
-            y += 46;
+            y = layout.ReservedY;
             Label(x, y, w, 20, reserved > 0 ? "已为委托保留 " + reserved + " 条，普通出售不会卖掉它们。" : "没有需要保留的委托鱼。", 13, reserved > 0 ? Mint : Faint);
-            y += 32;
+            y = layout.UpgradeHeadingY;
             Section(x, y, w, "装备升级", "数字键 1 / 2 / 3");
-            y += 36;
             for (int t = 0; t < 3; t++)
             {
+                y = layout.UpgradeY(t);
                 var track = (UpgradeTrack)t;
                 int level = career.Level(track);
                 int cost = career.NextUpgradeCost(track);
@@ -262,9 +265,8 @@ namespace BoatAttack.Fishing
                 Label(x, y + 26, 260, 20, effect, 13, Muted);
                 string label = cost > 0 ? "[" + (t + 1) + "]  " + cost + " 金币" : "已满级";
                 if (Button(new Rect(x + w - 136, y + 4, 136, 38), label, cost > 0 && career.Coins >= cost, false, 15)) c.BuyUpgrade(track);
-                y += 56;
             }
-            Label(x, r.yMax - 34, w, 20, "Q / W 起航   ·   N 航点   ·   J 图鉴与传说线索", 13, Faint);
+            Label(layout.Footer, "Q / W 起航   ·   N 航点   ·   J 图鉴与传说线索", 13, Faint);
         }
 
         private void DrawAction()

@@ -189,9 +189,17 @@ namespace BoatAttack.Fishing
         public int ReelLevel { get; private set; }
         public int HoldLevel { get; private set; }
         public int Capacity => BaseCapacity + 2 * HoldLevel;
-        public IReadOnlyList<CatchRecord> Inventory => _inventory.AsReadOnly();
+        public IReadOnlyList<CatchRecord> Inventory => _inventoryView ?? (_inventoryView = _inventory.AsReadOnly());
         public int Count => _inventory.Count;
-        public FishingOrder CurrentOrder => FishingOrders.For(OrdersCompleted);
+        public FishingOrder CurrentOrder
+        {
+            get
+            {
+                if (_currentOrder == null || _currentOrder.Index != OrdersCompleted)
+                    _currentOrder = FishingOrders.For(OrdersCompleted);
+                return _currentOrder;
+            }
+        }
         public bool OrderReady => FishingOrders.Select(CurrentOrder, _inventory, _picked);
 
         /// <summary>Fish currently earmarked for the open order; a normal sale keeps them aboard.</summary>
@@ -227,6 +235,8 @@ namespace BoatAttack.Fishing
         }
 
         private readonly List<CatchRecord> _inventory = new List<CatchRecord>();
+        private IReadOnlyList<CatchRecord> _inventoryView;
+        private FishingOrder _currentOrder;
         private readonly HashSet<string> _recorded = new HashSet<string>();
         private readonly List<string> _recentIds = new List<string>();
         private readonly List<int> _picked = new List<int>();

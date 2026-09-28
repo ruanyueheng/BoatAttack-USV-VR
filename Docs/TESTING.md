@@ -122,3 +122,18 @@ Manual review focus: weather brightness and rain visibility; marine animal shape
 These are actual D3D11 scene/model renders, **not HUD screenshots**. The sky/lights/water/new meshes can be inspected without granting network access or operating a Windows security dialog. Complete UI/keyboard/gamepad acceptance still requires an interactive review. The Windows firewall prompt was not approved or modified by the agent.
 
 Final image QA additionally caught and corrected the island sky property's `_SkyTint`/`_Tint` mismatch and excessive inherited exposure (4). Fishing's cloned sky caps exposure at 1.4; original assets are unchanged. Vertex palettes now explicitly convert sRGB to linear, and rain streaks use a light unlit palette instead of dark lit geometry. The sky cap is asserted in the live acceptance driver.
+
+## 7. v0.4.1 review (2026-09-28)
+
+See `FISHING_V04_REVIEW.md` for the GitHub sync audit, findings, evidence boundaries and remaining acceptance work. Keep validation serial; do not start another Unity editor while a suite is running.
+
+```powershell
+dotnet run --project Tools/FishingTests/FishingTests.csproj --configuration Release -p:BuildInParallel=false
+dotnet run --project Tools/InputTests/InputTests.csproj --configuration Release -p:BuildInParallel=false
+./Tools/Run-UnityValidation.ps1 -Suite FishingSmoke
+./Tools/Run-UnityValidation.ps1 -Suite FishingBuild
+```
+
+The fishing suite now has 314 passing assertions, including warmed-up query allocation checks, cached-view/order invalidation, exact order-weight wording, and selection parity over 2,816 cargo/order combinations. Unity smoke checks 1/2/3-line harbor layouts using the same geometry as the HUD. Geometry checks do not replace full HUD screenshots or physical-input acceptance.
+
+The 0.4.1 player is written to `Builds/FishingPrototype-v0.4.1/`, leaving the original 0.4 build intact. Opt-in `-fishing-autoplay` uses a temporary save and exits on completion; it does not certify physical input or headset behavior. CI's OS matrix is now serial (`max-parallel: 1`).

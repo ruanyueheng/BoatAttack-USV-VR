@@ -113,13 +113,13 @@ namespace BoatAttack.Fishing
             var career = c.Career;
             var order = career.CurrentOrder;
             FishingOrders.Select(order, career.Inventory, _picked, _perLine);
-            var side = new Rect(r.x + 884, r.y + 118, 420, 250);
+            var side = new Rect(r.x + 884, r.y + 118, 420, Mathf.Max(250f, 142f + order.LineCount * OrderLineHeight));
             Rounded(side, InkRaised, 12);
             Label(side.x + 20, side.y + 16, 380, 20, order.Client, 13, Muted);
             Label(side.x + 20, side.y + 36, 380, 30, "当前委托 · " + order.Name, 21, Gold, true);
             DrawOrderLines(order, side.x + 18, side.y + 76, 384);
-            Label(side.x + 20, side.y + 82 + order.LineCount * 32, 380, 44, "集齐后返港按 E 交付：鱼价全额 + " + order.Bonus + " 奖金。\n普通出售会自动保留委托所需的鱼。", 14, Muted);
-            var stats = new Rect(r.x + 884, r.y + 382, 420, 182);
+            Label(side.x + 20, side.y + 82 + order.LineCount * OrderLineHeight, 380, 44, "集齐后返港按 E 交付：鱼价全额 + " + order.Bonus + " 奖金。\n普通出售会自动保留委托所需的鱼。", 14, Muted);
+            var stats = new Rect(r.x + 884, side.yMax + 14, 420, 182);
             Rounded(stats, InkRaised, 12);
             Label(stats.x + 20, stats.y + 16, 380, 26, "航海统计", 17, Color.white, true);
             Label(stats.x + 20, stats.y + 50, 380, 110,

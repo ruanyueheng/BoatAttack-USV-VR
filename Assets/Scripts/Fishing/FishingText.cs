@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
         }
 
         public static string Weight(int grams)
-            => grams <= 0 ? "—" : (grams / 1000f).ToString(grams >= 10000 ? "0.0" : "0.00", CultureInfo.InvariantCulture) + " kg";
+            => grams <= 0 ? "—" : (grams / 1000m).ToString(grams >= 10000 ? "0.0" : "0.00#", CultureInfo.InvariantCulture) + " kg";
 
         public static string UpgradeName(UpgradeTrack track)
         {

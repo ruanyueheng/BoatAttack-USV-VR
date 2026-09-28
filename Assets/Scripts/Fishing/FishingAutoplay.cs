@@ -256,6 +256,15 @@ namespace BoatAttack.Fishing
                 float scale=FishingHUD.LayoutScale(size.x,size.y);
                 if(1600f*scale>size.x+0.01f || 900f*scale>size.y+0.01f)throw new Exception("HUD safe area exceeds "+size);
             }
+            for(int lines=1;lines<=3;lines++)
+            {
+                var layout=new FishingHUD.HarborLayout(lines);
+                float lastEffectBottom=layout.UpgradeY(2)+26f+20f;
+                if(layout.Footer.y<lastEffectBottom+8f || layout.Footer.yMax>layout.Panel.yMax-14f)
+                    throw new Exception("Harbor footer overlaps upgrade text for "+lines+" order lines.");
+                if(layout.Panel.yMax>850f || layout.Delivery.y<layout.OrderY+lines*FishingHUD.OrderLineHeight)
+                    throw new Exception("Harbor content exceeds its safe area for "+lines+" order lines.");
+            }
             var sign=Controller.transform.Find("Tide and Fin floating fish market/Market name");
             if(sign==null || Quaternion.Angle(sign.localRotation,Quaternion.identity)>0.01f)throw new Exception("Market sign is facing backwards.");
             int fishMeshes=0;
@@ -281,7 +290,7 @@ namespace BoatAttack.Fishing
             if(Controller.GetComponent<FishingWorldInstruments>()==null || FishingWorldInstruments.ReferenceDistance<2f)throw new Exception("World instrument comfort setup missing.");
             int target=Controller.NavigationTarget;for(int i=0;i<4;i++)Controller.CycleNavigation();
             if(Controller.NavigationTarget!=target)throw new Exception("Navigation cycle failed.");
-            Debug.Log("[FISHING] Presentation checks: 4 viewport safe areas, readable sign orientation, single-renderer fish, fish normals and vertex budget.");
+            Debug.Log("[FISHING] Presentation checks: 4 viewport safe areas, 1/2/3-line harbor layouts, readable sign orientation, single-renderer fish, fish normals and vertex budget.");
         }
         private static void ValidateFishMesh(Mesh mesh)
         {

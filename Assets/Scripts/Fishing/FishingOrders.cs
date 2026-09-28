@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
         {
             string text = FishingSpecies.Name(Kind) + " ×" + Count;
             if (Rare) text += " · 珍珠";
-            if (MinGrams > 0) text += " · ≥" + (MinGrams / 1000f).ToString("0.0", CultureInfo.InvariantCulture) + "kg";
+            if (MinGrams > 0) text += " · ≥" + (MinGrams / 1000m).ToString("0.00#", CultureInfo.InvariantCulture) + " kg";
             return text;
         }
     }
@@ -141,18 +141,25 @@ namespace BoatAttack.Fishing
         {
             picked.Clear();
             bool complete = true;
-            var candidates = new List<int>();
+            // Holds contain at most ten fish. Scan for each cheapest match instead of allocating
+            // a candidate list and sort closure on every HUD query (including partial orders).
             for (int l = 0; l < order.LineCount; l++)
             {
                 var line = order.Line(l);
-                candidates.Clear();
-                for (int i = 0; i < hold.Count; i++)
-                    if (line.Accepts(hold[i]) && !picked.Contains(i)) candidates.Add(i);
-                candidates.Sort((x, y) => hold[x].value != hold[y].value
-                    ? hold[x].value.CompareTo(hold[y].value)
-                    : string.CompareOrdinal(hold[x].id, hold[y].id));
-                int take = Math.Min(line.Count, candidates.Count);
-                for (int i = 0; i < take; i++) picked.Add(candidates[i]);
+                int take = 0;
+                for (; take < line.Count; take++)
+                {
+                    int best = -1;
+                    for (int i = 0; i < hold.Count; i++)
+                    {
+                        if (!line.Accepts(hold[i]) || picked.Contains(i)) continue;
+                        if (best < 0 || hold[i].value < hold[best].value
+                            || (hold[i].value == hold[best].value && string.CompareOrdinal(hold[i].id, hold[best].id) < 0))
+                            best = i;
+                    }
+                    if (best < 0) break;
+                    picked.Add(best);
+                }
                 if (perLine != null && l < perLine.Length) perLine[l] = take;
                 if (take < line.Count) complete = false;
             }
