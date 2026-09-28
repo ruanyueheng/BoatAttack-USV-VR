@@ -115,7 +115,7 @@ namespace BoatAttack.EditorTools
                 if(!File.Exists(ScenePath))throw new Exception("Generate the fishing scene first.");
                 AddressableAssetSettings.BuildPlayerContent(out var content);
                 if(!string.IsNullOrEmpty(content.Error))throw new Exception("Addressables: "+content.Error);
-                string output=Path.GetFullPath("Builds/FishingPrototype-v0.3.1/FishingPrototype.exe");Directory.CreateDirectory(Path.GetDirectoryName(output));
+                string output=Path.GetFullPath("Builds/FishingPrototype-v"+FishingPrototype.Version+"/FishingPrototype.exe");Directory.CreateDirectory(Path.GetDirectoryName(output));
                 var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{ScenePath},locationPathName=output,target=BuildTarget.StandaloneWindows64,options=BuildOptions.None});
                 if(report.summary.result!=BuildResult.Succeeded)throw new Exception("Build failed: "+report.summary.result);
                 Debug.Log("[FISHING] PASS: Windows prototype built: "+output);EditorApplication.Exit(0);
@@ -132,7 +132,8 @@ namespace BoatAttack.EditorTools
         public static void Run()
         {
             if(!Application.isBatchMode)throw new Exception("Batch-only smoke entry.");
-            SessionState.SetBool(Key+"active",true);SessionState.SetBool(Key+"stop",false);SessionState.SetString(Key+"error","");SessionState.SetFloat(Key+"deadline",(float)EditorApplication.timeSinceStartup+230);
+            // The editor deadline must outlast the autoplay driver's own timeout so its message wins.
+            SessionState.SetBool(Key+"active",true);SessionState.SetBool(Key+"stop",false);SessionState.SetString(Key+"error","");SessionState.SetFloat(Key+"deadline",(float)EditorApplication.timeSinceStartup+FishingAutoplay.TimeoutSeconds+20f);
             EditorSceneManager.OpenScene(FishingPrototypeEditor.ScenePath);EditorApplication.EnterPlaymode();
         }
         private static void Log(string message,string stack,LogType type)
