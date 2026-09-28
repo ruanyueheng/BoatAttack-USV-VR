@@ -24,7 +24,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.4.1";
+        public const string Version = "0.4.2";
         public Boat boatPrefab;
         public Camera viewCamera;
         public Vector3 spawnPosition;
@@ -44,7 +44,10 @@ namespace BoatAttack.Fishing
         public FishingEcology Ecology { get; private set; }
         public Shader PaletteShader { get; private set; }
         public bool FirstPerson => View != null && View.FirstPerson;
-        public bool ShowDetails { get; private set; } = true;
+        public bool ShowDetails { get; private set; }
+        public bool ChartExpanded { get; private set; } = true;
+        public int ChartRangeMeters { get; private set; } = 160;
+        public bool HarborDeskOpen { get; private set; }
         public BaitKind Bait { get; private set; }
         public bool JournalOpen { get; private set; }
         public bool ComfortMode { get; private set; } = true;
@@ -62,6 +65,7 @@ namespace BoatAttack.Fishing
         public bool AutomationReel { get; set; }
         public int Spot { get; private set; }
         public string Message { get; private set; }
+        public bool MessageIsCatch { get; private set; }
         public string SavePath { get; private set; }
         public string SaveWarning { get; private set; } = string.Empty;
         public float Speed => Player == null ? 0f : Vector3.ProjectOnPlane(Player.engine.RB.velocity,Vector3.up).magnitude;
@@ -69,6 +73,7 @@ namespace BoatAttack.Fishing
         public bool AtHarbor => HarborDistance < 22f && Speed < 3f && !Anchored;
         public float SpotDistance { get; private set; }
         private USVInputRouter _input;
+        private FishingHUD _hud;
         private Vector3 _anchor, _catchStart;
         private Quaternion _anchorRotation;
         private readonly List<Object> _owned = new List<Object>();
@@ -130,11 +135,11 @@ namespace BoatAttack.Fishing
             _feedback=gameObject.AddComponent<AudioSource>();_feedback.spatialBlend=0f;_feedback.volume=0.45f;
             _biteTone=Tone(780f,0.13f);_successTone=Tone(1150f,0.2f);
             _legendTone=Chime(new[]{523f,659f,784f,1047f},0.11f);
-            gameObject.AddComponent<FishingHUD>().Controller=this;
+            _hud=gameObject.AddComponent<FishingHUD>();_hud.Controller=this;
             gameObject.AddComponent<FishingWorldInstruments>().Controller=this;
             _feedback.mute=QuietMode;
             if(LegendTrophy)BuildTrophy();
-            Notice(string.IsNullOrEmpty(warning)?"金帆传说版！N 选择航点，J 查看图鉴、委托与传说线索。驶近浮标、减速后按 E 停船。":warning,10f);
+            Notice(string.IsNullOrEmpty(warning)?"N 选择航点，驶近浮标后减速按 E 停船。M 收起地图，H 展开详情，J 查看图鉴。":warning,10f);
             _initialized=true;
             if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
             Debug.Log("[FISHING] Prototype v"+Version+" initialized. Original procedural fish; desktop preview only.");
@@ -154,7 +159,7 @@ namespace BoatAttack.Fishing
             bool focused=Automated || Application.isFocused;
             if(!Automated && _input.Current.pause) { if(JournalOpen)ToggleJournal();else TogglePause(); }
             if(!Automated && focused && k!=null && k.jKey.wasPressedThisFrame && (!Paused || JournalOpen))ToggleJournal();
-            bool overTools=m!=null && FishingHUD.BlocksToolPointer(m.position.ReadValue(),Screen.width,Screen.height);
+            bool overTools=!_xrActive && m!=null && _hud.BlocksPointer(m.position.ReadValue(),Screen.width,Screen.height);
             bool leftHeld=m!=null && m.leftButton.isPressed;
             bool rightHeld=m!=null && m.rightButton.isPressed;
             bool pointerReady=_pointerGate.Update(focused,Paused,leftHeld,rightHeld);
@@ -163,7 +168,9 @@ namespace BoatAttack.Fishing
             {
                 if(k!=null && k.cKey.wasPressedThisFrame)ToggleView();
                 if(k!=null && k.vKey.wasPressedThisFrame)View.ResetLook();
-                if(k!=null && k.hKey.wasPressedThisFrame)ShowDetails=!ShowDetails;
+                if(k!=null && k.hKey.wasPressedThisFrame)ToggleDetails();
+                if(k!=null && k.mKey.wasPressedThisFrame)ToggleChart();
+                if(k!=null && k.tabKey.wasPressedThisFrame)ToggleHarborDesk();
                 if(k!=null && k.bKey.wasPressedThisFrame)CycleBait();
                 if(k!=null && k.nKey.wasPressedThisFrame)CycleNavigation();
                 if(k!=null && k.oKey.wasPressedThisFrame)DeliverOrder();
@@ -179,6 +186,7 @@ namespace BoatAttack.Fishing
                 if(press && Anchored){if(Session.Phase==CatchPhase.Bite)Hook();else Cast();}
             }
             UpdateNearestSpot();
+            if(!AtHarbor)HarborDeskOpen=false;
             _reeling=false;
             if(Anchored && !Paused && focused)
             {
@@ -268,7 +276,7 @@ namespace BoatAttack.Fishing
             if(AtHarbor){if(Career.OrderReady)DeliverOrder();else Sell();return;}
             if(SpotDistance>22f){Notice("先驶入任一黄色渔区，再按 E 停船。");return;}
             if(Speed>3f){Notice("速度过快，按住 Shift 刹车再停船。");return;}
-            Anchored=true;_anchor=Player.engine.RB.position;_anchorRotation=Player.transform.rotation;
+            Anchored=true;ChartExpanded=false;ShowDetails=false;HarborDeskOpen=false;_anchor=Player.engine.RB.position;_anchorRotation=Player.transform.rotation;
             var v=Player.engine.RB.velocity;Player.engine.RB.velocity=new Vector3(0,v.y,0);
             Session.Cancel();_previousPhase=CatchPhase.Idle;
             Notice("已停船。点击左键抛竿；Q 收起工具继续航行。",7f);
@@ -325,13 +333,13 @@ namespace BoatAttack.Fishing
             if(legend)
             {
                 if(_trophy==null)BuildTrophy();
-                Notice("传说！"+name+" 已测量并放生，海洋站奖励 "+bounty+" 金币。灯塔顶升起了金帆风向标。",9f);
+                Notice("传说！"+name+" 已测量并放生，海洋站奖励 "+bounty+" 金币。灯塔顶升起了金帆风向标。",9f,catchNotice:true);
             }
-            else Notice((discovery?"图鉴发现！":best?"新纪录！":record.rare?"稀有！":"捕获成功！")+name+" 已入箱，价值 "+record.value+" 金币。",6f);
+            else Notice((discovery?"图鉴发现！":best?"新纪录！":record.rare?"稀有！":"捕获成功！")+name+" 已入箱，价值 "+record.value+" 金币。",6f,catchNotice:true);
         }
         public void LeaveStation()
         {
-            if(Paused)return;Anchored=false;Session.Cancel();AutomationReel=false;Notice("工具已收起，W 前进，A/D 转向，S/Shift 刹车；青色港口按 E 交易。");
+            if(Paused)return;Anchored=false;ChartExpanded=true;HarborDeskOpen=false;ShowDetails=false;Session.Cancel();AutomationReel=false;Notice("工具已收起，W 前进，A/D 转向，S/Shift 刹车；青色港口按 E 交易。");
         }
         public int Sell()
         {
@@ -380,7 +388,20 @@ namespace BoatAttack.Fishing
             if(!CanChangeBait){Notice("本次捕捞结束后才能换饵。",3f);return;}
             Bait=(BaitKind)(((int)Bait+1)%3);Notice(FishingVoyage.BaitName(Bait)+" · "+FishingVoyage.BaitHelp(Bait),4f);
         }
-        public void CycleNavigation() { if(!Paused){NavigationTarget=(NavigationTarget+1)%4;Notice("航点："+NavigationName,3f);} }
+        public void CycleNavigation() => SelectNavigation((NavigationTarget+1)%4);
+        public void SelectNavigation(int target)
+        {
+            if(Paused || target<0 || target>fishingSpots.Length)return;
+            NavigationTarget=target;Notice("航点："+NavigationName,3f);
+        }
+        public void ToggleDetails() { if(Paused)return;ShowDetails=!ShowDetails;if(ShowDetails)HarborDeskOpen=false; }
+        public void ToggleChart() { if(!Paused)ChartExpanded=!ChartExpanded; }
+        public void CycleChartRange() { if(!Paused)ChartRangeMeters=ChartRangeMeters==80?160:ChartRangeMeters==160?320:80; }
+        public void ToggleHarborDesk()
+        {
+            if(Paused || !AtHarbor)return;
+            HarborDeskOpen=!HarborDeskOpen;if(HarborDeskOpen)ShowDetails=false;
+        }
         public void ToggleJournal()
         {
             if(Paused && !JournalOpen)return;
@@ -431,7 +452,7 @@ namespace BoatAttack.Fishing
             try{FishingSaveStore.Save(SavePath,Career);SaveWarning=string.Empty;}
             catch(Exception ex) when(ex is IOException || ex is UnauthorizedAccessException){SaveWarning="存档失败：进度仅保留在内存，请检查磁盘权限后再进行一次交易。";Notice(SaveWarning,10f);Debug.LogWarning("[FISHING] Save failed: "+ex.Message);}
         }
-        public void Notice(string text,float seconds=5f){Message=text;_messageUntil=Time.unscaledTime+seconds;}
+        public void Notice(string text,float seconds=5f,bool catchNotice=false){Message=text;MessageIsCatch=catchNotice;_messageUntil=Time.unscaledTime+seconds;}
         public string VisibleMessage=>Time.unscaledTime<_messageUntil?Message:string.Empty;
         public static float FlatDistance(Vector3 a,Vector3 b)=>Vector2.Distance(new Vector2(a.x,a.z),new Vector2(b.x,b.z));
         public static bool HasArgument(string arg)=>Array.IndexOf(Environment.GetCommandLineArgs(),arg)>=0;

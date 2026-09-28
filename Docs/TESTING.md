@@ -137,3 +137,15 @@ dotnet run --project Tools/InputTests/InputTests.csproj --configuration Release 
 The fishing suite now has 314 passing assertions, including warmed-up query allocation checks, cached-view/order invalidation, exact order-weight wording, and selection parity over 2,816 cargo/order combinations. Unity smoke checks 1/2/3-line harbor layouts using the same geometry as the HUD. Geometry checks do not replace full HUD screenshots or physical-input acceptance.
 
 The 0.4.1 player is written to `Builds/FishingPrototype-v0.4.1/`, leaving the original 0.4 build intact. Opt-in `-fishing-autoplay` uses a temporary save and exits on completion; it does not certify physical input or headset behavior. CI's OS matrix is now serial (`max-parallel: 1`).
+## 8. v0.4.2 focused HUD (2026-09-28)
+
+See `FISHING_V042_REVIEW.md` for the scoped review, reproduced catch-feedback bug and manual acceptance checklist. Tests were run serially, without parallel agents or simultaneous Unity/player processes.
+
+- Fishing rules: **323 passed**, including 9 chart projection assertions (north/east, uniform zoom, bearing-preserving clipping, non-finite inputs, extreme coordinates and sampled bounds).
+- Input/render policy rules: **62 passed**.
+- The added post-catch bait-feedback regression **failed before the fix** in real Unity Play Mode. The HUD now hides only the duplicate catch notice, not subsequent action feedback.
+- Unity 2022.3.62f1 `FishingSmoke`: **passed** after the fix, including four viewport sizes, conditional pointer regions, pause guards, anchoring/harbor state, complete catches, trades, legend and save/backup flow.
+- `FishingBuild`: **passed**; output is `Builds/FishingPrototype-v0.4.2/FishingPrototype.exe`, with old builds retained.
+- That newly built Windows Player passed `-batchmode -nographics -fishing-autoplay`, including the new HUD/feedback markers and exit code 0.
+
+The serial commands are in the v0.4.2 review. No full-HUD screenshot, physical keyboard/mouse/gamepad, GPU frame-time or VR-device acceptance is claimed. The original racing-specific `Structure`/`Regression`/`PlayMode` suites were not rerun in this HUD-only review. Keep the PR draft until the relevant manual desktop checks are complete.
