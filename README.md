@@ -1,7 +1,8 @@
 # BoatAttack USV VR — team development
 
-This fork builds on Unity's Boat Attack. Baseline: **Unity 2022.3.62f1 / URP 14.0.12**. Desktop and XR input share a common interface; a complete PICO game is **not yet validated**. The v0.4.2 desktop fishing prototype adds a focused edge HUD and north-up bearing chart to the measured catches, equipment upgrades and golden-sail legend introduced in v0.4. Weather, observable wildlife, harbor commissions, journals and switchable first-/third-person views remain available; it is not a finished VR build.
+This fork builds on Unity's Boat Attack. Baseline: **Unity 2022.3.62f1 / URP 14.0.12**. Desktop and XR input share a common interface; a complete PICO game is **not yet validated**. The v0.5.0 desktop fishing prototype adds an embodied explorer, safe disembark/boarding, four shore regions and persistent field-survey rewards to the existing fishing, equipment and chart systems. Weather, observable wildlife, harbor commissions, journals and switchable first-/third-person views remain available; it is not a finished VR build.
 
+- [v0.5.0 embodied shore exploration / 海陆探索](Docs/FISHING_V05_SHORE.md)
 - [Play the fishing prototype / 捕鱼试玩说明](Docs/FISHING_PROTOTYPE.md)
 - [v0.4.2 focused HUD: review, regression and acceptance limits](Docs/FISHING_V042_REVIEW.md)
 - [v0.4.1 review: progression, performance and order HUD fixes](Docs/FISHING_V04_REVIEW.md)

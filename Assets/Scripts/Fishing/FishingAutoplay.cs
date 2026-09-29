@@ -294,7 +294,7 @@ namespace BoatAttack.Fishing
             var scenery=Controller.GetComponent<FishingScenery>();
             if(scenery==null || scenery.CombinedRenderers>40 || scenery.CombinedVertices>60000)throw new Exception("V03 added scenery exceeded its static geometry budget.");
             if(Controller.GetComponent<FishingWorldInstruments>()==null || FishingWorldInstruments.ReferenceDistance<2f)throw new Exception("World instrument comfort setup missing.");
-            int target=Controller.NavigationTarget;for(int i=0;i<4;i++)Controller.CycleNavigation();
+            int target=Controller.NavigationTarget;for(int i=0;i<Controller.NavigationCount;i++)Controller.CycleNavigation();
             if(Controller.NavigationTarget!=target)throw new Exception("Navigation cycle failed.");
             Debug.Log("[FISHING] Presentation checks: 4 viewport safe areas, 1/2/3-line harbor layouts, readable sign orientation, single-renderer fish, fish normals and vertex budget.");
         }

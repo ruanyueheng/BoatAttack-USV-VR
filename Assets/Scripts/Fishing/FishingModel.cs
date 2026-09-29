@@ -155,7 +155,9 @@ namespace BoatAttack.Fishing
     [Serializable]
     public sealed class FishingSaveData
     {
-        public int version = 3;
+        public int version = 4;
+        public int shoreTaskMask;
+        public int shoreRewardMask;
         public int discoveryMask;
         public int wildlifeMask;
         public int catches;
@@ -180,6 +182,8 @@ namespace BoatAttack.Fishing
         private static readonly int[,] UpgradeCosts = { { 30, 90 }, { 40, 100 }, { 50, 120 } };
 
         public int Coins { get; private set; }
+        public int ShoreTaskMask { get; private set; }
+        public int ShoreRewardMask { get; private set; }
         public int DiscoveryMask { get; private set; }
         public int WildlifeMask { get; private set; }
         public int Catches { get; private set; }
@@ -341,10 +345,30 @@ namespace BoatAttack.Fishing
             return payout;
         }
 
+        public bool CompleteShoreTask(int task)
+        {
+            if (task < 0 || task >= 8 || FishingExploration.Done(ShoreTaskMask, task)) return false;
+            ShoreTaskMask |= 1 << task;
+            return true;
+        }
+
+        public int ClaimShoreRewards()
+        {
+            int payout = 0;
+            int before = ShoreRewardMask;
+            for (int i = 0; i < FishingExploration.SiteCount; i++)
+                if (FishingExploration.SiteDone(ShoreTaskMask, i) && (ShoreRewardMask & (1 << i)) == 0)
+                { ShoreRewardMask |= 1 << i; payout += 25; }
+            if (before != FishingExploration.RewardMask && ShoreRewardMask == FishingExploration.RewardMask) payout += 60;
+            Coins += payout;
+            return payout;
+        }
+
         public FishingSaveData Snapshot()
         {
             var result = new FishingSaveData
             {
+                shoreTaskMask = ShoreTaskMask, shoreRewardMask = ShoreRewardMask,
                 coins = Coins, rodLevel = LineLevel, reelLevel = ReelLevel, holdLevel = HoldLevel,
                 discoveryMask = DiscoveryMask, wildlifeMask = WildlifeMask, catches = Catches,
                 ordersCompleted = OrdersCompleted, legendCatches = LegendCatches,
@@ -357,8 +381,10 @@ namespace BoatAttack.Fishing
         public static bool TryRestore(FishingSaveData data, out FishingCareer career)
         {
             career = null;
-            if (data == null || data.version < 1 || data.version > 3) return false;
-            bool v3 = data.version == 3;
+            if (data == null || data.version < 1 || data.version > 4) return false;
+            bool v3 = data.version >= 3;
+            if (!FishingExploration.Valid(data.shoreTaskMask, data.shoreRewardMask)
+                || (data.version < 4 && (data.shoreTaskMask != 0 || data.shoreRewardMask != 0))) return false;
             if (data.coins < 0 || data.coins > 100000000 || data.rodLevel < 0 || data.rodLevel > (v3 ? MaxLevel : 1)
                 || data.reelLevel < 0 || data.reelLevel > (v3 ? MaxLevel : 0) || data.holdLevel < 0 || data.holdLevel > (v3 ? MaxLevel : 0)
                 || data.wildlifeMask < 0 || data.wildlifeMask > 31
@@ -394,6 +420,8 @@ namespace BoatAttack.Fishing
                 result.OrdersCompleted = data.ordersCompleted;
                 result.LegendCatches = data.legendCatches;
             }
+            result.ShoreTaskMask = data.shoreTaskMask;
+            result.ShoreRewardMask = data.shoreRewardMask;
             result.Coins = data.coins;
             result.LineLevel = data.rodLevel;
             result.ReelLevel = data.reelLevel;

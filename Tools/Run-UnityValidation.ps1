@@ -1,6 +1,6 @@
 param(
     [string]$EditorRoot,
-    [ValidateSet("Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild")]
+    [ValidateSet("Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore")]
     [string]$Suite = "Structure",
     [ValidateRange(60, 7200)]
     [int]$TimeoutSeconds = 1200
@@ -30,6 +30,7 @@ $method = switch ($Suite) {
     'FishingGenerate' { 'BoatAttack.EditorTools.FishingPrototypeEditor.Generate' }
     'FishingSmoke' { 'BoatAttack.EditorTools.FishingPrototypeSmoke.Run' }
     'FishingBuild' { 'BoatAttack.EditorTools.FishingPrototypeEditor.Build' }
+    'FishingShore' { 'BoatAttack.EditorTools.FishingShoreValidation.Run' }
 }
 $marker = switch ($Suite) {
     'Structure' { '[USV-VALIDATION]' }
@@ -38,6 +39,7 @@ $marker = switch ($Suite) {
     'FishingGenerate' { '[FISHING]' }
     'FishingSmoke' { '[FISHING]' }
     'FishingBuild' { '[FISHING]' }
+    'FishingShore' { '[SHORE]' }
 }
 $arguments = '-batchmode -nographics -buildTarget StandaloneWindows64 -projectPath "' + $repo + '" -executeMethod ' + $method + ' -logFile "' + $log + '"'
 if ($Suite -eq 'FishingSmoke') { $arguments += ' -fishing-autoplay' }
