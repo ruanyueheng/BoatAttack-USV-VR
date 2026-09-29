@@ -93,6 +93,7 @@ internal static class Program
             ProgressionTests.Run(Check);
             ReviewTests.Run(Check);
             ChartTests.Run(Check);
+            AcceptanceTests.Run(Check);
             Console.WriteLine("TOTAL: "+count+" passed. Pure fishing rules only.");return 0;
         }
         catch(Exception ex){Console.Error.WriteLine(ex);return 1;}

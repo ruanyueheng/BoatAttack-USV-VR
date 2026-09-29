@@ -18,15 +18,16 @@ namespace BoatAttack.Fishing
         private FocusLayout Layout => new FocusLayout(_height, Controller.Anchored, Controller.Session.Phase);
         public static float LayoutScale(int width, int height) => Mathf.Max(0.01f, Mathf.Min(width / 1600f, height / 900f));
         public int JournalPage { get => _journalPage; set => _journalPage = Mathf.Clamp(value, 0, JournalTabs.Length - 1); }
-        private bool CatchVisible => Controller.LastCatch.Fish != null && Time.unscaledTime - Controller.LastCatch.ShownAt < CardSeconds;
+        private float CatchAge => Controller.Acceptance != null && Controller.Acceptance.KeepCatchCardVisible ? 1f : Time.unscaledTime - Controller.LastCatch.ShownAt;
+        private bool CatchVisible => Controller.LastCatch.Fish != null && CatchAge < CardSeconds;
 
         public bool BlocksPointer(Vector2 screen, int width, int height)
             => BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
                 Controller.HarborDeskOpen && Controller.AtHarbor, Controller.AtHarbor,
-                Controller.Ecology.Candidate.HasValue && !CatchVisible);
+                Controller.Ecology.Candidate.HasValue && !CatchVisible, Controller.Acceptance != null);
 
         public static bool BlocksToolPointer(Vector2 screen, int width, int height, bool chartExpanded = true,
-            bool details = false, bool harbor = false, bool atHarbor = false, bool observe = false)
+            bool details = false, bool harbor = false, bool atHarbor = false, bool observe = false, bool acceptance = false)
         {
             float scale = LayoutScale(width, height), offset = (width - 1600 * scale) * .5f;
             var point = new Vector2((screen.x - offset) / scale, (height - screen.y) / scale);
@@ -34,7 +35,8 @@ namespace BoatAttack.Fishing
             return layout.Toolbar.Contains(point) || (chartExpanded ? layout.Chart : layout.ChartTab).Contains(point)
                 || (observe && layout.Observe.Contains(point)) || (atHarbor && layout.HarborButton.Contains(point))
                 || (details && new Rect(1242, 130, 330, 422).Contains(point))
-                || (harbor && new HarborLayout(3).Panel.Contains(point));
+                || (harbor && new HarborLayout(3).Panel.Contains(point))
+                || (acceptance && AcceptanceBanner.Contains(point));
         }
 
         private void Awake() => _font = Font.CreateDynamicFontFromOSFont(new[] { "Microsoft YaHei", "SimHei", "Arial" }, 20);
@@ -67,6 +69,7 @@ namespace BoatAttack.Fishing
                     DrawCatchToast();
                     DrawCompactNotice();
                 }
+                if (c.Acceptance != null) DrawAcceptanceToolbar();
             }
             finally { GUI.matrix = matrix; GUI.color = color; }
         }

@@ -149,3 +149,10 @@ See `FISHING_V042_REVIEW.md` for the scoped review, reproduced catch-feedback bu
 - That newly built Windows Player passed `-batchmode -nographics -fishing-autoplay`, including the new HUD/feedback markers and exit code 0.
 
 The serial commands are in the v0.4.2 review. No full-HUD screenshot, physical keyboard/mouse/gamepad, GPU frame-time or VR-device acceptance is claimed. The original racing-specific `Structure`/`Regression`/`PlayMode` suites were not rerun in this HUD-only review. Keep the PR draft until the relevant manual desktop checks are complete.
+
+## Desktop acceptance sandbox (v0.4.3)
+
+See [FISHING_DESKTOP_ACCEPTANCE.md](FISHING_DESKTOP_ACCEPTANCE.md) for opt-in isolated profiles, the serial smoke/capture runner and the outstanding physical-input checklist. Full-HUD captures are not physical-input certification.
+
+
+Pre-PR validation (2026-09-29): **382 fishing assertions** (including 59 acceptance assertions) and **62 input/render-policy assertions** passed. Unity FishingSmoke, the v0.4.3 Windows Release build and the new standalone player's 12-scenario acceptance smoke passed serially. Evidence and explicit untested areas are recorded in the acceptance handoff; complete HUD captures and real-device input remain pending.
