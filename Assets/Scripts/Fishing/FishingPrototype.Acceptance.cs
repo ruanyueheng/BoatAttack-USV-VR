@@ -33,6 +33,7 @@ namespace BoatAttack.Fishing
             FishingCareer fixture = selected == FishingAcceptanceCase.FreePlay ? null : FishingAcceptanceCases.CreateCareer(selected);
             if (JournalOpen) ToggleJournal();
             else if (Paused) TogglePause();
+            Shore.Board();
             LeaveStation();
             Teleport(spawnPosition, spawnRotation);
             UpdateNearestSpot();

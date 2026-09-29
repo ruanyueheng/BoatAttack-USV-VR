@@ -13,6 +13,7 @@ namespace BoatAttack.Fishing
         public bool IsLooking { get; private set; }
         private bool _wasAnchored, _wasFirstPerson = true, _reset = true;
         private float _lookYaw, _lookPitch, _waterY, _waterVelocity;
+        private float _shoreYaw;
         private Vector3 _velocity, _lastBoatPosition;
         private readonly FishingPointerGate _lookGate = new FishingPointerGate();
         private readonly RaycastHit[] _hits = new RaycastHit[48];
@@ -32,6 +33,7 @@ namespace BoatAttack.Fishing
             var c = Controller;
             if (c == null || c.Player == null || c.viewCamera == null || !OwnsCamera) return;
             if (c.Paused) { ResetInput(); return; }
+            if (c.IsAshore) { ApplyShoreView(); return; }
             var boat = c.Player.transform;
             var yaw = Quaternion.Euler(0f, boat.eulerAngles.y, 0f);
             bool changed = c.Anchored != _wasAnchored || FirstPerson != _wasFirstPerson;
@@ -81,6 +83,23 @@ namespace BoatAttack.Fishing
                 c.viewCamera.fieldOfView=58f;
             }
             _wasAnchored=c.Anchored;_wasFirstPerson=FirstPerson;_lastBoatPosition=boat.position;_reset=false;
+        }
+        private void ApplyShoreView()
+        {
+            var c = Controller;
+            if (_reset) { _shoreYaw = c.Player.transform.eulerAngles.y; _lookPitch = 0f; _reset = false; }
+            var mouse = Mouse.current;
+            bool held = mouse != null && mouse.rightButton.isPressed;
+            bool ready = _lookGate.Update(Application.isFocused, c.Paused, false, held);
+            IsLooking = !c.Automated && ready && held;
+            if (IsLooking)
+            {
+                var delta = mouse.delta.ReadValue();
+                _shoreYaw = Mathf.Repeat(_shoreYaw + delta.x * .12f, 360f);
+                _lookPitch = Mathf.Clamp(_lookPitch - delta.y * .12f, -75f, 75f);
+            }
+            c.viewCamera.transform.SetPositionAndRotation(c.Shore.EyePosition, Quaternion.Euler(_lookPitch, _shoreYaw, 0));
+            c.viewCamera.fieldOfView = 72f;
         }
         private Vector3 ConstrainToVisibleSegment(Vector3 pivot,Vector3 position,Transform boat)
         {

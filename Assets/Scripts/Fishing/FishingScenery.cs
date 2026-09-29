@@ -92,7 +92,7 @@ namespace BoatAttack.Fishing
             if (Time.time > _nextCull)
             {
                 _nextCull = Time.time + 0.4f;
-                foreach (var zone in _zones) zone.gameObject.SetActive((_controller.Player.transform.position - zone.position).sqrMagnitude < 240f * 240f);
+                foreach (var zone in _zones) zone.gameObject.SetActive((_controller.ObserverPosition - zone.position).sqrMagnitude < 240f * 240f);
             }
         }
 

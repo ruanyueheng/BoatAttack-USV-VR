@@ -16,7 +16,9 @@
 *.meta text
 *.unity text
 *.prefab text
-*.asset text
+# Terrain, NavMesh and baked lighting .asset files can be binary.
+# Auto preserves those byte-for-byte while keeping YAML assets reviewable.
+*.asset text=auto
 *.mat text
 *.shader text
 *.shadergraph text

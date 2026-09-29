@@ -5,7 +5,7 @@ using UnityEngine;
 namespace BoatAttack.Fishing
 {
     /// <summary>Explicit command-line-only test driver. Never enabled in a normal game.</summary>
-    public sealed class FishingAutoplay : MonoBehaviour
+    public sealed partial class FishingAutoplay : MonoBehaviour
     {
         public const float TimeoutSeconds = 320f;
         public FishingPrototype Controller;
@@ -34,6 +34,7 @@ namespace BoatAttack.Fishing
                     case -2:
                         if(Time.realtimeSinceStartup<_captureAt)return;
                         ValidateDeparture();
+                        ValidateShoreWalking();
                         ValidatePresentation();
                         ValidateLivingBay();
                         StartCoroutine(Capture("00-first-person-driving.png"));

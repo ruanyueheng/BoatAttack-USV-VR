@@ -90,8 +90,8 @@ namespace BoatAttack.Fishing
                 strip.transform.localRotation=Quaternion.Euler(slope*13f,0,0);
                 FishingArt.Shape("Awning valance",PrimitiveType.Cube,dock,new Vector3(-3.15f+i*0.57f,3.20f,slope*2.13f),new Vector3(0.56f,0.25f,0.06f),i%2==0?c.orange:c.cream);
             }
-            FishingArt.Shape("Counter base",PrimitiveType.Cube,dock,new Vector3(0,1.22f,0.55f),new Vector3(5.6f,1.05f,1.1f),c.teal);
-            FishingArt.Shape("Counter top",PrimitiveType.Cube,dock,new Vector3(0,1.80f,0.55f),new Vector3(5.8f,0.12f,1.25f),c.wood);
+            FishingArt.Shape("Counter base",PrimitiveType.Cube,dock,new Vector3(0,1.22f,0.55f),new Vector3(5.6f,1.05f,1.1f),c.teal,true);
+            FishingArt.Shape("Counter top",PrimitiveType.Cube,dock,new Vector3(0,1.80f,0.55f),new Vector3(5.8f,0.12f,1.25f),c.wood,true);
             for(int i=0;i<3;i++)
             {
                 var tray=Crate(dock,new Vector3(i*1.8f-1.8f,1.90f,0.55f),c.wood,c.teal,c.dark);tray.localScale=Vector3.one*0.9f;

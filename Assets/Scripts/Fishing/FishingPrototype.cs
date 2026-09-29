@@ -40,6 +40,9 @@ namespace BoatAttack.Fishing
         public bool Paused { get; private set; }
         public bool Automated { get; private set; }
         public FishingViewRig View { get; private set; }
+        public FishingShoreWalker Shore { get; private set; }
+        public bool IsAshore => Shore != null && Shore.IsAshore;
+        public Vector3 ObserverPosition => IsAshore ? Shore.Position : Player.transform.position;
         public FishingWeather Weather { get; private set; }
         public FishingEcology Ecology { get; private set; }
         public Shader PaletteShader { get; private set; }
@@ -70,7 +73,7 @@ namespace BoatAttack.Fishing
         public string SaveWarning { get; private set; } = string.Empty;
         public float Speed => Player == null ? 0f : Vector3.ProjectOnPlane(Player.engine.RB.velocity,Vector3.up).magnitude;
         public float HarborDistance => Player == null ? 999f : FlatDistance(Player.engine.RB.position,harbor);
-        public bool AtHarbor => HarborDistance < 22f && Speed < 3f && !Anchored;
+        public bool AtHarbor => Player != null && FlatDistance(ObserverPosition,harbor) < 22f && Speed < 3f && !Anchored;
         public float SpotDistance { get; private set; }
         private USVInputRouter _input;
         private FishingHUD _hud;
@@ -133,6 +136,7 @@ namespace BoatAttack.Fishing
             Weather=gameObject.AddComponent<FishingWeather>();Weather.Controller=this;
             Ecology=gameObject.AddComponent<FishingEcology>();Ecology.Controller=this;
             View=gameObject.AddComponent<FishingViewRig>();View.Controller=this;
+            Shore=gameObject.AddComponent<FishingShoreWalker>();Shore.Controller=this;
             ConfigurePresentation();
             _feedback=gameObject.AddComponent<AudioSource>();_feedback.spatialBlend=0f;_feedback.volume=0.45f;
             _biteTone=Tone(780f,0.13f);_successTone=Tone(1150f,0.2f);
@@ -170,6 +174,7 @@ namespace BoatAttack.Fishing
             if(!Paused && focused && !Automated)
             {
                 if(k!=null && k.cKey.wasPressedThisFrame)ToggleView();
+                if(k!=null && k.gKey.wasPressedThisFrame)Shore.Toggle();
                 if(k!=null && k.vKey.wasPressedThisFrame)View.ResetLook();
                 if(k!=null && k.hKey.wasPressedThisFrame)ToggleDetails();
                 if(k!=null && k.mKey.wasPressedThisFrame)ToggleChart();
@@ -188,6 +193,7 @@ namespace BoatAttack.Fishing
                 bool press=(pointerReady && !overTools && !rightHeld && m!=null && m.leftButton.wasPressedThisFrame) || (gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame);
                 if(press && Anchored){if(Session.Phase==CatchPhase.Bite)Hook();else Cast();}
             }
+            Shore.Tick();
             UpdateNearestSpot();
             if(!AtHarbor)HarborDeskOpen=false;
             _reeling=false;
@@ -214,7 +220,7 @@ namespace BoatAttack.Fishing
 
         private void FixedUpdate()
         {
-            if(!_initialized || Paused)return;
+            if(!_initialized || Paused || IsAshore)return;
             var rb=Player.engine.RB;
             if(Anchored)
             {
@@ -243,6 +249,7 @@ namespace BoatAttack.Fishing
         public void ToggleView()
         {
             if(Paused)return;
+            if(IsAshore){Notice("岸上使用第一人称 · 右键环顾，G 返回船上。");return;}
             View.Toggle();
             Notice(FirstPerson?"第一人称 · 右键环顾 / V 视线回正 / C 切换":"第三人称 · 右键环绕 / V 回正 / C 切换",4f);
         }
@@ -277,6 +284,7 @@ namespace BoatAttack.Fishing
             UpdateNearestSpot();
             if(Anchored){if(Session.Phase==CatchPhase.Landing)Scoop();return;}
             if(AtHarbor){if(Career.OrderReady)DeliverOrder();else Sell();return;}
+            if(IsAshore){Notice("当前在岸上，返回船边按 G 上船后再捕鱼。");return;}
             if(SpotDistance>22f){Notice("先驶入任一黄色渔区，再按 E 停船。");return;}
             if(Speed>3f){Notice("速度过快，按住 Shift 刹车再停船。");return;}
             Anchored=true;ChartExpanded=false;ShowDetails=false;HarborDeskOpen=false;_anchor=Player.engine.RB.position;_anchorRotation=Player.transform.rotation;
@@ -342,6 +350,7 @@ namespace BoatAttack.Fishing
         }
         public void LeaveStation()
         {
+            if(IsAshore){if(!Paused)Notice("船已停泊，走回下船位置按 G 上船。");return;}
             if(Paused)return;Anchored=false;ChartExpanded=true;HarborDeskOpen=false;ShowDetails=false;Session.Cancel();AutomationReel=false;Notice("工具已收起，W 前进，A/D 转向，S/Shift 刹车；青色港口按 E 交易。");
         }
         public int Sell()
@@ -432,7 +441,7 @@ namespace BoatAttack.Fishing
         }
         public void ReturnToHarbor()
         {
-            if(Paused)return;LeaveStation();Teleport(spawnPosition,spawnRotation);Notice("已救援回港；鱼箱和金币保留。",5f);
+            if(Paused)return;if(Shore!=null)Shore.Board();LeaveStation();Teleport(spawnPosition,spawnRotation);Notice("已救援回港；鱼箱和金币保留。",5f);
         }
         public void MoveToSpotForAutomation(int index)
         {

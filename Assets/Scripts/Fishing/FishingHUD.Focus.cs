@@ -13,9 +13,9 @@ namespace BoatAttack.Fishing
             var r = Layout.Heading;
             Glass(r);
             WeatherIcon(new Rect(r.x + 12, r.y + 15, 32, 32), c.Weather.Climate.Current);
-            string title = c.Anchored ? FishingSpecies.AreaName(c.Spot) : c.NavigationName + "  " + FishingPrototype.FlatDistance(c.Player.transform.position, c.NavigationPosition).ToString("0") + " m";
+            string title = c.IsAshore ? "岸上探索" : c.Anchored ? FishingSpecies.AreaName(c.Spot) : c.NavigationName + "  " + FishingPrototype.FlatDistance(c.ObserverPosition, c.NavigationPosition).ToString("0") + " m";
             Label(r.x + 56, r.y + 9, 262, 27, title, 19, Color.white, true);
-            string motion = c.Anchored ? "已停船 · " + FishingVoyage.BaitName(c.Bait) : (c.Speed * 3.6f).ToString("0.0") + " km/h · N 切换航点";
+            string motion = c.IsAshore ? "船只已停泊 · G 上下船" : c.Anchored ? "已停船 · " + FishingVoyage.BaitName(c.Bait) : (c.Speed * 3.6f).ToString("0.0") + " km/h · N 切换航点";
             Label(r.x + 56, r.y + 36, 262, 20, BayClimate.Name(c.Weather.Climate.Current) + " · " + motion, 13, Muted);
             if (c.Ecology.Candidate.HasValue && !CatchVisible && Button(Layout.Observe, "T 观察 · " + BayClimate.MarineName(c.Ecology.Candidate.Value), true, false, 14)) c.Ecology.Observe();
         }
@@ -47,18 +47,23 @@ namespace BoatAttack.Fishing
             Glass(r);
             string title, help;
             Color accent = Mint;
-            if (!c.Anchored)
+            if (c.IsAshore)
+            {
+                title = c.Shore.CanBoard ? "G 返回船上" : "返回登船点 · " + Vector3.Distance(c.Shore.Position, c.Shore.BoardingPoint).ToString("0") + " m";
+                help = "WASD 步行 · 右键环顾 · R 救援" + (c.AtHarbor ? " · E 交易 / Tab 交易台" : "");
+            }
+            else if (!c.Anchored)
             {
                 if (c.AtHarbor)
                 {
                     Label(r.x + 18, r.y + 10, r.width - 175, 25, "潮汐渔港 · E 快速交付 / 出售", 18, Color.white, true);
-                    Label(r.x + 18, r.y + 42, r.width - 175, 22, "Tab 交易台与升级 · W 起航", 14, Muted);
+                    Label(r.x + 18, r.y + 42, r.width - 175, 22, "靠近码头停稳后 G 下船 · Tab 交易台", 14, Muted);
                     if (Button(Layout.HarborButton, c.HarborDeskOpen ? "Tab 收起" : "Tab 交易台", true, c.HarborDeskOpen, 15)) c.ToggleHarborDesk();
                     return;
                 }
                 bool near = c.SpotDistance <= 22f;
                 title = near ? (c.Speed > 3f ? "按住 Shift 减速，再按 E 停船" : "进入 " + FishingSpecies.AreaName(c.Spot) + " · E 停船") : "驶向彩色航标，靠近后按 E 停船";
-                help = "W A D 航行 · S / Shift 制动 · N 航点 · M 地图";
+                help = "WAD 航行 · S / Shift 停稳 · 靠岸 G 下船 · M 地图";
             }
             else
             {

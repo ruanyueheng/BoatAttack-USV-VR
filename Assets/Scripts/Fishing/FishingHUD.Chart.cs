@@ -10,7 +10,7 @@ namespace BoatAttack.Fishing
             var c = Controller;
             if (!c.ChartExpanded)
             {
-                if (Button(Layout.ChartTab, "M 航海图  ·  " + FishingPrototype.FlatDistance(c.Player.transform.position, c.NavigationPosition).ToString("0") + " m", true, false, 14)) c.ToggleChart();
+                if (Button(Layout.ChartTab, "M 航海图  ·  " + FishingPrototype.FlatDistance(c.ObserverPosition, c.NavigationPosition).ToString("0") + " m", true, false, 14)) c.ToggleChart();
                 return;
             }
             var r = Layout.Chart;
@@ -38,16 +38,22 @@ namespace BoatAttack.Fishing
                 for (float d = 16; d < distance - 13; d += 10)
                     Segment(center + bearing.normalized * d, center + bearing.normalized * Mathf.Min(d + 4, distance - 13), new Color(1, .77f, .42f, .65f), 1.5f);
             ChartMarker(c.harbor, center, "港", 0, Mint);
+            if (c.IsAshore)
+            {
+                var boarding = ChartPoint(c.Shore.BoardingPoint, center);
+                Disc(boarding, 10, Mint);
+                Label(new Rect(boarding.x - 12, boarding.y - 12, 24, 24), "船", 13, InkText, true, TextAnchor.MiddleCenter);
+            }
             for (int i = 0; i < c.fishingSpots.Length; i++) ChartMarker(c.fishingSpots[i], center, (i + 1).ToString(), i + 1, Gold);
             // The player is always centered; its arrow rotates while north stays fixed.
             Disc(center, 12, Ink);
-            DrawArrow(center, c.Player.transform.eulerAngles.y, Color.white, 10);
+            DrawArrow(center, c.IsAshore ? c.viewCamera.transform.eulerAngles.y : c.Player.transform.eulerAngles.y, Color.white, 10);
             Label(new Rect(r.x, r.yMax - 18, r.width, 20), "北向固定 · 方位参考，注意礁石", 12, Muted, false, TextAnchor.MiddleCenter);
         }
 
         private Vector2 ChartPoint(Vector3 world, Vector2 center)
         {
-            var p = Controller.Player.transform.position;
+            var p = Controller.ObserverPosition;
             var point = FishingChartMath.Project(world.x, world.z, p.x, p.z, Controller.ChartRangeMeters, 72);
             return center + new Vector2(point.X, point.Y);
         }
@@ -57,7 +63,7 @@ namespace BoatAttack.Fishing
             var c = Controller;
             var p = ChartPoint(world, center);
             bool selected = c.NavigationTarget == target;
-            bool offRange = FishingPrototype.FlatDistance(c.Player.transform.position, world) > c.ChartRangeMeters;
+            bool offRange = FishingPrototype.FlatDistance(c.ObserverPosition, world) > c.ChartRangeMeters;
             if (selected) Outline(new Rect(p.x - 17, p.y - 17, 34, 34), Gold, 17, 2);
             Disc(p, 12, offRange ? Ink : color);
             if (offRange) Outline(new Rect(p.x - 12, p.y - 12, 24, 24), color, 12, 1.5f);
