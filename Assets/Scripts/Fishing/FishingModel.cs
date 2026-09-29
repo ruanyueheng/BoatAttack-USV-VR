@@ -155,7 +155,8 @@ namespace BoatAttack.Fishing
     [Serializable]
     public sealed class FishingSaveData
     {
-        public int version = 4;
+        public int version = 5;
+        public int expeditionFacts;
         public int shoreTaskMask;
         public int shoreRewardMask;
         public int discoveryMask;
@@ -182,6 +183,7 @@ namespace BoatAttack.Fishing
         private static readonly int[,] UpgradeCosts = { { 30, 90 }, { 40, 100 }, { 50, 120 } };
 
         public int Coins { get; private set; }
+        public FishingExpedition Expedition { get; private set; } = new FishingExpedition();
         public int ShoreTaskMask { get; private set; }
         public int ShoreRewardMask { get; private set; }
         public int DiscoveryMask { get; private set; }
@@ -368,6 +370,7 @@ namespace BoatAttack.Fishing
         {
             var result = new FishingSaveData
             {
+                expeditionFacts = Expedition.Facts,
                 shoreTaskMask = ShoreTaskMask, shoreRewardMask = ShoreRewardMask,
                 coins = Coins, rodLevel = LineLevel, reelLevel = ReelLevel, holdLevel = HoldLevel,
                 discoveryMask = DiscoveryMask, wildlifeMask = WildlifeMask, catches = Catches,
@@ -381,7 +384,9 @@ namespace BoatAttack.Fishing
         public static bool TryRestore(FishingSaveData data, out FishingCareer career)
         {
             career = null;
-            if (data == null || data.version < 1 || data.version > 4) return false;
+            if (data == null || data.version < 1 || data.version > 5) return false;
+            if (!FishingExpedition.TryRestore(data.expeditionFacts, out var expedition)
+                || (data.version < 5 && data.expeditionFacts != 0)) return false;
             bool v3 = data.version >= 3;
             if (!FishingExploration.Valid(data.shoreTaskMask, data.shoreRewardMask)
                 || (data.version < 4 && (data.shoreTaskMask != 0 || data.shoreRewardMask != 0))) return false;
@@ -420,6 +425,7 @@ namespace BoatAttack.Fishing
                 result.OrdersCompleted = data.ordersCompleted;
                 result.LegendCatches = data.legendCatches;
             }
+            result.Expedition = expedition;
             result.ShoreTaskMask = data.shoreTaskMask;
             result.ShoreRewardMask = data.shoreRewardMask;
             result.Coins = data.coins;

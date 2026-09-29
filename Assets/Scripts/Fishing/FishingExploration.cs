@@ -16,7 +16,7 @@ namespace BoatAttack.Fishing
                 case 2: return "调查潮池生物";
                 case 3: return "记录候鸟栖地";
                 case 4: return "测绘旧港栈道";
-                case 5: return "修复海岸信标";
+                case 5: return "登记信标故障";
                 case 6: return "回收漂流物";
                 default: return "登记海滩样带";
             }

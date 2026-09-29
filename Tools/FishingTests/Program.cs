@@ -15,6 +15,7 @@ internal static class Program
         try
         {
             ShoreTests.Run(Check);
+            ExpeditionTests.Run(Check);
             foreach (FishKind kind in Enum.GetValues(typeof(FishKind)))
             {
                 var s = Bite(kind); Check(s.Phase == CatchPhase.Bite, "Bite window " + kind);

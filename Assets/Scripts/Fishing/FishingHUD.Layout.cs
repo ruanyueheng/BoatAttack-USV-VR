@@ -43,7 +43,7 @@ namespace BoatAttack.Fishing
                 ReservedY = Sale.yMax + 6f;
                 UpgradeHeadingY = ReservedY + 32f;
                 UpgradeStartY = UpgradeHeadingY + 36f;
-                Footer = new Rect(x, UpgradeStartY + 3f * UpgradeRowHeight + 8f, w, 20f);
+                Footer = new Rect(x, UpgradeStartY + 3f * UpgradeRowHeight + 8f, w, 34f);
                 Panel = new Rect(left, top, width, Footer.yMax + 14f - top);
             }
 

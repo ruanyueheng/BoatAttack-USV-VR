@@ -76,8 +76,16 @@ namespace BoatAttack.Fishing
                 for (int t=0;t<2;t++)
                 {
                     int id=i*2+t; var p=site.Tasks[t];
+                    if(id==5)
+                    {
+                        var beacon=new GameObject("Old port salvage beacon");
+                        beacon.transform.SetParent(root,false);
+                        beacon.AddComponent<FishingBeaconVisual>().Build(c,p);
+                        // Keep the historical survey marker separate from the new repair facts.
+                        p+=new Vector3(.8f,0,0);
+                    }
                     FishingArt.Shape("Survey tripod",PrimitiveType.Cylinder,root,p+Vector3.up*.5f,new Vector3(.14f,.5f,.14f),c.dark);
-                    var marker=FishingArt.Shape(FishingExploration.TaskName(id),t==0?PrimitiveType.Cube:PrimitiveType.Sphere,root,p+Vector3.up*1.1f,new Vector3(.65f,.5f,.55f),c.orange);
+                    var marker=FishingArt.Shape(FishingExploration.TaskName(id),PrimitiveType.Cube,root,p+Vector3.up*1.1f,new Vector3(.42f,.28f,.07f),c.orange);
                     _taskMarkers[id]=marker.GetComponent<Renderer>();
                 }
             }
@@ -106,6 +114,7 @@ namespace BoatAttack.Fishing
                 if(!Ignored(col))return false;
             return true;
         }
+        public bool CanSeeTask(Vector3 target) => Ashore && ClearSight(Actor.position+Vector3.up*1.5f,target+Vector3.up*1.1f);
         private bool ClearSight(Vector3 from,Vector3 to)
         {
             var delta=to-from;
@@ -161,6 +170,7 @@ namespace BoatAttack.Fishing
         }
         public void BoardImmediately()
         {
+            if(Controller.Expedition!=null)Controller.Expedition.Cancel();
             Body.enabled=false;Ashore=false;Controller.RestoreBoatChart();CurrentSite=-1;WalkSpeed=0;_fallSpeed=0;Controller.View.ResetLook();SyncRider();
         }
         public void HoldBoat()
@@ -185,7 +195,7 @@ namespace BoatAttack.Fishing
         }
         public void Walk(Vector2 input,bool sprint,float deltaTime)
         {
-            if(!Ashore || Controller.Paused || deltaTime<=0 || XRSettings.isDeviceActive)return;
+            if(!Ashore || Controller.Paused || (Controller.Expedition!=null && Controller.Expedition.Aligning) || deltaTime<=0 || XRSettings.isDeviceActive)return;
             float dt=Mathf.Min(deltaTime,.05f);
             var heading=Quaternion.Euler(0,Controller.viewCamera.transform.eulerAngles.y,0);
             var axes=Vector2.ClampMagnitude(input,1);
