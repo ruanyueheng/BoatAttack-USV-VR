@@ -37,30 +37,20 @@ namespace BoatAttack.Fishing
             for(int i=0;i<_points.Length;i++)_available[i]=c.Shore.Sites[Regions[i]].Available;
             if(_available[0])
             {
-                var board=FishingArt.Shape("West bay maintenance record",PrimitiveType.Cube,transform,_points[0]+new Vector3(.75f,1.05f,0),new Vector3(.75f,.65f,.08f),c.cream);
-                for(int row=0;row<3;row++)FishingArt.Shape("Record text stripe",PrimitiveType.Cube,board.transform,new Vector3(0,.25f-row*.22f,-.6f),new Vector3(.7f,.035f,.06f),c.dark);
+                FishingProps.Spawn("MaintenanceRecord", transform, _points[0]+new Vector3(.75f,1.05f,0));
             }
             for(int i=1;i<=3;i++)if(_available[i])BuildCrate(i);
-            FishingArt.Shape("Double ring channel post",PrimitiveType.Cylinder,transform,ChannelMarker+Vector3.up*2,new Vector3(.18f,2,.18f),c.teal);
-            var markerRight=Vector3.Cross(Vector3.up,(_points[4]-ChannelMarker).normalized).normalized;
-            for(int i=0;i<2;i++)SymbolRing("Channel alignment ring",transform,ChannelMarker+Vector3.up*3.5f+markerRight*(-.65f+i*1.3f),.52f,c.cream,markerRight,.08f);
+            var marker=FishingProps.Spawn("ChannelMarker", transform, ChannelMarker);
+            var facing=_points[4]-ChannelMarker; facing.y=0;
+            if(facing.sqrMagnitude>.001f)marker.transform.rotation=Quaternion.LookRotation(facing);
             Refresh();
         }
         private void BuildCrate(int id)
         {
             var root=new GameObject(Labels[id]).transform;root.SetParent(transform,false);root.position=_points[id]+new Vector3(.65f,0,0);
-            for(int i=0;i<4;i++)FishingArt.Shape("Weathered crate plank",PrimitiveType.Cube,root,new Vector3(0,.13f+i*.16f,0),new Vector3(.8f,.14f,.7f),_c.wood);
-            for(int i=-1;i<=1;i+=2)FishingArt.Shape("Iron binding",PrimitiveType.Cube,root,new Vector3(i*.27f,.39f,-.365f),new Vector3(.065f,.74f,.04f),_c.dark);
-            var sign=FishingArt.Shape("Large cargo symbol",PrimitiveType.Cube,root,new Vector3(0,.48f,-.40f),new Vector3(.5f,.37f,.025f),id==2?_c.teal:_c.cream);
-            // Bold, distinct silhouette symbols; also named explicitly in the action prompt.
-            if(id==2)for(int i=0;i<2;i++)SymbolRing("Twin ring service symbol",root,new Vector3(-.115f+i*.23f,.48f,-.43f),.085f,_c.cream,Vector3.right,.022f);
-            else FishingArt.Shape(id==1?"Fish cargo mark":"Stripe cargo mark",id==1?PrimitiveType.Sphere:PrimitiveType.Cube,sign.transform,new Vector3(0,0,-1),new Vector3(.65f,.18f,.1f),_c.orange);
-            if(id==2)_component=FishingArt.Shape("Recovered brass component",PrimitiveType.Cylinder,root,new Vector3(0,.85f,0),new Vector3(.25f,.18f,.25f),_c.orange);
-        }
-        private static void SymbolRing(string label,Transform parent,Vector3 center,float radius,Material material,Vector3 right,float width)
-        {
-            var ring=FishingArt.Line(label,parent,material,width,false);ring.positionCount=33;
-            for(int i=0;i<=32;i++){float a=i*Mathf.PI/16;ring.SetPosition(i,center+(right*Mathf.Cos(a)+Vector3.up*Mathf.Sin(a))*radius);}
+            FishingProps.Spawn("CrateBody", root, Vector3.zero);
+            FishingProps.Spawn(id==2?"CargoSignService":id==1?"CargoSignFish":"CargoSignCloth", root, Vector3.zero);
+            if(id==2)_component=FishingProps.Spawn("RepairCoil", root, new Vector3(0,.74f,0));
         }
         public int Resolve()
         {

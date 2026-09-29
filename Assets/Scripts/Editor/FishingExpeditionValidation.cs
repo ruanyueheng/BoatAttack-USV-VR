@@ -187,12 +187,36 @@ namespace BoatAttack.EditorTools
             rb.velocity=Vector3.zero;rb.angularVelocity=Vector3.zero;
             c.Interact();Check(c.Anchored && c.Spot==FishingGrounds.NorthIsland,"anchor after real north approach");
         }
+        private static void PropChecks(FishingPrototype c)
+        {
+            string[] names={"CrateBody","CargoSignService","CargoSignFish","CargoSignCloth","RepairCoil","BeaconBody","BeaconHead","BeaconLens","MaintenanceRecord","ChannelMarker"};
+            var palette=Resources.Load<Material>("FishingProps/HarborPalette");
+            Check(palette!=null && palette.shader.isSupported,"authored prop palette supported");
+            foreach(var name in names)
+            {
+                var prefab=Resources.Load<GameObject>("FishingProps/"+name);
+                Check(prefab!=null,"authored prop imported: "+name);
+                var filters=prefab.GetComponentsInChildren<MeshFilter>();
+                Check(filters.Length==1 && prefab.GetComponentsInChildren<Renderer>().Length==1,"one mesh/renderer: "+name);
+                var mesh=filters[0].sharedMesh;
+                Check(mesh!=null && mesh.HasVertexAttribute(UnityEngine.Rendering.VertexAttribute.Color),"vertex colours imported: "+name);
+                Check(mesh.subMeshCount==1 && mesh.GetIndexCount(0)/3<14000,"triangle/submesh budget: "+name);
+                var size=Vector3.Scale(mesh.bounds.size,filters[0].transform.lossyScale);
+                float extent=Mathf.Max(Mathf.Abs(size.x),Mathf.Abs(size.y),Mathf.Abs(size.z));
+                Check(extent>.1f && extent<5f,"metre-scale FBX: "+name);
+                Check(prefab.GetComponentsInChildren<Collider>().Length==0,"no prop gameplay colliders: "+name);
+            }
+            var visual=c.GetComponentInChildren<FishingBeaconVisual>();
+            Check(visual!=null,"authored beacon exists before repair");
+            Check(visual.transform.Find("RepairCoil")!=null && !visual.transform.Find("RepairCoil").gameObject.activeSelf,"installed coil hidden before repair");
+        }
         private static IEnumerator Checks(FishingPrototype c)
         {
             yield return null;
             Check(c.HasIsolatedProfile && c.Automated && c.SavePath.StartsWith(Application.temporaryCachePath),"isolated test profile only");
             Check(c.Career.Expedition.Facts==0,"fresh quest facts");
             MigrationChecks();NorthCorridorCheck(c);
+            PropChecks(c);
             Check(c.fishingSpots.Length==4 && c.NavigationCount==9,"four grounds and four shore destinations");
             c.MoveToSpotForAutomation(3);c.Interact();Check(!c.Anchored,"north ground locked before repair");
             c.ReturnToHarbor();c.MoveToSpotForAutomation(0);c.Interact();Catch(c);
@@ -230,8 +254,11 @@ namespace BoatAttack.EditorTools
             Check(c.Career.Expedition.Facts==15 && !c.Expedition.Aligning && c.Career.ShoreTaskMask==before,"aligned explicit confirm repairs only once");SaveCheck(c,"repaired");
             yield return null;
             var visual=c.GetComponentInChildren<FishingBeaconVisual>();Check(visual!=null,"beacon visual exists");
-            bool lit=false;foreach(var renderer in visual.GetComponentsInChildren<Renderer>())if(renderer.name=="Prismatic lens")lit=renderer.sharedMaterial.name=="Beacon restored luminous lens";
+            bool lit=false;foreach(var renderer in visual.GetComponentsInChildren<Renderer>())if(renderer.GetComponent<MeshFilter>()?.sharedMesh?.name=="BeaconLens")lit=renderer.sharedMaterial.name=="Beacon restored luminous lens";
             Check(lit,"repair changes lens material");
+            Check(visual.transform.Find("RepairCoil").gameObject.activeSelf,"repair reveals installed coil");
+            var head=visual.transform.Find("Rotating lantern housing");
+            Check(Mathf.Abs(Mathf.DeltaAngle(head.localEulerAngles.y,c.Expedition.Dial.Target))<.1f,"authored head follows target bearing");
             Snapshot(c,"03-beacon-restored",c.Expedition.BeaconPosition+Vector3.up*1.5f,new Vector3(-5,2.2f,-5));
             c.ReturnToHarbor();c.MoveToSpotForAutomation(0);c.Interact();Catch(c);Check(c.Career.Expedition.Facts==15,"wrong ground still rejected after repair");
             c.ReturnToHarbor();c.SellAll();var sailing=SailNorth(c);while(sailing.MoveNext())yield return null;

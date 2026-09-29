@@ -1,0 +1,62 @@
+{
+  "CrateBody": {
+    "triangles": 7292,
+    "vertices": 3812,
+    "source_parts": 84,
+    "renderers": 1
+  },
+  "CargoSignService": {
+    "triangles": 828,
+    "vertices": 424,
+    "source_parts": 7,
+    "renderers": 1
+  },
+  "CargoSignFish": {
+    "triangles": 324,
+    "vertices": 176,
+    "source_parts": 7,
+    "renderers": 1
+  },
+  "CargoSignCloth": {
+    "triangles": 248,
+    "vertices": 140,
+    "source_parts": 8,
+    "renderers": 1
+  },
+  "RepairCoil": {
+    "triangles": 4100,
+    "vertices": 2082,
+    "source_parts": 16,
+    "renderers": 1
+  },
+  "BeaconBody": {
+    "triangles": 6700,
+    "vertices": 3456,
+    "source_parts": 80,
+    "renderers": 1
+  },
+  "BeaconHead": {
+    "triangles": 4168,
+    "vertices": 2162,
+    "source_parts": 44,
+    "renderers": 1
+  },
+  "BeaconLens": {
+    "triangles": 4988,
+    "vertices": 2496,
+    "source_parts": 6,
+    "renderers": 1
+  },
+  "MaintenanceRecord": {
+    "triangles": 2104,
+    "vertices": 1080,
+    "source_parts": 16,
+    "renderers": 1
+  },
+  "ChannelMarker": {
+    "triangles": 3708,
+    "vertices": 1864,
+    "source_parts": 11,
+    "renderers": 1
+  }
+}
