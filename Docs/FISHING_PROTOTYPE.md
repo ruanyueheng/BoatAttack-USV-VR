@@ -1,6 +1,8 @@
-# 怪鱼航线 — 桌面试玩（当前 v0.4.2）
+# 怪鱼航线 — 桌面试玩（当前 v0.5.0）
 
-本次聚焦 HUD、航海图与验证边界见 [FISHING_V042_REVIEW.md](FISHING_V042_REVIEW.md)，第四版成长系统审查见 [FISHING_V04_REVIEW.md](FISHING_V04_REVIEW.md)。天气、生物与新模型见 [FISHING_LIVING_BAY.md](FISHING_LIVING_BAY.md)。第三版基础玩法、UI 与 PICO 适配边界见 [FISHING_V03.md](FISHING_V03.md)。第二版记录保留在 FISHING_V02.md。
+新增 **实体角色、G 下船/登船、四区海岸调查**，详见 [v0.5.0 海陆探索说明](FISHING_V05_SHORE.md)。岸上 WASD 行走，靠近调查台 E 记录，返港 E 领奖。
+
+历史版本：本次聚焦 HUD、航海图与验证边界见 [FISHING_V042_REVIEW.md](FISHING_V042_REVIEW.md)，第四版成长系统审查见 [FISHING_V04_REVIEW.md](FISHING_V04_REVIEW.md)。天气、生物与新模型见 [FISHING_LIVING_BAY.md](FISHING_LIVING_BAY.md)。第三版基础玩法、UI 与 PICO 适配边界见 [FISHING_V03.md](FISHING_V03.md)。第二版记录保留在 FISHING_V02.md。
 
 本版本是基于 BoatAttack 的独立捕鱼灰盒，不是《How to Fish》的资源移植。鱼、鱼竿、抄网、鱼箱、市场小站和提示音均由本项目代码生成；海岛、船只、水面和原有环境素材沿用 BoatAttack，保留其授权与署名。
 
@@ -8,7 +10,7 @@
 
 - Unity 2022.3.62f1：菜单 **BoatAttack > Fishing > Open prototype**，然后按 Play。
 - 或直接打开 `Assets/scenes/Fishing/fishing_Island.unity`。
-- Windows 试玩程序构建位置：`Builds/FishingPrototype-v0.4.2/FishingPrototype.exe`。运行时必须保留相邻 Data 文件夹和 DLL，不能只复制 exe。
+- Windows 试玩程序构建位置：`Builds/FishingPrototype-v0.5.0/FishingPrototype.exe`。运行时必须保留相邻 Data 文件夹和 DLL，不能只复制 exe。
 - 普通启动是玩家模式；没有自动驾驶/自动收鱼。命令行自动演示只用于验收和截图。
 
 ## 第一段体验
@@ -50,14 +52,14 @@
 
 - 这是桌面灰盒，不是完成的 PICO VR 游戏。没有配置新的 XR loader、头显相机或抓取系统。
 - 鱼线、鱼挣扎与入箱动作使用简化规则和受控动画；不是全物理绳索、自由抓取或复杂鱼群生态。
-- 暂不含多人、武器系统、首领、上岸探索、船上自由行走、经营消耗和完整剧情。
+- 上岸已支持四处安全登陆点及八项调查；暂不含游泳、攀爬、多人、武器、首领、船上自由行走和完整剧情。
 - 鼠标/键盘是本版主要控制；手柄适配存在部分按键通路，尚未人工验收。
 - 捕鱼站保持水平位置/航向，但保留垂直水面浮力；仍需真机舒适性测试后才能设计 VR 站位。
 - 原水面采样注册表长期累积/清理风险仍见 PROJECT_HEALTH_CHECK.md；没有给每条装饰鱼注册浮力采样点。
 
 ## 保存位置
 
-Windows 默认在 Unity 的 `Application.persistentDataPath` 下，文件名 `boatattack-fishing-v1.json`，旁边有 `.bak` 备份。第四版内部格式为 version=3，可迁移 version=1/2；v0.4.2 不再更改格式。请勿用旧版程序写回第四版存档，回退前先保留副本。自动测试和截图用独立测试路径，不读写玩家进度。UI 会提示保存权限错误；不要把存档或用户目录提交到仓库。
+Windows 默认在 Unity 的 `Application.persistentDataPath` 下，文件名 `boatattack-fishing-v1.json`，旁边有 `.bak` 备份。v0.5.0 内部格式为 version=4，可迁移 version=1/2/3，并持久化海岸调查与奖励记录。请勿用旧版程序写回第四版存档，回退前先保留副本。自动测试和截图用独立测试路径，不读写玩家进度。UI 会提示保存权限错误；不要把存档或用户目录提交到仓库。
 
 ## 重建与验证
 

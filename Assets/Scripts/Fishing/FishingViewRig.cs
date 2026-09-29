@@ -12,6 +12,7 @@ namespace BoatAttack.Fishing
         public bool OwnsCamera => !XRSettings.isDeviceActive;
         public bool IsLooking { get; private set; }
         private bool _wasAnchored, _wasFirstPerson = true, _reset = true;
+        private float _shoreYaw;
         private float _lookYaw, _lookPitch, _waterY, _waterVelocity;
         private Vector3 _velocity, _lastBoatPosition;
         private readonly FishingPointerGate _lookGate = new FishingPointerGate();
@@ -23,7 +24,7 @@ namespace BoatAttack.Fishing
             FirstPerson = !FirstPerson;
             ResetLook();
         }
-        public void ResetLook() { _lookYaw = _lookPitch = 0f; _reset = true; IsLooking = false; }
+        public void ResetLook() { if(Controller!=null && Controller.Ashore)_shoreYaw=Controller.Shore.Actor.eulerAngles.y; _lookYaw = _lookPitch = 0f; _reset = true; IsLooking = false; }
 
         public void ResetInput() { _lookGate.Reset(); IsLooking = false; }
 
@@ -32,6 +33,7 @@ namespace BoatAttack.Fishing
             var c = Controller;
             if (c == null || c.Player == null || c.viewCamera == null || !OwnsCamera) return;
             if (c.Paused) { ResetInput(); return; }
+            if(c.Ashore){ApplyShoreView();return;}
             var boat = c.Player.transform;
             var yaw = Quaternion.Euler(0f, boat.eulerAngles.y, 0f);
             bool changed = c.Anchored != _wasAnchored || FirstPerson != _wasFirstPerson;
@@ -82,6 +84,19 @@ namespace BoatAttack.Fishing
             }
             _wasAnchored=c.Anchored;_wasFirstPerson=FirstPerson;_lastBoatPosition=boat.position;_reset=false;
         }
+        private void ApplyShoreView()
+        {
+            var c=Controller;var mouse=Mouse.current;
+            bool right=mouse!=null && mouse.rightButton.isPressed;
+            IsLooking=!c.Automated && _lookGate.Update(Application.isFocused,c.Paused,false,right) && right;
+            if(IsLooking){var delta=mouse.delta.ReadValue();_lookYaw=Mathf.Repeat(_lookYaw+delta.x*.12f+180,360)-180;_lookPitch=Mathf.Clamp(_lookPitch-delta.y*.12f,-65,65);}
+            var rotation=Quaternion.Euler(_lookPitch,_shoreYaw+_lookYaw,0);
+            var eye=c.Shore.Actor.position+Vector3.up*1.55f;
+            c.viewCamera.transform.position=FirstPerson?eye:ConstrainToVisibleSegment(eye,eye+rotation*new Vector3(0,.65f,-4.2f),c.Player.transform);
+            c.viewCamera.transform.rotation=FirstPerson?rotation:Quaternion.LookRotation(eye-Vector3.up*.45f-c.viewCamera.transform.position,Vector3.up);
+            c.viewCamera.fieldOfView=FirstPerson?72:58;
+            _reset=true; // Boarding must not interpolate the boat camera from an inland position.
+        }
         private Vector3 ConstrainToVisibleSegment(Vector3 pivot,Vector3 position,Transform boat)
         {
             var delta=position-pivot;
@@ -91,7 +106,7 @@ namespace BoatAttack.Fishing
             for(int i=0;i<count;i++)
             {
                 var hit=_hits[i];
-                if(hit.collider.transform.IsChildOf(boat) || hit.collider.GetComponentInParent<WaterSystem.Water>()!=null)continue;
+                if((Controller.Shore!=null && hit.collider.transform.IsChildOf(Controller.Shore.Actor)) || hit.collider.transform.IsChildOf(boat) || hit.collider.GetComponentInParent<WaterSystem.Water>()!=null)continue;
                 distance=Mathf.Min(distance,Mathf.Max(0.05f,hit.distance-0.35f));
             }
             return pivot+delta.normalized*distance;

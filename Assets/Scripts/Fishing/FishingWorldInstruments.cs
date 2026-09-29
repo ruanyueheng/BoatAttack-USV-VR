@@ -40,7 +40,7 @@ namespace BoatAttack.Fishing
         private void LateUpdate()
         {
             var c = Controller; if (c == null || c.Player == null || _canvas == null) return;
-            bool visible = c.WorldInstruments || XRSettings.isDeviceActive;
+            bool visible = !c.Ashore && (c.WorldInstruments || XRSettings.isDeviceActive);
             _canvas.gameObject.SetActive(visible);
             if (!visible) { _wasVisible = false; return; }
             if (!_wasVisible) { _height = c.Player.transform.position.y; _heightVelocity = 0; _nextText = 0; }

@@ -6,7 +6,7 @@ namespace BoatAttack.Fishing
     /// <summary>Modal pages: the voyage journal (catches, legend, wildlife) and the pause settings.</summary>
     public sealed partial class FishingHUD
     {
-        private static readonly string[] JournalTabs = { "鱼获图鉴", "传说线索", "自然观察" };
+        private static readonly string[] JournalTabs = { "鱼获图鉴", "传说线索", "自然观察", "海岸调查" };
 
         private void Dim() => Fill(-_offset / _scale, 0, Screen.width / _scale, _height, new Color(0.01f, 0.025f, 0.04f, 0.83f));
 
@@ -20,15 +20,33 @@ namespace BoatAttack.Fishing
             Label(r.x + 32, r.y + 24, 600, 44, "航海日志", 30, Color.white, true);
             Label(r.x + 34, r.y + 74, 820, 24, "已暂停 · 出售、交付或放生都不会丢失图鉴、纪录与观察记录。", 15, Muted);
             for (int i = 0; i < JournalTabs.Length; i++)
-                if (Tab(new Rect(r.x + 884 + i * 144, r.y + 28, 136, 42), JournalTabs[i], _journalPage == i)) _journalPage = i;
+                if (Tab(new Rect(r.x + 748 + i * 140, r.y + 28, 132, 42), JournalTabs[i], _journalPage == i)) _journalPage = i;
             if (_journalPage == 1) DrawLegendPage(r);
             else if (_journalPage == 2) DrawNaturePage(r);
+            else if (_journalPage == 3) DrawShorePage(r);
             else DrawCatalogPage(r);
             DrawJournalSide(r);
-            Label(r.x + 34, r.yMax - 52, 820, 24, "自然观察不占鱼箱、不奖励金币；请保持距离，勿追赶野生伙伴。传说旗鱼测量后放生。", 14, Faint);
+            Label(r.x + 34, r.yMax - 52, 820, 24, _journalPage==3?"岸上调查不占鱼箱 · 每区两项调查返港领 25 金币 · 四区全部交付额外 60 金币。":"自然观察不奖励金币；请保持距离。传说旗鱼测量后放生。", 14, Faint);
             if (Button(new Rect(r.xMax - 286, r.yMax - 64, 254, 44), "J / Esc  返回海湾")) c.ToggleJournal();
         }
 
+        private void DrawShorePage(Rect r)
+        {
+            var c=Controller;
+            for(int i=0;i<FishingExploration.SiteCount;i++)
+            {
+                var row=new Rect(r.x+32,r.y+118+i*110,820,98);
+                Rounded(row,InkRaised,12);
+                bool done=FishingExploration.SiteDone(c.Career.ShoreTaskMask,i);
+                bool paid=(c.Career.ShoreRewardMask&(1<<i))!=0;
+                Label(row.x+18,row.y+8,780,27,((char)('A'+i))+" · "+FishingExploration.SiteName(i)+"  /  "+(paid?"已提交":done?"回港 E 提交 +25":"待调查"),20,done?Mint:Gold,true);
+                for(int t=0;t<2;t++)
+                {
+                    int id=i*2+t;
+                    Label(row.x+18,row.y+40+t*24,780,24,(FishingExploration.Done(c.Career.ShoreTaskMask,id)?"已记录  ":"未记录  ")+FishingExploration.TaskName(id),15,Muted);
+                }
+            }
+        }
         private void DrawCatalogPage(Rect r)
         {
             var career = Controller.Career;

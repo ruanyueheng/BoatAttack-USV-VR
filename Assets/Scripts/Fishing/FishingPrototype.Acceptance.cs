@@ -33,11 +33,13 @@ namespace BoatAttack.Fishing
             FishingCareer fixture = selected == FishingAcceptanceCase.FreePlay ? null : FishingAcceptanceCases.CreateCareer(selected);
             if (JournalOpen) ToggleJournal();
             else if (Paused) TogglePause();
+            if(Ashore)Shore.BoardImmediately();
             LeaveStation();
             Teleport(spawnPosition, spawnRotation);
             UpdateNearestSpot();
             SavePath = AcceptanceOptions.ProfilePath(Application.temporaryCachePath, fixture != null);
             Career = fixture ?? FishingSaveStore.Load(SavePath, out _);
+            Shore.RefreshMarkers();
             SaveWarning = string.Empty;
             LastCatch = default;
             _recorded = false;
