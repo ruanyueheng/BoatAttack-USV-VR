@@ -105,7 +105,7 @@ namespace BoatAttack.Fishing
         {
             if (!CatchVisible) return;
             var card = Controller.LastCatch;
-            float age = Time.unscaledTime - card.ShownAt;
+            float age = CatchAge;
             _fade = Mathf.Min(Mathf.Clamp01(age / .2f), Mathf.Clamp01((CardSeconds - age) / .5f));
             var r = Layout.Catch;
             var fish = card.Fish;

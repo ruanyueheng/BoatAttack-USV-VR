@@ -22,9 +22,9 @@ namespace BoatAttack.Fishing
     }
 
     [DefaultExecutionOrder(100)]
-    public sealed class FishingPrototype : MonoBehaviour
+    public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.4.2";
+        public const string Version = "0.4.3";
         public Boat boatPrefab;
         public Camera viewCamera;
         public Vector3 spawnPosition;
@@ -101,12 +101,14 @@ namespace BoatAttack.Fishing
             Application.runInBackground=true;
             _previousTargetFrameRate=Application.targetFrameRate;
             _xrActive=UnityEngine.XR.XRSettings.isDeviceActive;Application.targetFrameRate=_xrActive?-1:60;
-            Automated = Application.isBatchMode || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay");
-            SavePath = Path.Combine(Automated ? Application.temporaryCachePath : Application.persistentDataPath,
+            ReadAcceptanceOptions();
+            Automated = Application.isBatchMode || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
+            SavePath = AcceptanceOptions != null ? AcceptanceOptions.ProfilePath(Application.temporaryCachePath, false)
+                : Path.Combine(Automated ? Application.temporaryCachePath : Application.persistentDataPath,
                 Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v1.json");
             Career = FishingSaveStore.Load(SavePath, out var warning);
-            ComfortMode=Automated || PlayerPrefs.GetInt("Fishing.V3.Comfort",1)==1;
-            QuietMode=!Automated && PlayerPrefs.GetInt("Fishing.V3.Quiet",0)==1;
+            ComfortMode=HasIsolatedProfile || PlayerPrefs.GetInt("Fishing.V3.Comfort",1)==1;
+            QuietMode=!HasIsolatedProfile && PlayerPrefs.GetInt("Fishing.V3.Quiet",0)==1;
             NavigationTarget=1;
             if (viewCamera == null) throw new InvalidOperationException("Fishing scene camera is missing; regenerate the prototype scene.");
             foreach (var brain in FindObjectsOfType<CinemachineBrain>()) brain.enabled=false;
@@ -141,7 +143,8 @@ namespace BoatAttack.Fishing
             if(LegendTrophy)BuildTrophy();
             Notice(string.IsNullOrEmpty(warning)?"N 选择航点，驶近浮标后减速按 E 停船。M 收起地图，H 展开详情，J 查看图鉴。":warning,10f);
             _initialized=true;
-            if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
+            if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }
+            else if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
             Debug.Log("[FISHING] Prototype v"+Version+" initialized. Original procedural fish; desktop preview only.");
         }
 
@@ -192,7 +195,7 @@ namespace BoatAttack.Fishing
             {
                 bool reel=Automated?AutomationReel:(pointerReady && !overTools && !rightHeld && leftHeld)||(gamepadReady && g!=null && g.rightTrigger.ReadValue()>0.5f);
                 _reeling=reel && Session.Phase==CatchPhase.Fighting;
-                Session.Tick(Time.deltaTime,reel);
+                if(Acceptance == null || !Acceptance.FreezeScenario) Session.Tick(Time.deltaTime,reel);
                 if(Session.Phase!=_previousPhase)
                 {
                     if(Session.Phase==CatchPhase.Bite)
@@ -410,13 +413,13 @@ namespace BoatAttack.Fishing
         public void ToggleComfort()
         {
             ComfortMode=!ComfortMode;View.ResetLook();
-            if(!Automated){PlayerPrefs.SetInt("Fishing.V3.Comfort",ComfortMode?1:0);PlayerPrefs.Save();}
+            if(!HasIsolatedProfile){PlayerPrefs.SetInt("Fishing.V3.Comfort",ComfortMode?1:0);PlayerPrefs.Save();}
         }
         public void ToggleInstruments() { WorldInstruments=!WorldInstruments; }
         public void ToggleQuiet()
         {
             QuietMode=!QuietMode;_feedback.mute=QuietMode;
-            if(!Automated){PlayerPrefs.SetInt("Fishing.V3.Quiet",QuietMode?1:0);PlayerPrefs.Save();}
+            if(!HasIsolatedProfile){PlayerPrefs.SetInt("Fishing.V3.Quiet",QuietMode?1:0);PlayerPrefs.Save();}
         }
         public int DeliverOrder()
         {
