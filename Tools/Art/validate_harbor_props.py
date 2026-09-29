@@ -45,4 +45,3 @@ scene.camera=cam;scene.render.resolution_x=1500;scene.render.resolution_y=1100;s
 scene.render.filepath=str(OUT/'harbor-props.png');bpy.ops.render.render(write_still=True)
 (OUT/'roundtrip-report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 print('HARBOR_ROUNDTRIP_PASS: '+str(len(report))+' FBX meshes; preview is Blender, not Unity.')
-
