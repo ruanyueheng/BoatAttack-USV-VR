@@ -172,7 +172,7 @@ namespace BoatAttack.Fishing
                 string label = cost > 0 ? "[" + (t + 1) + "]  " + cost + " 金币" : "已满级";
                 if (Button(new Rect(x + w - 136, y + 4, 136, 38), label, cost > 0 && career.Coins >= cost, false, 15)) c.BuyUpgrade(track);
             }
-            Label(layout.Footer, "Q / W 起航   ·   N 航点   ·   J 图鉴与传说线索", 13, Faint);
+            if(Button(layout.Footer,c.Expedition.PortLabel,true,false,13))c.Expedition.PortAction();
         }
 
         private static string FightTitle(CatchSession s)

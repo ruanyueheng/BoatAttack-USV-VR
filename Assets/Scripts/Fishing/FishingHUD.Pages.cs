@@ -139,6 +139,14 @@ namespace BoatAttack.Fishing
             Label(side.x + 20, side.y + 82 + order.LineCount * OrderLineHeight, 380, 44, "集齐后返港按 E 交付：鱼价全额 + " + order.Bonus + " 奖金。\n普通出售会自动保留委托所需的鱼。", 14, Muted);
             var stats = new Rect(r.x + 884, side.yMax + 14, 420, 182);
             Rounded(stats, InkRaised, 12);
+            if(_journalPage==3)
+            {
+                Label(stats.x+20,stats.y+10,380,22,"重燃旧港信标",16,Gold,true);
+                Label(stats.x+20,stats.y+34,380,24,c.Career.Expedition.NextObjective,15,Color.white,true);
+                Label(stats.x+20,stats.y+62,380,66,c.Expedition.Clue,14,Mint);
+                if(Button(new Rect(stats.x+20,stats.y+132,380,34),c.Expedition.PrecisionGuide?"关闭精确指引（地图 ★）":"需要帮助：开启地图精确指引",true,false,14))c.Expedition.ToggleGuide();
+                return;
+            }
             Label(stats.x + 20, stats.y + 16, 380, 26, "航海统计", 17, Color.white, true);
             Label(stats.x + 20, stats.y + 50, 380, 110,
                 "累计捕获   " + career.Catches + " 条\n完成委托   " + career.OrdersCompleted + " 份\n放生传说   " + career.LegendCatches + " 次\n持有金币   " + career.Coins.ToString("N0", CultureInfo.InvariantCulture), 17, Mint);

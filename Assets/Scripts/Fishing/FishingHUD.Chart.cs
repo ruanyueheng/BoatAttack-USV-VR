@@ -38,15 +38,23 @@ namespace BoatAttack.Fishing
                 for (float d = 16; d < distance - 13; d += 10)
                     Segment(center + bearing.normalized * d, center + bearing.normalized * Mathf.Min(d + 4, distance - 13), new Color(1, .77f, .42f, .65f), 1.5f);
             ChartMarker(c.harbor, center, "港", 0, Mint);
-            for (int i = 0; i < c.fishingSpots.Length; i++) ChartMarker(c.fishingSpots[i], center, (i + 1).ToString(), i + 1, Gold);
+            for (int i = 0; i < c.fishingSpots.Length; i++) ChartMarker(c.fishingSpots[i], center, (i + 1).ToString(), i + 1, FishingGrounds.Available(i,c.Career.Expedition)?Gold:Faint);
             if(c.Shore!=null)
                 for(int i=0;i<c.Shore.Sites.Length;i++)if(c.Shore.Sites[i].Available)
-                    ChartMarker(c.Ashore?c.Shore.Sites[i].Landing:c.Shore.Sites[i].Berth,center,((char)('A'+i)).ToString(),c.fishingSpots.Length+1+i,FishingExploration.SiteDone(c.Career.ShoreTaskMask,i)?Mint:Gold);
+                    ChartMarker(c.Ashore?c.Shore.Sites[i].Landing:c.Shore.Sites[i].Berth,center,i==2 && c.Career.Expedition.Has(FishingExpedition.BeaconRepaired)?"灯":((char)('A'+i)).ToString(),c.fishingSpots.Length+1+i,(i==2 && c.Career.Expedition.Has(FishingExpedition.BeaconRepaired)) || FishingExploration.SiteDone(c.Career.ShoreTaskMask,i)?Mint:Gold);
             if(c.Ashore)
             {
                 var boat=ChartPoint(c.Player.transform.position,center);Disc(boat,6,Sky);
                 var site=c.Shore.Sites[c.Shore.CurrentSite];
                 for(int t=0;t<2;t++){var task=ChartPoint(site.Tasks[t],center);Disc(task,4,FishingExploration.Done(c.Career.ShoreTaskMask,c.Shore.CurrentSite*2+t)?Mint:Gold);}
+            }
+            // Draw last and offset the badge so a coincident region/ground marker cannot hide it.
+            if(c.Expedition.PrecisionGuide && !c.Career.Expedition.Has(FishingExpedition.Delivered))
+            {
+                var hint=ChartPoint(c.Expedition.GuidePosition,center);
+                var badge=hint+new Vector2(15,-15);
+                Segment(hint,badge,Sky,1.5f);
+                Disc(badge,9,Ink);Label(new Rect(badge.x-10,badge.y-11,20,22),"★",16,Sky,true,TextAnchor.MiddleCenter);
             }
             // The player is always centered; its arrow rotates while north stays fixed.
             Disc(center, 12, Ink);

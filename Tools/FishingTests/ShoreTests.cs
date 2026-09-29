@@ -14,12 +14,12 @@ internal static class ShoreTests
         for(int i=2;i<8;i++)c.CompleteShoreTask(i);
         check(c.ClaimShoreRewards()==135 && c.Coins==160 && c.ClaimShoreRewards()==0,"Shore full expedition bonus exactly once");
         var data=c.Snapshot();
-        check(data.version==4 && FishingCareer.TryRestore(data,out var restored) && restored.ShoreTaskMask==255 && restored.ClaimShoreRewards()==0,"Shore save round trip cannot duplicate rewards");
+        check(data.version==5 && FishingCareer.TryRestore(data,out var restored) && restored.ShoreTaskMask==255 && restored.ClaimShoreRewards()==0,"Shore save round trip cannot duplicate rewards");
         check(FishingCareer.TryRestore(new FishingSaveData{version=3,coins=44},out restored) && restored.Coins==44 && restored.ShoreTaskMask==0,"Shore migrates v3 without inventing exploration");
         check(!FishingCareer.TryRestore(new FishingSaveData{version=3,shoreTaskMask=1},out _),"Shore legacy format rejects new progress");
         check(!FishingCareer.TryRestore(new FishingSaveData{shoreTaskMask=1,shoreRewardMask=1},out _),"Shore rejects rewards for incomplete site");
         check(!FishingCareer.TryRestore(new FishingSaveData{shoreTaskMask=256},out _) && !FishingCareer.TryRestore(new FishingSaveData{shoreRewardMask=16},out _),"Shore rejects unknown mask bits");
-        check(!FishingCareer.TryRestore(new FishingSaveData{version=5},out _),"Shore rejects future save format");
+        check(!FishingCareer.TryRestore(new FishingSaveData{version=6},out _),"Shore rejects future save format");
         for(int mask=0;mask<=255;mask++)
         {
             int sites=0;

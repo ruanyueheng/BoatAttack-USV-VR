@@ -40,6 +40,7 @@ namespace BoatAttack.Fishing
             SavePath = AcceptanceOptions.ProfilePath(Application.temporaryCachePath, fixture != null);
             Career = fixture ?? FishingSaveStore.Load(SavePath, out _);
             Shore.RefreshMarkers();
+            Expedition.RefreshFromCareer();
             SaveWarning = string.Empty;
             LastCatch = default;
             _recorded = false;

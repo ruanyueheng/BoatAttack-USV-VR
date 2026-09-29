@@ -14,6 +14,17 @@ namespace BoatAttack.Fishing
             message = "存档不可读取；本次使用新进度。";
             return new FishingCareer();
         }
+        // Read legacy progress only when no new-format primary OR backup exists. Never write to
+        // the old path: a v0.5 executable does not know about schema v5 and may otherwise reset it.
+        public static FishingCareer LoadWithLegacyFallback(string path, string legacyPath, out string message)
+        {
+            if (File.Exists(path) || File.Exists(path + ".bak")
+                || (!File.Exists(legacyPath) && !File.Exists(legacyPath + ".bak")))
+                return Load(path, out message);
+            var career = Load(legacyPath, out message);
+            if (message.Length == 0) message = "已读取旧版进度；后续保存使用独立 v5 存档，旧档保留。";
+            return career;
+        }
         public static void Save(string path, FishingCareer career)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path));
