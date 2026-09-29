@@ -1,0 +1,92 @@
+{
+  "CrateBody": {
+    "triangles": 7292,
+    "blender_xyz_metres": [
+      1.1220000982284546,
+      0.818000078201294,
+      0.7090000305324793
+    ],
+    "vertex_color": true
+  },
+  "CargoSignService": {
+    "triangles": 828,
+    "blender_xyz_metres": [
+      0.3799999952316284,
+      0.05050003528594971,
+      0.24000003933906555
+    ],
+    "vertex_color": true
+  },
+  "RepairCoil": {
+    "triangles": 4100,
+    "blender_xyz_metres": [
+      0.3400000035762787,
+      0.2860000282526016,
+      0.3249999994792532
+    ],
+    "vertex_color": true
+  },
+  "BeaconBody": {
+    "triangles": 6700,
+    "blender_xyz_metres": [
+      1.2000000476837158,
+      1.2000002264976501,
+      2.2780001616470074
+    ],
+    "vertex_color": true
+  },
+  "BeaconHead": {
+    "triangles": 4168,
+    "blender_xyz_metres": [
+      1.0320000648498535,
+      1.1580001711845398,
+      1.2800000103466864
+    ],
+    "vertex_color": true
+  },
+  "BeaconLens": {
+    "triangles": 4988,
+    "blender_xyz_metres": [
+      0.514665424823761,
+      0.5403327643871307,
+      0.4350000321865082
+    ],
+    "vertex_color": true
+  },
+  "ChannelMarker": {
+    "triangles": 3708,
+    "blender_xyz_metres": [
+      2.381999969482422,
+      0.866000235080719,
+      4.111000093725746
+    ],
+    "vertex_color": true
+  },
+  "MaintenanceRecord": {
+    "triangles": 2104,
+    "blender_xyz_metres": [
+      0.7400000095367432,
+      0.1150000412017107,
+      0.6499999761581421
+    ],
+    "vertex_color": true
+  },
+  "CargoSignFish": {
+    "triangles": 324,
+    "blender_xyz_metres": [
+      0.3799999952316284,
+      0.055500030517578125,
+      0.24000003933906555
+    ],
+    "vertex_color": true
+  },
+  "CargoSignCloth": {
+    "triangles": 248,
+    "blender_xyz_metres": [
+      0.3799999952316284,
+      0.05875834822654724,
+      0.24000003933906555
+    ],
+    "vertex_color": true
+  }
+}
