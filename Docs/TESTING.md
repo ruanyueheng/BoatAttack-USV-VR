@@ -172,3 +172,8 @@ See `FISHING_V06_REVIEW.md` for the final scope, current-run logs, screenshots a
 ## v0.8.0 field exploration
 
 See [FISHING_V08_FIELD.md](FISHING_V08_FIELD.md) for controls, v6 migration and manual gates. `Run-UnityValidation.ps1 -Suite FishingField` covers real CharacterController behavior driven by virtual Input System keys, inventory/world claims, animal sight checks and actual reverse Rigidbody propulsion. Pure field rules run in the existing cross-platform FishingTests CI. A green suite is not physical mouse/keyboard or PICO certification.
+
+
+## v0.9.0 catch transactions and XR candidate
+
+See [FISHING_V09_CATCH_LOOP.md](FISHING_V09_CATCH_LOOP.md). `FishingCatch` / `FishingCatchCapture` validate geometry-driven capture, optional inspection, quick net-to-box transfer, durable ownership, explicit settlement and real world-space collider/ray commands with simulated poses. `FishingXRSetup` configures Android-only OpenXR; `Run-FishingAndroidBuild.ps1` uses a verified temporary ASCII drive alias when needed and builds an ARM64 candidate. No attached PICO device was available: these are not physical-input, stereo, comfort or performance certification.

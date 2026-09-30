@@ -10,6 +10,7 @@ namespace BoatAttack.Fishing
         private Transform _rod,_crank,_net,_knob;
         private FishingGlove _left,_right;
         private float _gesture,_cast;
+        private FishBeat _lastCue;
         private readonly FishingHandInput _input=new FishingHandInput();
         public bool HoldingRod => _input.Holding;
         public bool XRReeling => _input.Reeling;
@@ -20,9 +21,10 @@ namespace BoatAttack.Fishing
             if(_pickup==null)_pickup=FishingProps.Spawn("RepairCoil",_right.transform,new Vector3(0,-.045f,.075f));
             _pickup.transform.localScale=Vector3.one*.55f;_pickup.SetActive(true);_pickupTime=1.1f;
         }
+        public void ResetInteraction()=>_input.Update(false,0,false,false,0,false,0);
         public void ReadXRTools()
         {
-            bool available=XRSettings.isDeviceActive && _c.Anchored && !_c.Paused && Application.isFocused;
+            bool available=XRSettings.isDeviceActive && _c.Anchored && !_c.Paused && !_c.HasPendingCatch && _c.Session.Phase!=CatchPhase.Landing && Application.isFocused;
             if(!available){_input.Update(false,0,false,false,0,false,0);return;}
             var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
             var left=InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
@@ -36,6 +38,7 @@ namespace BoatAttack.Fishing
             _input.Update(available,grip,trigger,Vector3.Distance(_right.transform.position,_rod.position)<.24f,leftGrip,
                 Vector3.Distance(_left.transform.position,_knob.position)<.16f,angle);
             if(HoldingRod && !wasHolding)Haptic(right,.22f);
+            if(HoldingRod && _c.Session.Phase==CatchPhase.Fighting && _c.Session.Beat!=_lastCue){_lastCue=_c.Session.Beat;Haptic(right,_lastCue==FishBeat.Leap?.3f:.12f);}
             if(_input.Activated)
             {
                 bool action=_c.Session.Phase==CatchPhase.Bite?_c.Hook():_c.Session.Phase==CatchPhase.Landing?_c.Scoop():_c.Cast();
@@ -89,7 +92,7 @@ namespace BoatAttack.Fishing
             if(_c.Paused){_gesture=0;_cast=0;return;}
             _gesture=Mathf.Max(0,_gesture-Time.deltaTime);_cast=Mathf.Max(0,_cast-Time.deltaTime);
             var camera=_c.viewCamera.transform;
-            bool fishing=visible && _c.Anchored && !_c.Ashore;
+            bool fishing=visible && _c.Anchored && !_c.Ashore && !_c.HasPendingCatch && _c.Session.Phase!=CatchPhase.Landing;
             if(!fishing)StowRod();
             if(!visible)return;
             if(fishing)

@@ -1,6 +1,6 @@
 param(
     [string]$EditorRoot,
-    [ValidateSet("Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture")]
+    [ValidateSet("Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild")]
     [string]$Suite = "Structure",
     [ValidateRange(60, 7200)]
     [int]$TimeoutSeconds = 1200
@@ -31,6 +31,10 @@ $method = switch ($Suite) {
     'FishingSmoke' { 'BoatAttack.EditorTools.FishingPrototypeSmoke.Run' }
     'FishingBuild' { 'BoatAttack.EditorTools.FishingPrototypeEditor.Build' }
     'FishingShore' { 'BoatAttack.EditorTools.FishingShoreValidation.Run' }
+    'FishingXRSetup' { 'BoatAttack.EditorTools.FishingXRConfiguration.Configure' }
+    'FishingAndroidBuild' { 'BoatAttack.EditorTools.FishingXRConfiguration.BuildAndroid' }
+    'FishingCatch' { 'BoatAttack.EditorTools.FishingCatchValidation.Run' }
+    'FishingCatchCapture' { 'BoatAttack.EditorTools.FishingCatchValidation.Capture' }
     'FishingField' { 'BoatAttack.EditorTools.FishingFieldValidation.Run' }
     'FishingFieldCapture' { 'BoatAttack.EditorTools.FishingFieldValidation.Capture' }
     'FishingExpedition' { 'BoatAttack.EditorTools.FishingExpeditionValidation.Run' }
@@ -44,13 +48,18 @@ $marker = switch ($Suite) {
     'FishingSmoke' { '[FISHING]' }
     'FishingBuild' { '[FISHING]' }
     'FishingShore' { '[SHORE]' }
+    'FishingXRSetup' { '[XR-SETUP]' }
+    'FishingAndroidBuild' { '[XR-BUILD]' }
+    'FishingCatch' { '[CATCH]' }
+    'FishingCatchCapture' { '[CATCH]' }
     'FishingField' { '[FIELD]' }
     'FishingFieldCapture' { '[FIELD]' }
     'FishingExpedition' { '[EXPEDITION]' }
     'FishingExpeditionCapture' { '[EXPEDITION]' }
 }
-$arguments = '-batchmode -nographics -buildTarget StandaloneWindows64 -projectPath "' + $repo + '" -executeMethod ' + $method + ' -logFile "' + $log + '"'
-if ($Suite -eq 'FishingExpeditionCapture' -or $Suite -eq 'FishingFieldCapture') { $arguments = $arguments.Replace(' -nographics', '') }
+$arguments = '-batchmode -nographics -buildTarget StandaloneWindows64 -projectPath "' + $repo.Replace('\', '/') + '" -executeMethod ' + $method + ' -logFile "' + $log + '"'
+if ($Suite -eq 'FishingExpeditionCapture' -or $Suite -eq 'FishingFieldCapture' -or $Suite -eq 'FishingCatchCapture') { $arguments = $arguments.Replace(' -nographics', '') }
+if ($Suite -eq 'FishingAndroidBuild') { $arguments = $arguments.Replace('StandaloneWindows64', 'Android') }
 if ($Suite -eq 'FishingSmoke') { $arguments += ' -fishing-autoplay' }
 Write-Output "Running Unity $Suite validation. Log: $log"
 $process = Start-Process -FilePath $editor -ArgumentList $arguments -WindowStyle Hidden -PassThru

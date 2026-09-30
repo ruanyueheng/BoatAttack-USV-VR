@@ -47,7 +47,9 @@ namespace BoatAttack.Fishing
         private string _id;
         private float _timer, _deadline, _overload, _slack, _sizeTension = 1f;
         private int _lineLevel, _reelLevel, _misses;
-        private bool _claimed;
+        private bool _claimed,_waitingForNet;
+        public bool WaitingForNet=>Phase==CatchPhase.Landing && _waitingForNet;
+        public void HoldForNet(){if(Phase==CatchPhase.Landing)_waitingForNet=true;}
 
         public static float LineFactor(int level) => level >= 2 ? 0.58f : level == 1 ? 0.72f : 1f;
         public static float ReelFactor(int level) => 1f + 0.2f * Math.Max(0, Math.Min(2, level));
@@ -72,7 +74,7 @@ namespace BoatAttack.Fishing
             // Bigger fish pull a little harder and start a little farther away.
             _sizeTension = 0.92f + 0.16f * size;
             MaxDistance = Distance = species.LineMeters * (0.9f + 0.2f * size);
-            _claimed = false;
+            _claimed = false;_waitingForNet=false;
             _misses = 0;
             _overload = _slack = 0f;
             Tension = 0.3f;
@@ -84,6 +86,7 @@ namespace BoatAttack.Fishing
         public void Tick(float deltaTime, bool reel)
         {
             if (float.IsNaN(deltaTime) || float.IsInfinity(deltaTime) || deltaTime <= 0f) return;
+            if(WaitingForNet)return;
             // Do not skip entire reaction windows on an application hitch.
             float dt = Math.Min(deltaTime, 0.1f);
             _timer += dt;
@@ -139,6 +142,8 @@ namespace BoatAttack.Fishing
             return false;
         }
 
+        public bool LandFromNet(){if(Phase!=CatchPhase.Landing)return false;Enter(CatchPhase.Caught,0f);return true;}
+
         public CatchRecord Claim()
         {
             if (Phase != CatchPhase.Caught || _claimed) return null;
@@ -155,7 +160,11 @@ namespace BoatAttack.Fishing
     [Serializable]
     public sealed class FishingSaveData
     {
-        public int version = 6;
+        public int version = 7;
+        public PendingCatchData pendingCatch;
+        public bool hasPendingCatch;
+        public int releasedCatches;
+        public bool orderMarked;
         public List<FieldStack> backpack;
         public int selectedSlot, collectedPickupMask, landAnimalMask;
         public int expeditionFacts;
@@ -176,7 +185,7 @@ namespace BoatAttack.Fishing
         public List<string> recordedIds = new List<string>();
     }
 
-    public sealed class FishingCareer
+    public sealed partial class FishingCareer
     {
         public FishingBackpack Backpack { get; private set; } = new FishingBackpack();
         public const int BaseCapacity = 6;
@@ -293,7 +302,7 @@ namespace BoatAttack.Fishing
 
         public bool Store(CatchRecord fish)
         {
-            if (!Valid(fish) || FishingSpecies.Of(fish.kind).Legendary || Count >= Capacity || !Remember(fish.id)) return false;
+            if ((_pending!=null && !_resolving && fish!=null && fish.id==_pending.fish.id) || !Valid(fish) || FishingSpecies.Of(fish.kind).Legendary || Count >= Capacity || !Remember(fish.id)) return false;
             _inventory.Add(fish.Copy());
             Record(fish);
             return true;
@@ -302,7 +311,7 @@ namespace BoatAttack.Fishing
         /// <summary>The legend is measured and released: a bounty instead of hold space. Returns 0 if rejected.</summary>
         public int RecordLegend(CatchRecord legend)
         {
-            if (!Valid(legend) || !FishingSpecies.Of(legend.kind).Legendary || !Remember(legend.id)) return 0;
+            if ((_pending!=null && !_resolving && legend!=null && legend.id==_pending.fish.id) || !Valid(legend) || !FishingSpecies.Of(legend.kind).Legendary || !Remember(legend.id)) return 0;
             int bounty = LegendRules.Bounty(LegendCatches == 0, legend.grams);
             LegendCatches++;
             Coins += bounty;
@@ -346,7 +355,7 @@ namespace BoatAttack.Fishing
                 _inventory.RemoveAt(_picked[i]);
             }
             Coins += payout;
-            OrdersCompleted++;
+            OrdersCompleted++;OrderMarked=false;
             return payout;
         }
 
@@ -373,6 +382,7 @@ namespace BoatAttack.Fishing
         {
             var result = new FishingSaveData
             {
+                hasPendingCatch = HasPendingCatch, pendingCatch = _pending?.Copy(), releasedCatches = ReleasedCatches, orderMarked = OrderMarked,
                 backpack = Backpack.Snapshot(), selectedSlot = Backpack.Selected, collectedPickupMask = Backpack.CollectedMask, landAnimalMask = Backpack.AnimalMask,
                 expeditionFacts = Expedition.Facts,
                 shoreTaskMask = ShoreTaskMask, shoreRewardMask = ShoreRewardMask,
@@ -388,7 +398,7 @@ namespace BoatAttack.Fishing
         public static bool TryRestore(FishingSaveData data, out FishingCareer career)
         {
             career = null;
-            if (data == null || data.version < 1 || data.version > 6) return false;
+            if (data == null || data.version < 1 || data.version > 7) return false;
             if (!FishingExpedition.TryRestore(data.expeditionFacts, out var expedition)
                 || (data.version < 5 && data.expeditionFacts != 0)) return false;
             bool v3 = data.version >= 3;
@@ -441,6 +451,18 @@ namespace BoatAttack.Fishing
             result.Coins = data.coins;
             result.LineLevel = data.rodLevel;
             result.ReelLevel = data.reelLevel;
+            if(data.version>=7)
+            {
+                if(data.releasedCatches<0 || data.releasedCatches>data.catches-data.legendCatches)return false;
+                if(data.hasPendingCatch)
+                {
+                    if(!ValidPending(data.pendingCatch) || result._recorded.Contains(data.pendingCatch.fish.id))return false;
+                    result._pending=data.pendingCatch.Copy();
+                }
+                else if(!EmptyPending(data.pendingCatch))return false;
+                result.ReleasedCatches=data.releasedCatches;result.OrderMarked=data.orderMarked;
+            }
+            else if(data.hasPendingCatch || !EmptyPending(data.pendingCatch) || data.releasedCatches!=0 || data.orderMarked)return false;
             career = result;
             return true;
         }

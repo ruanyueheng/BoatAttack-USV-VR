@@ -68,3 +68,7 @@ Assets/ActualImages*
 
 # Blender's local version backups (editable source .blend remains tracked)
 /ArtSource/**/*.blend[0-9]
+
+# Android Addressables build-state output is regenerated, like Windows build state.
+/Assets/AddressableAssetsData/Android/
+/Assets/AddressableAssetsData/Android.meta

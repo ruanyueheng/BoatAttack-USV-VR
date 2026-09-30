@@ -47,7 +47,12 @@ namespace BoatAttack.Fishing
             Glass(r);
             string title, help;
             Color accent = Mint;
-            if(c.Ashore)
+            if(c.HasPendingCatch)
+            {
+                title="待处理鱼获 · "+FishingSpecies.Name(c.Career.PendingCatch.fish.kind)+" "+FishingText.Weight(c.Career.PendingCatch.fish.grams);
+                help=c.CatchRig.ReleaseConfirmation?"再次按 X 确认放生；普通鱼不增加金币":"E 拿起/放回 · F 入箱 · X 放生确认 · R 安全返港";accent=Gold;
+            }
+            else if(c.Ashore)
             {
                 title=c.Expedition.ActionTitle ?? c.FieldWorld.ActionTitle ?? c.Shore.ActionTitle;
                 help=c.Expedition.Aligning?c.Expedition.AlignmentHint:"空格跳跃 · Ctrl 蹲下 · E 拾取 · T 观察 · I 背包 · R 救援";
@@ -75,7 +80,7 @@ namespace BoatAttack.Fishing
                     case CatchPhase.Waiting: title = "等待咬钩…"; help = "留意浮标与声音，出现咬钩提示再点击左键"; break;
                     case CatchPhase.Bite: title = (s.Species.Legendary ? "金帆旗鱼！" : "咬钩了！") + "点击左键提竿"; help = "剩余 " + s.Remaining.ToString("0.0") + " 秒"; accent = Gold; break;
                     case CatchPhase.Fighting: title = FightTitle(s); help = ""; accent = s.Beat == FishBeat.Leap || s.Tension > .78f ? Danger : Mint; break;
-                    case CatchPhase.Landing: title = "指针进入绿色区时按 E 抄鱼"; help = "剩余 " + s.Remaining.ToString("0.0") + " 秒"; break;
+                    case CatchPhase.Landing: title = "E 辅助抄网 · 套住鱼后轻抬"; help = "XR：左握键拿网；网口覆盖鱼体，保持片刻再轻抬"; break;
                     case CatchPhase.Caught: title = "捕获成功 · 点击左键再抛一竿"; help = "B 换饵 · Q 起航 · J 查看图鉴与纪录"; break;
                     case CatchPhase.Escaped: title = "鱼逃走了 · 点击左键重试"; help = "B 换饵 · Q 起航"; break;
                     default: title = "点击左键抛竿"; help = "B 换饵 · 咬钩时再点击提竿 · Q 起航"; break;
@@ -87,10 +92,7 @@ namespace BoatAttack.Fishing
             else if (c.Anchored && s.Phase == CatchPhase.Landing)
             {
                 Label(r.x + 20, r.y + 43, r.width - 40, 20, help, 14, Muted);
-                var bar = new Rect(r.x + 20, r.y + 81, r.width - 40, 9);
-                Rounded(bar, Track, 4);
-                Rounded(new Rect(bar.x + bar.width * (.5f - s.LandZone), bar.y, bar.width * s.LandZone * 2, 9), Mint, 4);
-                Rounded(new Rect(bar.x + bar.width * s.LandPointer - 3, bar.y - 6, 6, 21), Color.white, 3);
+                Label(r.x+20,r.y+77,r.width-40,20,"捕获后不会自动入箱：可拿起观察、入箱或放生。",13,Faint);
             }
             else
             {
