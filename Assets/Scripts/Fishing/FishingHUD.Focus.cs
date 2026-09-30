@@ -51,6 +51,11 @@ namespace BoatAttack.Fishing
             {
                 title = c.Shore.CanBoard ? "G 返回船上" : "返回登船点 · " + Vector3.Distance(c.Shore.Position, c.Shore.BoardingPoint).ToString("0") + " m";
                 help = "WASD 步行 · 右键环顾 · R 救援" + (c.AtHarbor ? " · E 交易 / Tab 交易台" : "");
+                if(c.Shop!=null && c.Shop.Inside)
+                {
+                    title=c.Shop.CanBrowse ? "E / Tab 购买钓具" : "潮汐钓具店 · 走近后方柜台";
+                    help="钓竿与鱼线 · 卷线器 · 鱼箱升级 · WASD 步行";
+                }
             }
             else if (!c.Anchored)
             {

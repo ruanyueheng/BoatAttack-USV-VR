@@ -41,6 +41,8 @@ namespace BoatAttack.Fishing
         public bool Automated { get; private set; }
         public FishingViewRig View { get; private set; }
         public FishingShoreWalker Shore { get; private set; }
+        public FishingTackleShop Shop { get; private set; }
+        public bool ShopOpen => Shop != null && Shop.IsOpen;
         public bool IsAshore => Shore != null && Shore.IsAshore;
         public Vector3 ObserverPosition => IsAshore ? Shore.Position : Player.transform.position;
         public FishingWeather Weather { get; private set; }
@@ -57,8 +59,9 @@ namespace BoatAttack.Fishing
         public bool WorldInstruments { get; private set; }
         public bool QuietMode { get; private set; }
         public int NavigationTarget { get; private set; }
-        public Vector3 NavigationPosition => NavigationTarget == 0 ? harbor : fishingSpots[NavigationTarget - 1];
-        public string NavigationName => NavigationTarget == 0 ? "潮汐渔港" : FishingSpecies.AreaName(NavigationTarget - 1);
+        public int NavigationCount => fishingSpots.Length + 1 + (Shop != null ? 1 : 0);
+        public Vector3 NavigationPosition => NavigationTarget == 0 ? harbor : NavigationTarget == fishingSpots.Length + 1 && Shop != null ? Shop.mooringPoint.position : fishingSpots[NavigationTarget - 1];
+        public string NavigationName => NavigationTarget == 0 ? "潮汐渔港" : NavigationTarget == fishingSpots.Length + 1 && Shop != null ? "沙滩钓具店" : FishingSpecies.AreaName(NavigationTarget - 1);
         public bool CanChangeBait => Session.Phase == CatchPhase.Idle || Session.Phase == CatchPhase.Caught || Session.Phase == CatchPhase.Escaped;
         public CatchCard LastCatch { get; private set; }
         public bool LegendTrophy => Career != null && Career.LegendCatches > 0;
@@ -137,6 +140,7 @@ namespace BoatAttack.Fishing
             Ecology=gameObject.AddComponent<FishingEcology>();Ecology.Controller=this;
             View=gameObject.AddComponent<FishingViewRig>();View.Controller=this;
             Shore=gameObject.AddComponent<FishingShoreWalker>();Shore.Controller=this;
+            Shop=FindObjectOfType<FishingTackleShop>();if(Shop!=null)Shop.Controller=this;
             ConfigurePresentation();
             _feedback=gameObject.AddComponent<AudioSource>();_feedback.spatialBlend=0f;_feedback.volume=0.45f;
             _biteTone=Tone(780f,0.13f);_successTone=Tone(1150f,0.2f);
@@ -164,7 +168,7 @@ namespace BoatAttack.Fishing
             }
             var k=Keyboard.current;var m=Mouse.current;var g=Gamepad.current;
             bool focused=Automated || Application.isFocused;
-            if(!Automated && _input.Current.pause) { if(JournalOpen)ToggleJournal();else TogglePause(); }
+            if(!Automated && _input.Current.pause) { if(ShopOpen)ToggleShop();else if(JournalOpen)ToggleJournal();else TogglePause(); }
             if(!Automated && focused && k!=null && k.jKey.wasPressedThisFrame && (!Paused || JournalOpen))ToggleJournal();
             bool overTools=!_xrActive && m!=null && _hud.BlocksPointer(m.position.ReadValue(),Screen.width,Screen.height);
             bool leftHeld=m!=null && m.leftButton.isPressed;
@@ -173,6 +177,18 @@ namespace BoatAttack.Fishing
             bool gamepadReady=_gamepadGate.Update(focused,Paused,g!=null && g.rightShoulder.isPressed,g!=null && g.rightTrigger.ReadValue()>0.5f);
             if(!Paused && focused && !Automated)
             {
+                if(ShopOpen)
+                {
+                    if(_input.Current.interact || (k!=null && k.tabKey.wasPressedThisFrame))ToggleShop();
+                    else if(k!=null)
+                    {
+                        if(k.digit1Key.wasPressedThisFrame)Shop.Buy(UpgradeTrack.Line);
+                        if(k.digit2Key.wasPressedThisFrame)Shop.Buy(UpgradeTrack.Reel);
+                        if(k.digit3Key.wasPressedThisFrame)Shop.Buy(UpgradeTrack.Hold);
+                    }
+                }
+                else
+                {
                 if(k!=null && k.cKey.wasPressedThisFrame)ToggleView();
                 if(k!=null && k.gKey.wasPressedThisFrame)Shore.Toggle();
                 if(k!=null && k.vKey.wasPressedThisFrame)View.ResetLook();
@@ -192,6 +208,7 @@ namespace BoatAttack.Fishing
                 if(_input.Current.interact)Interact();
                 bool press=(pointerReady && !overTools && !rightHeld && m!=null && m.leftButton.wasPressedThisFrame) || (gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame);
                 if(press && Anchored){if(Session.Phase==CatchPhase.Bite)Hook();else Cast();}
+                }
             }
             Shore.Tick();
             UpdateNearestSpot();
@@ -281,6 +298,7 @@ namespace BoatAttack.Fishing
         public void Interact()
         {
             if(Paused)return;
+            if(Shop!=null && (ShopOpen || Shop.CanBrowse)){ToggleShop();return;}
             UpdateNearestSpot();
             if(Anchored){if(Session.Phase==CatchPhase.Landing)Scoop();return;}
             if(AtHarbor){if(Career.OrderReady)DeliverOrder();else Sell();return;}
@@ -376,7 +394,7 @@ namespace BoatAttack.Fishing
         }
         public bool BuyUpgrade(UpgradeTrack track)
         {
-            if(!AtHarbor || Paused){Notice("请先回到青色港口，再在交易台升级。");return false;}
+            if(Paused || !(AtHarbor || (ShopOpen && Shop.CanBrowse))){Notice("请前往港口交易台或沙滩钓具店升级。");return false;}
             int cost=Career.NextUpgradeCost(track);
             if(cost<=0){Notice(FishingText.UpgradeName(track)+"已经升到满级。",4f);return false;}
             bool ok=Career.Upgrade(track);
@@ -400,10 +418,10 @@ namespace BoatAttack.Fishing
             if(!CanChangeBait){Notice("本次捕捞结束后才能换饵。",3f);return;}
             Bait=(BaitKind)(((int)Bait+1)%3);Notice(FishingVoyage.BaitName(Bait)+" · "+FishingVoyage.BaitHelp(Bait),4f);
         }
-        public void CycleNavigation() => SelectNavigation((NavigationTarget+1)%4);
+        public void CycleNavigation() => SelectNavigation((NavigationTarget+1)%NavigationCount);
         public void SelectNavigation(int target)
         {
-            if(Paused || target<0 || target>fishingSpots.Length)return;
+            if(Paused || target<0 || target>=NavigationCount)return;
             NavigationTarget=target;Notice("航点："+NavigationName,3f);
         }
         public void ToggleDetails() { if(Paused)return;ShowDetails=!ShowDetails;if(ShowDetails)HarborDeskOpen=false; }
@@ -411,8 +429,14 @@ namespace BoatAttack.Fishing
         public void CycleChartRange() { if(!Paused)ChartRangeMeters=ChartRangeMeters==80?160:ChartRangeMeters==160?320:80; }
         public void ToggleHarborDesk()
         {
+            if(Shop!=null && (ShopOpen || Shop.CanBrowse)){ToggleShop();return;}
             if(Paused || !AtHarbor)return;
             HarborDeskOpen=!HarborDeskOpen;if(HarborDeskOpen)ShowDetails=false;
+        }
+        public void ToggleShop()
+        {
+            if(Paused || Shop==null || !Shop.Toggle())return;
+            HarborDeskOpen=false;ShowDetails=false;ResetToolInput();
         }
         public void ToggleJournal()
         {
@@ -441,7 +465,7 @@ namespace BoatAttack.Fishing
         }
         public void ReturnToHarbor()
         {
-            if(Paused)return;if(Shore!=null)Shore.Board();LeaveStation();Teleport(spawnPosition,spawnRotation);Notice("已救援回港；鱼箱和金币保留。",5f);
+            if(Paused)return;if(Shop!=null)Shop.Close();if(Shore!=null)Shore.Board();LeaveStation();Teleport(spawnPosition,spawnRotation);Notice("已救援回港；鱼箱和金币保留。",5f);
         }
         public void MoveToSpotForAutomation(int index)
         {

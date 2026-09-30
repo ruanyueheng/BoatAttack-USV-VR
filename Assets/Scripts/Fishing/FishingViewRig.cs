@@ -32,7 +32,7 @@ namespace BoatAttack.Fishing
         {
             var c = Controller;
             if (c == null || c.Player == null || c.viewCamera == null || !OwnsCamera) return;
-            if (c.Paused) { ResetInput(); return; }
+            if (c.Paused || c.ShopOpen) { ResetInput(); return; }
             if (c.IsAshore) { ApplyShoreView(); return; }
             var boat = c.Player.transform;
             var yaw = Quaternion.Euler(0f, boat.eulerAngles.y, 0f);

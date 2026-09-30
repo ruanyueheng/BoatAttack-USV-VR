@@ -22,7 +22,7 @@ namespace BoatAttack.Fishing
         private bool CatchVisible => Controller.LastCatch.Fish != null && CatchAge < CardSeconds;
 
         public bool BlocksPointer(Vector2 screen, int width, int height)
-            => BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
+            => Controller.ShopOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
                 Controller.HarborDeskOpen && Controller.AtHarbor, Controller.AtHarbor,
                 Controller.Ecology.Candidate.HasValue && !CatchVisible, Controller.Acceptance != null);
 
@@ -57,6 +57,7 @@ namespace BoatAttack.Fishing
                 _fade = 1f;
                 if (c.JournalOpen) DrawJournal();
                 else if (c.Paused) DrawPause();
+                else if (c.ShopOpen) DrawTackleShop();
                 else
                 {
                     DrawCompactHeading();

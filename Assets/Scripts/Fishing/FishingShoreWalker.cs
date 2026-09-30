@@ -72,7 +72,7 @@ namespace BoatAttack.Fishing
             if (!IsAshore) return;
             // Returning XR ownership must also release the parked rigidbody.
             if (!Controller.View.OwnsCamera) { Board(); return; }
-            if (Controller.Automated || Controller.Paused || !Application.isFocused) return;
+            if (Controller.Automated || Controller.Paused || Controller.ShopOpen || !Application.isFocused) return;
             var k = Keyboard.current;
             if (k == null) return;
             float x = (k.dKey.isPressed || k.rightArrowKey.isPressed ? 1 : 0) - (k.aKey.isPressed || k.leftArrowKey.isPressed ? 1 : 0);
@@ -83,14 +83,18 @@ namespace BoatAttack.Fishing
         // Shared by live input and the opt-in Play Mode regression driver.
         internal void Walk(Vector2 input, float deltaTime)
         {
-            if (!IsAshore || Controller.Paused || deltaTime <= 0f) return;
+            if (!IsAshore || Controller.Paused || Controller.ShopOpen || deltaTime <= 0f) return;
             var yaw = Quaternion.Euler(0, Controller.viewCamera.transform.eulerAngles.y, 0);
             var direction = yaw * new Vector3(input.x, 0, input.y);
             var movement = Vector3.ClampMagnitude(direction, 1f) * (3f * Mathf.Min(deltaTime, .1f));
             var start = Position;
             // Ground footprint checks prevent walking off piers or onto submerged seabed.
             if (!TryGround(start + movement, start.y, .35f, .55f, out var ground) || !Supported(ground)) return;
-            _body.Move(new Vector3(movement.x, ground.y - start.y, movement.z) + Vector3.down * .02f);
+            // Lift onto the validated small step before moving horizontally. A single diagonal
+            // Move can wedge the capsule against the vertical lip where a ramp meets a porch.
+            float rise = Mathf.Max(0f, ground.y - start.y);
+            if (rise > .001f) _body.Move(Vector3.up * rise);
+            _body.Move(new Vector3(movement.x, Mathf.Min(0f, ground.y - start.y) - .02f, movement.z));
             // Collision sliding can change the final horizontal position; validate that too.
             if (!TryGround(Position, start.y, .35f, .55f, out var actual) || !Supported(actual))
             { _body.enabled = false; _body.transform.position = start; _body.enabled = true; }

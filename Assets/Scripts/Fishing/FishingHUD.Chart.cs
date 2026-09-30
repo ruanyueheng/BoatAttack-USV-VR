@@ -38,6 +38,7 @@ namespace BoatAttack.Fishing
                 for (float d = 16; d < distance - 13; d += 10)
                     Segment(center + bearing.normalized * d, center + bearing.normalized * Mathf.Min(d + 4, distance - 13), new Color(1, .77f, .42f, .65f), 1.5f);
             ChartMarker(c.harbor, center, "港", 0, Mint);
+            if(c.Shop!=null)ChartMarker(c.Shop.mooringPoint.position,center,"店",c.fishingSpots.Length+1,Sky);
             if (c.IsAshore)
             {
                 var boarding = ChartPoint(c.Shore.BoardingPoint, center);
