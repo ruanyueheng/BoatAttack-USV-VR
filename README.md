@@ -1,7 +1,8 @@
 # BoatAttack USV VR — team development
 
-This fork builds on Unity's Boat Attack. Baseline: **Unity 2022.3.62f1 / URP 14.0.12**. Desktop and XR input share a common interface; a complete PICO game is **not yet validated**. The v0.8.0 desktop review candidate adds a persistent 36-slot backpack, field tools, jumping/crouching, land wildlife and signed reverse boat thrust on top of v0.7.1 hands/mouse-look and the beacon expedition. Full-route manual acceptance is still required before release. Weather, observable wildlife, harbor commissions, journals and switchable first-/third-person views remain available; it is not a finished VR build.
+This fork builds on Unity's Boat Attack. Baseline: **Unity 2022.3.62f1 / URP 14.0.12**. Desktop and XR input share a common interface; a complete PICO game is **not yet validated**. The v0.9.0 review candidate adds stable net capture, durable pending fish, quick net-to-box storage, optional inspection, measured legend release and a world-space command console, with Android-only PICO OpenXR build configuration. The v0.8 backpack and land exploration remain available on desktop. Full-route manual acceptance is still required before release. Weather, observable wildlife, harbor commissions, journals and switchable first-/third-person views remain available; it is not a finished VR build.
 
+- [v0.9.0 net handling, catch transactions and XR candidate / 实体抄鱼与 XR 闭环](Docs/FISHING_V09_CATCH_LOOP.md)
 - [v0.8.0 backpack, land exploration and reverse / 背包与陆地探索](Docs/FISHING_V08_FIELD.md)
 - [v0.7.1 shore mouse-look fix and regression review](Docs/FISHING_V071_LOOK_FIX.md)
 - [v0.7.0 first-person hands, spinning rod and shore mouse-look](Docs/FISHING_V07_HANDS.md)

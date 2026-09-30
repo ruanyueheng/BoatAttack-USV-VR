@@ -91,8 +91,8 @@ namespace BoatAttack.Fishing
                         if(Controller.Session.Phase==CatchPhase.Landing && Controller.Session.CanLand)
                         {
                             int before=Controller.Career.Count;
-                            if(!Controller.Scoop() || Controller.Career.Count!=before+1)throw new Exception("Scoop did not commit inventory immediately.");
-                            if(Controller.Scoop() || Controller.Career.Count!=before+1)throw new Exception("Repeated scoop duplicated a catch.");
+                            if(!Controller.CatchRig.CaptureAndStoreForAutomation() || Controller.Career.Count!=before+1)throw new Exception("Assisted geometric net capture and explicit storage failed.");
+                            if(Controller.CatchRig.CaptureAndStoreForAutomation() || Controller.Career.Count!=before+1)throw new Exception("Repeated scoop duplicated a catch.");
                             var landed=Controller.LastCatch.Fish;
                             if(landed==null || landed.grams<=0 || !FishingSpecies.ValidGrams(landed.kind,landed.grams) || landed.value!=FishingSpecies.Value(landed.kind,landed.rare,landed.grams))
                                 throw new Exception("Landed catch lacks a valid measured weight/price.");
@@ -199,7 +199,7 @@ namespace BoatAttack.Fishing
             Controller.AutomationReel=!leap && s.Tension<0.6f;
             if(leap && !_leapCaptured && s.LeapProgress>0.35f){_leapCaptured=true;StartCoroutine(Capture("09-legend-leap.png"));}
             if(s.Phase==CatchPhase.Escaped)throw new Exception("Legend escaped: "+FishingText.Failure(s.Failure));
-            if(s.Phase==CatchPhase.Landing && s.CanLand)Controller.Scoop();
+            if(s.Phase==CatchPhase.Landing && s.CanLand)Controller.CatchRig.CaptureAndStoreForAutomation();
             if(s.Phase!=CatchPhase.Caught)return;
             var career=Controller.Career;var card=Controller.LastCatch;
             if(!_leapSeen)throw new Exception("Legend fight never showed a leap.");

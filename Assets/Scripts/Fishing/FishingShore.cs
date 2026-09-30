@@ -149,7 +149,7 @@ namespace BoatAttack.Fishing
         }
         public bool TryDisembark()
         {
-            if(Controller.Paused || Ashore)return false;
+            if(Controller.Paused || Ashore || Controller.HasPendingCatch)return false;
             if(XRSettings.isDeviceActive){Controller.Notice("上岸步行为桌面预览，尚未接入头显移动。",4);return false;}
             UpdateProximity();
             if(Controller.Anchored){Controller.Notice("先按 Q 收起钓具，再靠近橙色登岸旗。",4);return false;}

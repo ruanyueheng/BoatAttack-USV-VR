@@ -113,6 +113,8 @@ namespace BoatAttack.EditorTools
             try
             {
                 if(!File.Exists(ScenePath))throw new Exception("Generate the fishing scene first.");
+                FishingScriptBinding.ValidateScene();
+                PlayerSettings.bundleVersion=FishingPrototype.Version;
                 AddressableAssetSettings.BuildPlayerContent(out var content);
                 if(!string.IsNullOrEmpty(content.Error))throw new Exception("Addressables: "+content.Error);
                 string output=Path.GetFullPath("Builds/FishingPrototype-v"+FishingPrototype.Version+"/FishingPrototype.exe");Directory.CreateDirectory(Path.GetDirectoryName(output));

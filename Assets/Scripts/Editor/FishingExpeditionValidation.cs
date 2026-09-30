@@ -128,7 +128,7 @@ namespace BoatAttack.EditorTools
                     Check(c.Career.Store(new CatchRecord { id=Guid.NewGuid().ToString("N"),kind=FishKind.Coral,grams=1000,value=FishingSpecies.Value(FishKind.Coral,false,1000) }),"fill hold after cast");
             }
             c.View.ApplyView();c.Hands.Apply();Snapshot(c,"07-net-grip",Vector3.zero,Vector3.zero,true);
-            Check(c.Scoop(),"real scoop/storage path");
+            Check(c.CatchRig.CaptureAndStoreForAutomation(),"real net geometry plus explicit storage path");
         }
         private static void MigrationChecks()
         {
@@ -285,6 +285,7 @@ namespace BoatAttack.EditorTools
             c.ReturnToHarbor();c.SellAll();var sailing=SailNorth(c);while(sailing.MoveNext())yield return null;
             Check(c.Anchored && c.Spot==3,"north ground unlocked");
             Catch(c,true);Check(c.Career.Expedition.Facts==15 && c.Career.Count==c.Career.Capacity,"full hold at scoop cannot record evidence");
+            Check(c.HasPendingCatch && c.ResolveCatch(false),"full hold retains pending fish until explicit release");
             Check(!c.Cast(),"full hold rejects another cast");c.ReturnToHarbor();c.SellAll();
             c.MoveToSpotForAutomation(3);c.Interact();
             Catch(c);Check(c.Career.Expedition.Facts==31 && c.Career.Count==1,"north newly stored coral records evidence");SaveCheck(c,"caught");
