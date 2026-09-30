@@ -9,9 +9,11 @@ namespace BoatAttack.EditorTools
     {
         private void OnPreprocessModel()
         {
-            if (!assetPath.StartsWith("Assets/Resources/FishingProps/", StringComparison.Ordinal)) return;
+            if (!assetPath.StartsWith("Assets/Resources/FishingProps/", StringComparison.Ordinal) && !assetPath.StartsWith("Assets/Resources/FishingGear/", StringComparison.Ordinal)) return;
+            bool gear=assetPath.StartsWith("Assets/Resources/FishingGear/", StringComparison.Ordinal);
             var importer = (ModelImporter)assetImporter;
             importer.globalScale = 1f;
+            if(gear) importer.isReadable=true; // One-time runtime skin assembly from authored phalanges.
             importer.useFileScale = true;
             importer.importAnimation = false;
             importer.importCameras = false;

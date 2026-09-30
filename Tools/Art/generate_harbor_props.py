@@ -95,7 +95,7 @@ def bolt(p,axis='z',radius=.013):
 
 VERTEX_MAT=bpy.data.materials.new('Harbor vertex paint');VERTEX_MAT.use_nodes=True
 nodes=VERTEX_MAT.node_tree.nodes;links=VERTEX_MAT.node_tree.links
-bsdf=nodes.get('Principled BSDF');vc=nodes.new('ShaderNodeVertexColor');vc.layer_name='PropColor'
+bsdf=next(n for n in nodes if n.type=='BSDF_PRINCIPLED');vc=nodes.new('ShaderNodeVertexColor');vc.layer_name='PropColor'
 links.new(vc.outputs['Color'],bsdf.inputs['Base Color']);bsdf.inputs['Roughness'].default_value=.42
 
 def export(name):
