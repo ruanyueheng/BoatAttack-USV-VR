@@ -24,7 +24,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.7.1";
+        public const string Version = "0.8.0";
         public Boat boatPrefab;
         public Camera viewCamera;
         public Vector3 spawnPosition;
@@ -110,14 +110,16 @@ namespace BoatAttack.Fishing
             _previousTargetFrameRate=Application.targetFrameRate;
             _xrActive=UnityEngine.XR.XRSettings.isDeviceActive;Application.targetFrameRate=_xrActive?-1:60;
             ReadAcceptanceOptions();
-            Automated = Application.isBatchMode || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
+            Automated = Application.isBatchMode || HasArgument("-fishing-field-capture") || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
             SavePath = AcceptanceOptions != null ? AcceptanceOptions.ProfilePath(Application.temporaryCachePath, false)
                 : Path.Combine(Automated ? Application.temporaryCachePath : Application.persistentDataPath,
-                Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v5.json");
-            // A separate schema-v5 file prevents older players from rewriting upgraded progress.
+                Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v6.json");
+            // v6 owns a separate file; v5/v1 are read-only migration sources.
             string warning;
+            string legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v5.json");
+            if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v1.json");
             Career = HasIsolatedProfile ? FishingSaveStore.Load(SavePath, out warning)
-                : FishingSaveStore.LoadWithLegacyFallback(SavePath, Path.Combine(Application.persistentDataPath, "boatattack-fishing-v1.json"), out warning);
+                : FishingSaveStore.LoadWithLegacyFallback(SavePath, legacy, out warning);
             ComfortMode=HasIsolatedProfile || PlayerPrefs.GetInt("Fishing.V3.Comfort",1)==1;
             QuietMode=!HasIsolatedProfile && PlayerPrefs.GetInt("Fishing.V3.Quiet",0)==1;
             NavigationTarget=1;
@@ -152,6 +154,7 @@ namespace BoatAttack.Fishing
             View=gameObject.AddComponent<FishingViewRig>();View.Controller=this;
             Shore=gameObject.AddComponent<FishingShore>();Shore.Build(this);
             Expedition=gameObject.AddComponent<FishingExpeditionScene>();Expedition.Build(this);
+            FieldWorld=gameObject.AddComponent<FishingFieldWorld>();FieldWorld.Build(this);
             ConfigurePresentation();
             _feedback=gameObject.AddComponent<AudioSource>();_feedback.spatialBlend=0f;_feedback.volume=0.45f;
             _biteTone=Tone(780f,0.13f);_successTone=Tone(1150f,0.2f);
@@ -180,6 +183,15 @@ namespace BoatAttack.Fishing
             var k=Keyboard.current;var m=Mouse.current;var g=Gamepad.current;
             bool focused=Automated || Application.isFocused;
             bool alignmentFrame=Expedition.Aligning;
+            // Opening OR closing a modal consumes the entire frame; no held input leaks into tools or movement.
+            if(!Automated && focused && k!=null && k.iKey.wasPressedThisFrame)
+            {ToggleInventory();Shore.ResetMoveInput();return;}
+            if(InventoryOpen)
+            {
+                if(!Automated && _input.Current.pause)ToggleInventory();
+                else if(!Automated && focused)ReadFieldShortcuts(k,null);
+                Shore.Tick(false);return;
+            }
             if(!Automated && _input.Current.pause) { if(alignmentFrame)Expedition.Cancel();else if(JournalOpen)ToggleJournal();else TogglePause(); }
             if(!Automated && focused && k!=null && k.jKey.wasPressedThisFrame && (!Paused || JournalOpen))ToggleJournal();
             Hands.ReadXRTools();
@@ -215,13 +227,12 @@ namespace BoatAttack.Fishing
                 if(k!=null && k.bKey.wasPressedThisFrame)CycleBait();
                 if(k!=null && k.nKey.wasPressedThisFrame)CycleNavigation();
                 if(k!=null && k.oKey.wasPressedThisFrame)DeliverOrder();
-                if(k!=null && k.tKey.wasPressedThisFrame)Ecology.Observe();
+                if(k!=null && k.tKey.wasPressedThisFrame){if(Ashore)FieldWorld.Observe();else Ecology.Observe();}
+                ReadFieldShortcuts(k,m);
                 if(_input.Current.reset)ReturnToHarbor();
                 if(k!=null && k.qKey.wasPressedThisFrame)LeaveStation();
                 if(k!=null && k.gKey.wasPressedThisFrame){if(Ashore)Shore.TryBoard();else Shore.TryDisembark();}
-                if(k!=null && (k.uKey.wasPressedThisFrame || k.digit1Key.wasPressedThisFrame))BuyUpgrade(UpgradeTrack.Line);
-                if(k!=null && k.digit2Key.wasPressedThisFrame)BuyUpgrade(UpgradeTrack.Reel);
-                if(k!=null && k.digit3Key.wasPressedThisFrame)BuyUpgrade(UpgradeTrack.Hold);
+                if(k!=null && k.uKey.wasPressedThisFrame)BuyUpgrade(UpgradeTrack.Line);
                 if(k!=null && k.xKey.wasPressedThisFrame)SellAll();
                 if(_input.Current.interact && !(_xrActive && Hands.HoldingRod))Interact();
                 bool press=(pointerReady && !overTools && !rightHeld && m!=null && m.leftButton.wasPressedThisFrame) || (gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame);
@@ -268,8 +279,8 @@ namespace BoatAttack.Fishing
             }
             var state=_input.Current;
             float comfort=ComfortMode?0.65f:1f;
-            Player.engine.Accelerate(Mathf.Max(0f,state.throttle)*comfort);Player.engine.Turn(state.steering*comfort);
-            float braking=Mathf.Max(state.brake,Mathf.Max(0f,-state.throttle));
+            Player.engine.Accelerate(state.throttle*comfort);Player.engine.Turn(state.steering*comfort);
+            float braking=state.brake; // S is reverse thrust; only Shift/explicit brake decelerates velocity.
             if(braking>0f)
             {
                 var v=rb.velocity;var h=Vector3.MoveTowards(new Vector3(v.x,0,v.z),Vector3.zero,7f*braking*Time.fixedDeltaTime);
@@ -281,7 +292,7 @@ namespace BoatAttack.Fishing
         {
             if(_initialized)
             {
-                Shore.SyncRider();View.ApplyView();Hands.Apply();
+                Shore.SyncRider();View.ApplyView();Hands.Apply();FieldWorld.ApplyHeldTool();
                 if(_line.enabled)
                 {
                     var target=_line.GetPosition(24);
@@ -292,7 +303,7 @@ namespace BoatAttack.Fishing
         public void ToggleView()
         {
             if(Paused)return;
-            View.Toggle();
+            BinocularsRaised=false;View.Toggle();
             Notice(Ashore?"岸上视角 · 移动鼠标转头 / Alt 操作界面 / V 回正 / C 切换":FirstPerson?"第一人称 · 右键环顾 / V 视线回正 / C 切换":"第三人称 · 右键环绕 / V 回正 / C 切换",4f);
         }
         public void TogglePause()
@@ -306,6 +317,8 @@ namespace BoatAttack.Fishing
             if(Expedition!=null)Expedition.Cancel();
             _pointerGate.Reset();_gamepadGate.Reset();
             if(View!=null)View.ResetInput();
+            if(Shore!=null)Shore.ResetMoveInput();
+            BinocularsRaised=false;
         }
         private void OnApplicationFocus(bool focused){if(!focused)ResetToolInput();}
         private void ConfigurePresentation()
@@ -328,7 +341,7 @@ namespace BoatAttack.Fishing
             {
                 if(Hands!=null && !Automated)Hands.ReachGesture(Shore.Position+viewCamera.transform.forward*.7f+Vector3.up*1.1f);
                 bool hadComponent=Career.Expedition.Has(FishingExpedition.ComponentFound);
-                if(!Expedition.Interact())Shore.Survey();
+                if(!Expedition.Interact() && !FieldWorld.TryPickup())Shore.Survey();
                 if(!hadComponent && Career.Expedition.Has(FishingExpedition.ComponentFound))Hands.PresentPickup();
                 return;
             }

@@ -15,7 +15,7 @@ namespace BoatAttack.Fishing
             WeatherIcon(new Rect(r.x + 12, r.y + 15, 32, 32), c.Weather.Climate.Current);
             string title = c.Ashore ? FishingExploration.SiteName(c.Shore.CurrentSite) : c.Anchored ? FishingGrounds.Name(c.Spot) : c.NavigationName + "  " + FishingPrototype.FlatDistance(c.ExplorerPosition, c.NavigationPosition).ToString("0") + " m";
             Label(r.x + 56, r.y + 9, 262, 27, title, 19, Color.white, true);
-            string motion = c.Ashore ? "步行 · 调查 "+FishingExploration.CompletedTasks(c.Career.ShoreTaskMask)+"/8" : c.Anchored ? "已停船 · " + FishingVoyage.BaitName(c.Bait) : (c.Speed * 3.6f).ToString("0.0") + " km/h · N 切换航点";
+            string motion = c.Ashore ? (c.Shore.Crouched?"蹲行 · 调查 ":"步行 · 调查 ")+FishingExploration.CompletedTasks(c.Career.ShoreTaskMask)+"/8" : c.Anchored ? "已停船 · " + FishingVoyage.BaitName(c.Bait) : (c.Speed * 3.6f).ToString("0.0") + " km/h · N 切换航点";
             Label(r.x + 56, r.y + 36, 262, 20, BayClimate.Name(c.Weather.Climate.Current) + " · " + motion, 13, Muted);
             if (c.Ecology.Candidate.HasValue && !CatchVisible && Button(Layout.Observe, "T 观察 · " + BayClimate.MarineName(c.Ecology.Candidate.Value), true, false, 14)) c.Ecology.Observe();
         }
@@ -49,8 +49,8 @@ namespace BoatAttack.Fishing
             Color accent = Mint;
             if(c.Ashore)
             {
-                title=c.Expedition.ActionTitle ?? c.Shore.ActionTitle;
-                help=c.Expedition.Aligning?c.Expedition.AlignmentHint:"WASD 行走 · Shift 快走 · 鼠标环顾 · Alt 操作界面 · J 海岸日志 · R 救援";
+                title=c.Expedition.ActionTitle ?? c.FieldWorld.ActionTitle ?? c.Shore.ActionTitle;
+                help=c.Expedition.Aligning?c.Expedition.AlignmentHint:"空格跳跃 · Ctrl 蹲下 · E 拾取 · T 观察 · I 背包 · R 救援";
             }
             else if (!c.Anchored)
             {
@@ -65,7 +65,7 @@ namespace BoatAttack.Fishing
                 title = near ? (c.Speed > 3f ? "按住 Shift 减速，再按 E 停船" : "进入 " + FishingGrounds.Name(c.Spot) + " · E 停船") : "驶向彩色航标，靠近后按 E 停船";
                 if(near && !FishingGrounds.Available(c.Spot,c.Career.Expedition))title="北岛信标渔场 · 修复旧港信标后开放";
                 if(c.Shore.BerthDistance<18 || c.NavigationTarget>c.fishingSpots.Length)
-                {title=c.Expedition.ActionTitle ?? c.Shore.ActionTitle;help="S / Shift 减速至 5.4 km/h 以下 · N 航点 · M 地图";}
+                {title=c.Expedition.ActionTitle ?? c.Shore.ActionTitle;help="Shift 刹车至 5.4 km/h 以下 · S 倒航 · N 航点 · M 地图";}
                 else help = c.Shore.ActionTitle;
             }
             else
