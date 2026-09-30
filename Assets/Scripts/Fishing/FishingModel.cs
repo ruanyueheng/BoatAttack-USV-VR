@@ -155,7 +155,9 @@ namespace BoatAttack.Fishing
     [Serializable]
     public sealed class FishingSaveData
     {
-        public int version = 5;
+        public int version = 6;
+        public List<FieldStack> backpack;
+        public int selectedSlot, collectedPickupMask, landAnimalMask;
         public int expeditionFacts;
         public int shoreTaskMask;
         public int shoreRewardMask;
@@ -176,6 +178,7 @@ namespace BoatAttack.Fishing
 
     public sealed class FishingCareer
     {
+        public FishingBackpack Backpack { get; private set; } = new FishingBackpack();
         public const int BaseCapacity = 6;
         public const int MaxLevel = 2;
         // Enough history to reject any replayed catch while keeping the save file bounded.
@@ -370,6 +373,7 @@ namespace BoatAttack.Fishing
         {
             var result = new FishingSaveData
             {
+                backpack = Backpack.Snapshot(), selectedSlot = Backpack.Selected, collectedPickupMask = Backpack.CollectedMask, landAnimalMask = Backpack.AnimalMask,
                 expeditionFacts = Expedition.Facts,
                 shoreTaskMask = ShoreTaskMask, shoreRewardMask = ShoreRewardMask,
                 coins = Coins, rodLevel = LineLevel, reelLevel = ReelLevel, holdLevel = HoldLevel,
@@ -384,7 +388,7 @@ namespace BoatAttack.Fishing
         public static bool TryRestore(FishingSaveData data, out FishingCareer career)
         {
             career = null;
-            if (data == null || data.version < 1 || data.version > 5) return false;
+            if (data == null || data.version < 1 || data.version > 6) return false;
             if (!FishingExpedition.TryRestore(data.expeditionFacts, out var expedition)
                 || (data.version < 5 && data.expeditionFacts != 0)) return false;
             bool v3 = data.version >= 3;
@@ -425,6 +429,12 @@ namespace BoatAttack.Fishing
                 result.OrdersCompleted = data.ordersCompleted;
                 result.LegendCatches = data.legendCatches;
             }
+            if(data.version>=6)
+            {
+                if(!FishingBackpack.TryRestore(data.backpack,data.selectedSlot,data.collectedPickupMask,data.landAnimalMask,out var bag))return false;
+                result.Backpack=bag;
+            }
+            else if((data.backpack!=null && data.backpack.Count!=0) || data.selectedSlot!=0 || data.collectedPickupMask!=0 || data.landAnimalMask!=0)return false;
             result.Expedition = expedition;
             result.ShoreTaskMask = data.shoreTaskMask;
             result.ShoreRewardMask = data.shoreRewardMask;

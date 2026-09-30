@@ -167,3 +167,8 @@ See `FISHING_V06_REVIEW.md` for the final scope, current-run logs, screenshots a
 - `FishingBuild`: a non-Development Windows player was produced in `Builds/FishingPrototype-v0.6.0/`; `Run-FishingAcceptance.ps1 -Mode Smoke -Session v060-review` passed on that player.
 - Save schema v5 now uses `boatattack-fishing-v5.json`; legacy profiles are read only as a migration source and never modified. Automated/manual acceptance modes still use isolated temporary profiles.
 - Curated model screenshots are camera renders, not full-HUD or physical-input evidence. Full harbor→A→D→C→north fishing ground→harbor keyboard/mouse play, first-run timing, sustained performance and PICO device tests remain unverified. Keep the PR draft until the desktop manual gate is recorded; do not equate green automated checks with those acceptance items.
+
+
+## v0.8.0 field exploration
+
+See [FISHING_V08_FIELD.md](FISHING_V08_FIELD.md) for controls, v6 migration and manual gates. `Run-UnityValidation.ps1 -Suite FishingField` covers real CharacterController behavior driven by virtual Input System keys, inventory/world claims, animal sight checks and actual reverse Rigidbody propulsion. Pure field rules run in the existing cross-platform FishingTests CI. A green suite is not physical mouse/keyboard or PICO certification.

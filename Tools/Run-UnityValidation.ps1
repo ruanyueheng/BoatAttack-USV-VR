@@ -1,6 +1,6 @@
 param(
     [string]$EditorRoot,
-    [ValidateSet("Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture")]
+    [ValidateSet("Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture")]
     [string]$Suite = "Structure",
     [ValidateRange(60, 7200)]
     [int]$TimeoutSeconds = 1200
@@ -31,6 +31,8 @@ $method = switch ($Suite) {
     'FishingSmoke' { 'BoatAttack.EditorTools.FishingPrototypeSmoke.Run' }
     'FishingBuild' { 'BoatAttack.EditorTools.FishingPrototypeEditor.Build' }
     'FishingShore' { 'BoatAttack.EditorTools.FishingShoreValidation.Run' }
+    'FishingField' { 'BoatAttack.EditorTools.FishingFieldValidation.Run' }
+    'FishingFieldCapture' { 'BoatAttack.EditorTools.FishingFieldValidation.Capture' }
     'FishingExpedition' { 'BoatAttack.EditorTools.FishingExpeditionValidation.Run' }
     'FishingExpeditionCapture' { 'BoatAttack.EditorTools.FishingExpeditionValidation.Capture' }
 }
@@ -42,11 +44,13 @@ $marker = switch ($Suite) {
     'FishingSmoke' { '[FISHING]' }
     'FishingBuild' { '[FISHING]' }
     'FishingShore' { '[SHORE]' }
+    'FishingField' { '[FIELD]' }
+    'FishingFieldCapture' { '[FIELD]' }
     'FishingExpedition' { '[EXPEDITION]' }
     'FishingExpeditionCapture' { '[EXPEDITION]' }
 }
 $arguments = '-batchmode -nographics -buildTarget StandaloneWindows64 -projectPath "' + $repo + '" -executeMethod ' + $method + ' -logFile "' + $log + '"'
-if ($Suite -eq 'FishingExpeditionCapture') { $arguments = $arguments.Replace(' -nographics', '') }
+if ($Suite -eq 'FishingExpeditionCapture' -or $Suite -eq 'FishingFieldCapture') { $arguments = $arguments.Replace(' -nographics', '') }
 if ($Suite -eq 'FishingSmoke') { $arguments += ' -fishing-autoplay' }
 Write-Output "Running Unity $Suite validation. Log: $log"
 $process = Start-Process -FilePath $editor -ArgumentList $arguments -WindowStyle Hidden -PassThru

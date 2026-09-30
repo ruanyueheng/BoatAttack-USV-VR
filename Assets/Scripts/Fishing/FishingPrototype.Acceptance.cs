@@ -31,6 +31,7 @@ namespace BoatAttack.Fishing
                 throw new InvalidOperationException("Acceptance fixtures require an explicitly opted-in test profile.");
             // Validate before changing any live state. FreePlay is intentionally never synthesized.
             FishingCareer fixture = selected == FishingAcceptanceCase.FreePlay ? null : FishingAcceptanceCases.CreateCareer(selected);
+            if (InventoryOpen) ToggleInventory();
             if (JournalOpen) ToggleJournal();
             else if (Paused) TogglePause();
             if(Ashore)Shore.BoardImmediately();
@@ -40,6 +41,7 @@ namespace BoatAttack.Fishing
             SavePath = AcceptanceOptions.ProfilePath(Application.temporaryCachePath, fixture != null);
             Career = fixture ?? FishingSaveStore.Load(SavePath, out _);
             Shore.RefreshMarkers();
+            FieldWorld.RefreshPickups();
             Expedition.RefreshFromCareer();
             SaveWarning = string.Empty;
             LastCatch = default;

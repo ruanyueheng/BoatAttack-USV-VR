@@ -134,21 +134,21 @@ namespace BoatAttack.EditorTools
         {
             string directory=Path.Combine(Application.temporaryCachePath,"expedition-migration-"+Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(directory);
-            string legacy=Path.Combine(directory,"boatattack-fishing-v1.json"), current=Path.Combine(directory,"boatattack-fishing-v5.json");
-            var data=new FishingCareer().Snapshot();data.version=4;data.coins=40;
+            string legacy=Path.Combine(directory,"boatattack-fishing-v1.json"), current=Path.Combine(directory,"boatattack-fishing-v6.json");
+            var data=new FishingCareer().Snapshot();data.version=4; data.backpack=null; data.selectedSlot=data.collectedPickupMask=data.landAnimalMask=0;data.coins=40;
             string original=JsonUtility.ToJson(data,true);File.WriteAllText(legacy,original);
             var migrated=FishingSaveStore.LoadWithLegacyFallback(current,legacy,out string warning);
             Check(warning!="" && migrated.Coins==40 && migrated.Expedition.Facts==0,"legacy profile read without mutating old file");
             migrated.Expedition.Accept();FishingSaveStore.Save(current,migrated);
-            Check(File.ReadAllText(legacy)==original,"schema v5 save leaves v4 profile byte-identical");
+            Check(File.ReadAllText(legacy)==original,"schema v6 save leaves v4 profile byte-identical");
             var reloaded=FishingSaveStore.LoadWithLegacyFallback(current,legacy,out warning);
-            Check(warning=="" && reloaded.Expedition.Has(FishingExpedition.Accepted),"v5 profile takes priority over legacy");
+            Check(warning=="" && reloaded.Expedition.Has(FishingExpedition.Accepted),"v6 profile takes priority over legacy");
             FishingSaveStore.Save(current,reloaded);File.WriteAllText(current,"corrupt");
             reloaded=FishingSaveStore.LoadWithLegacyFallback(current,legacy,out warning);
-            Check(warning!="" && reloaded.Expedition.Has(FishingExpedition.Accepted),"v5 backup takes priority over legacy");
+            Check(warning!="" && reloaded.Expedition.Has(FishingExpedition.Accepted),"v6 backup takes priority over legacy");
             File.WriteAllText(current+".bak","corrupt");
             reloaded=FishingSaveStore.LoadWithLegacyFallback(current,legacy,out warning);
-            Check(warning!="" && reloaded.Coins==0 && reloaded.Expedition.Facts==0,"unreadable v5 does not silently roll back to legacy");
+            Check(warning!="" && reloaded.Coins==0 && reloaded.Expedition.Facts==0,"unreadable v6 does not silently roll back to legacy");
         }
         private static void NorthCorridorCheck(FishingPrototype c)
         {

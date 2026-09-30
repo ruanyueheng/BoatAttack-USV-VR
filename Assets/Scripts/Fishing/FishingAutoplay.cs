@@ -307,7 +307,7 @@ namespace BoatAttack.Fishing
                 float scale=FishingHUD.LayoutScale(size.x,size.y),height=size.y/scale,offset=(size.x-1600*scale)*.5f;
                 var layout=new FishingHUD.FocusLayout(height,true,CatchPhase.Fighting);
                 var clear=new Rect(376,150,844,height-390);
-                foreach(var rect in new[]{layout.Heading,layout.Pocket,layout.Toolbar,layout.Chart,layout.Action,layout.Notice,layout.Catch})
+                foreach(var rect in new[]{layout.Heading,layout.Pocket,layout.Toolbar,layout.Chart,layout.Action,layout.Notice,layout.Catch,FishingHUD.HotbarRect(height)})
                     if(rect.Overlaps(clear) || rect.y<0 || rect.yMax>height || rect.x<0 || rect.xMax>1600)
                         throw new Exception("Focused HUD obstructs the central view or leaves its safe area: "+size);
                 var button=new Vector2(offset+layout.Toolbar.center.x*scale,size.y-layout.Toolbar.center.y*scale);
@@ -344,6 +344,7 @@ namespace BoatAttack.Fishing
                 if(FishingHUD.BlocksToolPointer(screen,size.x,size.y,chart,details,harbor,atHarbor,observe)!=expected)
                     throw new Exception("HUD pointer region disagrees with visibility at "+logical+" in "+size);
             }
+            Gate(FishingHUD.HotbarRect(size.y/scale).center,true);
             Gate(layout.Chart.center,true);
             Gate(layout.Chart.center,false,chart:false);
             Gate(layout.ChartTab.center,true,chart:false);

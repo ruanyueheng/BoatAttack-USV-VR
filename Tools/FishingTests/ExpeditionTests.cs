@@ -21,7 +21,7 @@ internal static class ExpeditionTests
         {
             // Independent enumeration: arbitrary first three facts, then repair/catch/delivery in order.
             bool expected = mask <= 7 || mask == 15 || mask == 31 || mask == 63;
-            bool accepted = FishingCareer.TryRestore(new FishingSaveData { expeditionFacts = mask }, out var state);
+            bool accepted = FishingCareer.TryRestore(new FishingSaveData { backpack = new FishingBackpack().Snapshot(),  expeditionFacts = mask }, out var state);
             check(accepted == expected, "Expedition save combination " + mask);
             if (!accepted) continue;
             validCount++;
@@ -30,7 +30,7 @@ internal static class ExpeditionTests
         }
         check(validCount == 11, "Expedition exactly eleven valid fact combinations");
         foreach (int invalid in new[] { -1, 64, 127, int.MaxValue, int.MinValue })
-            check(!FishingCareer.TryRestore(new FishingSaveData { expeditionFacts = invalid }, out _), "Expedition rejects unknown facts " + invalid);
+            check(!FishingCareer.TryRestore(new FishingSaveData { backpack = new FishingBackpack().Snapshot(),  expeditionFacts = invalid }, out _), "Expedition rejects unknown facts " + invalid);
         for (int version = 1; version <= 4; version++)
         {
             check(FishingCareer.TryRestore(new FishingSaveData { version = version, coins = 44 }, out restored)
@@ -40,10 +40,10 @@ internal static class ExpeditionTests
         var old = new FishingCareer();
         for (int i = 0; i < 8; i++) old.CompleteShoreTask(i);
         old.ClaimShoreRewards();
-        var legacy = old.Snapshot(); legacy.version = 4;
+        var legacy = old.Snapshot(); legacy.version = 4; legacy.backpack=null; legacy.selectedSlot=legacy.collectedPickupMask=legacy.landAnimalMask=0;
         check(FishingCareer.TryRestore(legacy, out restored) && restored.Coins == 160 && restored.ShoreTaskMask == 255
             && restored.Expedition.Facts == 0 && restored.ClaimShoreRewards() == 0, "Expedition preserves completed v4 shore rewards");
-        check(!FishingCareer.TryRestore(new FishingSaveData { version = 6 }, out _), "Expedition rejects future v6 save");
+        check(!FishingCareer.TryRestore(new FishingSaveData { version = 7 }, out _), "Expedition rejects future v7 save");
         for (int ground = 0; ground < 3; ground++)
         {
             check(FishingGrounds.Available(ground, new FishingExpedition()), "Original ground remains open " + ground);

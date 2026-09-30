@@ -51,7 +51,7 @@ namespace BoatAttack.Fishing
         {
             var c = Controller;
             if (c == null || c.Player == null || c.viewCamera == null || !OwnsCamera) { ReleaseCursor(); return; }
-            if (c.Paused) { ResetInput(); return; }
+            if (c.Paused || c.InventoryOpen) { ResetInput(); return; }
             if(c.Ashore){ApplyShoreView(focused,automated);return;}
             ReleaseCursor();
             var boat = c.Player.transform;
@@ -111,7 +111,7 @@ namespace BoatAttack.Fishing
             bool alt=keyboard!=null && (keyboard.leftAltKey.isPressed || keyboard.rightAltKey.isPressed);
             // The chart is a persistent navigation HUD, not a modal: landing opens it automatically.
             // Alt explicitly hands the pointer to the chart/buttons without disabling navigation look forever.
-            bool blocked=c.JournalOpen || c.ShowDetails || c.Expedition.Aligning;
+            bool blocked=c.InventoryOpen || c.JournalOpen || c.ShowDetails || c.Expedition.Aligning;
             bool capture=FishingHandInput.CaptureShorePointer(c.Ashore,OwnsCamera,focused,automated,c.Paused,blocked,alt);
             bool wasLocked=_cursorOwned && _pointer.LockState==CursorLockMode.Locked;
             if(capture)
@@ -125,10 +125,10 @@ namespace BoatAttack.Fishing
             IsLooking=capture && wasLocked && mouse!=null;
             if(IsLooking)ApplyShoreLookDelta(mouse.delta.ReadValue());
             var rotation=Quaternion.Euler(_lookPitch,_shoreYaw+_lookYaw,0);
-            var eye=c.Shore.Actor.position+Vector3.up*1.55f;
+            var eye=c.Shore.Actor.position+Vector3.up*c.Shore.EyeHeight;
             c.viewCamera.transform.position=FirstPerson?eye:ConstrainToVisibleSegment(eye,eye+rotation*new Vector3(0,.65f,-4.2f),c.Player.transform);
             c.viewCamera.transform.rotation=FirstPerson?rotation:Quaternion.LookRotation(eye-Vector3.up*.45f-c.viewCamera.transform.position,Vector3.up);
-            c.viewCamera.fieldOfView=FirstPerson?72:58;
+            c.viewCamera.fieldOfView=c.BinocularsRaised && FirstPerson?38:FirstPerson?72:58;
             _reset=true; // Boarding must not interpolate the boat camera from an inland position.
         }
         private Vector3 ConstrainToVisibleSegment(Vector3 pivot,Vector3 position,Transform boat)

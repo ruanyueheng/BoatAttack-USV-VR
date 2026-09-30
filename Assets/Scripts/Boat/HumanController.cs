@@ -34,8 +34,8 @@ namespace BoatAttack
         {
             if (_input == null || engine == null) return;
             var state = _input.Current;
-            // Original Engine supports forward thrust only. Reverse is not implemented here.
-            engine.Accelerate(Mathf.Max(0f, state.throttle));
+            // Signed thrust: S/negative axis moves astern; braking remains independent.
+            engine.Accelerate(state.throttle);
             engine.Turn(state.steering);
             if (engine.RB != null && state.brake > 0f)
             {
