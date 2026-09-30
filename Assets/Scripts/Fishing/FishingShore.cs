@@ -158,7 +158,7 @@ namespace BoatAttack.Fishing
             Ashore=true;_lastSafe=feet+Vector3.up*.08f;_fallSpeed=0;
             Actor.SetPositionAndRotation(_lastSafe,Quaternion.LookRotation(Vector3.ProjectOnPlane(site.Landing-site.Berth,Vector3.up)));
             Body.enabled=true;Controller.View.ResetLook();Controller.CloseBoatPanels();
-            Controller.Notice("已登岸 · WASD 行走 / Shift 快走 / 右键转头 / E 勘测 / 原登岸点 G 上船",8);
+            Controller.Notice("已登岸 · WASD 行走 / Shift 快走 / 鼠标转头 / Alt 释放鼠标 / E 勘测 / 原登岸点 G 上船",8);
             UpdateProximity();return true;
         }
         public bool TryBoard()

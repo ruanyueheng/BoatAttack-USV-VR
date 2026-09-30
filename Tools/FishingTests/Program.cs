@@ -14,6 +14,7 @@ internal static class Program
     {
         try
         {
+            HandInputTests.Run(Check);
             ShoreTests.Run(Check);
             ExpeditionTests.Run(Check);
             foreach (FishKind kind in Enum.GetValues(typeof(FishKind)))

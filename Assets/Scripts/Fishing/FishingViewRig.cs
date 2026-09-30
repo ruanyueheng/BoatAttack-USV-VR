@@ -26,14 +26,34 @@ namespace BoatAttack.Fishing
         }
         public void ResetLook() { if(Controller!=null && Controller.Ashore)_shoreYaw=Controller.Shore.Actor.eulerAngles.y; _lookYaw = _lookPitch = 0f; _reset = true; IsLooking = false; }
 
-        public void ResetInput() { _lookGate.Reset(); IsLooking = false; }
+        public void ResetInput() { _lookGate.Reset(); IsLooking = false; ReleaseCursor(); }
+        private bool _cursorOwned;
+        private IFishingCursor _pointer=new FishingSystemCursor();
+        public IFishingCursor Pointer
+        {
+            get => _pointer;
+            set { ReleaseCursor(); _pointer=value??new FishingSystemCursor(); }
+        }
+        private void ReleaseCursor() { if(!_cursorOwned)return; _pointer.LockState=CursorLockMode.None;_pointer.Visible=true;_cursorOwned=false; }
+        private void OnDisable() { ReleaseCursor(); }
+        public void ApplyShoreLookDelta(Vector2 delta)
+        {
+            if(Controller==null || !Controller.Ashore || Controller.Paused || !OwnsCamera || Controller.Expedition.Aligning)return;
+            if(float.IsNaN(delta.x) || float.IsInfinity(delta.x) || float.IsNaN(delta.y) || float.IsInfinity(delta.y))return;
+            _lookYaw=Mathf.Repeat(_lookYaw+delta.x*.12f+180,360)-180;
+            _lookPitch=Mathf.Clamp(_lookPitch-delta.y*.12f,-65,65);
+        }
 
-        public void ApplyView()
+        public void ApplyView() => ApplyView(Application.isFocused, Controller != null && Controller.Automated);
+
+        /// <summary>Environment boundary used by isolated input tests. Mouse/keyboard still pass through Input System; Pointer isolates the OS lock boundary.</summary>
+        public void ApplyView(bool focused, bool automated)
         {
             var c = Controller;
-            if (c == null || c.Player == null || c.viewCamera == null || !OwnsCamera) return;
+            if (c == null || c.Player == null || c.viewCamera == null || !OwnsCamera) { ReleaseCursor(); return; }
             if (c.Paused) { ResetInput(); return; }
-            if(c.Ashore){ApplyShoreView();return;}
+            if(c.Ashore){ApplyShoreView(focused,automated);return;}
+            ReleaseCursor();
             var boat = c.Player.transform;
             var yaw = Quaternion.Euler(0f, boat.eulerAngles.y, 0f);
             bool changed = c.Anchored != _wasAnchored || FirstPerson != _wasFirstPerson;
@@ -41,8 +61,8 @@ namespace BoatAttack.Fishing
             if (changed) { _lookYaw = _lookPitch = 0f; _reset = true; }
             var mouse = Mouse.current;
             bool rightHeld = mouse != null && mouse.rightButton.isPressed;
-            bool lookReady = _lookGate.Update(Application.isFocused, c.Paused, false, rightHeld);
-            IsLooking = !c.Automated && lookReady && rightHeld;
+            bool lookReady = _lookGate.Update(focused, c.Paused, false, rightHeld);
+            IsLooking = !automated && lookReady && rightHeld;
             if (IsLooking)
             {
                 // Pointer delta is already frame-relative; multiplying by deltaTime changes sensitivity with FPS.
@@ -84,12 +104,26 @@ namespace BoatAttack.Fishing
             }
             _wasAnchored=c.Anchored;_wasFirstPerson=FirstPerson;_lastBoatPosition=boat.position;_reset=false;
         }
-        private void ApplyShoreView()
+        private void ApplyShoreView(bool focused,bool automated)
         {
             var c=Controller;var mouse=Mouse.current;
-            bool right=mouse!=null && mouse.rightButton.isPressed;
-            IsLooking=!c.Automated && _lookGate.Update(Application.isFocused,c.Paused,false,right) && right;
-            if(IsLooking){var delta=mouse.delta.ReadValue();_lookYaw=Mathf.Repeat(_lookYaw+delta.x*.12f+180,360)-180;_lookPitch=Mathf.Clamp(_lookPitch-delta.y*.12f,-65,65);}
+            var keyboard=Keyboard.current;
+            bool alt=keyboard!=null && (keyboard.leftAltKey.isPressed || keyboard.rightAltKey.isPressed);
+            // The chart is a persistent navigation HUD, not a modal: landing opens it automatically.
+            // Alt explicitly hands the pointer to the chart/buttons without disabling navigation look forever.
+            bool blocked=c.JournalOpen || c.ShowDetails || c.Expedition.Aligning;
+            bool capture=FishingHandInput.CaptureShorePointer(c.Ashore,OwnsCamera,focused,automated,c.Paused,blocked,alt);
+            bool wasLocked=_cursorOwned && _pointer.LockState==CursorLockMode.Locked;
+            if(capture)
+            {
+                // Do not request an OS cursor warp every frame. Reacquisition discards its first delta.
+                if(_pointer.LockState!=CursorLockMode.Locked)_pointer.LockState=CursorLockMode.Locked;
+                if(_pointer.Visible)_pointer.Visible=false;
+                _cursorOwned=true;
+            }
+            else ReleaseCursor();
+            IsLooking=capture && wasLocked && mouse!=null;
+            if(IsLooking)ApplyShoreLookDelta(mouse.delta.ReadValue());
             var rotation=Quaternion.Euler(_lookPitch,_shoreYaw+_lookYaw,0);
             var eye=c.Shore.Actor.position+Vector3.up*1.55f;
             c.viewCamera.transform.position=FirstPerson?eye:ConstrainToVisibleSegment(eye,eye+rotation*new Vector3(0,.65f,-4.2f),c.Player.transform);

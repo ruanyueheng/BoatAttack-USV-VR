@@ -50,7 +50,7 @@ namespace BoatAttack.Fishing
             if(c.Ashore)
             {
                 title=c.Expedition.ActionTitle ?? c.Shore.ActionTitle;
-                help=c.Expedition.Aligning?c.Expedition.AlignmentHint:"WASD 行走 · Shift 快走 · 右键环顾 · J 海岸日志 · R 救援";
+                help=c.Expedition.Aligning?c.Expedition.AlignmentHint:"WASD 行走 · Shift 快走 · 鼠标环顾 · Alt 操作界面 · J 海岸日志 · R 救援";
             }
             else if (!c.Anchored)
             {

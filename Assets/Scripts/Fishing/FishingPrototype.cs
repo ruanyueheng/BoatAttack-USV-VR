@@ -24,7 +24,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.6.1";
+        public const string Version = "0.7.1";
         public Boat boatPrefab;
         public Camera viewCamera;
         public Vector3 spawnPosition;
@@ -86,6 +86,7 @@ namespace BoatAttack.Fishing
         private readonly List<GameObject> _storedFish = new List<GameObject>();
         private readonly List<Transform> _buoys = new List<Transform>();
         private GameObject _fish, _bobber, _trophy;
+        public FishingHands Hands { get; private set; }
         private Transform _rodTip, _net, _box, _reelCrank;
         private LineRenderer _line;
         private float _netMotion, _caughtAt, _messageUntil;
@@ -181,6 +182,7 @@ namespace BoatAttack.Fishing
             bool alignmentFrame=Expedition.Aligning;
             if(!Automated && _input.Current.pause) { if(alignmentFrame)Expedition.Cancel();else if(JournalOpen)ToggleJournal();else TogglePause(); }
             if(!Automated && focused && k!=null && k.jKey.wasPressedThisFrame && (!Paused || JournalOpen))ToggleJournal();
+            Hands.ReadXRTools();
             // A modal frame never falls through into boarding, surveying or boat/tool input,
             // including the frame in which E/Esc closes the dial.
             if(alignmentFrame)
@@ -221,7 +223,7 @@ namespace BoatAttack.Fishing
                 if(k!=null && k.digit2Key.wasPressedThisFrame)BuyUpgrade(UpgradeTrack.Reel);
                 if(k!=null && k.digit3Key.wasPressedThisFrame)BuyUpgrade(UpgradeTrack.Hold);
                 if(k!=null && k.xKey.wasPressedThisFrame)SellAll();
-                if(_input.Current.interact)Interact();
+                if(_input.Current.interact && !(_xrActive && Hands.HoldingRod))Interact();
                 bool press=(pointerReady && !overTools && !rightHeld && m!=null && m.leftButton.wasPressedThisFrame) || (gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame);
                 if(press && Anchored){if(Session.Phase==CatchPhase.Bite)Hook();else Cast();}
             }
@@ -231,7 +233,7 @@ namespace BoatAttack.Fishing
             _reeling=false;
             if(Anchored && !Paused && focused)
             {
-                bool reel=Automated?AutomationReel:(pointerReady && !overTools && !rightHeld && leftHeld)||(gamepadReady && g!=null && g.rightTrigger.ReadValue()>0.5f);
+                bool reel=Automated?AutomationReel:_xrActive?Hands.XRReeling:(pointerReady && !overTools && !rightHeld && leftHeld)||(gamepadReady && g!=null && g.rightTrigger.ReadValue()>0.5f);
                 _reeling=reel && Session.Phase==CatchPhase.Fighting;
                 if(Acceptance == null || !Acceptance.FreezeScenario) Session.Tick(Time.deltaTime,reel);
                 if(Session.Phase!=_previousPhase)
@@ -277,13 +279,21 @@ namespace BoatAttack.Fishing
 
         private void LateUpdate()
         {
-            if(_initialized){Shore.SyncRider();View.ApplyView();}
+            if(_initialized)
+            {
+                Shore.SyncRider();View.ApplyView();Hands.Apply();
+                if(_line.enabled)
+                {
+                    var target=_line.GetPosition(24);
+                    for(int i=0;i<25;i++){float u=i/24f;_line.SetPosition(i,Vector3.Lerp(_rodTip.position,target,u)-Vector3.up*Mathf.Sin(u*Mathf.PI)*(Session.Phase==CatchPhase.Fighting?.15f:.5f));}
+                }
+            }
         }
         public void ToggleView()
         {
             if(Paused)return;
             View.Toggle();
-            Notice(FirstPerson?"第一人称 · 右键环顾 / V 视线回正 / C 切换":"第三人称 · 右键环绕 / V 回正 / C 切换",4f);
+            Notice(Ashore?"岸上视角 · 移动鼠标转头 / Alt 操作界面 / V 回正 / C 切换":FirstPerson?"第一人称 · 右键环顾 / V 视线回正 / C 切换":"第三人称 · 右键环绕 / V 回正 / C 切换",4f);
         }
         public void TogglePause()
         {
@@ -314,7 +324,14 @@ namespace BoatAttack.Fishing
         public void Interact()
         {
             if(Paused)return;
-            if(Ashore){if(!Expedition.Interact())Shore.Survey();return;}
+            if(Ashore)
+            {
+                if(Hands!=null && !Automated)Hands.ReachGesture(Shore.Position+viewCamera.transform.forward*.7f+Vector3.up*1.1f);
+                bool hadComponent=Career.Expedition.Has(FishingExpedition.ComponentFound);
+                if(!Expedition.Interact())Shore.Survey();
+                if(!hadComponent && Career.Expedition.Has(FishingExpedition.ComponentFound))Hands.PresentPickup();
+                return;
+            }
             UpdateNearestSpot();
             if(Anchored){if(Session.Phase==CatchPhase.Landing)Scoop();return;}
             if(AtHarbor){int survey=ClaimShoreRewards();if(Career.OrderReady)DeliverOrder();else if(survey==0 || Career.SaleValue>0)Sell();return;}
@@ -340,6 +357,7 @@ namespace BoatAttack.Fishing
             bool cast=Session.Cast(kind,rare,Career.LineLevel,Guid.NewGuid().ToString("N"),Bait,weather,size,Career.ReelLevel);
             if(cast)
             {
+                if(Hands!=null)Hands.CastGesture();
                 _castGround=Spot;_recorded=false;_previousPhase=CatchPhase.Waiting;
                 _fish.SetActive(false);Destroy(_fish);
                 _fish=MakeFish(transform,kind,rare);
@@ -546,6 +564,7 @@ namespace BoatAttack.Fishing
             _box=FishingDetailArt.Crate(boat,new Vector3(0,0.85f,-1.3f),wood,teal,dark);
             FishingDetailArt.Rod(boat,dark,wood,cream,orange,out _rodTip,out _reelCrank);
             _net=FishingDetailArt.Net(boat,dark,teal,cream);
+            Hands=gameObject.AddComponent<FishingHands>();Hands.Build(this,_rodTip,_reelCrank,_net);
             _fish=MakeFish(transform,FishKind.Coral,false);
             _bobber=FishingArt.Shape("Float",PrimitiveType.Sphere,transform,Vector3.zero,Vector3.one*0.18f,orange);
             _line=FishingArt.Line("Fishing line",transform,lineMaterial,0.018f);_line.positionCount=25;

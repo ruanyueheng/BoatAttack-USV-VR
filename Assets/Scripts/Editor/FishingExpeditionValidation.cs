@@ -38,7 +38,7 @@ namespace BoatAttack.EditorTools
             SessionState.SetString(Key+"images",Path.GetFullPath(Path.Combine("Logs","expedition-preview-"+Guid.NewGuid().ToString("N"))));
             Run();
         }
-        private static void Snapshot(FishingPrototype c,string name,Vector3 target,Vector3 offset)
+        private static void Snapshot(FishingPrototype c,string name,Vector3 target,Vector3 offset,bool keepView=false)
         {
             if(!SessionState.GetBool(Key+"capture",false))return;
             var camera=c.viewCamera;var position=camera.transform.position;var rotation=camera.transform.rotation;
@@ -46,7 +46,7 @@ namespace BoatAttack.EditorTools
             var rt=RenderTexture.GetTemporary(1280,720,24,RenderTextureFormat.ARGB32);Texture2D image=null;
             try
             {
-                camera.fieldOfView=46;camera.transform.SetPositionAndRotation(target+offset,Quaternion.LookRotation(-offset));
+                if(!keepView){camera.fieldOfView=46;camera.transform.SetPositionAndRotation(target+offset,Quaternion.LookRotation(-offset));}
                 camera.targetTexture=rt;camera.Render();RenderTexture.active=rt;
                 image=new Texture2D(1280,720,TextureFormat.RGB24,false);image.ReadPixels(new Rect(0,0,1280,720),0,0);image.Apply();
                 string directory=SessionState.GetString(Key+"images","");Directory.CreateDirectory(directory);
@@ -127,6 +127,7 @@ namespace BoatAttack.EditorTools
                 while(c.Career.Count<c.Career.Capacity)
                     Check(c.Career.Store(new CatchRecord { id=Guid.NewGuid().ToString("N"),kind=FishKind.Coral,grams=1000,value=FishingSpecies.Value(FishKind.Coral,false,1000) }),"fill hold after cast");
             }
+            c.View.ApplyView();c.Hands.Apply();Snapshot(c,"07-net-grip",Vector3.zero,Vector3.zero,true);
             Check(c.Scoop(),"real scoop/storage path");
         }
         private static void MigrationChecks()
@@ -217,13 +218,32 @@ namespace BoatAttack.EditorTools
             Check(c.Career.Expedition.Facts==0,"fresh quest facts");
             MigrationChecks();NorthCorridorCheck(c);
             PropChecks(c);
+            Check(c.Hands!=null && c.Hands.Left.Skin.bones.Length==16 && c.Hands.Right.Skin.bones.Length==16,"two articulated gloves with fifteen finger joints each");
+            Check(c.Hands.Left.Skin.sharedMesh.vertexCount<12000,"glove vertex budget");
             Check(c.fishingSpots.Length==4 && c.NavigationCount==9,"four grounds and four shore destinations");
             c.MoveToSpotForAutomation(3);c.Interact();Check(!c.Anchored,"north ground locked before repair");
-            c.ReturnToHarbor();c.MoveToSpotForAutomation(0);c.Interact();Catch(c);
+            c.ReturnToHarbor();c.MoveToSpotForAutomation(0);c.Interact();
+            c.View.ApplyView();c.Hands.Apply();
+            Check(c.Hands.Left.gameObject.activeSelf && c.Hands.Right.gameObject.activeSelf,"first person shows both hands");
+            Snapshot(c,"04-first-person-rod",Vector3.zero,Vector3.zero,true);
+            c.Hands.Left.Pose(0);var baked=new Mesh();c.Hands.Left.Skin.BakeMesh(baked);var open=baked.vertices;
+            c.Hands.Left.Pose(1);c.Hands.Left.Skin.BakeMesh(baked);var closed=baked.vertices;int changed=0;for(int i=0;i<open.Length;i++)if((open[i]-closed[i]).sqrMagnitude>.000001f)changed++;
+            Check(changed>100,"finger pose deforms actual skinned vertices");UnityEngine.Object.Destroy(baked);c.Hands.Apply();
+            c.ToggleView();c.Hands.Apply();Check(!c.Hands.Left.gameObject.activeSelf && !c.Hands.Right.gameObject.activeSelf,"third person hides first-person hands");c.ToggleView();
+            Catch(c);
             Check(c.Career.Expedition.Facts==0,"original ground catch cannot advance quest");
             c.ReturnToHarbor();c.SellAll();
             // Discover both clues before accepting, including wrong-box feedback.
-            Land(c,3);Check(c.Expedition.Resolve()==1,"south landing resolves fish box");
+            Land(c,3);
+            FishingLookRegression.CheckLanding(c);
+            c.View.ApplyView();var facing=c.viewCamera.transform.rotation;var feet=c.Shore.Position;
+            c.View.ApplyShoreLookDelta(new Vector2(500,-160));c.View.ApplyView();
+            Check(Quaternion.Angle(facing,c.viewCamera.transform.rotation)>50 && c.Shore.Position==feet,"shore look turns camera without movement or right mouse button");
+            var pausedFacing=c.viewCamera.transform.rotation;c.TogglePause();c.View.ApplyShoreLookDelta(new Vector2(200,200));c.View.ApplyView();
+            Check(Quaternion.Angle(pausedFacing,c.viewCamera.transform.rotation)<.01f,"pause prevents shore look");c.TogglePause();
+            c.View.ApplyShoreLookDelta(new Vector2(float.NaN,0));c.View.ApplyView();Check(!float.IsNaN(c.viewCamera.transform.rotation.x),"invalid look delta rejected");
+            c.Hands.Apply();Snapshot(c,"05-shore-hands",Vector3.zero,Vector3.zero,true);c.View.ResetLook();
+            Check(c.Expedition.Resolve()==1,"south landing resolves fish box");
             int before=c.Career.ShoreTaskMask;c.Interact();Check(c.Career.Expedition.Facts==0 && c.Career.ShoreTaskMask==before,"one E only inspects wrong box");
             var walk=Walk(c,c.Shore.Sites[3].Tasks[1]);while(walk.MoveNext())yield return null;
             Check(c.Expedition.Resolve()==3,"stripe box reachable");c.Interact();Check(c.Career.Expedition.Facts==0,"second decoy cannot grant component");
@@ -231,6 +251,7 @@ namespace BoatAttack.EditorTools
             Check(c.Expedition.Resolve()==2 && c.Expedition.ActionTitle.Contains("双环"),"correct box prompt and resolver agree");
             Snapshot(c,"01-component-crate",c.Shore.Sites[3].Tasks[0]+new Vector3(.65f,.45f,0),new Vector3(2,1.4f,-2.7f));
             before=c.Career.ShoreTaskMask;c.Interact();Check(c.Career.Expedition.Facts==4 && c.Career.ShoreTaskMask==before,"component before acceptance; no double survey");SaveCheck(c,"component");
+            c.Hands.Apply();Snapshot(c,"06-held-repair-coil",Vector3.zero,Vector3.zero,true);
             c.Interact();Check(c.Career.ShoreTaskMask!=before,"next E can still perform original survey");
             Land(c,0);walk=Walk(c,c.Shore.Sites[0].Tasks[0]);while(walk.MoveNext())yield return null;
             Check(c.Expedition.Resolve()==0,"record reachable");before=c.Career.ShoreTaskMask;c.Interact();
