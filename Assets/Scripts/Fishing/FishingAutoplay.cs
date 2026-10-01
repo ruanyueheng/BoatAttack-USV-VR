@@ -34,7 +34,6 @@ namespace BoatAttack.Fishing
                     case -2:
                         if(Time.realtimeSinceStartup<_captureAt)return;
                         ValidateDeparture();
-                        ValidateShoreWalking();
                         ValidateBeachShop();
                         ValidatePresentation();
                         ValidateLivingBay();
@@ -93,8 +92,8 @@ namespace BoatAttack.Fishing
                         if(Controller.Session.Phase==CatchPhase.Landing && Controller.Session.CanLand)
                         {
                             int before=Controller.Career.Count;
-                            if(!Controller.Scoop() || Controller.Career.Count!=before+1)throw new Exception("Scoop did not commit inventory immediately.");
-                            if(Controller.Scoop() || Controller.Career.Count!=before+1)throw new Exception("Repeated scoop duplicated a catch.");
+                            if(!Controller.CatchRig.CaptureAndStoreForAutomation() || Controller.Career.Count!=before+1)throw new Exception("Assisted geometric net capture and explicit storage failed.");
+                            if(Controller.CatchRig.CaptureAndStoreForAutomation() || Controller.Career.Count!=before+1)throw new Exception("Repeated scoop duplicated a catch.");
                             var landed=Controller.LastCatch.Fish;
                             if(landed==null || landed.grams<=0 || !FishingSpecies.ValidGrams(landed.kind,landed.grams) || landed.value!=FishingSpecies.Value(landed.kind,landed.rare,landed.grams))
                                 throw new Exception("Landed catch lacks a valid measured weight/price.");
@@ -201,7 +200,7 @@ namespace BoatAttack.Fishing
             Controller.AutomationReel=!leap && s.Tension<0.6f;
             if(leap && !_leapCaptured && s.LeapProgress>0.35f){_leapCaptured=true;StartCoroutine(Capture("09-legend-leap.png"));}
             if(s.Phase==CatchPhase.Escaped)throw new Exception("Legend escaped: "+FishingText.Failure(s.Failure));
-            if(s.Phase==CatchPhase.Landing && s.CanLand)Controller.Scoop();
+            if(s.Phase==CatchPhase.Landing && s.CanLand)Controller.CatchRig.CaptureAndStoreForAutomation();
             if(s.Phase!=CatchPhase.Caught)return;
             var career=Controller.Career;var card=Controller.LastCatch;
             if(!_leapSeen)throw new Exception("Legend fight never showed a leap.");
@@ -309,7 +308,7 @@ namespace BoatAttack.Fishing
                 float scale=FishingHUD.LayoutScale(size.x,size.y),height=size.y/scale,offset=(size.x-1600*scale)*.5f;
                 var layout=new FishingHUD.FocusLayout(height,true,CatchPhase.Fighting);
                 var clear=new Rect(376,150,844,height-390);
-                foreach(var rect in new[]{layout.Heading,layout.Pocket,layout.Toolbar,layout.Chart,layout.Action,layout.Notice,layout.Catch})
+                foreach(var rect in new[]{layout.Heading,layout.Pocket,layout.Toolbar,layout.Chart,layout.Action,layout.Notice,layout.Catch,FishingHUD.HotbarRect(height)})
                     if(rect.Overlaps(clear) || rect.y<0 || rect.yMax>height || rect.x<0 || rect.xMax>1600)
                         throw new Exception("Focused HUD obstructs the central view or leaves its safe area: "+size);
                 var button=new Vector2(offset+layout.Toolbar.center.x*scale,size.y-layout.Toolbar.center.y*scale);
@@ -346,6 +345,7 @@ namespace BoatAttack.Fishing
                 if(FishingHUD.BlocksToolPointer(screen,size.x,size.y,chart,details,harbor,atHarbor,observe)!=expected)
                     throw new Exception("HUD pointer region disagrees with visibility at "+logical+" in "+size);
             }
+            Gate(FishingHUD.HotbarRect(size.y/scale).center,true);
             Gate(layout.Chart.center,true);
             Gate(layout.Chart.center,false,chart:false);
             Gate(layout.ChartTab.center,true,chart:false);

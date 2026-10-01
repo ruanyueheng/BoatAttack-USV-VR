@@ -1,0 +1,26 @@
+{
+  "RodBody": {
+    "triangles": 12440,
+    "vertices": 6302,
+    "source_parts": 88,
+    "renderers": 1
+  },
+  "ReelCrank": {
+    "triangles": 120,
+    "vertices": 64,
+    "source_parts": 2,
+    "renderers": 1
+  },
+  "GlovePalm": {
+    "triangles": 872,
+    "vertices": 458,
+    "source_parts": 11,
+    "renderers": 1
+  },
+  "GloveFinger": {
+    "triangles": 216,
+    "vertices": 112,
+    "source_parts": 2,
+    "renderers": 1
+  }
+}

@@ -127,7 +127,7 @@ namespace BoatAttack.Fishing
             VisibleCount=0;Candidate=null;_candidate=null;float nearest=28;
             foreach(var c in _creatures)
             {
-                bool visible=(Controller.ObserverPosition-c.home).sqrMagnitude<160*160;
+                bool visible=(Controller.ExplorerPosition-c.home).sqrMagnitude<160*160;
                 c.transform.gameObject.SetActive(visible);if(!visible)continue;VisibleCount++;
                 if(Controller.Career.Seen(c.kind))continue;
                 var delta=c.transform.position-Controller.viewCamera.transform.position;float distance=delta.magnitude;
@@ -135,7 +135,7 @@ namespace BoatAttack.Fishing
                 if(!ClearSight(c.transform.position))continue;
                 nearest=distance;Candidate=c.kind;_candidate=c.transform;
             }
-            foreach(var reef in _reefs)reef.SetActive((Controller.ObserverPosition-reef.transform.position).sqrMagnitude<200*200);
+            foreach(var reef in _reefs)reef.SetActive((Controller.ExplorerPosition-reef.transform.position).sqrMagnitude<200*200);
         }
         private bool ClearSight(Vector3 target)
         {
@@ -143,7 +143,7 @@ namespace BoatAttack.Fishing
             int count=Physics.RaycastNonAlloc(origin,delta.normalized,_hits,delta.magnitude,~(1<<4),QueryTriggerInteraction.Ignore);
             // A saturated buffer cannot prove visibility.
             if(count==_hits.Length)return false;
-            for(int i=0;i<count;i++)if(!_hits[i].transform.IsChildOf(Controller.Player.transform) && _hits[i].collider.GetComponentInParent<WaterSystem.Water>()==null)return false;
+            for(int i=0;i<count;i++)if(!(Controller.Shore!=null && _hits[i].transform.IsChildOf(Controller.Shore.Actor)) && !_hits[i].transform.IsChildOf(Controller.Player.transform) && _hits[i].collider.GetComponentInParent<WaterSystem.Water>()==null)return false;
             return true;
         }
         public bool Observe()

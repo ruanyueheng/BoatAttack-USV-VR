@@ -27,45 +27,35 @@ namespace BoatAttack.Fishing
         }
         public static void Rod(Transform boat,Material dark,Material cork,Material metal,Material accent,out Transform tip,out Transform crank)
         {
-            var root=new GameObject("Detailed rod and reel").transform;root.SetParent(boat,false);
-            Vector3 a=new Vector3(0.75f,0.95f,0.9f),b=new Vector3(2.65f,2.65f,2.25f);
-            for(int i=0;i<5;i++)FishingArt.Pole("Tapered rod section",root,Vector3.Lerp(a,b,i/5f),Vector3.Lerp(a,b,(i+1)/5f),Mathf.Lerp(0.04f,0.012f,i/4f),dark);
-            FishingArt.Pole("Cork grip",root,a,Vector3.Lerp(a,b,0.22f),0.068f,cork);
-            for(int i=0;i<7;i++)
-            {
-                var p=Vector3.Lerp(a,b,0.015f+i*0.027f);var ring=FishingArt.Shape("Grip wrap",PrimitiveType.Sphere,root,p,new Vector3(0.09f,0.025f,0.09f),dark);
-                ring.transform.localRotation=Quaternion.FromToRotation(Vector3.up,(b-a).normalized);
-            }
-            for(int i=1;i<=5;i++)
-            {
-                Vector3 p=Vector3.Lerp(a,b,i/5f)+Vector3.down*0.05f;var ring=FishingArt.Line("Line guide",root,metal,0.012f,false);ring.positionCount=13;
-                for(int j=0;j<13;j++){float ang=j*Mathf.PI*2/12;ring.SetPosition(j,p+new Vector3(Mathf.Cos(ang)*0.065f,Mathf.Sin(ang)*0.065f,0));}
-            }
-            var reel=new GameObject("Spinning reel").transform;reel.SetParent(root,false);reel.localPosition=Vector3.Lerp(a,b,0.16f)+new Vector3(0,-0.14f,0);
-            var spool=FishingArt.Shape("Reel spool",PrimitiveType.Cylinder,reel,Vector3.zero,new Vector3(0.2f,0.12f,0.2f),metal);spool.transform.localRotation=Quaternion.Euler(0,0,90);
-            foreach(float x in new[]{-0.13f,0.13f})
-            {
-                var disk=FishingArt.Shape("Spool flange",PrimitiveType.Cylinder,reel,new Vector3(x,0,0),new Vector3(0.26f,0.018f,0.26f),accent);disk.transform.localRotation=Quaternion.Euler(0,0,90);
-            }
-            crank=new GameObject("Reel crank").transform;crank.SetParent(reel,false);crank.localPosition=new Vector3(-0.18f,0,0);
-            FishingArt.Pole("Crank arm",crank,Vector3.zero,new Vector3(0,-0.16f,0),0.022f,metal);
-            FishingArt.Pole("Crank grip",crank,new Vector3(0,-0.16f,0),new Vector3(-0.12f,-0.16f,0),0.043f,dark);
-            tip=new GameObject("Rod tip").transform;tip.SetParent(root,false);tip.localPosition=b;
+            var root=new GameObject("Articulated spinning rod").transform;root.SetParent(boat,false);
+            root.localPosition=new Vector3(.75f,.95f,.9f);root.localRotation=Quaternion.LookRotation(new Vector3(1.9f,1.7f,1.35f));
+            Gear("RodBody",root,Vector3.zero);
+            crank=Gear("ReelCrank",root,new Vector3(-.053f,-.14f,-.015f)).transform;
+            tip=new GameObject("Rod tip").transform;tip.SetParent(root,false);tip.localPosition=new Vector3(0,-.015f,2.03f);
         }
+        private static GameObject Gear(string name,Transform parent,Vector3 position)
+        {
+            var asset=Resources.Load<GameObject>("FishingGear/"+name);
+            if(asset==null)throw new System.InvalidOperationException("Missing fishing gear: "+name);
+            var go=Object.Instantiate(asset,parent,false);go.name=name;go.transform.localPosition=position;
+            foreach(var renderer in go.GetComponentsInChildren<Renderer>())renderer.sharedMaterial=Resources.Load<Material>("FishingProps/HarborPalette");
+            return go;
+        }
+        public const float NetMouthOffset=1.2f;
         public static Transform Net(Transform boat,Material dark,Material rim,Material cord)
         {
             var root=new GameObject("Woven landing net").transform;root.SetParent(boat,false);root.localPosition=new Vector3(1.0f,0.95f,0.15f);
-            FishingArt.Pole("Net handle",root,Vector3.zero,new Vector3(1.3f,0,0),0.035f,dark);
+            FishingArt.Pole("Net handle",root,Vector3.zero,new Vector3(.65f,0,0),0.035f,dark);
             FishingArt.Pole("Net grip",root,Vector3.zero,new Vector3(0.3f,0,0),0.055f,rim);
             for(int layer=0;layer<4;layer++)
             {
                 float radius=0.6f*(1-layer/4.5f);var hoop=FishingArt.Line(layer==0?"Rigid hoop":"Woven basket ring",root,layer==0?rim:cord,layer==0?0.035f:0.012f,false);hoop.positionCount=33;
-                for(int j=0;j<33;j++){float a=j*Mathf.PI*2/32;hoop.SetPosition(j,new Vector3(1.85f+Mathf.Cos(a)*radius,-layer*0.14f,Mathf.Sin(a)*radius*0.8f));}
+                for(int j=0;j<33;j++){float a=j*Mathf.PI*2/32;hoop.SetPosition(j,new Vector3(NetMouthOffset+Mathf.Cos(a)*radius,-layer*0.14f,Mathf.Sin(a)*radius*0.8f));}
             }
             for(int i=0;i<16;i++)
             {
                 float a=i*Mathf.PI*2/16;var line=FishingArt.Line("Net basket strand",root,cord,0.01f,false);line.positionCount=5;
-                for(int j=0;j<5;j++){float r=0.6f*(1-j/4.5f);line.SetPosition(j,new Vector3(1.85f+Mathf.Cos(a)*r,-j*0.14f,Mathf.Sin(a)*r*0.8f));}
+                for(int j=0;j<5;j++){float r=0.6f*(1-j/4.5f);line.SetPosition(j,new Vector3(NetMouthOffset+Mathf.Cos(a)*r,-j*0.14f,Mathf.Sin(a)*r*0.8f));}
             }
             return root;
         }
@@ -90,8 +80,8 @@ namespace BoatAttack.Fishing
                 strip.transform.localRotation=Quaternion.Euler(slope*13f,0,0);
                 FishingArt.Shape("Awning valance",PrimitiveType.Cube,dock,new Vector3(-3.15f+i*0.57f,3.20f,slope*2.13f),new Vector3(0.56f,0.25f,0.06f),i%2==0?c.orange:c.cream);
             }
-            FishingArt.Shape("Counter base",PrimitiveType.Cube,dock,new Vector3(0,1.22f,0.55f),new Vector3(5.6f,1.05f,1.1f),c.teal,true);
-            FishingArt.Shape("Counter top",PrimitiveType.Cube,dock,new Vector3(0,1.80f,0.55f),new Vector3(5.8f,0.12f,1.25f),c.wood,true);
+            FishingArt.Shape("Counter base",PrimitiveType.Cube,dock,new Vector3(0,1.22f,0.55f),new Vector3(5.6f,1.05f,1.1f),c.teal);
+            FishingArt.Shape("Counter top",PrimitiveType.Cube,dock,new Vector3(0,1.80f,0.55f),new Vector3(5.8f,0.12f,1.25f),c.wood);
             for(int i=0;i<3;i++)
             {
                 var tray=Crate(dock,new Vector3(i*1.8f-1.8f,1.90f,0.55f),c.wood,c.teal,c.dark);tray.localScale=Vector3.one*0.9f;

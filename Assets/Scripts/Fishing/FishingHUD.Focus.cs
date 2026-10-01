@@ -13,9 +13,9 @@ namespace BoatAttack.Fishing
             var r = Layout.Heading;
             Glass(r);
             WeatherIcon(new Rect(r.x + 12, r.y + 15, 32, 32), c.Weather.Climate.Current);
-            string title = c.IsAshore ? "岸上探索" : c.Anchored ? FishingSpecies.AreaName(c.Spot) : c.NavigationName + "  " + FishingPrototype.FlatDistance(c.ObserverPosition, c.NavigationPosition).ToString("0") + " m";
+            string title = c.Ashore ? c.Shore.CurrentSite==-2 ? "沙滩钓具店" : FishingExploration.SiteName(c.Shore.CurrentSite) : c.Anchored ? FishingGrounds.Name(c.Spot) : c.NavigationName + "  " + FishingPrototype.FlatDistance(c.ExplorerPosition, c.NavigationPosition).ToString("0") + " m";
             Label(r.x + 56, r.y + 9, 262, 27, title, 19, Color.white, true);
-            string motion = c.IsAshore ? "船只已停泊 · G 上下船" : c.Anchored ? "已停船 · " + FishingVoyage.BaitName(c.Bait) : (c.Speed * 3.6f).ToString("0.0") + " km/h · N 切换航点";
+            string motion = c.Ashore ? (c.Shore.Crouched?"蹲行 · 调查 ":"步行 · 调查 ")+FishingExploration.CompletedTasks(c.Career.ShoreTaskMask)+"/8" : c.Anchored ? "已停船 · " + FishingVoyage.BaitName(c.Bait) : (c.Speed * 3.6f).ToString("0.0") + " km/h · N 切换航点";
             Label(r.x + 56, r.y + 36, 262, 20, BayClimate.Name(c.Weather.Climate.Current) + " · " + motion, 13, Muted);
             if (c.Ecology.Candidate.HasValue && !CatchVisible && Button(Layout.Observe, "T 观察 · " + BayClimate.MarineName(c.Ecology.Candidate.Value), true, false, 14)) c.Ecology.Observe();
         }
@@ -47,28 +47,33 @@ namespace BoatAttack.Fishing
             Glass(r);
             string title, help;
             Color accent = Mint;
-            if (c.IsAshore)
+            if(c.HasPendingCatch)
             {
-                title = c.Shore.CanBoard ? "G 返回船上" : "返回登船点 · " + Vector3.Distance(c.Shore.Position, c.Shore.BoardingPoint).ToString("0") + " m";
-                help = "WASD 步行 · 右键环顾 · R 救援" + (c.AtHarbor ? " · E 交易 / Tab 交易台" : "");
-                if(c.Shop!=null && c.Shop.Inside)
-                {
-                    title=c.Shop.CanBrowse ? "E / Tab 购买钓具" : "潮汐钓具店 · 走近后方柜台";
-                    help="钓竿与鱼线 · 卷线器 · 鱼箱升级 · WASD 步行";
-                }
+                title="待处理鱼获 · "+FishingSpecies.Name(c.Career.PendingCatch.fish.kind)+" "+FishingText.Weight(c.Career.PendingCatch.fish.grams);
+                help=c.CatchRig.ReleaseConfirmation?"再次按 X 确认放生；普通鱼不增加金币":"E 拿起/放回 · F 入箱 · X 放生确认 · R 安全返港";accent=Gold;
+            }
+            else if(c.Ashore)
+            {
+                title=c.Expedition.ActionTitle ?? c.FieldWorld.ActionTitle ?? c.Shore.ActionTitle;
+                help=c.Expedition.Aligning?c.Expedition.AlignmentHint:"空格跳跃 · Ctrl 蹲下 · E 拾取 · T 观察 · I 背包 · R 救援";
+                if(c.Shop!=null && c.Shop.Inside && !c.Expedition.Aligning)
+                {title=c.Shop.CanBrowse?"E / Tab 购买钓具":"沙滩钓具店 · 走近后方柜台";help="装备升级 · I 背包 · 购买窗口内 1/2/3 选购";}
             }
             else if (!c.Anchored)
             {
                 if (c.AtHarbor)
                 {
                     Label(r.x + 18, r.y + 10, r.width - 175, 25, "潮汐渔港 · E 快速交付 / 出售", 18, Color.white, true);
-                    Label(r.x + 18, r.y + 42, r.width - 175, 22, "靠近码头停稳后 G 下船 · Tab 交易台", 14, Muted);
+                    Label(r.x + 18, r.y + 42, r.width - 175, 22, "G 下船（近橙旗）· Tab 升级 · E 提交调查", 14, Muted);
                     if (Button(Layout.HarborButton, c.HarborDeskOpen ? "Tab 收起" : "Tab 交易台", true, c.HarborDeskOpen, 15)) c.ToggleHarborDesk();
                     return;
                 }
                 bool near = c.SpotDistance <= 22f;
-                title = near ? (c.Speed > 3f ? "按住 Shift 减速，再按 E 停船" : "进入 " + FishingSpecies.AreaName(c.Spot) + " · E 停船") : "驶向彩色航标，靠近后按 E 停船";
-                help = "WAD 航行 · S / Shift 停稳 · 靠岸 G 下船 · M 地图";
+                title = near ? (c.Speed > 3f ? "按住 Shift 减速，再按 E 停船" : "进入 " + FishingGrounds.Name(c.Spot) + " · E 停船") : "驶向彩色航标，靠近后按 E 停船";
+                if(near && !FishingGrounds.Available(c.Spot,c.Career.Expedition))title="北岛信标渔场 · 修复旧港信标后开放";
+                if(c.Shore.BerthDistance<18 || c.NavigationTarget>c.fishingSpots.Length)
+                {title=c.Expedition.ActionTitle ?? c.Shore.ActionTitle;help="Shift 刹车至 5.4 km/h 以下 · S 倒航 · N 航点 · M 地图";}
+                else help = c.Shore.ActionTitle;
             }
             else
             {
@@ -77,7 +82,7 @@ namespace BoatAttack.Fishing
                     case CatchPhase.Waiting: title = "等待咬钩…"; help = "留意浮标与声音，出现咬钩提示再点击左键"; break;
                     case CatchPhase.Bite: title = (s.Species.Legendary ? "金帆旗鱼！" : "咬钩了！") + "点击左键提竿"; help = "剩余 " + s.Remaining.ToString("0.0") + " 秒"; accent = Gold; break;
                     case CatchPhase.Fighting: title = FightTitle(s); help = ""; accent = s.Beat == FishBeat.Leap || s.Tension > .78f ? Danger : Mint; break;
-                    case CatchPhase.Landing: title = "指针进入绿色区时按 E 抄鱼"; help = "剩余 " + s.Remaining.ToString("0.0") + " 秒"; break;
+                    case CatchPhase.Landing: title = "E 辅助抄网 · 套住鱼后轻抬"; help = "XR：左握键拿网；网口覆盖鱼体，保持片刻再轻抬"; break;
                     case CatchPhase.Caught: title = "捕获成功 · 点击左键再抛一竿"; help = "B 换饵 · Q 起航 · J 查看图鉴与纪录"; break;
                     case CatchPhase.Escaped: title = "鱼逃走了 · 点击左键重试"; help = "B 换饵 · Q 起航"; break;
                     default: title = "点击左键抛竿"; help = "B 换饵 · 咬钩时再点击提竿 · Q 起航"; break;
@@ -89,10 +94,7 @@ namespace BoatAttack.Fishing
             else if (c.Anchored && s.Phase == CatchPhase.Landing)
             {
                 Label(r.x + 20, r.y + 43, r.width - 40, 20, help, 14, Muted);
-                var bar = new Rect(r.x + 20, r.y + 81, r.width - 40, 9);
-                Rounded(bar, Track, 4);
-                Rounded(new Rect(bar.x + bar.width * (.5f - s.LandZone), bar.y, bar.width * s.LandZone * 2, 9), Mint, 4);
-                Rounded(new Rect(bar.x + bar.width * s.LandPointer - 3, bar.y - 6, 6, 21), Color.white, 3);
+                Label(r.x+20,r.y+77,r.width-40,20,"捕获后不会自动入箱：可拿起观察、入箱或放生。",13,Faint);
             }
             else
             {

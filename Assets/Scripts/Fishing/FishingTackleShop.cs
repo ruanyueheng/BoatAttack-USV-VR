@@ -13,17 +13,17 @@ namespace BoatAttack.Fishing
         {
             get
             {
-                if (Controller == null || !Controller.IsAshore) return false;
-                var p = transform.InverseTransformPoint(Controller.ObserverPosition);
+                if (Controller == null || !Controller.Ashore) return false;
+                var p = transform.InverseTransformPoint(Controller.ExplorerPosition);
                 return Mathf.Abs(p.x) < 5.7f && p.z > -4.9f && p.z < 4.8f && p.y > -.2f && p.y < .5f;
             }
         }
         public bool CanBrowse => Inside && purchasePoint != null &&
-            Vector3.Distance(Controller.ObserverPosition, purchasePoint.position) < 2.6f;
+            Vector3.Distance(Controller.ExplorerPosition, purchasePoint.position) < 2.6f;
         public bool Toggle()
         {
             if (IsOpen) { Close(); return true; }
-            if (!CanBrowse || Controller.Paused) return false;
+            if (!CanBrowse || Controller.Paused || Controller.InventoryOpen || Controller.HasPendingCatch || UnityEngine.XR.XRSettings.isDeviceActive) return false;
             IsOpen = true;
             Controller.Notice("欢迎来到潮汐钓具店 · 选择装备升级，金币和装备自动保存。", 5f);
             return true;

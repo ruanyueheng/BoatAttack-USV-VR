@@ -1,0 +1,73 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+namespace BoatAttack.Fishing
+{
+    public sealed partial class FishingPrototype
+    {
+        public FishingCatchRig CatchRig { get; private set; }
+        public FishingDockConsole DockConsole { get; private set; }
+        public FishingXRSeat XRSeat { get; private set; }
+        public bool HasPendingCatch=>Career!=null && Career.HasPendingCatch;
+        public Transform ActiveFish=>_fish.transform;
+        public Transform LandingNet=>_net;
+        public Transform FishBox=>_box.transform;
+        public Vector3 BoatPoint(Vector3 point)=>Player.transform.position+Quaternion.Euler(0,Player.transform.eulerAngles.y,0)*point;
+        public Vector3 LandingTarget=>LandingTargetForMode(UnityEngine.XR.XRSettings.isDeviceActive);
+        public Vector3 LandingTargetForMode(bool xr)=>BoatPoint(new Vector3(xr?-1.65f:1.8f,1.05f,.5f));
+        public Vector3 NetTray=>BoatPoint(new Vector3(.65f,1.15f,.7f));
+        public bool BeginNetCatch()
+        {
+            if(Paused || !Anchored || HasPendingCatch || !Session.LandFromNet())return false;
+            var fish=Session.Claim();var p=Player.engine.RB.position;
+            if(fish==null || !Career.BeginPending(fish,_castGround,p.x,p.z))
+            {Debug.LogError("[CATCH] Failed to stage a new unique fish");return false;}
+            Save();
+            bool special=FishingSpecies.Of(fish.kind).Legendary || fish.rare || !Career.Discovered(fish.kind,fish.rare) || fish.grams>Career.BestGrams(fish.kind);
+            Notice(special?"特别收获！可以拿起观察测量；普通鱼也可直接倾网入箱。":"鱼已入网：可直接倾网入箱，或拿起观察。",7);return true;
+        }
+        public bool ResolveCatch(bool store)
+        {
+            if(Paused || !HasPendingCatch)return false;
+            var p=Career.PendingCatch;bool legend=FishingSpecies.Of(p.fish.kind).Legendary;
+            if(legend && store){MeasureCatch();Notice("传说鱼已测量。请确认放生领取纪念，不作为普通鱼售卖。",6);return false;}
+            if(legend && !p.measured){Notice("先拿起传说鱼测量，再确认放生。",5);return false;}
+            bool hadEvidence=Career.Expedition.Has(FishingExpedition.TargetCaught);
+            bool discovery=!Career.Discovered(p.fish.kind,p.fish.rare);int best=Career.BestGrams(p.fish.kind);
+            if(!Career.ResolvePending(store,out var record,out int bounty))
+            {Notice("鱼箱已满。鱼仍安全保留，可整理鱼箱或选择放生。",5);return false;}
+            _caughtAt=store && !legend?Time.time:-100;_catchStart=_fish.transform.position;
+            LastCatch=new CatchCard{Fish=record.Copy(),ShownAt=Time.unscaledTime,Discovery=discovery,PersonalBest=best>0 && record.grams>best,Bounty=bounty};
+            if(legend && _trophy==null)BuildTrophy();
+            RefreshHold();Save();_feedback.PlayOneShot(legend?_legendTone:_successTone);
+            if(!hadEvidence && Career.Expedition.Has(FishingExpedition.TargetCaught))Notice("北岛捕获记录已收录！鱼货与主线凭证独立，返港可提交捕获记录。",9,false);
+            else Notice(FishingSpecies.Name(record.kind)+" "+FishingText.Weight(record.grams)+(legend?" 已测量放生，赏金 +"+bounty:store?" 已放入鱼箱。":" 已放生；保留图鉴与体型记录，不获得售鱼金币。"),7,true);
+            CatchRig.Recover();return true;
+        }
+        public bool MeasureCatch()
+        {
+            if(Paused || !HasPendingCatch)return false;
+            if(Career.MeasurePending()){Save();Notice("测量："+FishingSpecies.Name(Career.PendingCatch.fish.kind)+" · "+FishingText.Weight(Career.PendingCatch.fish.grams),4);}
+            return true;
+        }
+        public void MarkFishingOrder(){if(!Paused && AtHarbor && Career.MarkOrder()){Save();Notice("已标记当前捕鱼委托；按需求收集鱼货，回港交付。",5);}}
+        public void RestorePendingFishVisual()
+        {
+            var pending=Career.PendingCatch;if(pending==null)return;
+            _fish.SetActive(false);Destroy(_fish);_fish=MakeFish(transform,pending.fish.kind,pending.fish.rare);
+            float size=Mathf.Clamp(Mathf.Pow(pending.fish.grams/1000f,.33f),.75f,1.8f);
+            _fish.transform.localScale=Vector3.one*(pending.fish.kind==FishKind.Sailfish?.65f:size);
+            var body=_fish.AddComponent<Rigidbody>();body.isKinematic=true;body.useGravity=false;
+            var collider=_fish.AddComponent<SphereCollider>();collider.radius=.18f;collider.isTrigger=true;
+        }
+        private void ReadPendingDesktop(Keyboard keyboard)
+        {
+            if(keyboard==null || Paused || _xrActive)return;
+            if(keyboard.eKey.wasPressedThisFrame)CatchRig.ToggleInspect();
+            if(keyboard.fKey.wasPressedThisFrame)ResolveCatch(true);
+            if(keyboard.xKey.wasPressedThisFrame)CatchRig.RequestRelease();
+            if(keyboard.cKey.wasPressedThisFrame)ToggleView();
+            if(keyboard.rKey.wasPressedThisFrame)ReturnToHarbor();
+            if(keyboard.tabKey.wasPressedThisFrame)ToggleHarborDesk();
+        }
+    }
+}

@@ -6,7 +6,7 @@ internal static class ReviewTests
 {
     internal static void Run(Action<bool, string> check)
     {
-        FishingCareer.TryRestore(new FishingSaveData { ordersCompleted = 3 }, out var career);
+        FishingCareer.TryRestore(new FishingSaveData { backpack = new FishingBackpack().Snapshot(),  ordersCompleted = 3 }, out var career);
         var firstOrder = career.CurrentOrder;
         var firstView = career.Inventory;
         for (int i = 0; i < 100; i++) ReadHud(career);

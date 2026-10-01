@@ -156,3 +156,24 @@ See [FISHING_DESKTOP_ACCEPTANCE.md](FISHING_DESKTOP_ACCEPTANCE.md) for opt-in is
 
 
 Pre-PR validation (2026-09-29): **382 fishing assertions** (including 59 acceptance assertions) and **62 input/render-policy assertions** passed. Unity FishingSmoke, the v0.4.3 Windows Release build and the new standalone player's 12-scenario acceptance smoke passed serially. Evidence and explicit untested areas are recorded in the acceptance handoff; complete HUD captures and real-device input remain pending.
+
+## v0.6.0 beacon expedition review (2026-09-29)
+
+See `FISHING_V06_REVIEW.md` for the final scope, current-run logs, screenshots and manual release gate.
+
+- Pure fishing rules: **814 passed**; input/render-policy rules: **62 passed**.
+- Unity 2022.3.62f1 `FishingExpeditionCapture`: isolated task stages, physical shore walks, prompt/action arbitration, dial cancellation/confirmation, the short north-island engine-driven approach, new stored-catch evidence, separate submission and JSON migration/backup recovery passed.
+- `FishingShore`, `FishingSmoke`, `Structure`, `Regression` (**14 passed, 0 failed**) and original race `PlayMode` passed, sequentially.
+- `FishingBuild`: a non-Development Windows player was produced in `Builds/FishingPrototype-v0.6.0/`; `Run-FishingAcceptance.ps1 -Mode Smoke -Session v060-review` passed on that player.
+- Save schema v5 now uses `boatattack-fishing-v5.json`; legacy profiles are read only as a migration source and never modified. Automated/manual acceptance modes still use isolated temporary profiles.
+- Curated model screenshots are camera renders, not full-HUD or physical-input evidence. Full harbor→A→D→C→north fishing ground→harbor keyboard/mouse play, first-run timing, sustained performance and PICO device tests remain unverified. Keep the PR draft until the desktop manual gate is recorded; do not equate green automated checks with those acceptance items.
+
+
+## v0.8.0 field exploration
+
+See [FISHING_V08_FIELD.md](FISHING_V08_FIELD.md) for controls, v6 migration and manual gates. `Run-UnityValidation.ps1 -Suite FishingField` covers real CharacterController behavior driven by virtual Input System keys, inventory/world claims, animal sight checks and actual reverse Rigidbody propulsion. Pure field rules run in the existing cross-platform FishingTests CI. A green suite is not physical mouse/keyboard or PICO certification.
+
+
+## v0.9.0 catch transactions and XR candidate
+
+See [FISHING_V09_CATCH_LOOP.md](FISHING_V09_CATCH_LOOP.md). `FishingCatch` / `FishingCatchCapture` validate geometry-driven capture, optional inspection, quick net-to-box transfer, durable ownership, explicit settlement and real world-space collider/ray commands with simulated poses. `FishingXRSetup` configures Android-only OpenXR; `Run-FishingAndroidBuild.ps1` uses a verified temporary ASCII drive alias when needed and builds an ARM64 candidate. No attached PICO device was available: these are not physical-input, stereo, comfort or performance certification.

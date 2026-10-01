@@ -24,7 +24,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.4.3";
+        public const string Version = "0.9.0";
         public Boat boatPrefab;
         public Camera viewCamera;
         public Vector3 spawnPosition;
@@ -40,11 +40,14 @@ namespace BoatAttack.Fishing
         public bool Paused { get; private set; }
         public bool Automated { get; private set; }
         public FishingViewRig View { get; private set; }
-        public FishingShoreWalker Shore { get; private set; }
+        public FishingShore Shore { get; private set; }
+        public FishingExpeditionScene Expedition { get; private set; }
+        public bool Ashore => Shore != null && Shore.Ashore;
+        public Vector3 ExplorerPosition => Ashore ? Shore.Position : Player.transform.position;
         public FishingTackleShop Shop { get; private set; }
         public bool ShopOpen => Shop != null && Shop.IsOpen;
-        public bool IsAshore => Shore != null && Shore.IsAshore;
-        public Vector3 ObserverPosition => IsAshore ? Shore.Position : Player.transform.position;
+        public int ShopNavigationTarget => 1 + fishingSpots.Length + FishingExploration.SiteCount;
+        public int NavigationCount => ShopNavigationTarget + (Shop != null ? 1 : 0);
         public FishingWeather Weather { get; private set; }
         public FishingEcology Ecology { get; private set; }
         public Shader PaletteShader { get; private set; }
@@ -52,6 +55,7 @@ namespace BoatAttack.Fishing
         public bool ShowDetails { get; private set; }
         public bool ChartExpanded { get; private set; } = true;
         public int ChartRangeMeters { get; private set; } = 160;
+        private int _boatChartRange = 160;
         public bool HarborDeskOpen { get; private set; }
         public BaitKind Bait { get; private set; }
         public bool JournalOpen { get; private set; }
@@ -59,9 +63,8 @@ namespace BoatAttack.Fishing
         public bool WorldInstruments { get; private set; }
         public bool QuietMode { get; private set; }
         public int NavigationTarget { get; private set; }
-        public int NavigationCount => fishingSpots.Length + 1 + (Shop != null ? 1 : 0);
-        public Vector3 NavigationPosition => NavigationTarget == 0 ? harbor : NavigationTarget == fishingSpots.Length + 1 && Shop != null ? Shop.mooringPoint.position : fishingSpots[NavigationTarget - 1];
-        public string NavigationName => NavigationTarget == 0 ? "潮汐渔港" : NavigationTarget == fishingSpots.Length + 1 && Shop != null ? "沙滩钓具店" : FishingSpecies.AreaName(NavigationTarget - 1);
+        public Vector3 NavigationPosition => Shop != null && NavigationTarget == ShopNavigationTarget ? Shop.mooringPoint.position : NavigationTarget == 0 ? harbor : NavigationTarget <= fishingSpots.Length ? fishingSpots[NavigationTarget - 1] : Shore.Sites[NavigationTarget - fishingSpots.Length - 1].Berth;
+        public string NavigationName => Shop != null && NavigationTarget == ShopNavigationTarget ? "沙滩钓具店" : NavigationTarget == 0 ? "潮汐渔港" : NavigationTarget <= fishingSpots.Length ? FishingGrounds.Name(NavigationTarget - 1) : FishingExploration.SiteName(NavigationTarget - fishingSpots.Length - 1);
         public bool CanChangeBait => Session.Phase == CatchPhase.Idle || Session.Phase == CatchPhase.Caught || Session.Phase == CatchPhase.Escaped;
         public CatchCard LastCatch { get; private set; }
         public bool LegendTrophy => Career != null && Career.LegendCatches > 0;
@@ -76,7 +79,7 @@ namespace BoatAttack.Fishing
         public string SaveWarning { get; private set; } = string.Empty;
         public float Speed => Player == null ? 0f : Vector3.ProjectOnPlane(Player.engine.RB.velocity,Vector3.up).magnitude;
         public float HarborDistance => Player == null ? 999f : FlatDistance(Player.engine.RB.position,harbor);
-        public bool AtHarbor => Player != null && FlatDistance(ObserverPosition,harbor) < 22f && Speed < 3f && !Anchored;
+        public bool AtHarbor => !Ashore && HarborDistance < 22f && Speed < 3f && !Anchored;
         public float SpotDistance { get; private set; }
         private USVInputRouter _input;
         private FishingHUD _hud;
@@ -86,13 +89,15 @@ namespace BoatAttack.Fishing
         private readonly List<GameObject> _storedFish = new List<GameObject>();
         private readonly List<Transform> _buoys = new List<Transform>();
         private GameObject _fish, _bobber, _trophy;
+        public FishingHands Hands { get; private set; }
         private Transform _rodTip, _net, _box, _reelCrank;
         private LineRenderer _line;
         private float _netMotion, _caughtAt, _messageUntil;
         private CatchPhase _previousPhase;
         private AudioSource _feedback;
         private AudioClip _biteTone, _successTone, _legendTone;
-        private bool _recorded, _initialized;
+        private bool _initialized;
+        private int _castGround = -1;
         private int _previousTargetFrameRate = -1;
         private float _resumeTimeScale = 1f;
         private bool _reeling;
@@ -108,11 +113,17 @@ namespace BoatAttack.Fishing
             _previousTargetFrameRate=Application.targetFrameRate;
             _xrActive=UnityEngine.XR.XRSettings.isDeviceActive;Application.targetFrameRate=_xrActive?-1:60;
             ReadAcceptanceOptions();
-            Automated = Application.isBatchMode || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
+            Automated = Application.isBatchMode || HasArgument("-fishing-field-capture") || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
             SavePath = AcceptanceOptions != null ? AcceptanceOptions.ProfilePath(Application.temporaryCachePath, false)
                 : Path.Combine(Automated ? Application.temporaryCachePath : Application.persistentDataPath,
-                Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v1.json");
-            Career = FishingSaveStore.Load(SavePath, out var warning);
+                Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v7.json");
+            // v7 owns a separate file; earlier files are read-only migration sources.
+            string warning;
+            string legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v6.json");
+            if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v5.json");
+            if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v1.json");
+            Career = HasIsolatedProfile ? FishingSaveStore.Load(SavePath, out warning)
+                : FishingSaveStore.LoadWithLegacyFallback(SavePath, legacy, out warning);
             ComfortMode=HasIsolatedProfile || PlayerPrefs.GetInt("Fishing.V3.Comfort",1)==1;
             QuietMode=!HasIsolatedProfile && PlayerPrefs.GetInt("Fishing.V3.Quiet",0)==1;
             NavigationTarget=1;
@@ -135,12 +146,23 @@ namespace BoatAttack.Fishing
                 Quaternion.LookRotation(spawnRotation*Vector3.forward*16f-Vector3.up*5f));
             PaletteShader=Resources.Load<Shader>("FishingPalette");
             if(PaletteShader==null)throw new InvalidOperationException("FishingPalette shader missing.");
+            // Preserve the serialized v0.5 scene and append only the new ground.
+            if(fishingSpots.Length == FishingSpecies.AreaCount)
+            {
+                Array.Resize(ref fishingSpots, FishingGrounds.Count);
+                fishingSpots[FishingGrounds.NorthIsland] = new Vector3(FishingGrounds.NorthX,0,FishingGrounds.NorthZ);
+            }
             BuildWorld(); BuildEquipment();
             Weather=gameObject.AddComponent<FishingWeather>();Weather.Controller=this;
             Ecology=gameObject.AddComponent<FishingEcology>();Ecology.Controller=this;
             View=gameObject.AddComponent<FishingViewRig>();View.Controller=this;
-            Shore=gameObject.AddComponent<FishingShoreWalker>();Shore.Controller=this;
+            Shore=gameObject.AddComponent<FishingShore>();Shore.Build(this);
             Shop=FindObjectOfType<FishingTackleShop>();if(Shop!=null)Shop.Controller=this;
+            Expedition=gameObject.AddComponent<FishingExpeditionScene>();Expedition.Build(this);
+            FieldWorld=gameObject.AddComponent<FishingFieldWorld>();FieldWorld.Build(this);
+            XRSeat=gameObject.AddComponent<FishingXRSeat>();XRSeat.Build(this);
+            CatchRig=gameObject.AddComponent<FishingCatchRig>();CatchRig.Build(this);
+            DockConsole=gameObject.AddComponent<FishingDockConsole>();DockConsole.Build(this);
             ConfigurePresentation();
             _feedback=gameObject.AddComponent<AudioSource>();_feedback.spatialBlend=0f;_feedback.volume=0.45f;
             _biteTone=Tone(780f,0.13f);_successTone=Tone(1150f,0.2f);
@@ -149,7 +171,7 @@ namespace BoatAttack.Fishing
             gameObject.AddComponent<FishingWorldInstruments>().Controller=this;
             _feedback.mute=QuietMode;
             if(LegendTrophy)BuildTrophy();
-            Notice(string.IsNullOrEmpty(warning)?"N 选择航点，驶近浮标后减速按 E 停船。M 收起地图，H 展开详情，J 查看图鉴。":warning,10f);
+            Notice(string.IsNullOrEmpty(warning)?"重燃旧港信标：港口 Tab 交易台接受委托；N 选海岸，低速 G 下船，岸上 E 互动。J 查看线索。":warning,10f);
             _initialized=true;
             if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }
             else if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
@@ -162,24 +184,21 @@ namespace BoatAttack.Fishing
             bool xr=UnityEngine.XR.XRSettings.isDeviceActive;
             if(xr!=_xrActive)
             {
+                if(xr && InventoryOpen)ToggleInventory();if(xr && JournalOpen)ToggleJournal();
                 _xrActive=xr;Application.targetFrameRate=xr?-1:60;
                 viewCamera.GetUniversalAdditionalCameraData().renderPostProcessing=!xr;
                 ResetToolInput();
             }
             var k=Keyboard.current;var m=Mouse.current;var g=Gamepad.current;
             bool focused=Automated || Application.isFocused;
-            if(!Automated && _input.Current.pause) { if(ShopOpen)ToggleShop();else if(JournalOpen)ToggleJournal();else TogglePause(); }
-            if(!Automated && focused && k!=null && k.jKey.wasPressedThisFrame && (!Paused || JournalOpen))ToggleJournal();
-            bool overTools=!_xrActive && m!=null && _hud.BlocksPointer(m.position.ReadValue(),Screen.width,Screen.height);
-            bool leftHeld=m!=null && m.leftButton.isPressed;
-            bool rightHeld=m!=null && m.rightButton.isPressed;
-            bool pointerReady=_pointerGate.Update(focused,Paused,leftHeld,rightHeld);
-            bool gamepadReady=_gamepadGate.Update(focused,Paused,g!=null && g.rightShoulder.isPressed,g!=null && g.rightTrigger.ReadValue()>0.5f);
-            if(!Paused && focused && !Automated)
+            // A shop modal consumes the full input frame, including its closing frame.
+            // Hotbar digits must never also buy equipment or move the character.
+            if(ShopOpen)
             {
-                if(ShopOpen)
+                if(!focused || _xrActive || Paused)Shop.Close();
+                else if(!Automated)
                 {
-                    if(_input.Current.interact || (k!=null && k.tabKey.wasPressedThisFrame))ToggleShop();
+                    if(_input.Current.pause || _input.Current.interact || (k!=null && k.tabKey.wasPressedThisFrame))ToggleShop();
                     else if(k!=null)
                     {
                         if(k.digit1Key.wasPressedThisFrame)Shop.Buy(UpgradeTrack.Line);
@@ -187,10 +206,53 @@ namespace BoatAttack.Fishing
                         if(k.digit3Key.wasPressedThisFrame)Shop.Buy(UpgradeTrack.Hold);
                     }
                 }
-                else
+                Shore.Tick(false);Hands.ResetInteraction();AnimateEquipment();return;
+            }
+            if(!Paused && !InventoryOpen && !Automated && focused && Shop!=null && Shop.CanBrowse &&
+                (_input.Current.interact || (k!=null && k.tabKey.wasPressedThisFrame)))
+            {ToggleShop();Shore.Tick(false);AnimateEquipment();return;}
+            bool alignmentFrame=Expedition.Aligning;
+            // Opening OR closing a modal consumes the entire frame; no held input leaks into tools or movement.
+            if(!Automated && focused && k!=null && k.iKey.wasPressedThisFrame)
+            {ToggleInventory();Shore.ResetMoveInput();return;}
+            if(InventoryOpen)
+            {
+                if(!Automated && _input.Current.pause)ToggleInventory();
+                else if(!Automated && focused)ReadFieldShortcuts(k,null);
+                Shore.Tick(false);return;
+            }
+            if(!Automated && _input.Current.pause) { if(alignmentFrame)Expedition.Cancel();else if(JournalOpen)ToggleJournal();else TogglePause(); }
+            if(!Automated && focused && k!=null && k.jKey.wasPressedThisFrame && (!Paused || JournalOpen))ToggleJournal();
+            bool dockInput=DockConsole.Tick(focused && !Automated);
+            if(dockInput || DockConsole.BlocksGameplay)Hands.ResetInteraction();
+            if(dockInput){Shore.Tick(false);AnimateEquipment();return;}
+            if(HasPendingCatch){if(!Automated && focused)ReadPendingDesktop(k);Shore.Tick(false);AnimateEquipment();return;}
+            if(!DockConsole.BlocksGameplay)Hands.ReadXRTools();
+            // A modal frame never falls through into boarding, surveying or boat/tool input,
+            // including the frame in which E/Esc closes the dial.
+            if(alignmentFrame)
+            {
+                if(!focused || Paused)Expedition.Cancel();
+                else if(!Automated && Expedition.Aligning)
                 {
+                    if(_input.Current.reset)ReturnToHarbor();
+                    else
+                    {
+                        float axis=k==null?0:((k.dKey.isPressed || k.rightArrowKey.isPressed)?1:0)-((k.aKey.isPressed || k.leftArrowKey.isPressed)?1:0);
+                        Expedition.Dial.Rotate(axis*55f*Mathf.Min(Time.deltaTime,.05f));
+                        if(_input.Current.interact)Expedition.Confirm();
+                    }
+                }
+                Shore.Tick(false);AnimateEquipment();return;
+            }
+            bool overTools=!_xrActive && m!=null && _hud.BlocksPointer(m.position.ReadValue(),Screen.width,Screen.height);
+            bool leftHeld=m!=null && m.leftButton.isPressed;
+            bool rightHeld=m!=null && m.rightButton.isPressed;
+            bool pointerReady=_pointerGate.Update(focused,Paused,leftHeld,rightHeld);
+            bool gamepadReady=_gamepadGate.Update(focused,Paused,g!=null && g.rightShoulder.isPressed,g!=null && g.rightTrigger.ReadValue()>0.5f);
+            if(!Paused && focused && !Automated)
+            {
                 if(k!=null && k.cKey.wasPressedThisFrame)ToggleView();
-                if(k!=null && k.gKey.wasPressedThisFrame)Shore.Toggle();
                 if(k!=null && k.vKey.wasPressedThisFrame)View.ResetLook();
                 if(k!=null && k.hKey.wasPressedThisFrame)ToggleDetails();
                 if(k!=null && k.mKey.wasPressedThisFrame)ToggleChart();
@@ -198,26 +260,26 @@ namespace BoatAttack.Fishing
                 if(k!=null && k.bKey.wasPressedThisFrame)CycleBait();
                 if(k!=null && k.nKey.wasPressedThisFrame)CycleNavigation();
                 if(k!=null && k.oKey.wasPressedThisFrame)DeliverOrder();
-                if(k!=null && k.tKey.wasPressedThisFrame)Ecology.Observe();
+                if(k!=null && k.tKey.wasPressedThisFrame){if(Ashore)FieldWorld.Observe();else Ecology.Observe();}
+                ReadFieldShortcuts(k,m);
                 if(_input.Current.reset)ReturnToHarbor();
                 if(k!=null && k.qKey.wasPressedThisFrame)LeaveStation();
-                if(k!=null && (k.uKey.wasPressedThisFrame || k.digit1Key.wasPressedThisFrame))BuyUpgrade(UpgradeTrack.Line);
-                if(k!=null && k.digit2Key.wasPressedThisFrame)BuyUpgrade(UpgradeTrack.Reel);
-                if(k!=null && k.digit3Key.wasPressedThisFrame)BuyUpgrade(UpgradeTrack.Hold);
+                if(k!=null && k.gKey.wasPressedThisFrame){if(Ashore)Shore.TryBoard();else Shore.TryDisembark();}
+                if(k!=null && k.uKey.wasPressedThisFrame)BuyUpgrade(UpgradeTrack.Line);
                 if(k!=null && k.xKey.wasPressedThisFrame)SellAll();
-                if(_input.Current.interact)Interact();
+                if(_input.Current.interact && !DockConsole.BlocksGameplay && !(_xrActive && Hands.HoldingRod))Interact();
                 bool press=(pointerReady && !overTools && !rightHeld && m!=null && m.leftButton.wasPressedThisFrame) || (gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame);
                 if(press && Anchored){if(Session.Phase==CatchPhase.Bite)Hook();else Cast();}
-                }
             }
-            Shore.Tick();
+            Shore.Tick(focused && !Automated && !Expedition.Aligning);
             UpdateNearestSpot();
             if(!AtHarbor)HarborDeskOpen=false;
             _reeling=false;
             if(Anchored && !Paused && focused)
             {
-                bool reel=Automated?AutomationReel:(pointerReady && !overTools && !rightHeld && leftHeld)||(gamepadReady && g!=null && g.rightTrigger.ReadValue()>0.5f);
+                bool reel=Automated?AutomationReel:_xrActive?Hands.XRReeling:(pointerReady && !overTools && !rightHeld && leftHeld)||(gamepadReady && g!=null && g.rightTrigger.ReadValue()>0.5f);
                 _reeling=reel && Session.Phase==CatchPhase.Fighting;
+                if(Session.Phase==CatchPhase.Landing)Session.HoldForNet();
                 if(Acceptance == null || !Acceptance.FreezeScenario) Session.Tick(Time.deltaTime,reel);
                 if(Session.Phase!=_previousPhase)
                 {
@@ -230,15 +292,16 @@ namespace BoatAttack.Fishing
                     if(Session.Phase==CatchPhase.Escaped)Notice(FishingText.Failure(Session.Failure),8f);
                     _previousPhase=Session.Phase;
                 }
-                StoreLandedCatch();
+                // Caught fish remain pending until an explicit store/release.
             }
             AnimateEquipment();
         }
 
         private void FixedUpdate()
         {
-            if(!_initialized || Paused || IsAshore)return;
+            if(!_initialized || Paused)return;
             var rb=Player.engine.RB;
+            if(Ashore){Shore.HoldBoat();return;}
             if(Anchored)
             {
                 var p=rb.position;
@@ -248,10 +311,11 @@ namespace BoatAttack.Fishing
                 rb.MoveRotation(Quaternion.Slerp(rb.rotation,yaw,Time.fixedDeltaTime*2f));
                 return;
             }
+            if(HasPendingCatch || DockConsole.BlocksGameplay)return;
             var state=_input.Current;
             float comfort=ComfortMode?0.65f:1f;
-            Player.engine.Accelerate(Mathf.Max(0f,state.throttle)*comfort);Player.engine.Turn(state.steering*comfort);
-            float braking=Mathf.Max(state.brake,Mathf.Max(0f,-state.throttle));
+            Player.engine.Accelerate(state.throttle*comfort);Player.engine.Turn(state.steering*comfort);
+            float braking=state.brake; // S is reverse thrust; only Shift/explicit brake decelerates velocity.
             if(braking>0f)
             {
                 var v=rb.velocity;var h=Vector3.MoveTowards(new Vector3(v.x,0,v.z),Vector3.zero,7f*braking*Time.fixedDeltaTime);
@@ -261,14 +325,21 @@ namespace BoatAttack.Fishing
 
         private void LateUpdate()
         {
-            if(_initialized)View.ApplyView();
+            if(_initialized)
+            {
+                XRSeat.Apply();Shore.SyncRider();View.ApplyView();Hands.Apply();FieldWorld.ApplyHeldTool();CatchRig.Apply(Time.deltaTime);DockConsole.Present();
+                if(_line.enabled)
+                {
+                    var target=_line.GetPosition(24);
+                    for(int i=0;i<25;i++){float u=i/24f;_line.SetPosition(i,Vector3.Lerp(_rodTip.position,target,u)-Vector3.up*Mathf.Sin(u*Mathf.PI)*(Session.Phase==CatchPhase.Fighting?.15f:.5f));}
+                }
+            }
         }
         public void ToggleView()
         {
             if(Paused)return;
-            if(IsAshore){Notice("岸上使用第一人称 · 右键环顾，G 返回船上。");return;}
-            View.Toggle();
-            Notice(FirstPerson?"第一人称 · 右键环顾 / V 视线回正 / C 切换":"第三人称 · 右键环绕 / V 回正 / C 切换",4f);
+            BinocularsRaised=false;View.Toggle();
+            Notice(Ashore?"岸上视角 · 移动鼠标转头 / Alt 操作界面 / V 回正 / C 切换":FirstPerson?"第一人称 · 右键环顾 / V 视线回正 / C 切换":"第三人称 · 右键环绕 / V 回正 / C 切换",4f);
         }
         public void TogglePause()
         {
@@ -278,8 +349,13 @@ namespace BoatAttack.Fishing
         }
         private void ResetToolInput()
         {
+            if(Expedition!=null)Expedition.Cancel();
             _pointerGate.Reset();_gamepadGate.Reset();
             if(View!=null)View.ResetInput();
+            if(Shore!=null)Shore.ResetMoveInput();
+            if(CatchRig!=null)CatchRig.Recover();
+            if(Hands!=null)Hands.ResetInteraction();
+            BinocularsRaised=false;
         }
         private void OnApplicationFocus(bool focused){if(!focused)ResetToolInput();}
         private void ConfigurePresentation()
@@ -299,10 +375,18 @@ namespace BoatAttack.Fishing
         {
             if(Paused)return;
             if(Shop!=null && (ShopOpen || Shop.CanBrowse)){ToggleShop();return;}
+            if(Ashore)
+            {
+                if(Hands!=null && !Automated)Hands.ReachGesture(Shore.Position+viewCamera.transform.forward*.7f+Vector3.up*1.1f);
+                bool hadComponent=Career.Expedition.Has(FishingExpedition.ComponentFound);
+                if(!Expedition.Interact() && !FieldWorld.TryPickup())Shore.Survey();
+                if(!hadComponent && Career.Expedition.Has(FishingExpedition.ComponentFound))Hands.PresentPickup();
+                return;
+            }
             UpdateNearestSpot();
             if(Anchored){if(Session.Phase==CatchPhase.Landing)Scoop();return;}
-            if(AtHarbor){if(Career.OrderReady)DeliverOrder();else Sell();return;}
-            if(IsAshore){Notice("当前在岸上，返回船边按 G 上船后再捕鱼。");return;}
+            if(AtHarbor){int survey=ClaimShoreRewards();if(Career.OrderReady)DeliverOrder();else if(survey==0 || Career.SaleValue>0)Sell();return;}
+            if(!FishingGrounds.Available(Spot,Career.Expedition)){Notice("北岛渔场尚未开放：先完成旧港信标修复。");return;}
             if(SpotDistance>22f){Notice("先驶入任一黄色渔区，再按 E 停船。");return;}
             if(Speed>3f){Notice("速度过快，按住 Shift 刹车再停船。");return;}
             Anchored=true;ChartExpanded=false;ShowDetails=false;HarborDeskOpen=false;_anchor=Player.engine.RB.position;_anchorRotation=Player.transform.rotation;
@@ -312,10 +396,10 @@ namespace BoatAttack.Fishing
         }
         public bool Cast()
         {
-            if(!Anchored || Paused)return false;
+            if(HasPendingCatch || Ashore || !Anchored || Paused || !FishingGrounds.Available(Spot,Career.Expedition))return false;
             if(Career.Count>=Career.Capacity){Notice("鱼箱已满！按 Q 起航，返港按 E 出售。");return false;}
             var weather=Weather.Climate.Current;
-            var kind=FishingSpecies.AreaSpecies(Spot);
+            var kind=FishingGrounds.Species(Spot);
             bool legend=LegendRules.CanStrike(Spot,weather,Bait,Career.LineLevel) && (ForceLegend || UnityEngine.Random.value<LegendRules.StrikeChance);
             bool rare=!legend && UnityEngine.Random.value<Mathf.Clamp01(FishingVoyage.RareChance(Bait)+BayClimate.RareBonus(weather,kind));
             if(legend)kind=FishKind.Sailfish;
@@ -324,7 +408,8 @@ namespace BoatAttack.Fishing
             bool cast=Session.Cast(kind,rare,Career.LineLevel,Guid.NewGuid().ToString("N"),Bait,weather,size,Career.ReelLevel);
             if(cast)
             {
-                _recorded=false;_previousPhase=CatchPhase.Waiting;
+                if(Hands!=null)Hands.CastGesture();
+                _castGround=Spot;_previousPhase=CatchPhase.Waiting;
                 _fish.SetActive(false);Destroy(_fish);
                 _fish=MakeFish(transform,kind,rare);
                 if(!legend && LegendRules.Conditions(Spot,weather,Bait) && Career.LineLevel==0)
@@ -333,43 +418,10 @@ namespace BoatAttack.Fishing
             return cast;
         }
         public bool Hook()=>Anchored && !Paused && Session.Hook();
-        public bool Scoop()
-        {
-            if(!Anchored || Paused || Session.Phase!=CatchPhase.Landing)return false;
-            _netMotion=1f;
-            bool success=Session.Land();
-            // Commit immediately, before another input in this frame can cast/cancel.
-            if(success) StoreLandedCatch();
-            else Notice("抄网落空！等指针进入绿色区再按 E。",2f);
-            return success;
-        }
-        private void StoreLandedCatch()
-        {
-            if(Session.Phase!=CatchPhase.Caught || _recorded)return;
-            var record=Session.Claim();
-            if(record==null)return;
-            bool legend=FishingSpecies.Of(record.kind).Legendary;
-            bool discovery=!Career.Discovered(record.kind,record.rare);
-            int previousBest=Career.BestGrams(record.kind);
-            int bounty=0;
-            if(legend){bounty=Career.RecordLegend(record);if(bounty<=0)return;}
-            else if(!Career.Store(record))return;
-            _recorded=true;_caughtAt=Time.time;_catchStart=_fish.transform.position;
-            bool best=previousBest>0 && record.grams>previousBest;
-            LastCatch=new CatchCard{Fish=record.Copy(),ShownAt=Time.unscaledTime,Discovery=discovery,PersonalBest=best,Bounty=bounty};
-            RefreshHold();Save();_feedback.PlayOneShot(legend?_legendTone:_successTone);
-            string name=FishingSpecies.Name(record.kind)+" "+FishingText.Weight(record.grams);
-            if(legend)
-            {
-                if(_trophy==null)BuildTrophy();
-                Notice("传说！"+name+" 已测量并放生，海洋站奖励 "+bounty+" 金币。灯塔顶升起了金帆风向标。",9f,catchNotice:true);
-            }
-            else Notice((discovery?"图鉴发现！":best?"新纪录！":record.rare?"稀有！":"捕获成功！")+name+" 已入箱，价值 "+record.value+" 金币。",6f,catchNotice:true);
-        }
+        public bool Scoop()=>CatchRig!=null && CatchRig.RequestScoop();
         public void LeaveStation()
         {
-            if(IsAshore){if(!Paused)Notice("船已停泊，走回下船位置按 G 上船。");return;}
-            if(Paused)return;Anchored=false;ChartExpanded=true;HarborDeskOpen=false;ShowDetails=false;Session.Cancel();AutomationReel=false;Notice("工具已收起，W 前进，A/D 转向，S/Shift 刹车；青色港口按 E 交易。");
+            if(Paused || Ashore)return;if(HasPendingCatch){Notice("先将待处理鱼获入箱或放生。",4);return;}Anchored=false;ChartExpanded=true;HarborDeskOpen=false;ShowDetails=false;Session.Cancel();AutomationReel=false;Notice("工具已收起，W 前进，A/D 转向，S 倒航 / Shift 刹车；青色港口按 E 交易。");
         }
         public int Sell()
         {
@@ -379,7 +431,7 @@ namespace BoatAttack.Fishing
             if(sold>0)
             {
                 Save();RefreshHold();_feedback.PlayOneShot(_successTone);
-                Notice("出售成功 +"+sold+" 金币"+(reserved>0?"，已为委托保留 "+reserved+" 条鱼（X 可全部出售）。":"！数字键 1/2/3 在交易台升级。"),7f);
+                Notice("出售成功 +"+sold+" 金币"+(reserved>0?"，已为委托保留 "+reserved+" 条鱼（X 可全部出售）。":"！在交易台按钮升级。"),7f);
             }
             else Notice(reserved>0?"鱼货都在为委托保留。凑齐后按 E 交付，或按 X 全部出售。":"鱼箱还是空的。前往黄色渔区捕捞，带回这里出售。");
             return sold;
@@ -412,6 +464,21 @@ namespace BoatAttack.Fishing
             if(Paused || !Career.Observe(kind))return false;
             Save();Notice("自然观察 + "+BayClimate.MarineName(kind)+" · 已收录日志，不捕捞野生伙伴。",6f);return true;
         }
+        public void RestoreBoatChart() { ChartRangeMeters=_boatChartRange; }
+        public void CloseBoatPanels() { _boatChartRange=ChartRangeMeters;ChartRangeMeters=20;ChartExpanded=true;HarborDeskOpen=false;ShowDetails=false;Session.Cancel();AutomationReel=false; }
+        public bool RecordShoreTask(int task)
+        {
+            if(Paused || !Ashore || !Career.CompleteShoreTask(task))return false;
+            Save();Notice(FishingExploration.TaskName(task)+" · 已记录！海岸调查 "+FishingExploration.CompletedTasks(Career.ShoreTaskMask)+"/8；回港 E 领取奖励。",6);
+            return true;
+        }
+        public int ClaimShoreRewards()
+        {
+            if(Paused || !AtHarbor)return 0;
+            int payout=Career.ClaimShoreRewards();
+            if(payout>0){Save();Notice("海岸调查已提交 +"+payout+" 金币！每区 25，全图额外 60。",7);}
+            return payout;
+        }
         public void CycleBait()
         {
             if(Paused)return;
@@ -426,22 +493,22 @@ namespace BoatAttack.Fishing
         }
         public void ToggleDetails() { if(Paused)return;ShowDetails=!ShowDetails;if(ShowDetails)HarborDeskOpen=false; }
         public void ToggleChart() { if(!Paused)ChartExpanded=!ChartExpanded; }
-        public void CycleChartRange() { if(!Paused)ChartRangeMeters=ChartRangeMeters==80?160:ChartRangeMeters==160?320:80; }
+        public void CycleChartRange() { if(!Paused)ChartRangeMeters=Ashore?(ChartRangeMeters==20?40:ChartRangeMeters==40?80:20):(ChartRangeMeters==80?160:ChartRangeMeters==160?320:80); }
         public void ToggleHarborDesk()
         {
             if(Shop!=null && (ShopOpen || Shop.CanBrowse)){ToggleShop();return;}
             if(Paused || !AtHarbor)return;
             HarborDeskOpen=!HarborDeskOpen;if(HarborDeskOpen)ShowDetails=false;
         }
-        public void ToggleShop()
-        {
-            if(Paused || Shop==null || !Shop.Toggle())return;
-            HarborDeskOpen=false;ShowDetails=false;ResetToolInput();
-        }
         public void ToggleJournal()
         {
             if(Paused && !JournalOpen)return;
             JournalOpen=!JournalOpen;TogglePause();
+        }
+        public void ToggleShop()
+        {
+            if(Paused || InventoryOpen || Shop==null || !Shop.Toggle())return;
+            HarborDeskOpen=false;ShowDetails=false;LowerFieldTools();ResetToolInput();Shore.ResetMoveInput();Hands.ResetInteraction();
         }
         public void ToggleComfort()
         {
@@ -465,7 +532,7 @@ namespace BoatAttack.Fishing
         }
         public void ReturnToHarbor()
         {
-            if(Paused)return;if(Shop!=null)Shop.Close();if(Shore!=null)Shore.Board();LeaveStation();Teleport(spawnPosition,spawnRotation);Notice("已救援回港；鱼箱和金币保留。",5f);
+            if(Paused)return;if(CatchRig!=null)CatchRig.Recover();Expedition.Cancel();if(Ashore)Shore.BoardImmediately();if(HasPendingCatch){Anchored=false;Session.Cancel();}else LeaveStation();Teleport(spawnPosition,spawnRotation);Notice("已救援回港；鱼箱和金币保留。",5f);
         }
         public void MoveToSpotForAutomation(int index)
         {
@@ -483,6 +550,7 @@ namespace BoatAttack.Fishing
             if(Anchored)return;SpotDistance=float.MaxValue;
             for(int i=0;i<fishingSpots.Length;i++){float d=FlatDistance(Player.engine.RB.position,fishingSpots[i]);if(d<SpotDistance){SpotDistance=d;Spot=i;}}
         }
+        public void CommitExpedition(string message) { Save();Notice(message,9f); }
         private void Save()
         {
             try{FishingSaveStore.Save(SavePath,Career);SaveWarning=string.Empty;}
@@ -515,6 +583,7 @@ namespace BoatAttack.Fishing
             _box=FishingDetailArt.Crate(boat,new Vector3(0,0.85f,-1.3f),wood,teal,dark);
             FishingDetailArt.Rod(boat,dark,wood,cream,orange,out _rodTip,out _reelCrank);
             _net=FishingDetailArt.Net(boat,dark,teal,cream);
+            Hands=gameObject.AddComponent<FishingHands>();Hands.Build(this,_rodTip,_reelCrank,_net);
             _fish=MakeFish(transform,FishKind.Coral,false);
             _bobber=FishingArt.Shape("Float",PrimitiveType.Sphere,transform,Vector3.zero,Vector3.one*0.18f,orange);
             _line=FishingArt.Line("Fishing line",transform,lineMaterial,0.018f);_line.positionCount=25;
@@ -555,7 +624,7 @@ namespace BoatAttack.Fishing
             float leap=phase==CatchPhase.Fighting?Session.LeapProgress:0f;
             // The legend clears the water in a readable arc; the HUD warns before the line would snap.
             if(leap>0f)target.y=0.2f+Mathf.Sin(leap*Mathf.PI)*2.4f;
-            if(phase==CatchPhase.Landing)target=t.position+yaw*new Vector3(3.3f,0.85f+Mathf.Abs(Mathf.Sin(Time.time*5f))*0.25f,1.5f);
+            if(phase==CatchPhase.Landing)target=LandingTarget;
             _bobber.transform.position=target;
             _fish.transform.position=phase==CatchPhase.Caught?Vector3.Lerp(_catchStart,_box.position+Vector3.up*0.5f,Mathf.Clamp01((Time.time-_caughtAt)/0.7f))+Vector3.up*Mathf.Sin(Mathf.Clamp01((Time.time-_caughtAt)/0.7f)*Mathf.PI)*0.8f:target;
             _fish.transform.rotation=leap>0f?yaw*Quaternion.Euler(-Mathf.Cos(leap*Mathf.PI)*50f,-90f,Mathf.Sin(leap*Mathf.PI*2f)*20f)

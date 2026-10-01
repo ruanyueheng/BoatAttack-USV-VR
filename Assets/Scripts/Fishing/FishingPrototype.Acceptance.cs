@@ -31,17 +31,21 @@ namespace BoatAttack.Fishing
                 throw new InvalidOperationException("Acceptance fixtures require an explicitly opted-in test profile.");
             // Validate before changing any live state. FreePlay is intentionally never synthesized.
             FishingCareer fixture = selected == FishingAcceptanceCase.FreePlay ? null : FishingAcceptanceCases.CreateCareer(selected);
+            if (InventoryOpen) ToggleInventory();
             if (JournalOpen) ToggleJournal();
             else if (Paused) TogglePause();
-            Shore.Board();
-            LeaveStation();
+            if(Ashore)Shore.BoardImmediately();
+            // Switching explicit isolated fixtures must not settle or discard the prior profile's pending fish.
+            Anchored=false;Session.Cancel();CatchRig.ResetFixture();HarborDeskOpen=false;ShowDetails=false;ChartExpanded=true;
             Teleport(spawnPosition, spawnRotation);
             UpdateNearestSpot();
             SavePath = AcceptanceOptions.ProfilePath(Application.temporaryCachePath, fixture != null);
             Career = fixture ?? FishingSaveStore.Load(SavePath, out _);
+            Shore.RefreshMarkers();
+            FieldWorld.RefreshPickups();
+            Expedition.RefreshFromCareer();
             SaveWarning = string.Empty;
             LastCatch = default;
-            _recorded = false;
             _previousPhase = CatchPhase.Idle;
             _netMotion = _netDeployment = 0f;
             Bait = selected == FishingAcceptanceCase.LegendLeap ? BaitKind.Pearl : BaitKind.Balanced;
@@ -74,12 +78,13 @@ namespace BoatAttack.Fishing
             }
             if (FishingAcceptanceCases.IsCatchCase(selected))
             {
+                _castGround=Spot; // The fixture was explicitly placed at this real ground.
                 FishingAcceptanceCases.PrepareSession(Session, selected, Career);
                 _fish.SetActive(false);
                 Destroy(_fish);
                 _fish = MakeFish(transform, Session.Kind, Session.Rare);
                 AnimateEquipment();
-                if (selected == FishingAcceptanceCase.Catch && !Scoop())
+                if (selected == FishingAcceptanceCase.Catch && !CatchRig.CaptureAndStoreForAutomation())
                     throw new InvalidOperationException("Acceptance catch did not pass the real scoop/store path.");
                 _previousPhase = Session.Phase;
             }

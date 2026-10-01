@@ -39,7 +39,7 @@ namespace BoatAttack.Fishing
             if (value == FishingAcceptanceCase.FreePlay)
                 throw new ArgumentException("Free play must load its own saved progress, never a fixture.");
             bool max = value == FishingAcceptanceCase.MaxUpgrades || value == FishingAcceptanceCase.LegendLeap;
-            var data = new FishingSaveData { coins = 200, ordersCompleted = 2, rodLevel = max ? 2 : 1,
+            var data = new FishingSaveData { backpack = new FishingBackpack().Snapshot(),  coins = 200, ordersCompleted = 2, rodLevel = max ? 2 : 1,
                 reelLevel = max ? 2 : 1, holdLevel = value == FishingAcceptanceCase.MaxUpgrades ? 2 : 0 };
             if (!FishingCareer.TryRestore(data, out var career)) throw new InvalidOperationException("Invalid acceptance seed.");
             int cargo = value == FishingAcceptanceCase.FullHold ? career.Capacity : IsCatchCase(value) ? 0 : 3;

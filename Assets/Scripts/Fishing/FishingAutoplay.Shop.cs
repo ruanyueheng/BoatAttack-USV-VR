@@ -17,13 +17,13 @@ namespace BoatAttack.Fishing
                 foreach(var marker in shop.customerSpaces)RequireShop(ClearNpcSpace(marker.position),"Customer space blocked.");
                 RequireShop(!shop.Toggle() && !shop.Buy(UpgradeTrack.Line),"Boat player can remotely shop.");
                 SetShoreBoatPose(shop.mooringPoint.position,shop.transform.rotation);
-                RequireShop(c.Shore.Toggle(),"Cannot disembark at shop landing deck.");
+                RequireShop(c.Shore.TryDisembark(),"Cannot disembark at shop landing deck.");
                 c.viewCamera.transform.rotation=shop.transform.rotation;
                 var landed=shop.transform.InverseTransformPoint(c.Shore.Position);
                 var centerline=shop.transform.TransformPoint(new Vector3(0,landed.y,landed.z));
                 for(int i=0;i<30 && FishingPrototype.FlatDistance(c.Shore.Position,centerline)>.12f;i++)ShopWalkToward(centerline);
                 // Walk the whole deck/ramp/door route through the actual CharacterController.
-                for(int i=0;i<160 && Vector3.Distance(c.Shore.Position,shop.purchasePoint.position)> .35f;i++)ShopWalkToward(shop.purchasePoint.position);
+                for(int i=0;i<400 && Vector3.Distance(c.Shore.Position,shop.purchasePoint.position)> .35f;i++)ShopWalkToward(shop.purchasePoint.position);
                 if(Vector3.Distance(c.Shore.Position,shop.purchasePoint.position)>=.5f)
                 {
                     foreach(var hit in Physics.OverlapSphere(c.Shore.Position+Vector3.up*.85f,1.4f,~(1<<4),QueryTriggerInteraction.Ignore))
@@ -32,10 +32,17 @@ namespace BoatAttack.Fishing
                 RequireShop(Vector3.Distance(c.Shore.Position,shop.purchasePoint.position)<.5f,"Ramp/door/counter route blocked at "+shop.transform.InverseTransformPoint(c.Shore.Position));
                 RequireShop(shop.Inside && shop.CanBrowse,"Counter does not recognize an inside customer.");
                 c.Interact();RequireShop(c.ShopOpen,"E interaction did not open shop.");
-                var feet=c.Shore.Position;c.Shore.Walk(Vector2.up,.1f);RequireShop(feet==c.Shore.Position,"Player walked while browsing.");
+                var feet=c.Shore.Position;c.Shore.Walk(Vector2.up,false,.05f);RequireShop(feet==c.Shore.Position,"Player walked while browsing.");
                 c.RestoreShopTestProfile(new FishingCareer().Snapshot());
                 RequireShop(!shop.Buy(UpgradeTrack.Line) && c.Career.Coins==0,"Insufficient funds allowed purchase.");
                 var funded=c.Career.Snapshot();funded.coins=500;c.RestoreShopTestProfile(funded);
+                c.Career.CompleteShoreTask(0);
+                RequireShop(c.Career.Backpack.TryCollect(0,FieldItem.Shell,3),"Backpack fixture failed.");
+                c.Career.Backpack.Observe(LandAnimalKind.Fox);c.Career.Backpack.Select(2);
+                var viewBefore=c.viewCamera.transform.rotation;
+                c.View.ApplyShoreLookDelta(new Vector2(100,100));
+                c.View.ApplyView(true,false);
+                RequireShop(Quaternion.Angle(viewBefore,c.viewCamera.transform.rotation)<.01f && !c.View.IsLooking,"Shop modal allowed shore look.");
                 for(int i=0;i<3;i++)
                 {
                     var track=(UpgradeTrack)i;int coins=c.Career.Coins,price=c.Career.NextUpgradeCost(track);
@@ -43,13 +50,14 @@ namespace BoatAttack.Fishing
                 }
                 var reloaded=FishingSaveStore.Load(c.SavePath,out var warning);
                 RequireShop(warning.Length==0 && reloaded.Coins==c.Career.Coins && reloaded.LineLevel==1 && reloaded.ReelLevel==1 && reloaded.HoldLevel==1,"Shop purchase did not persist.");
+                RequireShop(reloaded.ShoreTaskMask==1 && reloaded.Backpack.Collected(0) && reloaded.Backpack.Seen(LandAnimalKind.Fox) && reloaded.Backpack.Selected==2,"Shop purchase lost v0.9 exploration/backpack progress.");
                 RequireShop(shop.Buy(UpgradeTrack.Line) && c.Career.LineLevel==2,"Second equipment tier failed.");
                 int after=c.Career.Coins;RequireShop(!shop.Buy(UpgradeTrack.Line) && c.Career.Coins==after,"Max-level purchase charged coins.");
                 c.TogglePause();RequireShop(!shop.Buy(UpgradeTrack.Reel),"Paused shop allowed purchase.");c.TogglePause();
                 shop.Close();RequireShop(!shop.Buy(UpgradeTrack.Reel),"Closed shop allowed purchase.");
                 c.viewCamera.transform.rotation=shop.transform.rotation*Quaternion.Euler(0,180,0);
-                for(int i=0;i<180 && !c.Shore.CanBoard;i++)ShopWalkToward(c.Shore.BoardingPoint);
-                RequireShop(c.Shore.CanBoard && c.Shore.Toggle(),"Cannot exit shop and return to boat.");
+                for(int i=0;i<400 && Vector3.Distance(c.Shore.Position,c.Shore.BoardingPoint)>3f;i++)ShopWalkToward(c.Shore.BoardingPoint);
+                RequireShop(c.Shore.TryBoard(),"Cannot exit shop and return to boat.");
                 RequireShop(!shop.CanBrowse,"Shop remained usable after boarding.");
                 Debug.Log("[BEACH-SHOP] PASS: empty NPC spaces, real disembark/ramp/door/interior/exit/boarding route, shop modal, insufficient funds, three equipment purchases, exact charges, max-level/pause/closed guards and saved upgrades.");
             }
@@ -58,7 +66,12 @@ namespace BoatAttack.Fishing
         private void ShopWalkToward(Vector3 destination)
         {
             var direction=Quaternion.Inverse(Quaternion.Euler(0,Controller.viewCamera.transform.eulerAngles.y,0))*(destination-Controller.Shore.Position);
-            Controller.Shore.Walk(new Vector2(direction.x,direction.z).normalized,.1f);
+            Controller.Shore.Walk(new Vector2(direction.x,direction.z).normalized,false,.05f);
+        }
+        private void SetShoreBoatPose(Vector3 position,Quaternion rotation)
+        {
+            var rb=Controller.Player.engine.RB;rb.velocity=rb.angularVelocity=Vector3.zero;
+            rb.position=position;rb.rotation=rotation;Controller.Player.transform.SetPositionAndRotation(position,rotation);Physics.SyncTransforms();
         }
         private static bool ClearNpcSpace(Vector3 feet)
             => !Physics.CheckCapsule(feet+Vector3.up*.38f,feet+Vector3.up*1.5f,.3f,~(1<<4),QueryTriggerInteraction.Ignore);

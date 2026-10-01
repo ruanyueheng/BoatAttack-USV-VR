@@ -1,0 +1,67 @@
+using System;
+using BoatAttack.Fishing;
+internal static class CatchTransactionTests
+{
+    private static CatchRecord Fish(string id,FishKind kind=FishKind.Coral,int grams=1000)=>new CatchRecord{id=id,kind=kind,grams=grams,value=FishingSpecies.Value(kind,false,grams)};
+    public static void Run(Action<bool,string> check)
+    {
+        var c=new FishingCareer();var fish=Fish("pending-1");
+        check(c.BeginPending(fish,0,0,0) && c.Count==0 && c.Catches==0 && c.Coins==0,"Net catch is pending, not automatic inventory or reward");
+        check(!c.BeginPending(Fish("second"),0,0,0),"Only one undecided catch can exist");
+        fish.grams=9000;var copy=c.PendingCatch;copy.fish.grams=20000;
+        check(c.PendingCatch.fish.grams==1000,"Pending records are defensive copies");
+        check(!c.Store(Fish("pending-1")),"Pending ID cannot bypass transaction through direct Store");
+        check(c.ResolvePending(true,out var stored,out int bounty) && stored.id=="pending-1" && bounty==0 && c.Count==1 && c.Catches==1 && c.Coins==0,"Explicit box placement records one ordinary fish");
+        check(!c.ResolvePending(true,out _,out _) && !c.BeginPending(Fish("pending-1"),0,0,0),"Resolved fish cannot be staged or rewarded twice");
+        check(c.BeginPending(Fish("release-1"),0,0,0) && c.ResolvePending(false,out _,out _) && c.ReleasedCatches==1 && c.Count==1 && c.Catches==2 && c.Coins==0,"Ordinary release preserves discovery but has no sale income");
+        check(!c.Store(Fish("release-1")),"Released ID cannot be sold by reinserting it");
+        var full=new FishingCareer();for(int i=0;i<full.Capacity;i++)full.Store(Fish("hold-"+i));
+        check(full.BeginPending(Fish("full-pending"),0,0,0),"Full hold can retain a fish already netted");
+        int catches=full.Catches;
+        check(!full.ResolvePending(true,out _,out _) && full.HasPendingCatch && full.Catches==catches,"Full box neither drops pending fish nor records false catch");
+        check(full.ResolvePending(false,out _,out _) && !full.HasPendingCatch && full.ReleasedCatches==1,"Full hold still permits explicit release");
+        var legend=new FishingCareer();check(legend.BeginPending(Fish("legend-pending",FishKind.Sailfish,24000),2,0,0),"Legend can be inspected before measuring");
+        check(!legend.ResolvePending(false,out _,out _) && !legend.ResolvePending(true,out _,out _),"Legend cannot skip measurement or become sale cargo");
+        check(legend.MeasurePending(),"Legend can be deliberately measured");
+        check(legend.ResolvePending(false,out _,out bounty) && bounty>0 && legend.Count==0 && legend.LegendCatches==1 && legend.Coins==bounty,"Legend pays only after measurement and explicit release");
+        check(!legend.ResolvePending(false,out _,out _),"Legend bounty cannot repeat");
+        var restore=new FishingCareer();restore.BeginPending(Fish("save-pending"),0,12,24);restore.MarkOrder();
+        var data=restore.Snapshot();FishingCareer reloaded=null;
+        check(data.version==7 && FishingCareer.TryRestore(data,out reloaded) && reloaded.HasPendingCatch && reloaded.PendingCatch.fish.id=="save-pending" && reloaded.OrderMarked,"v7 snapshots preserve pending fish and marked commission");
+        check(reloaded.ResolvePending(true,out _,out _) && reloaded.Count==1,"Restored pending catch settles exactly once");
+        data.hasPendingCatch=false;check(!FishingCareer.TryRestore(data,out _),"Missing pending marker cannot silently discard a fish");
+        data=restore.Snapshot();data.pendingCatch=null;check(!FishingCareer.TryRestore(data,out _),"Pending marker requires a real record");
+        data=c.Snapshot();data.pendingCatch=new PendingCatchData{fish=new CatchRecord()};check(FishingCareer.TryRestore(data,out _),"Blank JsonUtility object is not a phantom pending fish");
+        data=c.Snapshot();data.releasedCatches=data.catches+1;check(!FishingCareer.TryRestore(data,out _),"Release counter cannot exceed capture history");
+        data=c.Snapshot();data.version=6;data.releasedCatches=0;data.pendingCatch=null;data.hasPendingCatch=false;data.orderMarked=false;
+        check(FishingCareer.TryRestore(data,out reloaded) && !reloaded.HasPendingCatch && reloaded.Count==c.Count,"v6 migrates without inventing an in-flight fish");
+        var invalid=new FishingCareer();
+        check(!invalid.BeginPending(Fish("bad"),-1,0,0) && !invalid.BeginPending(Fish("bad"),4,0,0),"Unknown fishing grounds cannot stage a catch");
+        check(!invalid.BeginPending(Fish("bad"),0,float.NaN,0) && !invalid.BeginPending(Fish("bad"),0,0,float.PositiveInfinity),"Invalid world coordinates cannot enter pending save");
+        check(!invalid.BeginPending(null,0,0,0),"Null catch rejected");
+        var gate=new FishingNetGate();
+        for(int i=0;i<20;i++)check(!gate.Step(true,.6f,0,1,0,1,.02f),"Outside net rim cannot capture "+i);
+        for(int i=0;i<12;i++)gate.Step(true,0,0,1,0,1,.02f);
+        check(gate.Step(true,0,-.22f,1,.5f,1.22f,.02f),"Stable coverage followed by a small lift captures");
+        check(!gate.Step(true,0,0,1,0,1.22f,.02f),"One overlap cannot emit repeated capture events");
+        gate.Reset();for(int i=0;i<20;i++)gate.Step(true,0,0,1,3,1,.02f);
+        check(!gate.Step(true,0,-.22f,1,.5f,1.22f,.02f),"Fast swipe never arms the net");
+        gate.Reset();for(int i=0;i<12;i++)gate.Step(true,0,0,1,0,1,.02f);gate.Step(false,0,0,1,0,1,.02f);
+        check(!gate.Step(true,0,-.3f,1,.5f,1.3f,.02f),"Tracking recovery needs new coverage, not a stale lift");
+        check(!gate.Step(true,float.NaN,0,1,0,1,.02f),"Nonfinite capture geometry rejected");
+        var transfer=new FishingNetTransferGate();
+        for(int i=0;i<12;i++)check(!transfer.Step(true,.1f,.2f,1,0,.02f),"Upright net cannot accidentally empty "+i);
+        bool tipped=false;for(int i=0;i<12;i++)tipped=transfer.Step(true,.1f,.2f,.65f,.3f,.02f)||tipped;
+        check(tipped && !transfer.Step(true,.1f,.2f,.65f,.3f,.02f),"Gentle box-side tilt emits one quick-storage request");
+        transfer.Reset();for(int i=0;i<12;i++)check(!transfer.Step(false,.1f,.2f,.65f,.3f,.02f),"Legend/non-net fish cannot take quick-sale path "+i);
+        check(!transfer.Step(true,float.NaN,.2f,.65f,0,.02f),"Invalid transfer geometry rejected");
+        var session=new CatchSession();session.Cast(FishKind.Coral,false,0,"stable-net");
+        for(int i=0;i<1500 && session.Phase==CatchPhase.Waiting;i++)session.Tick(.02f,false);session.Hook();
+        for(int i=0;i<6000 && session.Phase==CatchPhase.Fighting;i++)session.Tick(.02f,session.Tension<.6f);
+        session.HoldForNet();for(int i=0;i<2000;i++)session.Tick(.1f,false);
+        check(session.WaitingForNet && session.Phase==CatchPhase.Landing,"Production waiting-for-net mode stays stable without a third hand on the reel");
+        var edge=new FishingPressEdge();
+        check(!edge.Step(true,true),"Initially held trigger cannot select");edge.Step(true,false);check(edge.Step(true,true) && !edge.Step(true,true),"Trigger emits only one press");
+        edge.Step(false,false);check(!edge.Step(true,true),"Tracking/focus recovery requires trigger release");
+    }
+}

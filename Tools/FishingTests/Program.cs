@@ -14,6 +14,11 @@ internal static class Program
     {
         try
         {
+            CatchTransactionTests.Run(Check);
+            FieldTests.Run(Check);
+            HandInputTests.Run(Check);
+            ShoreTests.Run(Check);
+            ExpeditionTests.Run(Check);
             foreach (FishKind kind in Enum.GetValues(typeof(FishKind)))
             {
                 var s = Bite(kind); Check(s.Phase == CatchPhase.Bite, "Bite window " + kind);
@@ -44,7 +49,7 @@ internal static class Program
             Check(FishingCareer.TryRestore(c.Snapshot(),out var loaded) && loaded.LineLevel==1,"Progress restores");
             record.value=30;Check(!loaded.Store(record),"Sold ID remains deduplicated after restore");
             Check(!FishingCareer.TryRestore(new FishingSaveData{version=99},out _),"Unknown save version rejected");
-            Check(!FishingCareer.TryRestore(new FishingSaveData{coins=-1},out _),"Negative balance rejected");
+            Check(!FishingCareer.TryRestore(new FishingSaveData { backpack = new FishingBackpack().Snapshot(), coins=-1},out _),"Negative balance rejected");
             for(int i=0;i<c.Capacity;i++)Check(c.Store(new CatchRecord{id="extra"+i,kind=FishKind.Coral,value=10}),"Fill inventory "+i);
             Check(!c.Store(new CatchRecord{id="overflow",kind=FishKind.Coral,value=10}),"Hold capacity enforced");
             Check(FishingCareer.TryRestore(c.Snapshot(),out loaded) && loaded.Count==6 && loaded.HoldValue==60,"Inventory round trip");

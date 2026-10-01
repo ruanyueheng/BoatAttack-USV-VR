@@ -22,7 +22,7 @@ namespace BoatAttack.Fishing
         private bool CatchVisible => Controller.LastCatch.Fish != null && CatchAge < CardSeconds;
 
         public bool BlocksPointer(Vector2 screen, int width, int height)
-            => Controller.ShopOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
+            => Controller.ShopOpen || Controller.InventoryOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
                 Controller.HarborDeskOpen && Controller.AtHarbor, Controller.AtHarbor,
                 Controller.Ecology.Candidate.HasValue && !CatchVisible, Controller.Acceptance != null);
 
@@ -32,7 +32,7 @@ namespace BoatAttack.Fishing
             float scale = LayoutScale(width, height), offset = (width - 1600 * scale) * .5f;
             var point = new Vector2((screen.x - offset) / scale, (height - screen.y) / scale);
             var layout = new FocusLayout(height / scale, false, CatchPhase.Idle);
-            return layout.Toolbar.Contains(point) || (chartExpanded ? layout.Chart : layout.ChartTab).Contains(point)
+            return HotbarRect(height/scale).Contains(point) || layout.Toolbar.Contains(point) || (chartExpanded ? layout.Chart : layout.ChartTab).Contains(point)
                 || (observe && layout.Observe.Contains(point)) || (atHarbor && layout.HarborButton.Contains(point))
                 || (details && new Rect(1242, 130, 330, 422).Contains(point))
                 || (harbor && new HarborLayout(3).Panel.Contains(point))
@@ -55,7 +55,8 @@ namespace BoatAttack.Fishing
                 GUI.matrix = Matrix4x4.TRS(new Vector3(_offset, 0, 0), Quaternion.identity, new Vector3(_scale, _scale, 1));
                 if (_label == null) _label = new GUIStyle(GUI.skin.label) { font = _font, wordWrap = true, richText = false, padding = new RectOffset() };
                 _fade = 1f;
-                if (c.JournalOpen) DrawJournal();
+                if (c.InventoryOpen) DrawInventory();
+                else if (c.JournalOpen) DrawJournal();
                 else if (c.Paused) DrawPause();
                 else if (c.ShopOpen) DrawTackleShop();
                 else
@@ -69,6 +70,7 @@ namespace BoatAttack.Fishing
                     DrawFocusedAction();
                     DrawCatchToast();
                     DrawCompactNotice();
+                    DrawHotbar();
                 }
                 if (c.Acceptance != null) DrawAcceptanceToolbar();
             }
@@ -159,7 +161,7 @@ namespace BoatAttack.Fishing
             y = layout.ReservedY;
             Label(x, y, w, 20, reserved > 0 ? "已为委托保留 " + reserved + " 条，普通出售不会卖掉它们。" : "没有需要保留的委托鱼。", 13, reserved > 0 ? Mint : Faint);
             y = layout.UpgradeHeadingY;
-            Section(x, y, w, "装备升级", "数字键 1 / 2 / 3");
+            Section(x, y, w, "装备升级", "点击下方按钮升级");
             for (int t = 0; t < 3; t++)
             {
                 y = layout.UpgradeY(t);
@@ -170,10 +172,10 @@ namespace BoatAttack.Fishing
                 Pips(x + 76, y + 7, level, FishingCareer.MaxLevel, Gold);
                 string effect = FishingText.UpgradeEffect(track, level) + (cost > 0 ? "  →  " + FishingText.UpgradeEffect(track, level + 1) : "");
                 Label(x, y + 26, 260, 20, effect, 13, Muted);
-                string label = cost > 0 ? "[" + (t + 1) + "]  " + cost + " 金币" : "已满级";
+                string label = cost > 0 ? cost + " 金币" : "已满级";
                 if (Button(new Rect(x + w - 136, y + 4, 136, 38), label, cost > 0 && career.Coins >= cost, false, 15)) c.BuyUpgrade(track);
             }
-            Label(layout.Footer, "Q / W 起航   ·   N 航点   ·   J 图鉴与传说线索", 13, Faint);
+            if(Button(layout.Footer,c.Expedition.PortLabel,true,false,13))c.Expedition.PortAction();
         }
 
         private static string FightTitle(CatchSession s)

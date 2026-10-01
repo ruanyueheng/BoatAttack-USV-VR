@@ -1,5 +1,7 @@
 # 靠岸下船与陆地资源修复
 
+本文记录初版实现。v0.9 整合后已采用主线 `FishingShore` 角色、跳跃/蹲下和鼠标转头，商店停船与购买操作以 [BEACH_TACKLE_SHOP.md](BEACH_TACKLE_SHOP.md) 为准。二进制地形修复仍保留。
+
 ## 试玩
 
 Unity 2022.3.62f1 打开 `Assets/scenes/Fishing/fishing_Island.unity`，进入 Play Mode。

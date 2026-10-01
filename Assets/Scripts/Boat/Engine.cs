@@ -76,12 +76,12 @@ namespace BoatAttack
         /// <summary>
         /// Controls the acceleration of the boat
         /// </summary>
-        /// <param name="modifier">Acceleration modifier, adds force in the 0-1 range</param>
+        /// <param name="modifier">Signed throttle: forward 0..1, reverse -1..0</param>
         public void Accelerate(float modifier)
         {
             if (RB != null && _yHeight > -0.1f) // if the engine is deeper than 0.1
             {
-                modifier = Mathf.Clamp(modifier, 0f, 1f); // clamp for reasonable values
+                modifier = BoatAttack.VR.USVPropulsion.Thrust(modifier, Vector3.Dot(RB.velocity, Vector3.ProjectOnPlane(RB.transform.forward, Vector3.up).normalized));
                 var forward = RB.transform.forward;
                 forward.y = 0f;
                 forward.Normalize();
