@@ -7,7 +7,7 @@ using UnityEngine.XR;
 namespace BoatAttack.Fishing
 {
     /// <summary>One embodied player, aboard or ashore. Desktop only; never takes a tracked XR camera.</summary>
-    public sealed class FishingShore : MonoBehaviour
+    public sealed partial class FishingShore : MonoBehaviour
     {
         public sealed class Site
         {
@@ -26,20 +26,19 @@ namespace BoatAttack.Fishing
         public float BerthDistance { get; private set; }
         public int NearbyTask { get; private set; } = -1;
         public float WalkSpeed { get; private set; }
-        private Renderer[] _renderers;
-        private Transform _leftLeg, _rightLeg;
+        private FishingCharacter _character;
+
         private readonly Renderer[] _taskMarkers = new Renderer[8];
         private Vector3 _mooring, _lastSafe;
         private Quaternion _mooringRotation;
-        private float _step, _nextWarning;
+        private float _nextWarning;
         private readonly FishingLocomotion _motion = new FishingLocomotion();
         private Transform _visual;
-        private readonly Dictionary<Transform,Vector3> _standingPositions=new Dictionary<Transform,Vector3>();
         public bool Crouched { get; private set; }
         public float EyeHeight => (Crouched?FishingLocomotion.CrouchingHeight:FishingLocomotion.StandingHeight)-.2f;
         public bool Grounded => Body!=null && Body.isGrounded;
         public void ResetMoveInput() => _motion.ResetInput();
-        private bool _hidden;
+
         private static readonly Vector3[] LandSeeds = { new Vector3(-66,0,-14), new Vector3(42,0,70), new Vector3(94,0,-66), new Vector3(66,0,-94) };
         private static readonly Vector3[] Berths = { new Vector3(-78,0,-14), new Vector3(42,0,84), new Vector3(108,0,-66), new Vector3(66,0,-78) };
         private static readonly Vector3[] TaskSeeds = { new Vector3(-62,0,-14), new Vector3(-58,0,-22), new Vector3(38,0,66), new Vector3(46,0,66), new Vector3(90,1.6f,-64), new Vector3(92.8f,1.6f,-73), new Vector3(62,0,-94), new Vector3(70,0,-98) };
@@ -54,18 +53,8 @@ namespace BoatAttack.Fishing
             Body.slopeLimit = 46; Body.stepOffset = .32f; Body.skinWidth = .025f; Body.minMoveDistance = 0;
             Body.enabled = false;
             _visual=new GameObject("Explorer appearance").transform;_visual.SetParent(Actor,false);
-            Part("Boot L", new Vector3(-.16f,.1f,.06f), new Vector3(.21f,.2f,.36f), c.dark);
-            Part("Boot R", new Vector3(.16f,.1f,.06f), new Vector3(.21f,.2f,.36f), c.dark);
-            _leftLeg = Part("Left trouser",new Vector3(-.16f,.46f,0),new Vector3(.23f,.58f,.27f),c.wood).transform;
-            _rightLeg = Part("Right trouser",new Vector3(.16f,.46f,0),new Vector3(.23f,.58f,.27f),c.wood).transform;
-            Part("Jacket",new Vector3(0,1.03f,0),new Vector3(.57f,.65f,.34f),c.teal);
-            Part("Life vest",new Vector3(0,1.07f,.17f),new Vector3(.49f,.47f,.13f),c.orange);
-            Part("Left sleeve",new Vector3(-.37f,1f,0),new Vector3(.18f,.58f,.22f),c.teal);
-            Part("Right sleeve",new Vector3(.37f,1f,0),new Vector3(.18f,.58f,.22f),c.teal);
-            FishingArt.Shape("Head",PrimitiveType.Sphere,_visual,new Vector3(0,1.51f,0),new Vector3(.35f,.4f,.35f),c.cream);
-            Part("Cap",new Vector3(0,1.7f,.04f),new Vector3(.4f,.1f,.45f),c.dark);
-            _renderers = Actor.GetComponentsInChildren<Renderer>();
-            foreach(Transform part in _visual)_standingPositions.Add(part,part.localPosition);
+            _character = _visual.gameObject.AddComponent<FishingCharacter>();
+            _character.Build();
             // A rider's motor is disabled while seated. The hull remains the vessel's collision body.
             foreach (var hull in c.Player.GetComponentsInChildren<Collider>()) Physics.IgnoreCollision(Body,hull);
             Physics.SyncTransforms();
@@ -117,7 +106,8 @@ namespace BoatAttack.Fishing
             }
             return found;
         }
-        private bool Ignored(Collider collider) => collider==Body || collider.transform.IsChildOf(Controller.Player.transform) || collider.GetComponentInParent<WaterSystem.Water>()!=null || collider.name=="NavMesh";
+        public static bool NonSolidSurface(Collider collider)=>collider.GetComponentInParent<WaterSystem.Water>()!=null || collider.name=="NavMesh";
+        private bool Ignored(Collider collider) => collider==Body || collider.transform.IsChildOf(Controller.Player.transform) || NonSolidSurface(collider);
         public bool Clearance(Vector3 feet)
         {
             foreach(var col in Physics.OverlapCapsule(feet+Vector3.up*.36f,feet+Vector3.up*1.46f,.28f,~(1<<4),QueryTriggerInteraction.Ignore))
@@ -152,30 +142,25 @@ namespace BoatAttack.Fishing
             if(Controller.Paused || Ashore || Controller.HasPendingCatch)return false;
             if(XRSettings.isDeviceActive){Controller.Notice("上岸步行为桌面预览，尚未接入头显移动。",4);return false;}
             UpdateProximity();
-            if(Controller.Anchored){Controller.Notice("先按 Q 收起钓具，再靠近橙色登岸旗。",4);return false;}
-            if(NearestSite<0 || BerthDistance>9f){Controller.Notice("驶近橙色登岸旗（9m 内），低速按 G 下船。",4);return false;}
+            if(Controller.Anchored){Controller.Notice("先按 Q 收起钓具，再靠近岸边。",4);return false;}
             if(Controller.Speed>1.5f){Controller.Notice("按 Shift 刹车（S 为倒航），低于 5.4 km/h 再下船。",4);return false;}
-            var site=Sites[NearestSite];
-            // Validate current geometry again, including runtime obstacles. Never teleport into a rock.
-            bool ground=Ground(site.Landing,out var feet);
-            bool clear=Clearance(feet), sight=ClearSight(Controller.Player.transform.position+Vector3.up*2,site.Berth+Vector3.up*2);
-            if(Controller.Automated)Debug.Log($"[SHORE] Landing {NearestSite}: ground={ground}, height={feet.y-site.Landing.y}, clearance={clear}, approach={sight}");
-            if(!ground || Mathf.Abs(feet.y-site.Landing.y)>1f || !clear || !sight)
-            {Controller.Notice("登岸通道被阻挡，请从旗帜的海侧靠近。",4);return false;}
+            if(!FindLanding(out var feet,out var namedSite))
+            {Controller.Notice("附近没有安全落脚点：请靠近低矮岸面，避开陡壁、深水和头顶障碍。",4);return false;}
+            FreeLanding=!namedSite;
+            LandingPoint=feet;
             CurrentSite=NearestSite;
             _mooring=Controller.Player.engine.RB.position;_mooringRotation=Controller.Player.engine.RB.rotation;
             Controller.Player.engine.RB.velocity=Vector3.zero;Controller.Player.engine.RB.angularVelocity=Vector3.zero;
             Ashore=true;_lastSafe=feet+Vector3.up*.08f;_motion.Reset();
-            Actor.SetPositionAndRotation(_lastSafe,Quaternion.LookRotation(Vector3.ProjectOnPlane(site.Landing-site.Berth,Vector3.up)));
+            Actor.SetPositionAndRotation(_lastSafe,Quaternion.LookRotation(Vector3.ProjectOnPlane(feet-Controller.Player.transform.position,Vector3.up).normalized));
             Body.enabled=true;SetCrouch(false);Controller.View.ResetLook();Controller.CloseBoatPanels();
-            Controller.Notice("已登岸 · WASD 行走 / Shift 快走 / 空格跳跃 / Ctrl 蹲下 / 鼠标转头 / Alt 释放鼠标 / E 勘测 / 原登岸点 G 上船",8);
+            Controller.Notice("已登岸 · WASD 行走 / Shift 快走 / 空格跳跃 / Ctrl 蹲下 / 鼠标转头 / Alt 释放鼠标 / E 勘测 / 靠近船边 G 上船",8);
             UpdateProximity();return true;
         }
         public bool TryBoard()
         {
             if(!Ashore || Controller.Paused)return false;
-            if(Vector3.Distance(Actor.position,Sites[CurrentSite].Landing)>4f){Controller.Notice("返回本次登岸点（4m 内），再按 G 上船。",4);return false;}
-            if(FishingPrototype.FlatDistance(Controller.Player.transform.position,Sites[CurrentSite].Berth)>20f){Controller.Notice("船离开了泊位，请按 R 救援回港。",4);return false;}
+            if(!CanBoard()) {Controller.Notice("靠近船体边缘（4m 内）再按 G；高差过大或中间有墙时无法登船。",4);return false;}
             BoardImmediately();Controller.Notice("已上船 · WASD 航行；回港按 E 提交海岸调查。",5);return true;
         }
         public void BoardImmediately()
@@ -212,20 +197,8 @@ namespace BoatAttack.Fishing
             if(Crouched==crouch && !force)return;
             Crouched=crouch;Body.height=crouch?FishingLocomotion.CrouchingHeight:FishingLocomotion.StandingHeight;
             Body.center=Vector3.up*(Body.height*.5f);Body.stepOffset=crouch?.18f:.32f;
-            // Preserve the head/torso proportions: lower the hips, bend the legs and lean forward rather than squashing the whole person.
-            foreach(var pose in _standingPositions)
-            {
-                var position=pose.Value;var part=pose.Key;
-                if(crouch)
-                {
-                    if(position.y>1.4f)position+=new Vector3(0,-.67f,.17f);
-                    else if(position.y>.8f)position+=new Vector3(0,-.5f,.12f);
-                    else if(part==_leftLeg || part==_rightLeg)position+=new Vector3(0,-.15f,-.06f);
-                }
-                part.localPosition=position;
-                part.localRotation=Quaternion.Euler(crouch && position.y>.2f && pose.Value.y<1.4f?15:0,0,0);
-            }
         }
+
         public void Move(Vector2 input,bool sprint,bool jump,bool crouch,float deltaTime)
         {
             if(!Ashore || Controller.Paused || Controller.InventoryOpen || Controller.ShowDetails || (Controller.Expedition!=null && Controller.Expedition.Aligning) || XRSettings.isDeviceActive)
@@ -273,13 +246,10 @@ namespace BoatAttack.Fishing
                 var yaw=Quaternion.Euler(0,boat.eulerAngles.y,0);
                 Actor.SetPositionAndRotation(boat.position+yaw*(Controller.Anchored?new Vector3(.05f,.45f,-.55f):new Vector3(0,.25f,-.25f)),yaw);
             }
-            bool hidden=Controller.FirstPerson || XRSettings.isDeviceActive;
-            if(hidden!=_hidden){foreach(var r in _renderers)r.shadowCastingMode=hidden?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;_hidden=hidden;}
-            if(!Controller.Paused)_step+=Time.deltaTime*WalkSpeed*3;
-            float swing=Ashore?Mathf.Sin(_step)*Mathf.Min(WalkSpeed,1)*18:0;
-            _leftLeg.localRotation=Quaternion.Euler((Crouched?55:0)+swing,0,0);_rightLeg.localRotation=Quaternion.Euler((Crouched?55:0)-swing,0,0);
+            _character.Pose(Ashore,WalkSpeed,Crouched,Grounded,Controller.FirstPerson || XRSettings.isDeviceActive,Controller.Paused);
         }
-        public string ActionTitle => !Ashore ? (BerthDistance<18?"G 下船 · "+FishingExploration.SiteName(NearestSite):"N 选择橙色海岸航点 · 低速靠近后 G 下船")
-            : NearbyTask>=0?"E "+FishingExploration.TaskName(NearbyTask):Vector3.Distance(Actor.position,Sites[CurrentSite].Landing)<4?"G 返回船上 · E 调查附近勘测台":"E 调查橙色台 · 返回登岸点 "+FishingPrototype.FlatDistance(Actor.position,Sites[CurrentSite].Landing).ToString("0")+" m";
+        public string LocationName => FreeLanding ? "自由海岸" : FishingExploration.SiteName(CurrentSite);
+        public string ActionTitle => !Ashore ? "G 靠岸下船 · 自动寻找安全岸面 / 码头" : NearbyTask>=0 ? "E "+FishingExploration.TaskName(NearbyTask)
+            : CanBoard() ? "G 返回船上" : "靠近船边 G 上船 · 船体距离 "+BoatEdgeDistance().ToString("0.0")+" m";
     }
 }

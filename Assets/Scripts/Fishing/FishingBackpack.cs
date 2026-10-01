@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace BoatAttack.Fishing
 {
-    public enum FieldItem { Empty, FieldGuide, Binoculars, Lantern, Shell, Driftwood }
+    public enum FieldItem { Empty, FieldGuide, Binoculars, Lantern, Shell, Driftwood, Stone, Fiber, Clay, IronOre, Coal, Sand, Plank, Stick, Rope, Charcoal, IronIngot, Brick, Glass, Workbench, Furnace, StonePickaxe, IronPickaxe }
     public enum LandAnimalKind { Rabbit, Fox, Tortoise }
     [Serializable]
     public sealed class FieldStack
@@ -27,11 +27,11 @@ namespace BoatAttack.Fishing
             for(int i=0;i<SlotCount;i++)_slots[i]=new FieldStack();
             if(starter)_slots[0]=new FieldStack {item=FieldItem.FieldGuide,count=1};
         }
-        public static bool Defined(FieldItem item) => item>=FieldItem.Empty && item<=FieldItem.Driftwood;
-        public static int Limit(FieldItem item) => !Defined(item) || item==FieldItem.Empty?0:item>=FieldItem.Shell?64:1;
+        public static bool Defined(FieldItem item) => item>=FieldItem.Empty && item<=FieldItem.IronPickaxe;
+        public static int Limit(FieldItem item) => !Defined(item) || item==FieldItem.Empty?0:item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe || item==FieldItem.Workbench || item==FieldItem.Furnace?1:item>=FieldItem.Shell?64:1;
         public static string Name(FieldItem item)
         {
-            switch(item){case FieldItem.FieldGuide:return "自然手册";case FieldItem.Binoculars:return "望远镜";case FieldItem.Lantern:return "提灯";case FieldItem.Shell:return "海贝";case FieldItem.Driftwood:return "漂流木";default:return "空槽";}
+            switch(item){case FieldItem.FieldGuide:return "自然手册";case FieldItem.Binoculars:return "望远镜";case FieldItem.Lantern:return "提灯";case FieldItem.Shell:return "海贝";case FieldItem.Driftwood:return "漂流木";case FieldItem.Stone:return "石料";case FieldItem.Fiber:return "植物纤维";case FieldItem.Clay:return "黏土";case FieldItem.IronOre:return "铁矿石";case FieldItem.Coal:return "煤";case FieldItem.Sand:return "砂";case FieldItem.Plank:return "木板";case FieldItem.Stick:return "木棍";case FieldItem.Rope:return "绳索";case FieldItem.Charcoal:return "木炭";case FieldItem.IronIngot:return "铁锭";case FieldItem.Brick:return "砖";case FieldItem.Glass:return "玻璃";case FieldItem.Workbench:return "工作台";case FieldItem.Furnace:return "熔炉";case FieldItem.StonePickaxe:return "石镐";case FieldItem.IronPickaxe:return "铁镐";default:return "空槽";}
         }
         public static string AnimalName(LandAnimalKind kind) => kind==LandAnimalKind.Rabbit?"海岛野兔":kind==LandAnimalKind.Fox?"赤狐":"陆龟";
         public FieldStack At(int slot) => slot>=0 && slot<SlotCount?_slots[slot].Copy():new FieldStack();
@@ -56,6 +56,27 @@ namespace BoatAttack.Fishing
             }
             return true;
         }
+        public int Count(FieldItem item){int n=0;foreach(var slot in _slots)if(slot.item==item)n+=slot.count;return n;}
+        /// <summary>Copy, consume, then add; no loss/duplication on missing input or a full output bag.</summary>
+        public bool Exchange(FieldStack[] costs,FieldItem output,int count)
+        {
+            if(costs==null || count<0 || (output==FieldItem.Empty)!=(count==0))return false;
+            var next=new FishingBackpack(false);
+            for(int i=0;i<SlotCount;i++)next._slots[i]=_slots[i].Copy();
+            foreach(var cost in costs)
+            {
+                if(cost==null || !Defined(cost.item) || cost.item==FieldItem.Empty || cost.count<=0 || next.Count(cost.item)<cost.count)return false;
+                int left=cost.count;
+                foreach(var slot in next._slots)
+                {
+                    if(slot.item!=cost.item)continue;int take=Math.Min(left,slot.count);slot.count-=take;left-=take;
+                    if(slot.count==0)slot.item=FieldItem.Empty;
+                }
+            }
+            if(count>0 && !next.TryAdd(output,count))return false;
+            for(int i=0;i<SlotCount;i++)_slots[i]=next._slots[i];
+            return true;
+        }
         public bool TryCollect(int id,FieldItem item,int count)
         {
             if(id<0 || id>=PickupCount || Collected(id) || !TryAdd(item,count))return false;
@@ -69,6 +90,12 @@ namespace BoatAttack.Fishing
             {if(half)return false;_slots[from]=b;_slots[to]=a;return true;}
             int n=Math.Min(half?(a.count+1)/2:a.count,Limit(a.item)-b.count);
             if(n<=0)return false;b.item=a.item;b.count+=n;a.count-=n;if(a.count==0)a.item=FieldItem.Empty;return true;
+        }
+        public bool Discard(int slot,FieldItem expected,int count)
+        {
+            if(slot<0 || slot>=SlotCount || expected==FieldItem.Empty || expected==FieldItem.FieldGuide || count<=0)return false;
+            var stack=_slots[slot];if(stack.item!=expected || stack.count!=count)return false;
+            stack.item=FieldItem.Empty;stack.count=0;return true;
         }
         public bool QuickMove(int from)
         {

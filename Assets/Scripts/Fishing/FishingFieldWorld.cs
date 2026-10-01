@@ -27,6 +27,7 @@ namespace BoatAttack.Fishing
             _c=c;_palette=new Material(c.PaletteShader){name="Field exploration vertex palette",enableInstancing=true};_owned.Add(_palette);
             foreach(FieldItem item in new[]{FieldItem.FieldGuide,FieldItem.Binoculars,FieldItem.Lantern,FieldItem.Shell,FieldItem.Driftwood})
             {var mesh=FishingFieldArt.Tool(item);_tools.Add(item,mesh);_owned.Add(mesh);}
+            foreach(var item in new[]{FieldItem.StonePickaxe,FieldItem.IronPickaxe}){var mesh=FishingWorkshopArt.Make(item);_tools.Add(item,mesh);_owned.Add(mesh);}
             var animalMeshes=new Mesh[3];for(int i=0;i<3;i++){animalMeshes[i]=FishingFieldArt.Animal((LandAnimalKind)i);_owned.Add(animalMeshes[i]);}
             for(int site=0;site<c.Shore.Sites.Length;site++)
             {
@@ -157,7 +158,7 @@ namespace BoatAttack.Fishing
         public void ApplyHeldTool()
         {
             if(_held==null)return;var item=_c.Career.Backpack.Equipped;
-            bool tool=item==FieldItem.FieldGuide || item==FieldItem.Binoculars || item==FieldItem.Lantern;
+            bool tool=item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe || item==FieldItem.FieldGuide || item==FieldItem.Binoculars || item==FieldItem.Lantern;
             bool visible=_c.Ashore && !_c.Paused && tool && !UnityEngine.XR.XRSettings.isDeviceActive && !_c.BinocularsRaised;
             _held.gameObject.SetActive(visible);
             if(visible)

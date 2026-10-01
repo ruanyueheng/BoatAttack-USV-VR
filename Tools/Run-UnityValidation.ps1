@@ -1,6 +1,6 @@
 param(
     [string]$EditorRoot,
-    [ValidateSet("Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild")]
+    [ValidateSet("Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild", "FishingWorkshop")]
     [string]$Suite = "Structure",
     [ValidateRange(60, 7200)]
     [int]$TimeoutSeconds = 1200
@@ -24,6 +24,7 @@ $logDirectory = Join-Path $repo 'Logs'
 # Unique logs cannot accidentally satisfy this run with a previous PASS marker.
 $log = Join-Path $logDirectory ("usv-validation-" + [Guid]::NewGuid().ToString('N') + '.log')
 $method = switch ($Suite) {
+    'FishingWorkshop' { 'BoatAttack.EditorTools.FishingWorkshopValidation.Run' }
     'Structure' { 'BoatAttack.EditorTools.USVProjectValidation.Run' }
     'Regression' { 'BoatAttack.EditorTools.USVRuntimeRegression.Run' }
     'PlayMode' { 'BoatAttack.EditorTools.USVPlayModeSmoke.Run' }
@@ -41,6 +42,7 @@ $method = switch ($Suite) {
     'FishingExpeditionCapture' { 'BoatAttack.EditorTools.FishingExpeditionValidation.Capture' }
 }
 $marker = switch ($Suite) {
+    'FishingWorkshop' { '[WORKSHOP]' }
     'Structure' { '[USV-VALIDATION]' }
     'Regression' { '[USV-REGRESSION]' }
     'PlayMode' { '[USV-PLAYMODE]' }
@@ -58,7 +60,7 @@ $marker = switch ($Suite) {
     'FishingExpeditionCapture' { '[EXPEDITION]' }
 }
 $arguments = '-batchmode -nographics -buildTarget StandaloneWindows64 -projectPath "' + $repo.Replace('\', '/') + '" -executeMethod ' + $method + ' -logFile "' + $log + '"'
-if ($Suite -eq 'FishingExpeditionCapture' -or $Suite -eq 'FishingFieldCapture' -or $Suite -eq 'FishingCatchCapture') { $arguments = $arguments.Replace(' -nographics', '') }
+if ($Suite -eq 'FishingWorkshop' -or $Suite -eq 'FishingExpeditionCapture' -or $Suite -eq 'FishingFieldCapture' -or $Suite -eq 'FishingCatchCapture') { $arguments = $arguments.Replace(' -nographics', '') }
 if ($Suite -eq 'FishingAndroidBuild') { $arguments = $arguments.Replace('StandaloneWindows64', 'Android') }
 if ($Suite -eq 'FishingSmoke') { $arguments += ' -fishing-autoplay' }
 Write-Output "Running Unity $Suite validation. Log: $log"
