@@ -19,6 +19,7 @@ namespace BoatAttack.Fishing
         {
             _c=c;Location=Place.Net;_boxLocal=c.FishBox.localPosition;
             _tray=FishingArt.Shape("Safe catch inspection tray",PrimitiveType.Cylinder,c.Player.transform,new Vector3(.65f,1.04f,.7f),new Vector3(.8f,.025f,.8f),c.teal).transform;
+            _tray.gameObject.SetActive(false);
             var ring=FishingArt.Line("Fish box receiving rim",c.FishBox,c.teal,.022f,false);ring.positionCount=33;
             for(int i=0;i<33;i++){float a=i*Mathf.PI*2/32;ring.SetPosition(i,new Vector3(Mathf.Cos(a)*.36f,.4f,Mathf.Sin(a)*.36f));}
         }
@@ -90,6 +91,7 @@ namespace BoatAttack.Fishing
             if(_c.Paused){if(_netHeld || Location==Place.Hand)Recover();}
             else if(XRSettings.isDeviceActive)ReadTracked(dt);
             else StepDesktop(dt);
+            _tray.gameObject.SetActive(_c.HasPendingCatch && Location==Place.Tray && !_c.Ashore);
             if(!_c.HasPendingCatch){_fishId=null;return;}
             var pending=_c.Career.PendingCatch;
             if(_fishId!=pending.fish.id){_fishId=pending.fish.id;_c.RestorePendingFishVisual();}

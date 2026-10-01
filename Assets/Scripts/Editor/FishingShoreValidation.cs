@@ -99,12 +99,21 @@ namespace BoatAttack.EditorTools
                 c.ReturnToHarbor();
                 var rb=c.Player.engine.RB;
                 var side=Vector3.ProjectOnPlane(site.Berth-site.Landing,Vector3.up).normalized;
-                var position=site.Berth+side*5+Vector3.up;
+                // 旧港口外侧 5m 的旧夹具位于 Rock_Large_01 内，不能把穿岩传送当成功能。
+                var position=site.Berth+side*(i==2?0:5)+Vector3.up;
                 c.Player.transform.position=position;rb.position=position;rb.velocity=Vector3.zero;Physics.SyncTransforms();
                 rb.velocity=Vector3.right*2;
                 Check(!shore.TryDisembark() && !c.Ashore,"reject moving disembark "+i);rb.velocity=Vector3.zero;
                 c.TogglePause();Check(!shore.TryDisembark(),"reject paused disembark "+i);c.TogglePause();
-                Check(shore.TryDisembark(),"safe disembark "+i+" "+c.Message);
+                bool landed=shore.TryDisembark();
+                if(!landed)
+                {
+                    bool ground=shore.Ground(site.Landing,out var feet);
+                    Debug.Log("[SHORE] LANDING ground="+ground+" feet="+feet+" clear="+shore.Clearance(feet)+" support="+shore.SafeCoastalFooting(feet));
+                    var to=feet+Vector3.up*1.1f;var from=new Vector3(position.x,Mathf.Max(position.y+1.4f,to.y),position.z);
+                    foreach(var hit in Physics.SphereCastAll(from,.22f,(to-from).normalized,Vector3.Distance(from,to),~(1<<4),QueryTriggerInteraction.Ignore))Debug.Log("[SHORE] TRANSFER HIT "+hit.collider.name+" at "+hit.point);
+                }
+                Check(landed,"safe disembark "+i+" "+c.Message);
                 Check(c.Ashore && shore.Body.enabled && !c.AtHarbor && !c.Cast(),"walking cannot trade or fish "+i);
                 CaptureScene(c,"shore-"+i+"-first-person");
                 Vector3 moored=rb.position;c.LeaveStation();Check(c.Ashore,"Q cannot start an unmanned boat");

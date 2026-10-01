@@ -14,6 +14,7 @@ internal static class Program
     {
         try
         {
+            CraftingTests.Run(Check);
             CatchTransactionTests.Run(Check);
             FieldTests.Run(Check);
             HandInputTests.Run(Check);

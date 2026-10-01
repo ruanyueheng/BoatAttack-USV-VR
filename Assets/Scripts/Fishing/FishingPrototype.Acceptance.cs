@@ -43,6 +43,7 @@ namespace BoatAttack.Fishing
             Career = fixture ?? FishingSaveStore.Load(SavePath, out _);
             Shore.RefreshMarkers();
             FieldWorld.RefreshPickups();
+            WorkshopWorld.RefreshFromCareer();
             Expedition.RefreshFromCareer();
             SaveWarning = string.Empty;
             LastCatch = default;
