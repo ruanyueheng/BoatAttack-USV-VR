@@ -12,8 +12,9 @@ namespace BoatAttack.Fishing
                 Heading = new Rect(24, 24, 328, 62);
                 Pocket = new Rect(1272, 24, 304, 40);
                 Toolbar = new Rect(1240, 76, 336, 34);
-                Chart = new Rect(24, height - 274, 224, 246);
-                ChartTab = new Rect(24, height - 62, 224, 34);
+                // 圆下保留 36 逻辑像素图例；绘制和 BlocksPointer 共用此矩形。
+                Chart = new Rect(24, height - 310, 248, 282);
+                ChartTab = new Rect(24, height - 62, 248, 34);
                 bool fight = anchored && (phase == CatchPhase.Fighting || phase == CatchPhase.Landing);
                 Action = fight ? new Rect(486, height - 226, 628, 110) : new Rect(510, height - 190, 580, 74);
                 Notice = new Rect(480, 24, 640, 48);

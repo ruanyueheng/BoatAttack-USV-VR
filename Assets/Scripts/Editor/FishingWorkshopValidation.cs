@@ -75,6 +75,7 @@ namespace BoatAttack.EditorTools
             Check(c.HasIsolatedProfile,"never touch normal player save");
             var character=shore.Actor.GetComponentInChildren<FishingCharacter>();Check(character!=null && character.Ready,"CC0 rig and all three locomotion clips imported");
             var skinned=character.GetComponentsInChildren<SkinnedMeshRenderer>();Check(skinned.Length>0 && skinned.All(r=>r.bones.Length>0),"real skinned character, not cuboid placeholder");
+            Debug.Log("[WORKSHOP] MATERIALS: "+string.Join("; ",skinned.SelectMany(r=>r.sharedMaterials.Select(m=>r.name+"/"+(m==null?"null":m.name+"="+m.shader.name)))));
             Check(skinned.All(r=>r.sharedMaterials.All(m=>m!=null && m.shader.name=="Universal Render Pipeline/Lit")),"all character materials converted to URP");
             var tray=c.Player.transform.Find("Safe catch inspection tray");c.CatchRig.Apply(.02f);Check(tray!=null && !tray.gameObject.activeSelf,"idle inspection tray is stowed");
             Check(world.Nodes.Count>=40,"at least forty usable renewable resource nodes");

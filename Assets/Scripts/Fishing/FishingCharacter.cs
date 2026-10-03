@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 namespace BoatAttack.Fishing
 {
     /// <summary>Quaternius Beach Character (CC0). Imported rig/locomotion, not primitive body blocks.</summary>
-    public sealed class FishingCharacter : MonoBehaviour
+    public sealed partial class FishingCharacter : MonoBehaviour
     {
         private Animation _animation;
         private Transform _model,_body,_leftThigh,_rightThigh,_leftShin,_rightShin,_leftAnkle,_rightAnkle,_leftFoot,_rightFoot;
@@ -14,7 +14,43 @@ namespace BoatAttack.Fishing
         private bool _hidden;
         private readonly Dictionary<Transform,Quaternion> _rest=new Dictionary<Transform,Quaternion>();
         private readonly Dictionary<Transform,Vector3> _restPositions=new Dictionary<Transform,Vector3>();
-        public bool Ready=>_model!=null && _clips.Count>=3;
+        public bool Ready=>_model!=null && _clips.Count>=3 && HandRigReady;
+        private float _eyeHeight=1.58f,_eyeForward=.12f,_seatWeight,_crouchWeight;
+        private int _stanceFrame=-1;
+        public bool IsStanceSettled(bool ashore,bool crouched)=>Mathf.Approximately(_seatWeight,ashore?0:1)
+            && Mathf.Approximately(_crouchWeight,ashore && crouched?1:0);
+        public Vector3 InteractionLean { get; set; }
+        public Vector3 AppliedInteractionLean { get; private set; }
+        public Vector3 EyePosition=>transform.TransformPoint(new Vector3(0,_eyeHeight-.38f*_seatWeight-.42f*_crouchWeight,_eyeForward-.08f*_seatWeight-.12f*_crouchWeight))+Vector3.ClampMagnitude(InteractionLean,.22f);
+        private void CalibrateEye()
+        {
+            // 从同源头部实际蒙皮采样估计眼位，不使用导入器膨胀的动画包围盒。
+            var mesh=new Mesh();HeadSkin.BakeMesh(mesh);var bounds=new Bounds();bool first=true;
+            var vertices=mesh.vertices;
+            foreach(var v in vertices)
+            {
+                var p=transform.InverseTransformPoint(HeadSkin.transform.TransformPoint(v));
+                if(first){bounds=new Bounds(p,Vector3.zero);first=false;}else bounds.Encapsulate(p);
+            }
+            // 眼位取双眼子网格的中心，不能取整颗头最前端（鼻尖/头发），否则近处双手会落到镜头外。
+            var eyes=new Bounds();bool hasEyes=false;var materials=HeadSkin.sharedMaterials;
+            for(int submesh=0;submesh<mesh.subMeshCount && submesh<materials.Length;submesh++)
+            {
+                if(materials[submesh]==null || materials[submesh].name!="Eye")continue;
+                foreach(int index in mesh.GetIndices(submesh))
+                {
+                    var point=transform.InverseTransformPoint(HeadSkin.transform.TransformPoint(vertices[index]));
+                    if(!hasEyes){eyes=new Bounds(point,Vector3.zero);hasEyes=true;}else eyes.Encapsulate(point);
+                }
+            }
+            Destroy(mesh);
+            if(!first)
+            {
+                _eyeHeight=Mathf.Clamp(hasEyes?eyes.center.y:Mathf.Lerp(bounds.min.y,bounds.max.y,.60f),1.35f,1.70f);
+                // 桌面观察原点位于眼睛与头部体积中心之间，避免贴在角膜表面让短臂道具穿入近裁剪面。
+                _eyeForward=Mathf.Clamp(hasEyes?Mathf.Lerp(eyes.center.z,bounds.center.z,.5f):bounds.center.z,-.05f,.22f);
+            }
+        }
         public void Build()
         {
             var prefab=Resources.Load<GameObject>("FishingCharacter/BeachCharacter");
@@ -65,6 +101,7 @@ namespace BoatAttack.Fishing
                 if(bone==null)throw new InvalidOperationException("Beach Character stance rig incomplete");
                 _rest[bone]=bone.localRotation;_restPositions[bone]=bone.localPosition;
             }
+            BuildArms();CalibrateEye();
             _animation.Play(_clips["Idle"]);
         }
         private static void CalibrateAnkle(Transform thigh,Transform shin,Transform ankle)
@@ -76,26 +113,44 @@ namespace BoatAttack.Fishing
         public void Pose(bool ashore,float speed,bool crouched,bool grounded,bool hidden,bool paused)
         {
             if(_model==null)return;
-            if(_hidden!=hidden){foreach(var renderer in _renderers)renderer.shadowCastingMode=hidden?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;_hidden=hidden;}
+            // Keep the same body/arms in FP, TP and XR. Never disable or rescale Head:
+            // this source has a separate head renderer, so no skeleton/bind path surgery is needed.
+            if(_hidden!=hidden){HeadSkin.shadowCastingMode=hidden?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;_hidden=hidden;}
             string clip=_clips[ashore && grounded && speed>.1f?(speed>3?"Run":"Walk"):"Idle"];
             if(!_animation.IsPlaying(clip))_animation.CrossFade(clip,.15f);
             foreach(AnimationState state in _animation)state.speed=paused?0:1;
             // 每次先恢复叠加层再采样，防止坐姿、蹲姿污染下一帧或站立姿态。
             foreach(var rest in _rest)rest.Key.localRotation=rest.Value;
             foreach(var rest in _restPositions)rest.Key.localPosition=rest.Value;
+            RestoreArmRest(); // Also restores scale and all finger bones with no animation curves.
             _animation.Sample();
             _leftAnkle.localPosition=_restPositions[_leftAnkle];_rightAnkle.localPosition=_restPositions[_rightAnkle];
-            if(!ashore || crouched)
+            // 每帧只推进一次视觉坐姿/蹲姿；碰撞与上下船安全判定仍立即生效。
+            if(_stanceFrame!=Time.frameCount || paused)
             {
-                // 此模型的 Body 同时带动躯干和大腿；Foot 是 Root 的独立子骨骼。
-                // 保留动画中的踝部目标，用双骨 IK 弯腿，而不是假定本地 X 轴一致。
-                var footOffset=ashore?Vector3.zero:transform.forward*.35f;
+                float amount=paused || _stanceFrame<0?1:Mathf.Min(1,Time.deltaTime*8);
+                _seatWeight=Mathf.MoveTowards(_seatWeight,ashore?0:1,amount);
+                _crouchWeight=Mathf.MoveTowards(_crouchWeight,ashore && crouched?1:0,amount);
+                _stanceFrame=Time.frameCount;
+            }
+            if(_seatWeight>0 || _crouchWeight>0)
+            {
+                var footOffset=transform.forward*(.35f*_seatWeight);
                 var leftTarget=_leftAnkle.position+footOffset;var rightTarget=_rightAnkle.position+footOffset;
-                _body.position+=Vector3.down*(ashore?.42f:.38f)-transform.forward*(ashore?.12f:.08f);
+                _body.position+=Vector3.down*(.38f*_seatWeight+.42f*_crouchWeight)-transform.forward*(.08f*_seatWeight+.12f*_crouchWeight);
                 _leftFoot.position+=footOffset;_rightFoot.position+=footOffset;
                 SolveLeg(_leftThigh,_leftShin,_leftAnkle,leftTarget);
                 SolveLeg(_rightThigh,_rightShin,_rightAnkle,rightTarget);
             }
+            // 接触只允许有限的真实躯干俯身；脚目标保持不动，随后重新求解双腿。
+            AppliedInteractionLean=paused?Vector3.zero:Vector3.ClampMagnitude(InteractionLean,.22f);
+            if(AppliedInteractionLean.sqrMagnitude>0)
+            {
+                var leftTarget=_leftAnkle.position;var rightTarget=_rightAnkle.position;
+                _body.position+=AppliedInteractionLean;
+                SolveLeg(_leftThigh,_leftShin,_leftAnkle,leftTarget);SolveLeg(_rightThigh,_rightShin,_rightAnkle,rightTarget);
+            }
+            CaptureArmBase(paused);
         }
         private void SolveLeg(Transform thigh,Transform shin,Transform ankle,Vector3 target)
         {

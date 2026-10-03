@@ -22,7 +22,7 @@ namespace BoatAttack.Fishing
         private bool CatchVisible => Controller.LastCatch.Fish != null && CatchAge < CardSeconds;
 
         public bool BlocksPointer(Vector2 screen, int width, int height)
-            => Controller.InventoryOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
+            => Controller.ShopBlocksGameplay || Controller.InventoryOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
                 Controller.HarborDeskOpen && Controller.AtHarbor, Controller.AtHarbor,
                 Controller.Ecology.Candidate.HasValue && !CatchVisible, Controller.Acceptance != null);
 
@@ -55,7 +55,8 @@ namespace BoatAttack.Fishing
                 GUI.matrix = Matrix4x4.TRS(new Vector3(_offset, 0, 0), Quaternion.identity, new Vector3(_scale, _scale, 1));
                 if (_label == null) _label = new GUIStyle(GUI.skin.label) { font = _font, wordWrap = true, richText = false, padding = new RectOffset() };
                 _fade = 1f;
-                if (c.InventoryOpen) { DrawInventory(); DrawInventoryNotice(); }
+                if (c.ShopOpen) DrawTackleShop();
+                else if (c.InventoryOpen) { DrawInventory(); DrawInventoryNotice(); }
                 else if (c.JournalOpen) DrawJournal();
                 else if (c.Paused) DrawPause();
                 else
@@ -186,6 +187,6 @@ namespace BoatAttack.Fishing
             return "鱼在冲刺 · 放线避开拉力";
         }
 
-        private void OnDestroy() { if (_font != null) Destroy(_font); }
+        private void OnDestroy() { ReleaseTerrainMap(); if (_font != null) Destroy(_font); }
     }
 }

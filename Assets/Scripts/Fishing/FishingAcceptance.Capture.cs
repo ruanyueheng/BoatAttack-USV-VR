@@ -57,6 +57,7 @@ namespace BoatAttack.Fishing
                     throw new InvalidOperationException("Screen capture returned the wrong backbuffer dimensions.");
                 string name = (_manifest.captures.Count + 1).ToString("D2") + "-" + CurrentCase + "-" + image.width + "x" + image.height + ".png";
                 bool fullHud = HasHudProbe(image);
+                CaptureHandDiagnostics();
                 File.WriteAllBytes(Path.Combine(CaptureDirectory, fullHud ? name : "INVALID-" + name), image.EncodeToPNG());
                 if (!fullHud) throw new InvalidOperationException("HUD proof marker is absent. Keep the player visible and unminimized; the invalid image was retained for diagnosis.");
                 _manifest.captures.Add(new CaptureEntry
@@ -76,6 +77,30 @@ namespace BoatAttack.Fishing
                 if (image != null) Destroy(image);
                 IsCapturing = false;
             }
+        }
+
+        private void CaptureHandDiagnostics()
+        {
+            var character=Controller.Shore.Character;
+            var skin=character.BodySkin;
+            if(CurrentCase==FishingAcceptanceCase.Bite)Debug.Log("[FISHING-HAND-CAPTURE] rodScale="+Controller.Hands.Rod.lossyScale
+                +" rodPosition="+Controller.Hands.Rod.position+" eye="+Controller.viewCamera.transform.position);
+            var baked=new Mesh();
+            try
+            {
+                var bounds=skin.bounds;bool visible=skin.isVisible;
+                skin.BakeMesh(baked);var vertices=baked.vertices;
+                foreach(bool left in new[]{true,false})
+                {
+                    var target=left?Controller.Hands.Left:Controller.Hands.Right;
+                    var palm=character.PalmPosition(left);float nearest=float.MaxValue;
+                    foreach(var vertex in vertices)nearest=Mathf.Min(nearest,Vector3.Distance(palm,skin.transform.TransformPoint(vertex)));
+                    Debug.Log("[FISHING-HAND-CAPTURE] case="+CurrentCase+" left="+left+" target="+target.Visible+" skinVisible="+visible
+                        +" boundsContain="+bounds.Contains(palm)+" palmViewport="+Controller.viewCamera.WorldToViewportPoint(palm)
+                        +" goalViewport="+Controller.viewCamera.WorldToViewportPoint(target.Palm.position)+" nearestSkin="+nearest);
+                }
+            }
+            finally{Destroy(baked);}
         }
 
         private static bool HasHudProbe(Texture2D image)

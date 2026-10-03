@@ -8,14 +8,24 @@ namespace BoatAttack.Fishing
         // Named jetties remain convenient walking routes. All other coastline is sampled from physics,
         // not a finite list of authored markers. No ground is created and no cliff is made walkable.
         public bool FindLanding(out Vector3 feet,out bool namedSite)
+            => FindLanding(out feet,out namedSite,out _,out _);
+        private bool FindLanding(out Vector3 feet,out bool namedSite,out int surveySite,out bool shopLanding)
         {
-            feet=Vector3.zero;namedSite=false;
-            if(NearestSite>=0 && BerthDistance<=9f)
+            feet=Vector3.zero;namedSite=false;surveySite=-1;shopLanding=false;
+            var shop=Controller.TackleShop;
+            if(shop!=null && shop.Available && FishingPrototype.FlatDistance(Controller.Player.transform.position,shop.mooringPoint.position)<=9f)
+            {
+                var landing=shop.LandingPosition;
+                if(Ground(landing,out feet) && Mathf.Abs(feet.y-landing.y)<.5f && Clearance(feet)
+                    && SafeCoastalFooting(feet) && ClearTransfer(feet))
+                {namedSite=true;shopLanding=true;return true;}
+            }
+            if(NearestSite>=0 && NearestSite<Sites.Length && BerthDistance<=9f)
             {
                 var site=Sites[NearestSite];
                 if(Ground(site.Landing,out feet) && Mathf.Abs(feet.y-site.Landing.y)<1 && Clearance(feet)
                     && SafeCoastalFooting(feet) && ClearTransfer(feet))
-                {namedSite=true;return true;}
+                {namedSite=true;surveySite=NearestSite;return true;}
             }
             var boat=Controller.Player.transform.position;
             float best=float.MaxValue;bool found=false;
@@ -65,7 +75,7 @@ namespace BoatAttack.Fishing
         }
         public bool CanBoard()
         {
-            if(!Ashore)return false;
+            if(!Ashore || Controller.ShopBlocksGameplay)return false;
             var boat=Controller.Player.transform.position;
             if(BoatEdgeDistance()<=4f && Mathf.Abs(Actor.position.y-(boat.y+.6f))<=3f && ClearTransfer(Actor.position))return true;
             // Existing long access ramps still offer a return at their landward end, provided the

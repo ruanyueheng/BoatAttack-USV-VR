@@ -149,7 +149,7 @@ namespace BoatAttack.EditorTools
                 Check(FishingPrototype.FlatDistance(rb.position,moored)<.5f,"boat stays moored while exploring "+i);
                 c.ToggleView();shore.SyncRider();Check(shore.Actor.GetComponentInChildren<Renderer>().shadowCastingMode==UnityEngine.Rendering.ShadowCastingMode.On,"third person physical model "+i);
                 CaptureScene(c,"shore-"+i+"-third-person");
-                c.ToggleView();shore.SyncRider();Check(shore.Actor.GetComponentInChildren<Renderer>().shadowCastingMode==UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly,"first person hides mesh, retains shadow "+i);
+                c.ToggleView();shore.SyncRider();FishingCharacterValidation.CheckVisibility(c,true);
                 var previous=shore.Actor.position;c.TogglePause();shore.Walk(Vector2.up,true,.05f);Check(shore.Actor.position==previous,"pause prevents walking");c.TogglePause();
                 if(i==2){var corner=WalkCorner(c,new Vector3(92.8f,0,-65));while(corner.MoveNext())yield return null;}
                 int back=0;

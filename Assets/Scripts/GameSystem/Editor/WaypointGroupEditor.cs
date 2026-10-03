@@ -6,7 +6,7 @@ using UnityEditorInternal;
 namespace BoatAttack
 {
     [CustomEditor(typeof(WaypointGroup))]
-    public class WaypointGroupEditor : Editor
+    public class WaypointGroupEditor : UnityEditor.Editor
     {
         private WaypointGroup _wpGroup;
         private SerializedProperty _waypoints;
