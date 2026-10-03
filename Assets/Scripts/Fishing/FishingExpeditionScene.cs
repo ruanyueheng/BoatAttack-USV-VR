@@ -7,6 +7,7 @@ namespace BoatAttack.Fishing
     {
         private FishingPrototype _c;
         private readonly Vector3[] _points=new Vector3[5];
+        private readonly Transform[] _interactionVisuals=new Transform[5];
         private readonly bool[] _available=new bool[5];
         private static readonly int[] Regions={0,3,3,3,2};
         private static readonly string[] Labels={"阅读维修记录","检查鱼纹箱","检查双环维修箱","检查条纹箱","安装组件并校准信标"};
@@ -37,9 +38,10 @@ namespace BoatAttack.Fishing
             for(int i=0;i<_points.Length;i++)_available[i]=c.Shore.Sites[Regions[i]].Available;
             if(_available[0])
             {
-                FishingProps.Spawn("MaintenanceRecord", transform, _points[0]+new Vector3(.75f,1.05f,0));
+                _interactionVisuals[0]=FishingProps.Spawn("MaintenanceRecord", transform, _points[0]+new Vector3(.75f,1.05f,0)).transform;
             }
             for(int i=1;i<=3;i++)if(_available[i])BuildCrate(i);
+            var beacon=c.GetComponentInChildren<FishingBeaconVisual>();_interactionVisuals[4]=beacon==null?null:beacon.transform;
             var marker=FishingProps.Spawn("ChannelMarker", transform, ChannelMarker);
             var facing=_points[4]-ChannelMarker; facing.y=0;
             if(facing.sqrMagnitude>.001f)marker.transform.rotation=Quaternion.LookRotation(facing);
@@ -50,18 +52,26 @@ namespace BoatAttack.Fishing
             var root=new GameObject(Labels[id]).transform;root.SetParent(transform,false);root.position=_points[id]+new Vector3(.65f,0,0);
             FishingProps.Spawn("CrateBody", root, Vector3.zero);
             FishingProps.Spawn(id==2?"CargoSignService":id==1?"CargoSignFish":"CargoSignCloth", root, Vector3.zero);
+            _interactionVisuals[id]=root;
             if(id==2)_component=FishingProps.Spawn("RepairCoil", root, new Vector3(0,.74f,0));
         }
+        private bool TargetAvailable(int target)
+        {
+            if(target<0 || target>=_points.Length || !_available[target] || _interactionVisuals[target]==null || !_interactionVisuals[target].gameObject.activeInHierarchy)return false;
+            if(target==4 && !Facts.Has(FishingExpedition.Accepted|FishingExpedition.RecordRead|FishingExpedition.ComponentFound))return false;
+            return !((target==0 && Facts.Has(FishingExpedition.RecordRead)) || (target>=1 && target<=3 && Facts.Has(FishingExpedition.ComponentFound))
+                || (target==4 && Facts.Has(FishingExpedition.BeaconRepaired)));
+        }
+        public string InteractionLabel(int target)=>target>=0 && target<Labels.Length?Labels[target]:string.Empty;
+        public Transform InteractionRoot(int target)=>target==2 && _component!=null?_component.transform:target>=0 && target<_interactionVisuals.Length?_interactionVisuals[target]:null;
         public int Resolve()
         {
             if(!_c.Ashore)return -1;
             int best=-1; float distance=2.6f;
             for(int i=0;i<_points.Length;i++)
             {
-                if(!_available[i] || _c.Shore.CurrentSite!=Regions[i])continue;
-                // Leave the historical survey reachable when repair prerequisites are missing.
-                if(i==4 && !Facts.Has(FishingExpedition.Accepted|FishingExpedition.RecordRead|FishingExpedition.ComponentFound))continue;
-                if((i==0 && Facts.Has(FishingExpedition.RecordRead)) || (i>=1 && i<=3 && Facts.Has(FishingExpedition.ComponentFound)) || (i==4 && Facts.Has(FishingExpedition.BeaconRepaired)))continue;
+                if(!TargetAvailable(i))continue;
+                // 是否可操作只由此目标的状态、距离和视线决定，不依赖从哪个岸点登陆。
                 float d=Vector3.Distance(_c.Shore.Position,_points[i]);
                 if(d<distance && _c.Shore.CanSeeTask(_points[i])){best=i;distance=d;}
             }
@@ -80,7 +90,11 @@ namespace BoatAttack.Fishing
         {
             if(_c.Paused || !_c.Ashore)return false;
             if(Aligning){Confirm();return true;}
-            int target=Resolve();if(target<0)return false;
+            return InteractAt(Resolve());
+        }
+        public bool InteractAt(int target)
+        {
+            if(_c.Paused || !_c.Ashore || !TargetAvailable(target) || Vector3.Distance(_c.Shore.Position,_points[target])>=2.6f || !_c.Shore.CanSeeTask(_points[target]))return false;
             if(target==0){Facts.ReadRecord();_c.CommitExpedition("维修记录：备用线圈运往 D 南岸，认准青色双环箱。鱼纹箱装渔具，条纹箱装布料。");}
             else if(target==2){Facts.FindComponent();Refresh();_c.CommitExpedition("取得维修线圈！不占鱼箱；接取委托并阅读记录后，到 C 旧港安装。");}
             else if(target==1 || target==3)_c.Notice("不是维修箱。"+(target==1?"鱼纹箱是渔具。":"条纹箱是布料。")+"找青色双环标记。",6);

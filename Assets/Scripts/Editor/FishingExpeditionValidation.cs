@@ -91,6 +91,11 @@ namespace BoatAttack.EditorTools
             if(!ok)throw new Exception(label);
             Debug.Log("[EXPEDITION] CHECK: "+label);
         }
+        private static void Presentation(FishingPrototype c)
+        {
+            c.Shore.SyncRider();c.View.ApplyView();c.Hands.Apply();c.FieldWorld.ApplyHeldTool();c.CatchRig.Apply(0);
+            c.Shore.Character.ApplyHandTargets(c.Hands.Left,c.Hands.Right);
+        }
         private static void SaveCheck(FishingPrototype c,string label)
         {
             var restored=FishingSaveStore.Load(c.SavePath,out string warning);
@@ -99,9 +104,9 @@ namespace BoatAttack.EditorTools
         private static void Land(FishingPrototype c,int site)
         {
             c.ReturnToHarbor();var shore=c.Shore;var location=shore.Sites[site];Check(location.Available,"site available "+site);
-            var side=Vector3.ProjectOnPlane(location.Berth-location.Landing,Vector3.up).normalized;
-            var p=location.Berth+side*5+Vector3.up;var rb=c.Player.engine.RB;
-            c.Player.transform.position=p;rb.position=p;rb.velocity=Vector3.zero;rb.angularVelocity=Vector3.zero;Physics.SyncTransforms();
+            // 使用已由四码头回归验证的实际泊位；旧的额外外推 5m 在旧港会落入岩石/隔断。
+            var p=location.Berth+Vector3.up*.6f;var rb=c.Player.engine.RB;
+            c.Player.transform.SetPositionAndRotation(p,Quaternion.identity);rb.position=p;rb.rotation=Quaternion.identity;rb.velocity=Vector3.zero;rb.angularVelocity=Vector3.zero;Physics.SyncTransforms();
             Check(shore.TryDisembark(),"disembark "+site+" "+c.Message);
         }
         private static IEnumerator Walk(FishingPrototype c,Vector3 point,float stopDistance=1.4f)
@@ -127,7 +132,7 @@ namespace BoatAttack.EditorTools
                 while(c.Career.Count<c.Career.Capacity)
                     Check(c.Career.Store(new CatchRecord { id=Guid.NewGuid().ToString("N"),kind=FishKind.Coral,grams=1000,value=FishingSpecies.Value(FishKind.Coral,false,1000) }),"fill hold after cast");
             }
-            c.View.ApplyView();c.Hands.Apply();Snapshot(c,"07-net-grip",Vector3.zero,Vector3.zero,true);
+            Presentation(c);Snapshot(c,"07-net-grip",Vector3.zero,Vector3.zero,true);
             Check(c.CatchRig.CaptureAndStoreForAutomation(),"real net geometry plus explicit storage path");
         }
         private static void MigrationChecks()
@@ -182,7 +187,11 @@ namespace BoatAttack.EditorTools
             int guard=0;
             while(FishingPrototype.FlatDistance(rb.position,end)>2f && guard++<1200)
             {
-                c.Player.engine.Accelerate(.25f);yield return null;
+                // 海浪会产生偏航；用真实转向输入闭环修正，而非假设开环油门始终直航。
+                var offset=Vector3.ProjectOnPlane(end-rb.position,Vector3.up);
+                float error=Vector3.SignedAngle(Vector3.ProjectOnPlane(rb.transform.forward,Vector3.up),offset,Vector3.up);
+                c.Player.engine.Turn(Mathf.Clamp(error/35f,-1f,1f));
+                c.Player.engine.Accelerate(Mathf.Abs(error)>50f?.08f:offset.magnitude<8f?.1f:.25f);yield return null;
             }
             Check(guard<1200,"real engine sails north offshore berth-to-ground; position="+rb.position);
             rb.velocity=Vector3.zero;rb.angularVelocity=Vector3.zero;
@@ -218,18 +227,21 @@ namespace BoatAttack.EditorTools
             Check(c.Career.Expedition.Facts==0,"fresh quest facts");
             MigrationChecks();NorthCorridorCheck(c);
             PropChecks(c);
-            Check(c.Hands!=null && c.Hands.Left.Skin.bones.Length==16 && c.Hands.Right.Skin.bones.Length==16,"two articulated gloves with fifteen finger joints each");
-            Check(c.Hands.Left.Skin.sharedMesh.vertexCount<12000,"glove vertex budget");
-            Check(c.fishingSpots.Length==4 && c.NavigationCount==9,"four grounds and four shore destinations");
+            FishingCharacterValidation.CheckSource(c);
+            var handExpiry=FishingCharacterValidation.CheckTargetExpiry();while(handExpiry.MoveNext())yield return null;
+            Check(c.fishingSpots.Length==4 && c.NavigationCount==10 && c.ShopNavigationIndex==9,"四渔区、四调查岸点及独立商店航点");
             c.MoveToSpotForAutomation(3);c.Interact();Check(!c.Anchored,"north ground locked before repair");
             c.ReturnToHarbor();c.MoveToSpotForAutomation(0);c.Interact();
-            c.View.ApplyView();c.Hands.Apply();
-            Check(c.Hands.Left.gameObject.activeSelf && c.Hands.Right.gameObject.activeSelf,"first person shows both hands");
+            Presentation(c);
+            Check(c.Hands.Left.Visible && c.Hands.Right.Visible,"first person supplies both fishing goals");
+            FishingCharacterValidation.CheckVisibility(c,true);
             Snapshot(c,"04-first-person-rod",Vector3.zero,Vector3.zero,true);
-            c.Hands.Left.Pose(0);var baked=new Mesh();c.Hands.Left.Skin.BakeMesh(baked);var open=baked.vertices;
-            c.Hands.Left.Pose(1);c.Hands.Left.Skin.BakeMesh(baked);var closed=baked.vertices;int changed=0;for(int i=0;i<open.Length;i++)if((open[i]-closed[i]).sqrMagnitude>.000001f)changed++;
-            Check(changed>100,"finger pose deforms actual skinned vertices");UnityEngine.Object.Destroy(baked);c.Hands.Apply();
-            c.ToggleView();c.Hands.Apply();Check(!c.Hands.Left.gameObject.activeSelf && !c.Hands.Right.gameObject.activeSelf,"third person hides first-person hands");c.ToggleView();
+            FishingCharacterValidation.CheckPoses(c);
+            c.ToggleView();Presentation(c);
+            Check(c.Hands.Left.Visible && c.Hands.Right.Visible,"third person still supplies both fishing goals");
+            Check(Vector3.Distance(c.Hands.Rod.position,c.Shore.Character.HandReferencePosition)<1f,"third-person rod stays by rider, not following camera");
+            FishingCharacterValidation.CheckVisibility(c,false);
+            c.ToggleView();Presentation(c);
             Catch(c);
             Check(c.Career.Expedition.Facts==0,"original ground catch cannot advance quest");
             c.ReturnToHarbor();c.SellAll();
@@ -242,7 +254,7 @@ namespace BoatAttack.EditorTools
             var pausedFacing=c.viewCamera.transform.rotation;c.TogglePause();c.View.ApplyShoreLookDelta(new Vector2(200,200));c.View.ApplyView();
             Check(Quaternion.Angle(pausedFacing,c.viewCamera.transform.rotation)<.01f,"pause prevents shore look");c.TogglePause();
             c.View.ApplyShoreLookDelta(new Vector2(float.NaN,0));c.View.ApplyView();Check(!float.IsNaN(c.viewCamera.transform.rotation.x),"invalid look delta rejected");
-            c.Hands.Apply();Snapshot(c,"05-shore-hands",Vector3.zero,Vector3.zero,true);c.View.ResetLook();
+            Presentation(c);Snapshot(c,"05-shore-hands",Vector3.zero,Vector3.zero,true);c.View.ResetLook();
             Check(c.Expedition.Resolve()==1,"south landing resolves fish box");
             int before=c.Career.ShoreTaskMask;c.Interact();Check(c.Career.Expedition.Facts==0 && c.Career.ShoreTaskMask==before,"one E only inspects wrong box");
             var walk=Walk(c,c.Shore.Sites[3].Tasks[1]);while(walk.MoveNext())yield return null;
@@ -251,8 +263,14 @@ namespace BoatAttack.EditorTools
             Check(c.Expedition.Resolve()==2 && c.Expedition.ActionTitle.Contains("双环"),"correct box prompt and resolver agree");
             Snapshot(c,"01-component-crate",c.Shore.Sites[3].Tasks[0]+new Vector3(.65f,.45f,0),new Vector3(2,1.4f,-2.7f));
             before=c.Career.ShoreTaskMask;c.Interact();Check(c.Career.Expedition.Facts==4 && c.Career.ShoreTaskMask==before,"component before acceptance; no double survey");SaveCheck(c,"component");
-            c.Hands.Apply();Snapshot(c,"06-held-repair-coil",Vector3.zero,Vector3.zero,true);
-            c.Interact();Check(c.Career.ShoreTaskMask!=before,"next E can still perform original survey");
+            Presentation(c);Snapshot(c,"06-held-repair-coil",Vector3.zero,Vector3.zero,true);
+            // v0.11 的 E 按最近对象仲裁；靠近勘测台后走真实接触请求，而不是旧固定优先级入口。
+            walk=Walk(c,c.Shore.Sites[3].Tasks[0],.25f);while(walk.MoveNext())yield return null;
+            Presentation(c);
+            bool surveyRequested=c.RequestWorldInteraction();
+            Check(surveyRequested && c.Actions.TargetId=="survey:6","survey remains selectable after component; target="+c.Actions.TargetId+" message="+c.Message+" preflight="+c.InspectWorldInteractionStart());
+            c.TickWorldAction(1,true,false);
+            Check(c.Career.ShoreTaskMask!=before,"original survey completes through its contact transaction");
             Land(c,0);walk=Walk(c,c.Shore.Sites[0].Tasks[0]);while(walk.MoveNext())yield return null;
             Check(c.Expedition.Resolve()==0,"record reachable");before=c.Career.ShoreTaskMask;c.Interact();
             Check(c.Career.Expedition.Facts==6 && c.Career.ShoreTaskMask==before,"record before acceptance; no double survey");SaveCheck(c,"record");

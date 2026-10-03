@@ -4,7 +4,7 @@ using UnityEngine.AI;
 namespace BoatAttack
 {
     [CustomEditor(typeof(AiController))]
-    public class AiControllerEditor : Editor
+    public class AiControllerEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {

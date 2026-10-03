@@ -17,7 +17,7 @@
 *.meta text
 *.unity text
 *.prefab text
-*.asset text
+*.asset text=auto
 *.mat text
 *.shader text
 *.shadergraph text

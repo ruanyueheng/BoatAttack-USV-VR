@@ -94,6 +94,14 @@ namespace BoatAttack.Fishing
             if (CurrentCase == FishingAcceptanceCase.Details && (!c.ShowDetails || c.HarborDeskOpen)) throw new InvalidOperationException("Details fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.Journal && (!c.JournalOpen || !c.Paused)) throw new InvalidOperationException("Journal fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.Settings && (c.JournalOpen || !c.Paused)) throw new InvalidOperationException("Settings fixture failed.");
+            if(CurrentCase==FishingAcceptanceCase.ShoreFirstPerson || CurrentCase==FishingAcceptanceCase.ShoreThirdPerson)
+            {
+                if(!c.Ashore || c.FirstPerson!=(CurrentCase==FishingAcceptanceCase.ShoreFirstPerson)
+                    || c.FieldWorld.HeldTool==null || !c.FieldWorld.HeldTool.gameObject.activeInHierarchy)
+                    throw new InvalidOperationException("Shore avatar/tool capture fixture failed.");
+            }
+            if(CurrentCase==FishingAcceptanceCase.ShopCounter && (!c.Ashore || !c.ShopOpen || !c.TackleShop.NearCounter))
+                throw new InvalidOperationException("Real shop counter capture fixture failed.");
         }
 
         private static void ValidateToolbarGates()

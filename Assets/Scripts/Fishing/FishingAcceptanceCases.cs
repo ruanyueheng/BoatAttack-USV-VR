@@ -5,17 +5,19 @@ namespace BoatAttack.Fishing
     public enum FishingAcceptanceCase
     {
         FreePlay, Bite, Fighting, Landing, Catch, LegendLeap,
-        HarborOrders, FullHold, MaxUpgrades, Details, Journal, Settings
+        HarborOrders, FullHold, MaxUpgrades, Details, Journal, Settings,
+        ShoreFirstPerson, ShoreThirdPerson, ShopCounter
     }
 
     /// <summary>Deterministic fixtures built through the production rules, not unchecked save JSON.</summary>
     public static class FishingAcceptanceCases
     {
-        public const int Count = 12;
+        public const int Count = 15;
         private static readonly string[] Titles =
         {
             "自由实玩 / 继续验收进度", "咬钩提示", "高张力收线", "抄网时机", "捕获与后续反馈", "传说跃水",
-            "三行委托与交易", "鱼箱已满", "三路线满级", "委托与传说详情", "图鉴日志", "暂停设置"
+            "三行委托与交易", "鱼箱已满", "三路线满级", "委托与传说详情", "图鉴日志", "暂停设置",
+            "岸上第一人称同源手臂", "岸上第三人称人物", "实体钓具店柜台"
         };
 
         public static string Title(FishingAcceptanceCase value)

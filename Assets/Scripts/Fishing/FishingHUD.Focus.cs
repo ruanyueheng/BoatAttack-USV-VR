@@ -54,7 +54,7 @@ namespace BoatAttack.Fishing
             }
             else if(c.Ashore)
             {
-                title=c.Expedition.ActionTitle ?? c.WorkshopWorld.ActionTitle ?? c.FieldWorld.ActionTitle ?? c.Shore.ActionTitle;
+                title=(c.Expedition.Aligning?c.Expedition.ActionTitle:c.WorldInteractionTitle) ?? c.Shore.ActionTitle;
                 help=c.Expedition.Aligning?c.Expedition.AlignmentHint:"空格跳跃 · Ctrl 蹲下 · E 采集 / 制作 · T 观察 · I 背包 · R 救援";
             }
             else if (!c.Anchored)

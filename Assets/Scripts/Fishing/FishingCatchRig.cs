@@ -18,14 +18,16 @@ namespace BoatAttack.Fishing
         public void Build(FishingPrototype c)
         {
             _c=c;Location=Place.Net;_boxLocal=c.FishBox.localPosition;
-            _tray=FishingArt.Shape("Safe catch inspection tray",PrimitiveType.Cylinder,c.Player.transform,new Vector3(.65f,1.04f,.7f),new Vector3(.8f,.025f,.8f),c.teal).transform;
+            _tray=FishingArt.Shape("Safe catch inspection tray",PrimitiveType.Cylinder,c.Player.transform,new Vector3(.65f,1.04f,.45f),new Vector3(.8f,.025f,.8f),c.teal).transform;
             _tray.gameObject.SetActive(false);
             var ring=FishingArt.Line("Fish box receiving rim",c.FishBox,c.teal,.022f,false);ring.positionCount=33;
             for(int i=0;i<33;i++){float a=i*Mathf.PI*2/32;ring.SetPosition(i,new Vector3(Mathf.Cos(a)*.36f,.4f,Mathf.Sin(a)*.36f));}
         }
         public void ConfigureLayout(bool xr)
         {
-            _c.FishBox.localPosition=xr?new Vector3(-.5f,.85f,.8f):_boxLocal;
+            // 桌面收鱼箱靠近角色右手可达侧；保留 XR 布局，并等收手后再移回航行位置。
+            bool receiving=_c.Anchored || _c.HasPendingCatch || (_c.WorldActionBusy && (_c.Actions.Kind==FishingActionKind.Store || _c.Actions.Kind==FishingActionKind.Release));
+            _c.FishBox.localPosition=xr?new Vector3(-.5f,.85f,.8f):receiving?new Vector3(-.5f,.85f,.25f):_boxLocal;
             if(xr && !_netHeld && (!_c.HasPendingCatch || Location!=Place.Net))
                 _c.LandingNet.SetPositionAndRotation(_c.BoatPoint(new Vector3(-.32f,1.15f,.25f)),Quaternion.Euler(0,_c.Player.transform.eulerAngles.y,0));
         }
@@ -36,10 +38,15 @@ namespace BoatAttack.Fishing
             return true;
         }
         public void ToggleInspect(){if(_c.HasPendingCatch && !_c.Paused){Location=Location==Place.Hand?Place.Tray:Place.Hand;if(Location==Place.Hand)_c.MeasureCatch();}}
-        public void RequestRelease()
+        public void ApplyActionContactPose(Vector3 position,Quaternion frame)
+        {
+            if(_c.HasPendingCatch)_c.ActiveFish.SetPositionAndRotation(position,frame*Quaternion.Euler(0,-90,0));
+        }
+        public void PrepareHandAction(){if(_c.HasPendingCatch && !_c.Paused)Location=Place.Hand;}
+        public void RequestRelease(bool animate=false)
         {
             if(!_c.HasPendingCatch || _c.Paused)return;
-            if(ReleaseConfirmation){_releaseUntil=0;_c.ResolveCatch(false);}
+            if(ReleaseConfirmation){_releaseUntil=0;if(animate)_c.RequestCatchResolution(false);else _c.ResolveCatch(false);}
             else{_releaseUntil=Time.unscaledTime+3;_c.Notice("再按 X 确认放生；不出售、不增加普通鱼金币。",3);}
         }
         public void ResetFixture(){if(!_c.HasIsolatedProfile)throw new System.InvalidOperationException("Isolated fixtures only");_fishId=null;Recover();}
@@ -56,8 +63,7 @@ namespace BoatAttack.Fishing
             if(dt<=0 || float.IsNaN(dt) || float.IsInfinity(dt))return;
             _assistTime+=Mathf.Min(dt,.05f);
             var center=_c.LandingTarget+Vector3.up*Mathf.Clamp((_assistTime-.25f)*.8f,0,.32f);
-            var rotation=Quaternion.Euler(0,_c.Player.transform.eulerAngles.y,0);
-            ApplyNetPose(center,rotation,dt);
+            ApplyNetPose(center,DesktopNetRotation(center),dt);
         }
         public bool CaptureAndStoreForAutomation()
         {
@@ -84,34 +90,88 @@ namespace BoatAttack.Fishing
             }
             return false;
         }
+        private Quaternion DesktopNetRotation(Vector3 center)
+        {
+            var along=(center-_c.Shore.Character.ShoulderPosition(true)).normalized;
+            var up=Vector3.ProjectOnPlane(Vector3.up,along);
+            if(along.sqrMagnitude<.9f || up.sqrMagnitude<.01f)return Quaternion.Euler(0,_c.Player.transform.eulerAngles.y,0);
+            return Quaternion.LookRotation(Vector3.Cross(along,up).normalized,up.normalized);
+        }
+        private Transform _gripFish;
+        private Vector3 _leftFishGrip,_rightFishGrip;
+        public Vector3 FishPalmLocal(bool left)
+        {
+            var fish=_c.ActiveFish;
+            if(_gripFish!=fish)
+            {
+                _gripFish=fish;var filter=fish.GetComponentInChildren<MeshFilter>();
+                if(filter==null || filter.sharedMesh==null){_leftFishGrip=_rightFishGrip=Vector3.zero;}
+                else
+                {
+                    var bounds=filter.sharedMesh.bounds;float span=Mathf.Min(bounds.extents.z*.28f,.16f/Mathf.Max(.01f,fish.lossyScale.z));
+                    var a=bounds.center+new Vector3(0,-bounds.extents.y*.7f,span);
+                    var b=bounds.center+new Vector3(0,-bounds.extents.y*.7f,-span);
+                    _leftFishGrip=fish.InverseTransformPoint(FishingContactGeometry.ClosestPoint(fish,filter.transform.TransformPoint(a)));
+                    _rightFishGrip=fish.InverseTransformPoint(FishingContactGeometry.ClosestPoint(fish,filter.transform.TransformPoint(b)));
+                }
+            }
+            return left?_leftFishGrip:_rightFishGrip;
+        }
         public void Apply(float dt)
         {
             if(_c==null || _c.Player==null)return;
-            ConfigureLayout(XRSettings.isDeviceActive);
+            bool xr=XRSettings.isDeviceActive;ConfigureLayout(xr);
             if(_c.Paused){if(_netHeld || Location==Place.Hand)Recover();}
-            else if(XRSettings.isDeviceActive)ReadTracked(dt);
+            else if(xr)ReadTracked(dt);
             else StepDesktop(dt);
-            _tray.gameObject.SetActive(_c.HasPendingCatch && Location==Place.Tray && !_c.Ashore);
-            if(!_c.HasPendingCatch){_fishId=null;return;}
-            var pending=_c.Career.PendingCatch;
-            if(_fishId!=pending.fish.id){_fishId=pending.fish.id;_c.RestorePendingFishVisual();}
-            if(Location==Place.Net && !_netHeld)
+            bool landing=_c.Anchored && !_c.HasPendingCatch && _c.Session.Phase==CatchPhase.Landing;
+            if(!xr && landing && !_assist)
+            {
+                var rotation=DesktopNetRotation(_c.LandingTarget);
+                _c.LandingNet.SetPositionAndRotation(_c.LandingTarget-rotation*new Vector3(FishingDetailArt.NetMouthOffset,0,0),rotation);
+            }
+            if(_c.HasPendingCatch && Location==Place.Net && !_netHeld)
             {
                 var parked=Quaternion.Euler(0,_c.Player.transform.eulerAngles.y,0);
                 _c.LandingNet.SetPositionAndRotation(_c.NetTray+Vector3.up*.13f-parked*new Vector3(FishingDetailArt.NetMouthOffset,0,0),parked);
             }
+            else if(!xr && !landing && !_netHeld && !_assist && (!_c.HasPendingCatch || Location!=Place.Net))
+            {
+                _c.LandingNet.localPosition=_c.StowedNetPosition;_c.LandingNet.localRotation=_c.StowedNetRotation;
+            }
+            // 网的实际姿态先确定，再供应左掌目标；不能放在无待处理鱼的提前返回之后。
+            if(!_c.Paused && (_netHeld || _assist || (!xr && landing)))
+                _c.Hands.SetToolTarget(true,_c.LandingNet,new Vector3(.05f,.035f,0),Quaternion.LookRotation(Vector3.right,Vector3.up),.9f);
+            _tray.gameObject.SetActive(_c.HasPendingCatch && Location==Place.Tray && !_c.Ashore);
+            if(!_c.HasPendingCatch){_fishId=null;return;}
+            var pending=_c.Career.PendingCatch;
+            if(_fishId!=pending.fish.id){_fishId=pending.fish.id;_c.RestorePendingFishVisual();}
             var fish=_c.ActiveFish;fish.gameObject.SetActive(true);
             Vector3 pos;Quaternion rot;
             if(Location==Place.Hand)
             {
-                if(XRSettings.isDeviceActive && FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out pos,out rot)){}
-                else if(!XRSettings.isDeviceActive){pos=_c.viewCamera.transform.TransformPoint(new Vector3(.18f,-.15f,.65f));rot=_c.viewCamera.transform.rotation;}
+                if(xr && FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out pos,out rot)){}
+                else if(!xr)
+                {
+                    _c.Hands.GetToolFrame(out var origin,out rot);
+                    pos=_c.ActionMovesFish?_c.ActionFishPosition:origin+rot*new Vector3(.04f,-.18f,.28f);
+                    if(_c.ActionMovesFish)rot=_c.ActionToolRotation;
+                }
                 else{Recover();pos=_c.NetTray;rot=_c.Player.transform.rotation;}
             }
-            else if(Location==Place.Net) {pos=_c.LandingNet.TransformPoint(new Vector3(FishingDetailArt.NetMouthOffset,-.13f,0));rot=_c.LandingNet.rotation;}
-            else {pos=_c.NetTray;rot=Quaternion.Euler(0,_c.Player.transform.eulerAngles.y,0);}
+            else if(Location==Place.Net){pos=_c.LandingNet.TransformPoint(new Vector3(FishingDetailArt.NetMouthOffset,-.13f,0));rot=_c.LandingNet.rotation;}
+            else{pos=_c.NetTray;rot=Quaternion.Euler(0,_c.Player.transform.eulerAngles.y,0);}
             float flop=Location==Place.Hand?0:Mathf.Sin(Time.time*9)*.035f;
             fish.SetPositionAndRotation(pos+Vector3.up*Mathf.Abs(flop),rot*Quaternion.Euler(flop*120,-90,flop*180));
+            if(Location==Place.Hand && !_c.Paused)
+            {
+                var left=FishPalmLocal(true);var right=FishPalmLocal(false);
+                if(!xr && !_c.ActionMovesFish)_c.Hands.FitToolPose(fish,left,right,!_netHeld,true);
+                var palmRotation=Quaternion.LookRotation(Vector3.right,Vector3.down);
+                if(!_netHeld && (xr || _c.Hands.CanReach(true,fish.TransformPoint(left),0)))_c.Hands.SetToolTarget(true,fish,left,palmRotation,.5f);
+                else if(!xr)_c.Hands.RestHand(true);
+                _c.Hands.SetToolTarget(false,fish,right,palmRotation,.55f);
+            }
         }
         private Vector3 _lastTip;private bool _tipSample;
         public bool TryTipIntoBox(Vector3 center,Quaternion rotation,float dt)

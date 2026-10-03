@@ -14,6 +14,8 @@ internal static class Program
     {
         try
         {
+            ActionClockTests.Run(Check);
+            MapTests.Run(Check);
             CraftingTests.Run(Check);
             CatchTransactionTests.Run(Check);
             FieldTests.Run(Check);

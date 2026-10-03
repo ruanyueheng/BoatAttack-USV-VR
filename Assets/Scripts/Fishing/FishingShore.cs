@@ -19,6 +19,8 @@ namespace BoatAttack.Fishing
         public Site[] Sites { get; } = new Site[FishingExploration.SiteCount];
         public bool Ashore { get; private set; }
         public int CurrentSite { get; private set; } = -1;
+        public bool ShopLanding { get; private set; }
+        public bool HasSurveySite => Ashore && !FreeLanding && !ShopLanding && CurrentSite >= 0 && CurrentSite < Sites.Length;
         public CharacterController Body { get; private set; }
         public Transform Actor => Body.transform;
         public Vector3 Position => Ashore ? Actor.position : Controller.Player.transform.position;
@@ -144,11 +146,11 @@ namespace BoatAttack.Fishing
             UpdateProximity();
             if(Controller.Anchored){Controller.Notice("先按 Q 收起钓具，再靠近岸边。",4);return false;}
             if(Controller.Speed>1.5f){Controller.Notice("按 Shift 刹车（S 为倒航），低于 5.4 km/h 再下船。",4);return false;}
-            if(!FindLanding(out var feet,out var namedSite))
+            if(!FindLanding(out var feet,out var namedSite,out var surveySite,out var shopLanding))
             {Controller.Notice("附近没有安全落脚点：请靠近低矮岸面，避开陡壁、深水和头顶障碍。",4);return false;}
-            FreeLanding=!namedSite;
+            FreeLanding=!namedSite;ShopLanding=shopLanding;
             LandingPoint=feet;
-            CurrentSite=NearestSite;
+            CurrentSite=surveySite;
             _mooring=Controller.Player.engine.RB.position;_mooringRotation=Controller.Player.engine.RB.rotation;
             Controller.Player.engine.RB.velocity=Vector3.zero;Controller.Player.engine.RB.angularVelocity=Vector3.zero;
             Ashore=true;_lastSafe=feet+Vector3.up*.08f;_motion.Reset();
@@ -159,12 +161,14 @@ namespace BoatAttack.Fishing
         }
         public bool TryBoard()
         {
-            if(!Ashore || Controller.Paused)return false;
+            if(!Ashore || Controller.Paused || Controller.ShopBlocksGameplay)return false;
             if(!CanBoard()) {Controller.Notice("靠近船体边缘（4m 内）再按 G；高差过大或中间有墙时无法登船。",4);return false;}
             BoardImmediately();Controller.Notice("已上船 · WASD 航行；回港按 E 提交海岸调查。",5);return true;
         }
         public void BoardImmediately()
         {
+            Controller.CancelWorldAction();
+            Controller.TackleShop?.Close();ShopLanding=false;
             if(Controller.Expedition!=null)Controller.Expedition.Cancel();
             Controller.LowerFieldTools();SetCrouch(false,true);Body.enabled=false;Ashore=false;Controller.RestoreBoatChart();CurrentSite=-1;WalkSpeed=0;_motion.Reset();Controller.View.ResetLook();SyncRider();
         }
@@ -178,7 +182,7 @@ namespace BoatAttack.Fishing
         public void Tick(bool allowInput,float dt)
         {
             if(!Ashore){UpdateProximity();return;}
-            if(Controller.Paused || Controller.InventoryOpen || Controller.ShowDetails || !allowInput || XRSettings.isDeviceActive)
+            if(Controller.Paused || Controller.ShopBlocksGameplay || Controller.WorldActionBlocksGameplay || Controller.InventoryOpen || Controller.ShowDetails || !allowInput || XRSettings.isDeviceActive)
             {WalkSpeed=0;ResetMoveInput();return;}
             var k=Keyboard.current;Vector2 input=Vector2.zero;bool sprint=false,jump=false,crouch=false;
             if(k!=null)
@@ -201,7 +205,7 @@ namespace BoatAttack.Fishing
 
         public void Move(Vector2 input,bool sprint,bool jump,bool crouch,float deltaTime)
         {
-            if(!Ashore || Controller.Paused || Controller.InventoryOpen || Controller.ShowDetails || (Controller.Expedition!=null && Controller.Expedition.Aligning) || XRSettings.isDeviceActive)
+            if(!Ashore || Controller.Paused || Controller.ShopBlocksGameplay || Controller.WorldActionBlocksGameplay || Controller.InventoryOpen || Controller.ShowDetails || (Controller.Expedition!=null && Controller.Expedition.Aligning) || XRSettings.isDeviceActive)
             {ResetMoveInput();return;}
             if(float.IsNaN(deltaTime) || float.IsInfinity(deltaTime) || deltaTime<=0 || float.IsNaN(input.x) || float.IsNaN(input.y) || float.IsInfinity(input.x) || float.IsInfinity(input.y))return;
             float dt=Mathf.Min(deltaTime,.05f);SetCrouch(crouch);
@@ -226,11 +230,20 @@ namespace BoatAttack.Fishing
         }
         public bool Survey()
         {
-            if(!Ashore || Controller.Paused)return false;
+            if(!Ashore || Controller.Paused || Controller.ShopBlocksGameplay)return false;
             UpdateProximity();
             if(NearbyTask<0){Controller.Notice("步行靠近橙色勘测台（2.6m 内），按 E 记录。J 查看海岸调查。",4);return false;}
             int id=NearbyTask;
             if(!Controller.RecordShoreTask(id))return false;
+            RefreshMarkers();UpdateProximity();return true;
+        }
+        public Transform SurveyMarker(int task)=>task>=0 && task<_taskMarkers.Length && _taskMarkers[task]!=null?_taskMarkers[task].transform:null;
+        public bool SurveyTask(int task)
+        {
+            if(!Ashore || Controller.Paused || task<0 || task>=Sites.Length*2)return false;
+            var point=Sites[task/2].Tasks[task%2];
+            if(!Sites[task/2].Available || Vector3.Distance(Actor.position,point)>=2.6f || !CanSeeTask(point))return false;
+            if(!Controller.RecordShoreTask(task))return false;
             RefreshMarkers();UpdateProximity();return true;
         }
         public void RefreshMarkers()
@@ -244,11 +257,14 @@ namespace BoatAttack.Fishing
             {
                 var boat=Controller.Player.transform;
                 var yaw=Quaternion.Euler(0,boat.eulerAngles.y,0);
-                Actor.SetPositionAndRotation(boat.position+yaw*(Controller.Anchored?new Vector3(.05f,.45f,-.55f):new Vector3(0,.25f,-.25f)),yaw);
+                // 桌面捕鱼时整个人物朝向作业侧，避免镜头看右舷而双臂仍朝船头；XR 不强制转动身体参考系。
+                bool fishing=Controller.UsesFishingSeat;
+                var facing=XRSettings.isDeviceActive?yaw:yaw*Quaternion.Euler(0,fishing?FishingPrototype.FishingSeatYaw:0,0);
+                Actor.SetPositionAndRotation(boat.position+yaw*(fishing?new Vector3(.55f,.45f,.2f):new Vector3(0,.25f,-.25f)),facing);
             }
             _character.Pose(Ashore,WalkSpeed,Crouched,Grounded,Controller.FirstPerson || XRSettings.isDeviceActive,Controller.Paused);
         }
-        public string LocationName => FreeLanding ? "自由海岸" : FishingExploration.SiteName(CurrentSite);
+        public string LocationName => ShopLanding ? FishingTackleShop.Name : FreeLanding ? "自由海岸" : FishingExploration.SiteName(CurrentSite);
         public string ActionTitle => !Ashore ? "G 靠岸下船 · 自动寻找安全岸面 / 码头" : NearbyTask>=0 ? "E "+FishingExploration.TaskName(NearbyTask)
             : CanBoard() ? "G 返回船上" : "靠近船边 G 上船 · 船体距离 "+BoatEdgeDistance().ToString("0.0")+" m";
     }
