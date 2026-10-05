@@ -38,6 +38,12 @@ namespace BoatAttack.EditorTools
                 ShaderUtil.allowAsyncCompilation=false;Directory.CreateDirectory("Logs/BeachShop");
                 var shop=c.Shop.transform;
                 Shot(c.viewCamera,shop.TransformPoint(new Vector3(18,10,-23)),shop.position+Vector3.up*1.5f,52,"in-scene.png");
+                if(c.Shop.Cashier!=null)
+                {
+                    var face=c.Shop.Cashier.transform.position+Vector3.up*1.48f;
+                    Shot(c.viewCamera,shop.TransformPoint(new Vector3(0,1.68f,1.15f)),face,48,"cashier-in-scene.png");
+                    Shot(c.viewCamera,shop.TransformPoint(new Vector3(-1.4f,1.68f,1.5f)),face,32,"cashier-closeup.png");
+                }
                 SessionState.SetBool(SceneKey+"active",false);
                 Debug.Log("[BEACH-SHOP-PREVIEW] PASS: actual island Play Mode shop render written to Logs/BeachShop/in-scene.png.");
                 EditorApplication.Exit(0);

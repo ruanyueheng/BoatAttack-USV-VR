@@ -2,13 +2,15 @@ using UnityEngine;
 
 namespace BoatAttack.Fishing
 {
-    /// <summary>Scene-authored shop. Reserved NPC markers contain no characters or autonomous behaviour.</summary>
+    /// <summary>Scene-authored shop with a lightweight attendant at the first reserved clerk marker.</summary>
     public sealed class FishingTackleShop : MonoBehaviour
     {
         public Transform entrance, purchasePoint, mooringPoint;
         public Transform[] clerkSpaces, customerSpaces;
         [System.NonSerialized] public FishingPrototype Controller;
         public bool IsOpen { get; private set; }
+        public FishingShopCashier Cashier { get; private set; }
+        private void Start() { Cashier = FishingShopCashier.Create(this); }
         public bool Inside
         {
             get
@@ -25,7 +27,7 @@ namespace BoatAttack.Fishing
             if (IsOpen) { Close(); return true; }
             if (!CanBrowse || Controller.Paused || Controller.InventoryOpen || Controller.HasPendingCatch || UnityEngine.XR.XRSettings.isDeviceActive) return false;
             IsOpen = true;
-            Controller.Notice("欢迎来到潮汐钓具店 · 选择装备升级，金币和装备自动保存。", 5f);
+            Controller.Notice("收银员：欢迎来到潮汐钓具店！请选择装备，金币和装备自动保存。", 5f);
             return true;
         }
         public void Close() { IsOpen = false; }
