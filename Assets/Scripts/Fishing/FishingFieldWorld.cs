@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace BoatAttack.Fishing
 {
-    public sealed class FishingFieldWorld : MonoBehaviour
+    public sealed partial class FishingFieldWorld : MonoBehaviour
     {
         public sealed class Pickup
         {
@@ -27,6 +27,7 @@ namespace BoatAttack.Fishing
             _c=c;_palette=new Material(c.PaletteShader){name="Field exploration vertex palette",enableInstancing=true};_owned.Add(_palette);
             foreach(FieldItem item in new[]{FieldItem.FieldGuide,FieldItem.Binoculars,FieldItem.Lantern,FieldItem.Shell,FieldItem.Driftwood})
             {var mesh=FishingFieldArt.Tool(item);_tools.Add(item,mesh);_owned.Add(mesh);}
+            foreach(var item in new[]{FieldItem.StonePickaxe,FieldItem.IronPickaxe}){var mesh=FishingWorkshopArt.Make(item);_tools.Add(item,mesh);_owned.Add(mesh);}
             var animalMeshes=new Mesh[3];for(int i=0;i<3;i++){animalMeshes[i]=FishingFieldArt.Animal((LandAnimalKind)i);_owned.Add(animalMeshes[i]);}
             for(int site=0;site<c.Shore.Sites.Length;site++)
             {
@@ -68,7 +69,7 @@ namespace BoatAttack.Fishing
             }
             return false;
         }
-        public void RefreshPickups(){foreach(var p in _pickups)p.Root.gameObject.SetActive(!_c.Career.Backpack.Collected(p.Id));_nearby=null;}
+        public void RefreshPickups(){foreach(var p in _pickups)if(p.Root!=null)p.Root.gameObject.SetActive(!_c.Career.Backpack.Collected(p.Id));_nearby=null;}
         private void Update()
         {
             if(_c==null || _c.Paused)return;
@@ -79,7 +80,7 @@ namespace BoatAttack.Fishing
                 float hop=a.Kind==LandAnimalKind.Rabbit?Mathf.Abs(Mathf.Sin(Time.time*8))*moving*.085f:Mathf.Sin(Time.time*5)*moving*.014f;
                 a.Root.position=Vector3.Lerp(a.Root.position,a.Feet+Vector3.up*hop,Mathf.Min(1,Time.deltaTime*16));
             }
-            foreach(var p in _pickups)if(p.Root.gameObject.activeSelf)p.Root.position=p.Feet+Vector3.up*(.32f+Mathf.Sin(Time.time*2+p.Id)*.025f);
+            foreach(var p in _pickups)if(p.Root!=null && p.Root.gameObject.activeSelf)p.Root.position=p.Feet+Vector3.up*(.32f+Mathf.Sin(Time.time*2+p.Id)*.025f);
             if(Time.time>=_senseAt){Sense();_senseAt=Time.time+.1f;}
         }
         public static float AlertRadius(bool crouched,bool sprinting)=>crouched?1.5f:sprinting?7f:3.5f;
@@ -125,7 +126,9 @@ namespace BoatAttack.Fishing
         private bool Visible(Vector3 target,float range,float dot)
         {
             var camera=_c.viewCamera.transform;var delta=target-camera.position;
-            return delta.magnitude<=range && Vector3.Dot(camera.forward,delta.normalized)>dot && _c.Shore.ClearSight(camera.position,target);
+            // 交互距离属于角色，不属于退到四米外的第三人称相机。
+            return Vector3.Distance(_c.ExplorerPosition,target)<=range && Vector3.Dot(camera.forward,delta.normalized)>dot
+                && _c.Shore.ClearSight(_c.Shore.Character.EyePosition,target);
         }
         public void Sense()
         {
@@ -134,7 +137,7 @@ namespace BoatAttack.Fishing
             foreach(var p in _pickups)
             {
                 float d=Vector3.Distance(p.Feet,_c.Shore.Position);
-                if(p.Root.gameObject.activeSelf && d<2.5f && d<nearest && Visible(p.Root.position,3.4f,.15f)){_nearby=p;nearest=d;}
+                if(p.Root!=null && p.Root.gameObject.activeSelf && d<2.5f && d<nearest && Visible(p.Root.position,3.4f,.15f)){_nearby=p;nearest=d;}
             }
             nearest=float.MaxValue;float range=_c.BinocularsRaised?22:8;
             foreach(var a in _animals)
@@ -143,33 +146,29 @@ namespace BoatAttack.Fishing
                 if(d<nearest && Visible(target,range,.92f)){_candidate=a;nearest=d;}
             }
         }
+        public bool TryPickupTarget(out Pickup pickup,bool refresh=true){if(refresh)Sense();pickup=_nearby;return pickup!=null;}
+        public bool PickupById(int id,FieldItem expectedItem,int expectedCount)
+        {
+            if(_c.Paused || !_c.Ashore)return false;
+            Pickup pickup=null;foreach(var p in _pickups)if(p.Id==id){pickup=p;break;}
+            if(pickup==null || pickup.Item!=expectedItem || pickup.Count!=expectedCount || pickup.Root==null || !pickup.Root.gameObject.activeInHierarchy
+                || Vector3.Distance(pickup.Feet,_c.Shore.Position)>=2.5f || !_c.Shore.ClearSight(_c.Shore.Character.EyePosition,pickup.Root.position))return false;
+            bool collected=_c.CollectFieldItem(id,expectedItem,expectedCount);
+            if(collected){RefreshPickups();ShowPickupPreview(expectedItem);}
+            return collected;
+        }
         public bool TryPickup()
         {
-            Sense();if(_nearby==null)return false;
-            if(_c.CollectFieldItem(_nearby.Id,_nearby.Item,_nearby.Count))RefreshPickups();
-            return true; // A full bag consumes E without accidentally surveying a different object.
+            if(!TryPickupTarget(out var pickup))return false;
+            PickupById(pickup.Id,pickup.Item,pickup.Count);
+            return true; // 满包仍消费互动，不误触其他目标。
         }
         public bool Observe()
         {
             Sense();if(_candidate==null){_c.Notice("看向附近陆地动物（8m 内）再按 T；望远镜可观察至 22m。Ctrl 蹲下不易惊动动物。",5);return false;}
             return _c.RecordLandAnimal(_candidate.Kind);
         }
-        public void ApplyHeldTool()
-        {
-            if(_held==null)return;var item=_c.Career.Backpack.Equipped;
-            bool tool=item==FieldItem.FieldGuide || item==FieldItem.Binoculars || item==FieldItem.Lantern;
-            bool visible=_c.Ashore && !_c.Paused && tool && !UnityEngine.XR.XRSettings.isDeviceActive && !_c.BinocularsRaised;
-            _held.gameObject.SetActive(visible);
-            if(visible)
-            {
-                _heldMesh.sharedMesh=_tools[item];_held.localScale=Vector3.one*.6f;
-                var camera=_c.viewCamera.transform;
-                if(_c.FirstPerson)_held.SetPositionAndRotation(camera.TransformPoint(new Vector3(.27f,item==FieldItem.Lantern?-.43f:-.24f,.65f)),camera.rotation);
-                else _held.SetPositionAndRotation(_c.Shore.Actor.TransformPoint(new Vector3(.4f,.7f,.13f)),_c.Shore.Actor.rotation);
-            }
-            _lamp.enabled=_c.Ashore && _c.LanternOn && item==FieldItem.Lantern && !_c.Paused;
-            _lamp.transform.position=_c.viewCamera.transform.position+Vector3.up*.1f;
-        }
+        public void ApplyHeldTool()=>PresentHeldTool();
         private void OnDestroy(){foreach(var item in _owned)if(item!=null)Destroy(item);}
     }
 }

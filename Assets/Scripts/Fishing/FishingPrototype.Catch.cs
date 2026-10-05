@@ -14,7 +14,9 @@ namespace BoatAttack.Fishing
         public Vector3 BoatPoint(Vector3 point)=>Player.transform.position+Quaternion.Euler(0,Player.transform.eulerAngles.y,0)*point;
         public Vector3 LandingTarget=>LandingTargetForMode(UnityEngine.XR.XRSettings.isDeviceActive);
         public Vector3 LandingTargetForMode(bool xr)=>BoatPoint(new Vector3(xr?-1.65f:1.8f,1.05f,.5f));
-        public Vector3 NetTray=>BoatPoint(new Vector3(.65f,1.15f,.7f));
+        public Vector3 NetTray=>BoatPoint(new Vector3(.65f,1.15f,.45f));
+        internal Vector3 StowedNetPosition=>Vector3.Lerp(new Vector3(1.15f,.65f,-.7f),new Vector3(1.15f,.9f,-.4f),_netDeployment);
+        internal Quaternion StowedNetRotation=>Quaternion.Euler(0,Mathf.Lerp(85f,0f,_netDeployment),-Mathf.Sin(_netMotion*Mathf.PI)*35f);
         public bool BeginNetCatch()
         {
             if(Paused || !Anchored || HasPendingCatch || !Session.LandFromNet())return false;
@@ -36,12 +38,33 @@ namespace BoatAttack.Fishing
             if(!Career.ResolvePending(store,out var record,out int bounty))
             {Notice("鱼箱已满。鱼仍安全保留，可整理鱼箱或选择放生。",5);return false;}
             _caughtAt=store && !legend?Time.time:-100;_catchStart=_fish.transform.position;
+            if(!store)StartCoroutine(ReleaseFishVisual(record,_catchStart,_fish.transform.rotation,_fish.transform.localScale));
             LastCatch=new CatchCard{Fish=record.Copy(),ShownAt=Time.unscaledTime,Discovery=discovery,PersonalBest=best>0 && record.grams>best,Bounty=bounty};
             if(legend && _trophy==null)BuildTrophy();
             RefreshHold();Save();_feedback.PlayOneShot(legend?_legendTone:_successTone);
             if(!hadEvidence && Career.Expedition.Has(FishingExpedition.TargetCaught))Notice("北岛捕获记录已收录！鱼货与主线凭证独立，返港可提交捕获记录。",9,false);
             else Notice(FishingSpecies.Name(record.kind)+" "+FishingText.Weight(record.grams)+(legend?" 已测量放生，赏金 +"+bounty:store?" 已放入鱼箱。":" 已放生；保留图鉴与体型记录，不获得售鱼金币。"),7,true);
             CatchRig.Recover();return true;
+        }
+        private System.Collections.IEnumerator ReleaseFishVisual(CatchRecord record,Vector3 start,Quaternion rotation,Vector3 scale)
+        {
+            // 只表现已成功提交的放生；没有 Rigidbody、库存操作或二次结算回调。
+            var visual=MakeFish(transform,record.kind,record.rare);visual.name="Released fish visual";
+            visual.transform.localScale=scale;
+            var destination=UnityEngine.XR.XRSettings.isDeviceActive?start:BoatPoint(new Vector3(2f,0,.4f));
+            destination.y=.04f;
+            try
+            {
+                float elapsed=0;
+                while(elapsed<.7f)
+                {
+                    if(!Paused)elapsed+=Time.deltaTime;
+                    float u=Mathf.Clamp01(elapsed/.7f);
+                    visual.transform.SetPositionAndRotation(Vector3.Lerp(start,destination,u)+Vector3.up*(Mathf.Sin(u*Mathf.PI)*.15f),rotation);
+                    yield return null;
+                }
+            }
+            finally{if(visual!=null)Destroy(visual);}
         }
         public bool MeasureCatch()
         {
@@ -62,12 +85,12 @@ namespace BoatAttack.Fishing
         private void ReadPendingDesktop(Keyboard keyboard)
         {
             if(keyboard==null || Paused || _xrActive)return;
-            if(keyboard.eKey.wasPressedThisFrame)CatchRig.ToggleInspect();
-            if(keyboard.fKey.wasPressedThisFrame)ResolveCatch(true);
-            if(keyboard.xKey.wasPressedThisFrame)CatchRig.RequestRelease();
-            if(keyboard.cKey.wasPressedThisFrame)ToggleView();
-            if(keyboard.rKey.wasPressedThisFrame)ReturnToHarbor();
-            if(keyboard.tabKey.wasPressedThisFrame)ToggleHarborDesk();
+            if(keyboard.rKey.wasPressedThisFrame){ReturnToHarbor();return;}
+            if(keyboard.eKey.wasPressedThisFrame)RequestInspectCatch();
+            else if(keyboard.fKey.wasPressedThisFrame)RequestCatchResolution(true);
+            else if(keyboard.xKey.wasPressedThisFrame)CatchRig.RequestRelease(true);
+            else if(keyboard.cKey.wasPressedThisFrame)ToggleView();
+            else if(keyboard.tabKey.wasPressedThisFrame)ToggleHarborDesk();
         }
     }
 }

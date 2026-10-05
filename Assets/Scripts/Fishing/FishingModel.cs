@@ -160,7 +160,8 @@ namespace BoatAttack.Fishing
     [Serializable]
     public sealed class FishingSaveData
     {
-        public int version = 7;
+        public int version = 8;
+        public WorkshopData workshop = new FishingWorkshop().Snapshot();
         public PendingCatchData pendingCatch;
         public bool hasPendingCatch;
         public int releasedCatches;
@@ -187,6 +188,7 @@ namespace BoatAttack.Fishing
 
     public sealed partial class FishingCareer
     {
+        public FishingWorkshop Workshop { get; private set; } = new FishingWorkshop();
         public FishingBackpack Backpack { get; private set; } = new FishingBackpack();
         public const int BaseCapacity = 6;
         public const int MaxLevel = 2;
@@ -383,7 +385,7 @@ namespace BoatAttack.Fishing
             var result = new FishingSaveData
             {
                 hasPendingCatch = HasPendingCatch, pendingCatch = _pending?.Copy(), releasedCatches = ReleasedCatches, orderMarked = OrderMarked,
-                backpack = Backpack.Snapshot(), selectedSlot = Backpack.Selected, collectedPickupMask = Backpack.CollectedMask, landAnimalMask = Backpack.AnimalMask,
+                workshop = Workshop.Snapshot(), backpack = Backpack.Snapshot(), selectedSlot = Backpack.Selected, collectedPickupMask = Backpack.CollectedMask, landAnimalMask = Backpack.AnimalMask,
                 expeditionFacts = Expedition.Facts,
                 shoreTaskMask = ShoreTaskMask, shoreRewardMask = ShoreRewardMask,
                 coins = Coins, rodLevel = LineLevel, reelLevel = ReelLevel, holdLevel = HoldLevel,
@@ -398,7 +400,7 @@ namespace BoatAttack.Fishing
         public static bool TryRestore(FishingSaveData data, out FishingCareer career)
         {
             career = null;
-            if (data == null || data.version < 1 || data.version > 7) return false;
+            if (data == null || data.version < 1 || data.version > 8) return false;
             if (!FishingExpedition.TryRestore(data.expeditionFacts, out var expedition)
                 || (data.version < 5 && data.expeditionFacts != 0)) return false;
             bool v3 = data.version >= 3;
@@ -463,6 +465,11 @@ namespace BoatAttack.Fishing
                 result.ReleasedCatches=data.releasedCatches;result.OrderMarked=data.orderMarked;
             }
             else if(data.hasPendingCatch || !EmptyPending(data.pendingCatch) || data.releasedCatches!=0 || data.orderMarked)return false;
+            if(data.version>=8)
+            {
+                if(!FishingWorkshop.TryRestore(data.workshop,out var workshop))return false;
+                result.Workshop=workshop;
+            }
             career = result;
             return true;
         }

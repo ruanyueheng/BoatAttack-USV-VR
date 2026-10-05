@@ -6,7 +6,7 @@ using UnityEngine;
 namespace BoatAttack
 {
     [CustomEditor(typeof(Boat))]
-    public class BoatEditor : Editor
+    public class BoatEditor : UnityEditor.Editor
     {
         private bool _generalHeaderBool;
         private bool _debugHeaderBool;

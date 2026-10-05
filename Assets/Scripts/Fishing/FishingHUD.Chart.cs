@@ -4,7 +4,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingHUD
     {
-        /// <summary>A bearing chart, not an invented coastline or an obstacle-avoiding route.</summary>
+        /// <summary>真实地形底图与航点共用米/像素比例；屏外徽标只代表方位。</summary>
         private void DrawChart()
         {
             var c = Controller;
@@ -17,93 +17,111 @@ namespace BoatAttack.Fishing
             if (Button(new Rect(r.x, r.y, 156, 28), "M 收起航海图", true, false, 14)) c.ToggleChart();
             if (Button(new Rect(r.xMax - 60, r.y, 60, 28), c.ChartRangeMeters + "m", true, false, 13)) c.CycleChartRange();
             var center = new Vector2(r.center.x, r.y + 130);
-            const float radius = 96;
-            Disc(center, radius + 4, new Color(.02f, .065f, .08f, .7f));
-            Disc(center, radius, new Color(.025f, .13f, .17f, .87f));
-            Outline(new Rect(center.x - radius, center.y - radius, radius * 2, radius * 2), new Color(.52f, .82f, .85f, .55f), radius, 1.5f);
-            Outline(new Rect(center.x - radius * .5f, center.y - radius * .5f, radius, radius), new Color(.4f, .7f, .76f, .17f), radius * .5f);
-            Segment(center + Vector2.left * 88, center + Vector2.right * 88, new Color(.4f, .7f, .76f, .12f));
-            Segment(center + Vector2.up * 88, center + Vector2.down * 88, new Color(.4f, .7f, .76f, .12f));
-            for (int i = 0; i < 24; i++)
+            const float radius = TerrainMapRadius;
+            Disc(center, radius + 4, MapSurface);
+            DrawTerrainMap(center, radius);
+            Outline(new Rect(center.x-radius, center.y-radius, radius*2, radius*2), new Color(.52f,.82f,.85f,.55f), radius, 1.5f);
+            Outline(new Rect(center.x-radius*.5f, center.y-radius*.5f, radius, radius), new Color(.4f,.7f,.76f,.12f), radius*.5f);
+            for (int i=0;i<24;i++)
             {
-                float a = i * Mathf.PI / 12;
-                var dir = new Vector2(Mathf.Sin(a), -Mathf.Cos(a));
-                Segment(center + dir * (i % 6 == 0 ? 86 : 91), center + dir * 94, i % 6 == 0 ? Muted : Faint * new Color(1, 1, 1, .45f));
+                float a=i*Mathf.PI/12; var dir=new Vector2(Mathf.Sin(a),-Mathf.Cos(a));
+                Segment(center+dir*(i%6==0?89:93),center+dir*96,i%6==0?Muted:Faint*new Color(1,1,1,.45f));
             }
-            Label(new Rect(center.x - 10, center.y - 87, 20, 20), "N", 13, Mint, true, TextAnchor.MiddleCenter);
-            Vector2 target = ChartPoint(c.NavigationPosition, center);
-            Vector2 bearing = target - center;
-            float distance = bearing.magnitude;
-            if (distance > 22)
-                for (float d = 16; d < distance - 13; d += 10)
-                    Segment(center + bearing.normalized * d, center + bearing.normalized * Mathf.Min(d + 4, distance - 13), new Color(1, .77f, .42f, .65f), 1.5f);
-            ChartMarker(c.harbor, center, "港", 0, Mint);
-            if(c.Shop!=null)ChartMarker(c.Shop.mooringPoint.position,center,"店",c.ShopNavigationTarget,Sky);
-            for (int i = 0; i < c.fishingSpots.Length; i++) ChartMarker(c.fishingSpots[i], center, (i + 1).ToString(), i + 1, FishingGrounds.Available(i,c.Career.Expedition)?Gold:Faint);
+            Label(new Rect(center.x-10,center.y-88,20,20),"N",13,Color.white,true,TextAnchor.MiddleCenter);
+            var bearing=ChartPoint(c.NavigationPosition,center)-center;
+            for(float d=16;d<bearing.magnitude-13;d+=10)
+                Segment(center+bearing.normalized*d,center+bearing.normalized*Mathf.Min(d+4,bearing.magnitude-13),new Color(1,.77f,.42f,.65f),1.5f);
+            DrawWorkshopMarkers(center);
+            ChartMarker(c.harbor,center,"港",0,MapPortColor);
+            for(int i=0;i<c.fishingSpots.Length;i++)
+                ChartMarker(c.fishingSpots[i],center,(i+1).ToString(),i+1,FishingGrounds.Available(i,c.Career.Expedition)?MapFishColor:Faint);
             if(c.Shore!=null)
                 for(int i=0;i<c.Shore.Sites.Length;i++)if(c.Shore.Sites[i].Available)
-                    ChartMarker(c.Ashore?c.Shore.Sites[i].Landing:c.Shore.Sites[i].Berth,center,i==2 && c.Career.Expedition.Has(FishingExpedition.BeaconRepaired)?"灯":((char)('A'+i)).ToString(),c.fishingSpots.Length+1+i,(i==2 && c.Career.Expedition.Has(FishingExpedition.BeaconRepaired)) || FishingExploration.SiteDone(c.Career.ShoreTaskMask,i)?Mint:Gold);
+                    ChartMarker(c.Ashore?c.Shore.Sites[i].Landing:c.Shore.Sites[i].Berth,center,
+                        i==2 && c.Career.Expedition.Has(FishingExpedition.BeaconRepaired)?"灯":((char)('A'+i)).ToString(),
+                        c.fishingSpots.Length+1+i,MapShoreColor);
+            if(c.TackleShop!=null && c.TackleShop.Available)
+                ChartMarker(c.Ashore?c.TackleShop.Position:c.TackleShop.mooringPoint.position,center,"店",c.ShopNavigationIndex,MapShoreColor);
             if(c.Ashore)
             {
-                var boat=ChartPoint(c.Player.transform.position,center);Disc(boat,6,Sky);
-                if(c.Shore.CurrentSite>=0)
+                var boat=ChartPoint(c.Player.transform.position,center);Disc(boat,7,MapSurface);Disc(boat,5,MapPortColor);
+                if(c.Shore.HasSurveySite)
                 {
                     var site=c.Shore.Sites[c.Shore.CurrentSite];
-                    for(int t=0;t<2;t++){var task=ChartPoint(site.Tasks[t],center);Disc(task,4,FishingExploration.Done(c.Career.ShoreTaskMask,c.Shore.CurrentSite*2+t)?Mint:Gold);}
+                    for(int t=0;t<2;t++)
+                    {
+                        var task=ChartPoint(site.Tasks[t],center);Disc(task,5,MapSurface);
+                        Disc(task,3,FishingExploration.Done(c.Career.ShoreTaskMask,c.Shore.CurrentSite*2+t)?Mint:Gold);
+                    }
                 }
             }
-            // Draw last and offset the badge so a coincident region/ground marker cannot hide it.
             if(c.Expedition.PrecisionGuide && !c.Career.Expedition.Has(FishingExpedition.Delivered))
             {
-                var hint=ChartPoint(c.Expedition.GuidePosition,center);
-                var badge=hint+new Vector2(15,-15);
-                Segment(hint,badge,Sky,1.5f);
-                Disc(badge,9,Ink);Label(new Rect(badge.x-10,badge.y-11,20,22),"★",16,Sky,true,TextAnchor.MiddleCenter);
+                var hint=ChartPoint(c.Expedition.GuidePosition,center);var badge=hint+new Vector2(15,-15);
+                Segment(hint,badge,Sky,1.5f);Disc(badge,9,MapSurface);
+                Label(new Rect(badge.x-10,badge.y-11,20,22),"★",16,Color.white,true,TextAnchor.MiddleCenter);
             }
-            // The player is always centered; its arrow rotates while north stays fixed.
-            Disc(center, 12, Ink);
-            DrawArrow(center, c.Ashore ? c.viewCamera.transform.eulerAngles.y : c.Player.transform.eulerAngles.y, Color.white, 10);
-            Label(new Rect(r.x, r.yMax - 18, r.width, 20), c.Ashore?"蓝点船只 · 小圆点勘测台 · G 上船":"A–D 登岸点 · 方位参考，注意礁石", 12, Muted, false, TextAnchor.MiddleCenter);
+            Disc(center,12,MapSurface);
+            DrawArrow(center,c.Ashore?c.viewCamera.transform.eulerAngles.y:c.Player.transform.eulerAngles.y,Color.white,10);
+            DrawTerrainMapGuide(center,radius,new Rect(r.x,center.y+radius+12,r.width,36));
+            if(Event.current.type==EventType.Repaint && !string.IsNullOrEmpty(GUI.tooltip))
+            {
+                var tip=new Rect(r.x,r.y-48,r.width,42);Card(tip,MapShoreColor);
+                Label(new Rect(tip.x+8,tip.y+4,tip.width-16,tip.height-8),GUI.tooltip,12,Color.white);
+            }
         }
-
-        private Vector2 ChartPoint(Vector3 world, Vector2 center)
+        private void DrawWorkshopMarkers(Vector2 center)
         {
-            var p = Controller.ExplorerPosition;
-            var point = FishingChartMath.Project(world.x, world.z, p.x, p.z, Controller.ChartRangeMeters, 72);
-            return center + new Vector2(point.X, point.Y);
+            var c=Controller;if(c.WorkshopWorld==null)return;
+            foreach(var station in c.WorkshopWorld.State.Stations)
+            {
+                var world=new Vector3(station.x,station.y,station.z);
+                if(FishingPrototype.FlatDistance(c.ExplorerPosition,world)>c.ChartRangeMeters)continue;
+                var p=ChartPoint(world,center);
+                Rounded(new Rect(p.x-9,p.y-9,18,18),MapSurface,3);
+                Outline(new Rect(p.x-9,p.y-9,18,18),MapShoreColor,3,1.5f);
+                Label(new Rect(p.x-9,p.y-10,18,20),station.kind==CraftStation.Furnace?"炉":"工",12,Color.white,true,TextAnchor.MiddleCenter);
+            }
+            // 只在步行近景显示少量可采资源，不把 64 个节点挤满整张海图。
+            if(!c.Ashore || c.ChartRangeMeters>40)return;
+            int shown=0;
+            foreach(var node in c.WorkshopWorld.Nodes)
+            {
+                if(shown==6)break;
+                if(node.Root==null || !c.WorkshopWorld.State.ResourceReady(node.Id) || FishingPrototype.FlatDistance(c.ExplorerPosition,node.Feet)>c.ChartRangeMeters)continue;
+                var p=ChartPoint(node.Feet,center);Disc(p,4,MapSurface);Disc(p,2,MapShoreColor);shown++;
+            }
         }
-
-        private void ChartMarker(Vector3 world, Vector2 center, string text, int target, Color color)
+        private Vector2 ChartPoint(Vector3 world,Vector2 center)
         {
-            var c = Controller;
-            var p = ChartPoint(world, center);
-            bool selected = c.NavigationTarget == target;
-            bool offRange = FishingPrototype.FlatDistance(c.ExplorerPosition, world) > c.ChartRangeMeters;
-            if (selected) Outline(new Rect(p.x - 17, p.y - 17, 34, 34), Gold, 17, 2);
-            Disc(p, 12, offRange ? Ink : color);
-            if (offRange) Outline(new Rect(p.x - 12, p.y - 12, 24, 24), color, 12, 1.5f);
-            Label(new Rect(p.x - 12, p.y - 12, 24, 24), text, 14, offRange ? color : InkText, true, TextAnchor.MiddleCenter);
-            if (GUI.Button(new Rect(p.x - 16, p.y - 16, 32, 32), GUIContent.none, GUIStyle.none)) c.SelectNavigation(target);
+            var p=Controller.ExplorerPosition;
+            var point=FishingChartMath.Project(world.x,world.z,p.x,p.z,Controller.ChartRangeMeters,TerrainMapRadius);
+            return center+new Vector2(point.X,point.Y);
         }
-
-        private void Segment(Vector2 from, Vector2 to, Color color, float width = 1f)
+        private void ChartMarker(Vector3 world,Vector2 center,string text,int target,Color color)
         {
-            var matrix = GUI.matrix;
-            Rotate(Mathf.Atan2(to.y - from.y, to.x - from.x) * Mathf.Rad2Deg, from);
-            Fill(from.x, from.y - width * .5f, Vector2.Distance(from, to), width, color);
-            GUI.matrix = matrix;
+            var c=Controller;var p=ChartPoint(world,center);
+            bool selected=c.NavigationTarget==target;
+            float metres=FishingPrototype.FlatDistance(c.ExplorerPosition,world);
+            bool offRange=metres>c.ChartRangeMeters;
+            if(selected)Outline(new Rect(p.x-17,p.y-17,34,34),Gold,17,2);
+            Disc(p,12,MapSurface);Outline(new Rect(p.x-12,p.y-12,24,24),color,12,1.5f);
+            Label(new Rect(p.x-12,p.y-12,24,24),text,14,Color.white,true,TextAnchor.MiddleCenter);
+            string name=target==c.ShopNavigationIndex?c.ShopName:target==0?"潮汐渔港":target<=c.fishingSpots.Length
+                ?FishingGrounds.Name(target-1):FishingExploration.SiteName(target-c.fishingSpots.Length-1);
+            string tip=name+" · "+metres.ToString("0")+" m"+(offRange?"（屏外方位）":"");
+            if(GUI.Button(new Rect(p.x-16,p.y-16,32,32),new GUIContent("",tip),GUIStyle.none))c.SelectNavigation(target);
         }
-
-        private void DrawArrow(Vector2 center, float degrees, Color color, float size)
+        private void Segment(Vector2 from,Vector2 to,Color color,float width=1f)
         {
-            float a = degrees * Mathf.Deg2Rad;
-            var forward = new Vector2(Mathf.Sin(a), -Mathf.Cos(a));
-            var right = new Vector2(-forward.y, forward.x);
-            var tip = center + forward * size;
-            var rear = center - forward * size * .6f;
-            Segment(rear + right * size * .55f, tip, color, 2.5f);
-            Segment(tip, rear - right * size * .55f, color, 2.5f);
-            Segment(rear, center, color, 2.5f);
+            var matrix=GUI.matrix;Rotate(Mathf.Atan2(to.y-from.y,to.x-from.x)*Mathf.Rad2Deg,from);
+            Fill(from.x,from.y-width*.5f,Vector2.Distance(from,to),width,color);GUI.matrix=matrix;
+        }
+        private void DrawArrow(Vector2 center,float degrees,Color color,float size)
+        {
+            float a=degrees*Mathf.Deg2Rad;var forward=new Vector2(Mathf.Sin(a),-Mathf.Cos(a));var right=new Vector2(-forward.y,forward.x);
+            var tip=center+forward*size;var rear=center-forward*size*.6f;
+            Segment(rear+right*size*.55f,tip,color,2.5f);Segment(tip,rear-right*size*.55f,color,2.5f);Segment(rear,center,color,2.5f);
         }
     }
 }

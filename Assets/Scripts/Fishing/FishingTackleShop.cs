@@ -1,46 +1,74 @@
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace BoatAttack.Fishing
 {
-    /// <summary>Scene-authored shop with a lightweight attendant at the first reserved clerk marker.</summary>
+    /// <summary>PR #17's authored Tide & Tackle shop, integrated with v10 progression. Empty markers are not NPC AI.</summary>
     public sealed class FishingTackleShop : MonoBehaviour
     {
         public Transform entrance, purchasePoint, mooringPoint;
         public Transform[] clerkSpaces, customerSpaces;
         [System.NonSerialized] public FishingPrototype Controller;
-        public bool IsOpen { get; private set; }
+        private Collider _landingDeck;
         public FishingShopCashier Cashier { get; private set; }
-        private void Start() { Cashier = FishingShopCashier.Create(this); }
+        private void Start() { Cashier=FishingShopCashier.Create(this); }
+        public const string Name = "潮汐钓具店";
+        public string DisplayName => Name;
+        public Vector3 Position => transform.position;
+        public Vector3 LandingPosition => _landingDeck == null ? Position : _landingDeck.bounds.center + Vector3.up * _landingDeck.bounds.extents.y;
+        public bool Available => isActiveAndEnabled && entrance != null && purchasePoint != null && mooringPoint != null
+            && _landingDeck != null && _landingDeck.enabled && _landingDeck.gameObject.activeInHierarchy;
+        public bool Open { get; private set; }
         public bool Inside
         {
             get
             {
-                if (Controller == null || !Controller.Ashore) return false;
+                if (!Available || Controller == null || !Controller.Ashore) return false;
                 var p = transform.InverseTransformPoint(Controller.ExplorerPosition);
                 return Mathf.Abs(p.x) < 5.7f && p.z > -4.9f && p.z < 4.8f && p.y > -.2f && p.y < .5f;
             }
         }
-        public bool CanBrowse => Inside && purchasePoint != null &&
-            Vector3.Distance(Controller.ExplorerPosition, purchasePoint.position) < 2.6f;
+        // The customer must be inside, close to the counter, and not separated by a wall/fixture.
+        public bool NearCounter => Inside && Vector3.Distance(Controller.ExplorerPosition, purchasePoint.position) < 2.6f
+            && Controller.Shore.ClearSight(Controller.ExplorerPosition + Vector3.up * 1.2f, purchasePoint.position + Vector3.up * 1.2f);
+        public bool CanPurchase => Open && NearCounter && ContextAllowsBrowsing;
+        private bool ContextAllowsBrowsing => Controller != null && !Controller.Paused && !Controller.InventoryOpen
+            && !Controller.JournalOpen && !Controller.HasPendingCatch && !Controller.Expedition.Aligning
+            && !XRSettings.isDeviceActive && (Controller.Automated || Application.isFocused);
+
+        private void Awake() => ResolveLandingDeck();
+        public void Bind(FishingPrototype controller) { Controller = controller; ResolveLandingDeck(); }
+        private void ResolveLandingDeck()
+        {
+            var deck = transform.Find("04 Porch and beach access/Shore landing deck");
+            _landingDeck = deck == null ? null : deck.GetComponent<Collider>();
+        }
         public bool Toggle()
         {
-            if (IsOpen) { Close(); return true; }
-            if (!CanBrowse || Controller.Paused || Controller.InventoryOpen || Controller.HasPendingCatch || UnityEngine.XR.XRSettings.isDeviceActive) return false;
-            IsOpen = true;
+            if (Open) { Close(); return true; }
+            if (!NearCounter || !ContextAllowsBrowsing || Controller.ShopBlocksGameplay) return false;
+            Open = true;
+            Controller.ShopModalChanged();
             Controller.Notice("收银员：欢迎来到潮汐钓具店！请选择装备，金币和装备自动保存。", 5f);
             return true;
         }
-        public void Close() { IsOpen = false; }
+        public void Close()
+        {
+            if (!Open) return;
+            Open = false;
+            if (Controller != null) Controller.ShopModalChanged();
+        }
         public bool Buy(UpgradeTrack track)
         {
-            if (!IsOpen || !CanBrowse || Controller.Paused) return false;
+            if (!CanPurchase) return false;
             return Controller.BuyUpgrade(track);
         }
-        private void Update()
+        // Called by the controller BEFORE world input. No independent Update ordering race.
+        public void ValidateContext(bool focused, bool xrActive)
         {
-            if (IsOpen && (!CanBrowse || Controller.Paused)) Close();
+            if (Open && (!focused || xrActive || !NearCounter || !ContextAllowsBrowsing)) Close();
         }
-        private void OnDisable() { Close(); }
+        private void OnDisable() => Close();
         private void OnDrawGizmosSelected()
         {
             Gizmos.matrix = transform.localToWorldMatrix;

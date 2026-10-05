@@ -31,6 +31,7 @@ namespace BoatAttack.Fishing
                 throw new InvalidOperationException("Acceptance fixtures require an explicitly opted-in test profile.");
             // Validate before changing any live state. FreePlay is intentionally never synthesized.
             FishingCareer fixture = selected == FishingAcceptanceCase.FreePlay ? null : FishingAcceptanceCases.CreateCareer(selected);
+            CancelWorldAction();_workshopReceipt=false;TackleShop?.Close();
             if (InventoryOpen) ToggleInventory();
             if (JournalOpen) ToggleJournal();
             else if (Paused) TogglePause();
@@ -43,6 +44,7 @@ namespace BoatAttack.Fishing
             Career = fixture ?? FishingSaveStore.Load(SavePath, out _);
             Shore.RefreshMarkers();
             FieldWorld.RefreshPickups();
+            WorkshopWorld.RefreshFromCareer();
             Expedition.RefreshFromCareer();
             SaveWarning = string.Empty;
             LastCatch = default;
@@ -98,6 +100,10 @@ namespace BoatAttack.Fishing
                 case FishingAcceptanceCase.Details: ToggleDetails(); break;
                 case FishingAcceptanceCase.Journal: ToggleJournal(); break;
                 case FishingAcceptanceCase.Settings: TogglePause(); break;
+                case FishingAcceptanceCase.ShoreFirstPerson:
+                case FishingAcceptanceCase.ShoreThirdPerson:
+                case FishingAcceptanceCase.ShopCounter:
+                    PrepareAcceptanceShore(selected);break;
                 case FishingAcceptanceCase.FreePlay:
                     Notice("独立验收进度 · F5/F6 查看预置场景，F9 返回实玩；普通玩家存档不受影响。", 8f);
                     break;
@@ -105,6 +111,27 @@ namespace BoatAttack.Fishing
             Save();
             if (SaveWarning.Length > 0) throw new IOException("Cannot persist the isolated acceptance profile.");
             View.ApplyView();
+        }
+        private void PrepareAcceptanceShore(FishingAcceptanceCase selected)
+        {
+            bool shop=selected==FishingAcceptanceCase.ShopCounter;
+            if(shop && (TackleShop==null || !TackleShop.Available))throw new InvalidOperationException("Shop capture requires the installed prefab.");
+            Teleport(shop?TackleShop.mooringPoint.position:Shore.Sites[0].Berth+Vector3.up*.6f,shop?TackleShop.transform.rotation:Quaternion.identity);
+            if(!Shore.TryDisembark())throw new InvalidOperationException("Capture landing failed: "+Message);
+            // 只为隔离画面夹具选择初始观察位置；完整步行通路已由 Shop/Shore 套件验证。
+            if(shop)
+            {
+                Shore.Body.enabled=false;
+                Shore.Actor.SetPositionAndRotation(TackleShop.purchasePoint.position+Vector3.up*.05f,TackleShop.transform.rotation);
+                Shore.Body.enabled=true;Physics.SyncTransforms();Shore.Body.Move(Vector3.down*.1f);
+            }
+            View.ResetLook();
+            if(selected==FishingAcceptanceCase.ShoreThirdPerson)
+            {
+                ToggleView();View.ApplyShoreLookDelta(new Vector2(1500,0));
+            }
+            else if(!shop)View.ApplyShoreLookDelta(new Vector2(0,-458));
+            SelectFieldSlot(0);
         }
     }
 }

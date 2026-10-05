@@ -6,6 +6,7 @@
 *.tif filter=lfs diff=lfs merge=lfs -text
 *.raw filter=lfs diff=lfs merge=lfs -text
 *.fbx filter=lfs diff=lfs merge=lfs -text
+*.glb filter=lfs diff=lfs merge=lfs -text
 *.jpg filter=lfs diff=lfs merge=lfs -text
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.obj filter=lfs diff=lfs merge=lfs -text
@@ -16,8 +17,6 @@
 *.meta text
 *.unity text
 *.prefab text
-# Terrain, NavMesh and baked lighting .asset files can be binary.
-# Auto preserves those byte-for-byte while keeping YAML assets reviewable.
 *.asset text=auto
 *.mat text
 *.shader text

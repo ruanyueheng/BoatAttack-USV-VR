@@ -34,7 +34,6 @@ namespace BoatAttack.Fishing
                     case -2:
                         if(Time.realtimeSinceStartup<_captureAt)return;
                         ValidateDeparture();
-                        ValidateBeachShop();
                         ValidatePresentation();
                         ValidateLivingBay();
                         StartCoroutine(Capture("00-first-person-driving.png"));
@@ -231,7 +230,7 @@ namespace BoatAttack.Fishing
             var c=Controller;
             if(!c.FirstPerson)throw new Exception("Camera obstruction test requires the first-person station.");
             var yaw=Quaternion.Euler(0,c.Player.transform.eulerAngles.y,0);
-            var origin=c.viewCamera.transform.position-yaw*new Vector3(0.05f,2f,-0.55f);
+            var origin=c.View.StableBoatOrigin;
             var pivot=origin+yaw*new Vector3(2.7f,0.8f,1f);
             c.ToggleView();c.View.ApplyView();
             var offset=c.viewCamera.transform.position-pivot;

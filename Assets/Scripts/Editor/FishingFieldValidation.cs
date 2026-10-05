@@ -15,6 +15,7 @@ namespace BoatAttack.EditorTools
     {
         private const string Key="Fishing.FieldValidation.";
         private static IEnumerator _checks;private static float _next;
+        private static int _lastCheckFrame=-1;
         static FishingFieldValidation()
         {
             EditorApplication.update+=Tick;
@@ -59,11 +60,12 @@ namespace BoatAttack.EditorTools
             if(!SessionState.GetBool(Key+"active",false))return;
             if(EditorApplication.timeSinceStartup>SessionState.GetFloat(Key+"deadline",0))SessionState.SetString(Key+"error","Timeout");
             if(SessionState.GetString(Key+"error","")!=""){if(EditorApplication.isPlaying)EditorApplication.ExitPlaymode();return;}
-            if(!EditorApplication.isPlaying || Time.realtimeSinceStartup<_next)return;
+            if(!EditorApplication.isPlaying || Time.realtimeSinceStartup<_next || Time.frameCount==_lastCheckFrame)return;
             var c=UnityEngine.Object.FindObjectOfType<FishingPrototype>();if(c==null || c.FieldWorld==null)return;
             try
             {
                 if(_checks==null)_checks=Checks(c);_next=Time.realtimeSinceStartup+.02f;
+                _lastCheckFrame=Time.frameCount;
                 if(!_checks.MoveNext()){SessionState.SetBool(Key+"done",true);EditorApplication.ExitPlaymode();}
             }
             catch(Exception ex){SessionState.SetString(Key+"error",ex.ToString());EditorApplication.ExitPlaymode();}
@@ -95,8 +97,19 @@ namespace BoatAttack.EditorTools
                 for(int i=0;i<100;i++){Step(c,keyboard,UnityEngine.InputSystem.Key.Space);peak=Mathf.Max(peak,c.Shore.Position.y);}
                 Check(peak-baseY>.8f && peak-baseY<1.35f,"Space event produces one bounded jump arc: "+(peak-baseY));
                 Check(c.Shore.Grounded && Mathf.Abs(c.Shore.Position.y-baseY)<.12f,"held Space lands without auto-jumping");
-                Step(c,keyboard,UnityEngine.InputSystem.Key.LeftCtrl);c.View.ApplyView(true,true);
-                Check(c.Shore.Crouched && Mathf.Abs(c.Shore.Body.height-1.08f)<.01f && Mathf.Abs(c.viewCamera.transform.position.y-c.Shore.Position.y-.88f)<.03f,"Ctrl lowers real capsule and camera eye");
+                if(!c.FirstPerson)c.ToggleView();
+                c.PresentCharacterFrame();
+                for(int frame=0;frame<120 && !c.Shore.Character.IsStanceSettled(true,false);frame++)
+                {yield return null;Step(c,keyboard);c.PresentCharacterFrame();}
+                float standingEye=c.viewCamera.transform.position.y-c.Shore.Position.y;
+                Step(c,keyboard,UnityEngine.InputSystem.Key.LeftCtrl);
+                for(int frame=0;frame<120 && !c.Shore.Character.IsStanceSettled(true,true);frame++)
+                {yield return null;Step(c,keyboard,UnityEngine.InputSystem.Key.LeftCtrl);c.PresentCharacterFrame();}
+                c.PresentCharacterFrame();
+                // v0.11 镜头使用真实人物校准眼位，不再用旧程序化人的固定 0.88m 偏移。
+                Check(c.Shore.Crouched && Mathf.Abs(c.Shore.Body.height-1.08f)<.01f && c.Shore.Character.IsStanceSettled(true,true)
+                    && Vector3.Distance(c.viewCamera.transform.position,c.Shore.Character.EyePosition)<.03f
+                    && standingEye-(c.viewCamera.transform.position.y-c.Shore.Position.y)>.35f,"Ctrl lowers real capsule and calibrated character eye");
                 c.ToggleView();Snapshot(c,"crouch",c.Shore.Position+Vector3.up*.65f);c.ToggleView();
                 var ceiling=GameObject.CreatePrimitive(PrimitiveType.Cube);ceiling.transform.position=c.Shore.Position+Vector3.up*1.5f;ceiling.transform.localScale=new Vector3(1.5f,.15f,1.5f);Physics.SyncTransforms();
                 Step(c,keyboard);Check(c.Shore.Crouched,"low ceiling prevents standing into geometry");

@@ -31,16 +31,16 @@ namespace BoatAttack.EditorTools
                 if(EditorApplication.timeSinceStartup>SessionState.GetFloat(SceneKey+"deadline",0))throw new Exception("Shop scene preview timed out.");
                 if(!EditorApplication.isPlaying)return;
                 var c=UnityEngine.Object.FindObjectOfType<BoatAttack.Fishing.FishingPrototype>();
-                if(c==null || c.Shop==null || c.Player==null)return;
+                if(c==null || c.TackleShop==null || c.Player==null)return;
                 float ready=SessionState.GetFloat(SceneKey+"ready",0);
                 if(ready==0){SessionState.SetFloat(SceneKey+"ready",(float)EditorApplication.timeSinceStartup+2);return;}
                 if(EditorApplication.timeSinceStartup<ready)return;
                 ShaderUtil.allowAsyncCompilation=false;Directory.CreateDirectory("Logs/BeachShop");
-                var shop=c.Shop.transform;
+                var shop=c.TackleShop.transform;
                 Shot(c.viewCamera,shop.TransformPoint(new Vector3(18,10,-23)),shop.position+Vector3.up*1.5f,52,"in-scene.png");
-                if(c.Shop.Cashier!=null)
+                if(c.TackleShop.Cashier!=null)
                 {
-                    var face=c.Shop.Cashier.transform.position+Vector3.up*1.48f;
+                    var face=c.TackleShop.Cashier.transform.position+Vector3.up*1.48f;
                     Shot(c.viewCamera,shop.TransformPoint(new Vector3(0,1.68f,1.15f)),face,48,"cashier-in-scene.png");
                     Shot(c.viewCamera,shop.TransformPoint(new Vector3(-1.4f,1.68f,1.5f)),face,32,"cashier-closeup.png");
                 }

@@ -13,7 +13,7 @@ namespace BoatAttack.Fishing
             var r = Layout.Heading;
             Glass(r);
             WeatherIcon(new Rect(r.x + 12, r.y + 15, 32, 32), c.Weather.Climate.Current);
-            string title = c.Ashore ? c.Shore.CurrentSite==-2 ? "沙滩钓具店" : FishingExploration.SiteName(c.Shore.CurrentSite) : c.Anchored ? FishingGrounds.Name(c.Spot) : c.NavigationName + "  " + FishingPrototype.FlatDistance(c.ExplorerPosition, c.NavigationPosition).ToString("0") + " m";
+            string title = c.Ashore ? c.Shore.LocationName : c.Anchored ? FishingGrounds.Name(c.Spot) : c.NavigationName + "  " + FishingPrototype.FlatDistance(c.ExplorerPosition, c.NavigationPosition).ToString("0") + " m";
             Label(r.x + 56, r.y + 9, 262, 27, title, 19, Color.white, true);
             string motion = c.Ashore ? (c.Shore.Crouched?"蹲行 · 调查 ":"步行 · 调查 ")+FishingExploration.CompletedTasks(c.Career.ShoreTaskMask)+"/8" : c.Anchored ? "已停船 · " + FishingVoyage.BaitName(c.Bait) : (c.Speed * 3.6f).ToString("0.0") + " km/h · N 切换航点";
             Label(r.x + 56, r.y + 36, 262, 20, BayClimate.Name(c.Weather.Climate.Current) + " · " + motion, 13, Muted);
@@ -54,17 +54,15 @@ namespace BoatAttack.Fishing
             }
             else if(c.Ashore)
             {
-                title=c.Expedition.ActionTitle ?? c.FieldWorld.ActionTitle ?? c.Shore.ActionTitle;
-                help=c.Expedition.Aligning?c.Expedition.AlignmentHint:"空格跳跃 · Ctrl 蹲下 · E 拾取 · T 观察 · I 背包 · R 救援";
-                if(c.Shop!=null && c.Shop.Inside && !c.Expedition.Aligning)
-                {title=c.Shop.CanBrowse?"E / Tab 购买钓具":"沙滩钓具店 · 走近后方柜台";help="装备升级 · I 背包 · 购买窗口内 1/2/3 选购";}
+                title=(c.Expedition.Aligning?c.Expedition.ActionTitle:c.WorldInteractionTitle) ?? c.Shore.ActionTitle;
+                help=c.Expedition.Aligning?c.Expedition.AlignmentHint:"空格跳跃 · Ctrl 蹲下 · E 采集 / 制作 · T 观察 · I 背包 · R 救援";
             }
             else if (!c.Anchored)
             {
                 if (c.AtHarbor)
                 {
                     Label(r.x + 18, r.y + 10, r.width - 175, 25, "潮汐渔港 · E 快速交付 / 出售", 18, Color.white, true);
-                    Label(r.x + 18, r.y + 42, r.width - 175, 22, "G 下船（近橙旗）· Tab 升级 · E 提交调查", 14, Muted);
+                    Label(r.x + 18, r.y + 42, r.width - 175, 22, "G 靠岸下船· Tab 升级 · E 提交调查", 14, Muted);
                     if (Button(Layout.HarborButton, c.HarborDeskOpen ? "Tab 收起" : "Tab 交易台", true, c.HarborDeskOpen, 15)) c.ToggleHarborDesk();
                     return;
                 }

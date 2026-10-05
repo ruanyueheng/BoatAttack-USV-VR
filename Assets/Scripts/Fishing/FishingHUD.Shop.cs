@@ -23,7 +23,7 @@ namespace BoatAttack.Fishing
                 Label(r.x + 42, y + 78, 560, 23, cost > 0 ? FishingText.UpgradeEffect(track, level) + " → " + FishingText.UpgradeEffect(track, level + 1) : "已购齐全部等级 · " + FishingText.UpgradeEffect(track, level), 14, Mint);
                 bool affordable = cost > 0 && c.Career.Coins >= cost;
                 string label = cost <= 0 ? "已满级" : "[" + (i + 1) + "] 购买 " + cost + " 金币";
-                if (Button(new Rect(r.xMax - 228, y + 28, 180, 44), label, affordable, affordable, 16)) c.Shop.Buy(track);
+                if (Button(new Rect(r.xMax - 228, y + 28, 180, 44), label, affordable, affordable, 16)) c.TackleShop.Buy(track);
                 string balance = cost <= 0 ? "无需重复购买" : affordable ? "购买后余额 " + (c.Career.Coins - cost) : "还差 " + (cost - c.Career.Coins) + " 金币";
                 Label(new Rect(r.xMax - 228, y + 79, 180, 21), balance, 12, affordable ? Mint : Faint, false, TextAnchor.MiddleCenter);
             }

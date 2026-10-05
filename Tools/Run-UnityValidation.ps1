@@ -1,11 +1,14 @@
-param(
+﻿param(
     [string]$EditorRoot,
-    [ValidateSet("Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild")]
+    [ValidateSet("Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild", "FishingWorkshop", "FishingTerrain", "FishingShopInstall", "FishingShop", "FishingMap", "FishingCharacter", "FishingInteraction", "FishingPlayer")]
     [string]$Suite = "Structure",
     [ValidateRange(60, 7200)]
     [int]$TimeoutSeconds = 1200
 )
 $ErrorActionPreference = 'Stop'
+# 与 CLI 和 Unity UTF-8 日志保持一致，不依赖 Windows 当前代码页。
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$OutputEncoding = [Console]::OutputEncoding
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $versionText = Get-Content -LiteralPath (Join-Path $repo 'ProjectSettings/ProjectVersion.txt') -Raw
 if ($versionText -notmatch '(?m)^m_EditorVersion: (\S+)') { throw 'Cannot read the project Unity version.' }
@@ -24,6 +27,14 @@ $logDirectory = Join-Path $repo 'Logs'
 # Unique logs cannot accidentally satisfy this run with a previous PASS marker.
 $log = Join-Path $logDirectory ("usv-validation-" + [Guid]::NewGuid().ToString('N') + '.log')
 $method = switch ($Suite) {
+    'FishingPlayer' { 'BoatAttack.EditorTools.FishingPlayerRepairValidation.Run' }
+    'FishingMap' { 'BoatAttack.EditorTools.FishingMapValidation.Run' }
+    'FishingCharacter' { 'BoatAttack.EditorTools.FishingCharacterValidation.Run' }
+    'FishingInteraction' { 'BoatAttack.EditorTools.FishingInteractionValidation.Run' }
+    'FishingTerrain' { 'BoatAttack.EditorTools.FishingTerrainValidation.Run' }
+    'FishingShopInstall' { 'BoatAttack.EditorTools.BeachTackleShopBuilder.Install' }
+    'FishingShop' { 'BoatAttack.EditorTools.FishingShopValidation.Run' }
+    'FishingWorkshop' { 'BoatAttack.EditorTools.FishingWorkshopValidation.Run' }
     'Structure' { 'BoatAttack.EditorTools.USVProjectValidation.Run' }
     'Regression' { 'BoatAttack.EditorTools.USVRuntimeRegression.Run' }
     'PlayMode' { 'BoatAttack.EditorTools.USVPlayModeSmoke.Run' }
@@ -41,6 +52,14 @@ $method = switch ($Suite) {
     'FishingExpeditionCapture' { 'BoatAttack.EditorTools.FishingExpeditionValidation.Capture' }
 }
 $marker = switch ($Suite) {
+    'FishingPlayer' { '[PLAYER]' }
+    'FishingMap' { '[MAP]' }
+    'FishingCharacter' { '[CHARACTER]' }
+    'FishingInteraction' { '[INTERACTION]' }
+    'FishingTerrain' { '[FISHING-TERRAIN]' }
+    'FishingShopInstall' { '[SHOP-INSTALL]' }
+    'FishingShop' { '[BEACH-SHOP]' }
+    'FishingWorkshop' { '[WORKSHOP]' }
     'Structure' { '[USV-VALIDATION]' }
     'Regression' { '[USV-REGRESSION]' }
     'PlayMode' { '[USV-PLAYMODE]' }
@@ -58,11 +77,11 @@ $marker = switch ($Suite) {
     'FishingExpeditionCapture' { '[EXPEDITION]' }
 }
 $arguments = '-batchmode -nographics -buildTarget StandaloneWindows64 -projectPath "' + $repo.Replace('\', '/') + '" -executeMethod ' + $method + ' -logFile "' + $log + '"'
-if ($Suite -eq 'FishingExpeditionCapture' -or $Suite -eq 'FishingFieldCapture' -or $Suite -eq 'FishingCatchCapture' -or $Suite -eq 'FishingCatch') { $arguments = $arguments.Replace(' -nographics', '') }
+if ($Suite -in @('FishingPlayer', 'FishingMap', 'FishingCharacter', 'FishingInteraction', 'FishingShop', 'FishingShore', 'FishingField', 'FishingExpedition', 'FishingSmoke', 'FishingWorkshop', 'FishingExpeditionCapture', 'FishingFieldCapture', 'FishingCatchCapture')) { $arguments = $arguments.Replace(' -nographics', '') }
 if ($Suite -eq 'FishingAndroidBuild') { $arguments = $arguments.Replace('StandaloneWindows64', 'Android') }
 if ($Suite -eq 'FishingSmoke') { $arguments += ' -fishing-autoplay' }
 Write-Output "Running Unity $Suite validation. Log: $log"
-$process = Start-Process -FilePath $editor -ArgumentList $arguments -WindowStyle Hidden -PassThru
+$process = Start-Process -FilePath $editor -ArgumentList $arguments -WorkingDirectory $repo -WindowStyle Hidden -PassThru
 try {
     if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
         # Only stop the helper launched by this script, never an existing editor.
@@ -72,10 +91,10 @@ try {
     }
     $process.Refresh()
     if ($process.ExitCode -ne 0) { throw "Unity validation failed (exit $($process.ExitCode)). See $log" }
-    if (-not (Select-String -LiteralPath $log -SimpleMatch ($marker + ' PASS:') -Quiet)) {
+    if (-not (Select-String -LiteralPath $log -Encoding UTF8 -SimpleMatch ($marker + ' PASS:') -Quiet)) {
         throw "Unity exited without executing all validation checks. See $log"
     }
-    Select-String -LiteralPath $log -SimpleMatch $marker | ForEach-Object { $_.Line }
+    Select-String -LiteralPath $log -Encoding UTF8 -SimpleMatch $marker | ForEach-Object { $_.Line }
 }
 finally {
     $process.Dispose()

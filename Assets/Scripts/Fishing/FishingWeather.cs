@@ -135,7 +135,7 @@ namespace BoatAttack.Fishing
         private void UpdateRain()
         {
             if(Controller.Player==null)return;
-            var center=Controller.Player.transform.position;center.y=0;_rain.transform.position=center;
+            _rain.transform.position=Controller.ExplorerPosition;
             int count=RainQuadBudget;
             for(int i=0;i<96;i++)
             {
