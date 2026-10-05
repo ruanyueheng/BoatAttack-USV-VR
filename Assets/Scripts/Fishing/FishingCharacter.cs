@@ -16,12 +16,14 @@ namespace BoatAttack.Fishing
         private readonly Dictionary<Transform,Vector3> _restPositions=new Dictionary<Transform,Vector3>();
         public bool Ready=>_model!=null && _clips.Count>=3 && HandRigReady;
         private float _eyeHeight=1.58f,_eyeForward=.12f,_seatWeight,_crouchWeight;
+        public const float CrouchDrop=FishingLocomotion.StandingHeight-FishingLocomotion.CrouchingHeight;
+        public float RemainingCrouchDrop=>CrouchDrop*(1-_crouchWeight);
         private int _stanceFrame=-1;
         public bool IsStanceSettled(bool ashore,bool crouched)=>Mathf.Approximately(_seatWeight,ashore?0:1)
             && Mathf.Approximately(_crouchWeight,ashore && crouched?1:0);
         public Vector3 InteractionLean { get; set; }
         public Vector3 AppliedInteractionLean { get; private set; }
-        public Vector3 EyePosition=>transform.TransformPoint(new Vector3(0,_eyeHeight-.38f*_seatWeight-.42f*_crouchWeight,_eyeForward-.08f*_seatWeight-.12f*_crouchWeight))+Vector3.ClampMagnitude(InteractionLean,.22f);
+        public Vector3 EyePosition=>transform.TransformPoint(new Vector3(0,_eyeHeight-.38f*_seatWeight-CrouchDrop*_crouchWeight,_eyeForward-.08f*_seatWeight-.12f*_crouchWeight))+Vector3.ClampMagnitude(InteractionLean,.22f);
         private void CalibrateEye()
         {
             // 从同源头部实际蒙皮采样估计眼位，不使用导入器膨胀的动画包围盒。
@@ -137,7 +139,7 @@ namespace BoatAttack.Fishing
             {
                 var footOffset=transform.forward*(.35f*_seatWeight);
                 var leftTarget=_leftAnkle.position+footOffset;var rightTarget=_rightAnkle.position+footOffset;
-                _body.position+=Vector3.down*(.38f*_seatWeight+.42f*_crouchWeight)-transform.forward*(.08f*_seatWeight+.12f*_crouchWeight);
+                _body.position+=Vector3.down*(.38f*_seatWeight+CrouchDrop*_crouchWeight)-transform.forward*(.08f*_seatWeight+.12f*_crouchWeight);
                 _leftFoot.position+=footOffset;_rightFoot.position+=footOffset;
                 SolveLeg(_leftThigh,_leftShin,_leftAnkle,leftTarget);
                 SolveLeg(_rightThigh,_rightShin,_rightAnkle,rightTarget);

@@ -106,6 +106,14 @@ namespace BoatAttack.Fishing
                 if (Ignored(h.collider) || h.point.y<.6f || h.normal.y<.69f || h.point.y<=top) continue;
                 top=h.point.y; point=h.point; found=true;
             }
+            // Adjacent authored colliders can leave centimetre-wide seams. Use a
+            // bounded footprint only when the centre ray misses, never a wide bridge.
+            if(!found && Body!=null)
+                foreach(var h in Physics.SphereCastAll(new Vector3(seed.x,originY,seed.z),Body.radius*.6f,Vector3.down,distance,~(1<<4),QueryTriggerInteraction.Ignore))
+                {
+                    if(Ignored(h.collider) || h.point.y<.6f || h.normal.y<.69f || h.point.y<=top)continue;
+                    top=h.point.y;point=new Vector3(seed.x,h.point.y,seed.z);found=true;
+                }
             return found;
         }
         public static bool NonSolidSurface(Collider collider)=>collider.GetComponentInParent<WaterSystem.Water>()!=null || collider.name=="NavMesh";
@@ -221,12 +229,25 @@ namespace BoatAttack.Fishing
                 if(input.sqrMagnitude>.01f && Time.unscaledTime>_nextWarning){Controller.Notice("前方是深水或陡坎，请沿岸步行；R 可救援回港。",3);_nextWarning=Time.unscaledTime+4;}
             }
             float vertical=_motion.Step(Body.isGrounded,jump,Crouched,dt);
-            var previous=Actor.position;var collision=Body.Move((velocity+Vector3.up*vertical)*dt);
+            var previous=Actor.position;
+            float rise=support?floor.y-previous.y:0;
+            // Lift before crossing a safe low lip, so diagonal gravity cannot wedge
+            // the capsule into a ramp/floor join. Headroom and wall checks stay active.
+            if(Body.isGrounded && !jump && vertical<=0 && rise>.02f && rise<=Body.stepOffset && StepClear(new Vector3(next.x,floor.y,next.z)))
+            {Body.Move(Vector3.up*(rise+.02f));vertical=-.02f/dt;}
+            var collision=Body.Move((velocity+Vector3.up*vertical)*dt);
             if((collision&CollisionFlags.Above)!=0)_motion.HitCeiling();
             WalkSpeed=Vector3.ProjectOnPlane(Actor.position-previous,Vector3.up).magnitude/dt;
             if(velocity.sqrMagnitude>.01f)Actor.rotation=Quaternion.LookRotation(velocity);
             if(Body.isGrounded && Actor.position.y>.6f)_lastSafe=Actor.position;
             if(Actor.position.y<.2f){Body.enabled=false;Actor.position=_lastSafe;Body.enabled=true;_motion.Reset();}
+        }
+        private bool StepClear(Vector3 feet)
+        {
+            float radius=Body.radius;
+            foreach(var collider in Physics.OverlapCapsule(feet+Vector3.up*(radius+.04f),feet+Vector3.up*(Body.height-radius),radius*.99f,~(1<<4),QueryTriggerInteraction.Ignore))
+                if(!Ignored(collider))return false;
+            return true;
         }
         public bool Survey()
         {
