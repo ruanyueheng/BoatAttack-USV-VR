@@ -101,12 +101,12 @@ namespace BoatAttack.Fishing
             public string TargetId="",Reason="",GeometryReason="",Candidates="",ArmBlocker="",ToolBlocker="";
             public Vector3 Actor,RootPosition,Contact,Palm,Shoulder,BaseShoulder,Lean;
             public float ArmReach,Distance,LeanNeed,DistanceAfterLean;
-            public bool Grounded,Crouched,ArmSight,ToolSight;
+            public bool Grounded,Crouched,ArmSight,ToolSight,AutoCrouch;
             // 几何可达不代表可以起手；动作中检查另一候选时仍保留全部生产状态守卫。
             public bool GeometryReady=>GeometryReason.Length==0;
             public bool CanBegin=>Reason.Length==0;
             public override string ToString()=>"target="+TargetId+" eligible="+CanBegin+" reason="+Reason+" geometryReady="+GeometryReady+" geometryReason="+GeometryReason+" grounded="+Grounded+" crouched="+Crouched
-                +" actor="+Actor.ToString("F4")+" root="+RootPosition.ToString("F4")+" contact="+Contact.ToString("F4")+" palm="+Palm.ToString("F4")
+                +" autoCrouch="+AutoCrouch+" actor="+Actor.ToString("F4")+" root="+RootPosition.ToString("F4")+" contact="+Contact.ToString("F4")+" palm="+Palm.ToString("F4")
                 +" shoulder="+Shoulder.ToString("F4")+" baseShoulder="+BaseShoulder.ToString("F4")+" armReach="+ArmReach.ToString("F4")
                 +" distance="+Distance.ToString("F4")+" leanNeed="+LeanNeed.ToString("F4")+" lean="+Lean.ToString("F4")+" afterLean="+DistanceAfterLean.ToString("F4")
                 +" armSight="+ArmSight+" armBlocker="+ArmBlocker+" toolSight="+ToolSight+" toolBlocker="+ToolBlocker+" candidates="+Candidates;
@@ -156,6 +156,15 @@ namespace BoatAttack.Fishing
                 Shoulder=character.ShoulderPosition(false),Grounded=Shore.Grounded,Crouched=Shore.Crouched,ArmReach=character.ArmReach(false)};
             check.BaseShoulder=check.Shoulder-character.AppliedInteractionLean;
             check.Palm=pick?FishingFieldWorld.PickContactPalm(contact,rotation):contact;
+            // Low loose items use the existing crouch animation instead of demanding
+            // that a standing short-armed avatar can touch the ground. Preflight is
+            // still read-only; the actual posture changes only after all guards pass.
+            if(kind==FishingActionKind.Pickup && Ashore && check.Grounded && !Shore.Crouched && contact.y<check.BaseShoulder.y-.4f)
+            {
+                var crouchedShoulder=check.BaseShoulder-Vector3.up*character.RemainingCrouchDrop-character.transform.forward*.12f;
+                if(Vector3.Distance(crouchedShoulder,check.Palm)<=check.ArmReach-.015f+.22f)
+                {check.BaseShoulder=crouchedShoulder;check.AutoCrouch=true;}
+            }
             var delta=check.Palm-check.BaseShoulder;check.Distance=delta.magnitude;
             // 与原生产守卫保持同一臂长余量和 22cm 俯身上限，不为夹具放宽。
             check.LeanNeed=Mathf.Max(0,check.Distance-(check.ArmReach-.04f));
@@ -287,6 +296,7 @@ namespace BoatAttack.Fishing
             var shoulder=check.BaseShoulder;var lean=check.Lean;
             const float duration=.7f,contactTime=.36f;
             if(!Actions.TryBegin(kind,targetId,duration,contactTime))return false;
+            if(check.AutoCrouch)Shore.SetCrouch(true);
             Hands.GetToolFrame(out _,out var frame);
             _action=new ActionRequest{Profile=Career,Tool=Career.Backpack.Equipped,Slot=Career.Backpack.Selected,Ashore=Ashore,Crouched=Shore.Crouched,Fish=fish,
                 ContactRoot=root,HadRoot=root!=null,ContactLocal=root==null?Vector3.zero:root.InverseTransformPoint(contact),ContactWorld=contact,ToolRotation=rotation,Commit=commit,
