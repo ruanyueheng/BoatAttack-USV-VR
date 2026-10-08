@@ -36,7 +36,7 @@ namespace BoatAttack.EditorTools
                 string error=SessionState.GetString(Key+"error","");
                 if(!SessionState.GetBool(Key+"finished",false) && error=="")error="检查未完整执行";
                 string marker="["+SessionState.GetString(Key+"suite","")+"]";
-                if(error=="")Debug.Log(marker+" PASS: v0.11 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。");
+                if(error=="")Debug.Log(marker+" PASS: v"+FishingPrototype.Version+" 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。");
                 else Debug.LogError(marker+" FAIL: "+error);
                 EditorApplication.Exit(error==""?0:1);
             };
@@ -133,6 +133,10 @@ namespace BoatAttack.EditorTools
             {
                 var run=Interactions(c);while(run.MoveNext())yield return null;
             }
+            else if(suite=="PLAYER")
+            {
+                var run=FishingPlayerRepairValidation.Checks(c);while(run.MoveNext())yield return null;
+            }
             else throw new ArgumentException("未知 v0.11 套件："+suite);
         }
         private static IEnumerator Map(FishingPrototype c)
@@ -216,8 +220,8 @@ namespace BoatAttack.EditorTools
             foreach(var hand in new[]{c.Hands.Left,c.Hands.Right})
             {
                 var viewport=c.viewCamera.WorldToViewportPoint(hand.Palm.position);
-                Check(viewport.z>.06f && viewport.x>.05f && viewport.x<.95f && viewport.y>.25f && viewport.y<.9f,
-                    "第一人称真实持竿双掌进入可见操作区："+viewport);
+                Check(viewport.z>.06f && viewport.x>.05f && viewport.x<.95f && viewport.y>.1f && viewport.y<.6f,
+                    "第一人称真实持竿双掌留在下方可见操作区，避免遮挡中心："+viewport);
             }
             c.ToggleView();c.PresentCharacterFrame();FishingCharacterValidation.CheckVisibility(c,false);
             Check(Vector3.Distance(c.Hands.Rod.position,c.Shore.Character.HandReferencePosition)<1,"第三人称钓竿仍位于肩系而非相机前");

@@ -23,7 +23,10 @@ if (Test-Path -LiteralPath $library) {
 if (Get-Process -Name Unity -ErrorAction SilentlyContinue) { throw '请先关闭现有 Unity 编辑器；本脚本不会终止别人的进程。' }
 $runner = Join-Path $PSScriptRoot 'Run-UnityValidation.ps1'
 $acceptance = Join-Path $PSScriptRoot 'Run-FishingAcceptance.ps1'
-$player = Join-Path $repo 'Builds/FishingPrototype-v0.11.0/FishingPrototype.exe'
+$source = Get-Content -LiteralPath (Join-Path $repo 'Assets/Scripts/Fishing/FishingPrototype.cs') -Raw
+if ($source -notmatch 'public const string Version\s*=\s*"([0-9.]+)"') { throw 'Cannot read the current player version.' }
+$productVersion = $Matches[1]
+$player = Join-Path $repo ("Builds/FishingPrototype-v$productVersion/FishingPrototype.exe")
 # 顺序固定：先编译与 Terrain，再非破坏性装店，再烘焙初始化后的真实地图。
 $suites = @('FishingTerrain', 'FishingShopInstall', 'FishingMap', 'FishingCharacter', 'FishingInteraction', 'FishingShop')
 if ($Stage -eq 'Full') {

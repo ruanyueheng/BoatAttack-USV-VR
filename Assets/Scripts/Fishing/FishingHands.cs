@@ -176,7 +176,7 @@ namespace BoatAttack.Fishing
                 _rod.gameObject.SetActive(true);
                 // 同源双手保持在可见的胸前操作区；俯视只改变竿的瞄准，不把整个握持位置压出画面。
                 var holdFrame=Quaternion.Euler(0,frame.eulerAngles.y,0);
-                _rod.SetPositionAndRotation(origin+holdFrame*new Vector3(.05f,.15f,.34f),holdFrame*Quaternion.Euler(-32f-Mathf.Sin(_cast/.45f*Mathf.PI)*24f,-12f,0));
+                _rod.SetPositionAndRotation(origin+holdFrame*new Vector3(.10f,-.10f,.36f),holdFrame*Quaternion.Euler(-32f-Mathf.Sin(_cast/.45f*Mathf.PI)*24f,-12f,0));
                 var reelPalm=_rod.InverseTransformPoint(_knob.position+_rod.TransformVector(new Vector3(-.024f,.012f,-.035f)));
                 FitToolPose(_rod,reelPalm,RodPalm);
                 _right.SetFromGrip(_rod,RodPalm,RodPalmRotation,.86f);

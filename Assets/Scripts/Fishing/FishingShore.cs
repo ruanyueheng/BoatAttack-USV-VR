@@ -35,6 +35,10 @@ namespace BoatAttack.Fishing
         private Quaternion _mooringRotation;
         private float _nextWarning;
         private readonly FishingLocomotion _motion = new FishingLocomotion();
+        private readonly RaycastHit[] _groundHits = new RaycastHit[32];
+        private readonly Collider[] _stepOverlaps = new Collider[32];
+        private static readonly Vector3[] SeamOffsets = { Vector3.right,Vector3.left,Vector3.forward,Vector3.back,
+            new Vector3(.7071f,0,.7071f),new Vector3(-.7071f,0,.7071f),new Vector3(.7071f,0,-.7071f),new Vector3(-.7071f,0,-.7071f) };
         private Transform _visual;
         public bool Crouched { get; private set; }
         public float EyeHeight => (Crouched?FishingLocomotion.CrouchingHeight:FishingLocomotion.StandingHeight)-.2f;
@@ -99,13 +103,26 @@ namespace BoatAttack.Fishing
         private bool GroundBelow(Vector3 seed,float originY,float distance,out Vector3 point)
         {
             point=seed;
-            var hits=Physics.RaycastAll(new Vector3(seed.x,originY,seed.z),Vector3.down,distance,~(1<<4),QueryTriggerInteraction.Ignore);
-            float top=float.MinValue; bool found=false;
-            foreach(var h in hits)
+            int count=Physics.RaycastNonAlloc(new Vector3(seed.x,originY,seed.z),Vector3.down,_groundHits,distance,~(1<<4),QueryTriggerInteraction.Ignore);
+            if(count==_groundHits.Length)return false;
+            float top=float.MinValue;bool found=false;
+            for(int i=0;i<count;i++)
             {
-                if (Ignored(h.collider) || h.point.y<.6f || h.normal.y<.69f || h.point.y<=top) continue;
-                top=h.point.y; point=h.point; found=true;
+                var h=_groundHits[i];
+                if(Ignored(h.collider) || h.point.y<.6f || h.normal.y<.69f || h.point.y<=top)continue;
+                top=h.point.y;point=h.point;found=true;
             }
+            return found;
+        }
+        private bool WalkingGroundBelow(Vector3 seed,float originY,float distance,out Vector3 point)
+        {
+            if(GroundBelow(seed,originY,distance,out point))return true;
+            // 仅连续步行容忍胶囊足印内的窄缝；登陆和设施支撑仍使用精确中心射线。
+            // 用实际表面射线取坡度，不能把球扫掠在陡边上的接触法线当作平地法线。
+            bool found=false;float top=float.MinValue;
+            foreach(var offset in SeamOffsets)
+                if(GroundBelow(seed+offset*(Body.radius*.6f),originY,distance,out var nearby) && nearby.y>top)
+                {top=nearby.y;point=new Vector3(seed.x,nearby.y,seed.z);found=true;}
             return found;
         }
         public static bool NonSolidSurface(Collider collider)=>collider.GetComponentInParent<WaterSystem.Water>()!=null || collider.name=="NavMesh";
@@ -214,19 +231,33 @@ namespace BoatAttack.Fishing
             var velocity=heading*new Vector3(axes.x,0,axes.y)*(Crouched?1.25f:sprint?4.4f:2.6f);
             var next=Actor.position+velocity*dt;
             // Search through the jump arc, but still reject water/large drops relative to the last grounded feet.
-            bool support=GroundBelow(next,Actor.position.y+.45f,3f,out var floor) && floor.y<=Actor.position.y+.45f && floor.y>=_lastSafe.y-.65f;
+            bool support=WalkingGroundBelow(next,Actor.position.y+.45f,3f,out var floor) && floor.y<=Actor.position.y+.45f && floor.y>=_lastSafe.y-.65f;
             if(!support)
             {
                 velocity=Vector3.zero;
                 if(input.sqrMagnitude>.01f && Time.unscaledTime>_nextWarning){Controller.Notice("前方是深水或陡坎，请沿岸步行；R 可救援回港。",3);_nextWarning=Time.unscaledTime+4;}
             }
             float vertical=_motion.Step(Body.isGrounded,jump,Crouched,dt);
-            var previous=Actor.position;var collision=Body.Move((velocity+Vector3.up*vertical)*dt);
+            var previous=Actor.position;
+            float rise=support?floor.y-previous.y:0;
+            // Lift before crossing a safe low lip, so diagonal gravity cannot wedge
+            // the capsule into a ramp/floor join. Headroom and wall checks stay active.
+            if(Body.isGrounded && !jump && vertical<=0 && rise>.02f && rise<=Body.stepOffset && StepClear(new Vector3(next.x,floor.y,next.z)))
+            {Body.Move(Vector3.up*(rise+.02f));vertical=-.02f/dt;}
+            var collision=Body.Move((velocity+Vector3.up*vertical)*dt);
             if((collision&CollisionFlags.Above)!=0)_motion.HitCeiling();
             WalkSpeed=Vector3.ProjectOnPlane(Actor.position-previous,Vector3.up).magnitude/dt;
             if(velocity.sqrMagnitude>.01f)Actor.rotation=Quaternion.LookRotation(velocity);
             if(Body.isGrounded && Actor.position.y>.6f)_lastSafe=Actor.position;
             if(Actor.position.y<.2f){Body.enabled=false;Actor.position=_lastSafe;Body.enabled=true;_motion.Reset();}
+        }
+        private bool StepClear(Vector3 feet)
+        {
+            float radius=Body.radius;
+            int count=Physics.OverlapCapsuleNonAlloc(feet+Vector3.up*(radius+.04f),feet+Vector3.up*(Body.height-radius),radius*.99f,_stepOverlaps,~(1<<4),QueryTriggerInteraction.Ignore);
+            if(count==_stepOverlaps.Length)return false;
+            for(int i=0;i<count;i++)if(!Ignored(_stepOverlaps[i]))return false;
+            return true;
         }
         public bool Survey()
         {
