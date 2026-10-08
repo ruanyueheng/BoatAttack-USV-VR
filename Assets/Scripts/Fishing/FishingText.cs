@@ -38,6 +38,27 @@ namespace BoatAttack.Fishing
             }
         }
 
+        public static string ShopProductName(UpgradeTrack track)
+        {
+            switch (track)
+            {
+                case UpgradeTrack.Line: return "强化鱼线 / 钓竿套装";
+                case UpgradeTrack.Reel: return "精密卷线器";
+                case UpgradeTrack.Hold: return "扩容鱼箱";
+                default: return string.Empty;
+            }
+        }
+
+        public static string ShopProductDescription(UpgradeTrack track)
+        {
+            switch (track)
+            {
+                case UpgradeTrack.Line: return "沿用现有钓竿，换装抗拉鱼线，降低斗鱼张力。";
+                case UpgradeTrack.Reel: return "升级现有卷线器，提高收线速度。";
+                case UpgradeTrack.Hold: return "升级船上鱼箱，增加鱼获储存容量。";
+                default: return string.Empty;
+            }
+        }
         public static string UpgradeEffect(UpgradeTrack track, int level)
         {
             switch (track)

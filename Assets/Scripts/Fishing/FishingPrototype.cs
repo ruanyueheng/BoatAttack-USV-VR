@@ -24,7 +24,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.11.0";
+        public const string Version = "0.12.0";
         public Boat boatPrefab;
         public Camera viewCamera;
         public Vector3 spawnPosition;
@@ -441,7 +441,7 @@ namespace BoatAttack.Fishing
             if(sold>0)
             {
                 Save();RefreshHold();_feedback.PlayOneShot(_successTone);
-                Notice("出售成功 +"+sold+" 金币"+(reserved>0?"，已为委托保留 "+reserved+" 条鱼（X 可全部出售）。":"！在交易台按钮升级。"),7f);
+                Notice("出售成功 +"+sold+" 金币"+(reserved>0?"，已为委托保留 "+reserved+" 条鱼（X 可全部出售）。":"！金币可在沙滩钓具店或港口购买装备。"),7f);
             }
             else Notice(reserved>0?"鱼货都在为委托保留。凑齐后按 E 交付，或按 X 全部出售。":"鱼箱还是空的。前往黄色渔区捕捞，带回这里出售。");
             return sold;
@@ -466,7 +466,7 @@ namespace BoatAttack.Fishing
                 Save();if(track==UpgradeTrack.Hold)RefreshHold();_feedback.PlayOneShot(_successTone);
                 int level=Career.Level(track);
                 if(ShopOpen)Hands.ReachGesture(Shore.Character.HandReferencePosition+Shore.Actor.forward*.28f);
-                Notice(FishingText.UpgradeName(track)+" 升至 Lv."+level+" · "+FishingText.UpgradeEffect(track,level),7f);
+                Notice(FishingText.UpgradeName(track)+" 升至 Lv."+level+" · "+FishingText.UpgradeEffect(track,level)+" · 花费 "+cost+" 金币，余额 "+Career.Coins,7f);
             }
             else Notice("需要 "+cost+" 金币。先捕鱼、返港出售或交付委托吧。");
             return ok;

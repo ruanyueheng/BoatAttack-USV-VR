@@ -18,6 +18,9 @@ namespace BoatAttack.Fishing
         private float _eyeHeight=1.58f,_eyeForward=.12f,_seatWeight,_crouchWeight;
         public const float CrouchDrop=FishingLocomotion.StandingHeight-FishingLocomotion.CrouchingHeight;
         public float RemainingCrouchDrop=>CrouchDrop*(1-_crouchWeight);
+        public Vector3 RemainingCrouchOffset=>AshoreStanceOffset(true);
+        public Vector3 AshoreStanceOffset(bool crouched)=>(Vector3.down*CrouchDrop-transform.forward*.12f)*((crouched?1:0)-_crouchWeight)
+            +(Vector3.up*.38f+transform.forward*.08f)*_seatWeight;
         private int _stanceFrame=-1;
         public bool IsStanceSettled(bool ashore,bool crouched)=>Mathf.Approximately(_seatWeight,ashore?0:1)
             && Mathf.Approximately(_crouchWeight,ashore && crouched?1:0);

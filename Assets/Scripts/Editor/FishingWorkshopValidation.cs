@@ -141,7 +141,7 @@ namespace BoatAttack.EditorTools
             var torsoStanding=torso.position;var leftStanding=leftAnkle.position;var rightStanding=rightAnkle.position;
             shore.SetCrouch(true);shore.SyncRider();
             for(int i=0;i<8;i++)yield return null;
-            Check(Mathf.Abs(torso.position.y-torsoStanding.y+.42f)<.015f,"crouch lowers common torso and thigh parent");
+            Check(Mathf.Abs(torso.position.y-torsoStanding.y+FishingLocomotion.StandingHeight-FishingLocomotion.CrouchingHeight)<.015f,"crouch lowers common torso and thigh parent by the actual capsule height difference");
             Check(Vector3.Distance(leftStanding,leftAnkle.position)<.02f && Vector3.Distance(rightStanding,rightAnkle.position)<.02f,"crouch keeps both ankles attached to independent feet");
             var before=torso.position;
             for(int i=0;i<20;i++){shore.SyncRider();yield return null;}

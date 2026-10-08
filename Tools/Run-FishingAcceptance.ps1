@@ -1,7 +1,7 @@
 param(
     [ValidateSet('Smoke', 'Capture', 'Manual')][string]$Mode = 'Smoke',
-    [string]$Player = 'Builds/FishingPrototype-v0.11.0/FishingPrototype.exe',
-    [ValidatePattern('^[A-Za-z0-9_-]{1,48}$')][string]$Session = 'manual-v011',
+    [string]$Player = 'Builds/FishingPrototype-v0.12.0/FishingPrototype.exe',
+    [ValidatePattern('^[A-Za-z0-9_-]{1,48}$')][string]$Session = 'manual-v012',
     [ValidateRange(640, 7680)][int]$Width = 1280,
     [ValidateRange(480, 4320)][int]$Height = 720,
     [ValidateRange(60, 600)][int]$TimeoutSeconds = 240

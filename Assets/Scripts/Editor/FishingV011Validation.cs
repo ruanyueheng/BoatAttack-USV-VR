@@ -36,7 +36,7 @@ namespace BoatAttack.EditorTools
                 string error=SessionState.GetString(Key+"error","");
                 if(!SessionState.GetBool(Key+"finished",false) && error=="")error="检查未完整执行";
                 string marker="["+SessionState.GetString(Key+"suite","")+"]";
-                if(error=="")Debug.Log(marker+" PASS: v0.11 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。");
+                if(error=="")Debug.Log(marker+" PASS: v"+FishingPrototype.Version+" 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。");
                 else Debug.LogError(marker+" FAIL: "+error);
                 EditorApplication.Exit(error==""?0:1);
             };

@@ -38,7 +38,7 @@ namespace BoatAttack.EditorTools
             int count=c.Career.Backpack.Count(pickup.Item);
             bool began=c.RequestWorldInteraction();Debug.Log("[PLAYER] PICKUP BEGAN="+began+" message="+c.Message);
             Check(began,"press E near a low pickup starts the production pickup action");
-            for(int i=0;i<120 && c.WorldActionBusy;i++){c.TickWorldAction(1f/60,true,false);c.PresentCharacterFrame();yield return null;}
+            for(int i=0;i<180 && c.WorldActionBusy;i++)yield return null;
             Check(c.LastActionSucceeded && c.Career.Backpack.Count(pickup.Item)==count+pickup.Count,"nearby pickup commits exactly once");
             yield return null;
             var joins=CheckJoins(c);while(joins.MoveNext())yield return null;

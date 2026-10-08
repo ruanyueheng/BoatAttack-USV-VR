@@ -35,6 +35,10 @@ namespace BoatAttack.Fishing
         private Quaternion _mooringRotation;
         private float _nextWarning;
         private readonly FishingLocomotion _motion = new FishingLocomotion();
+        private readonly RaycastHit[] _groundHits = new RaycastHit[32];
+        private readonly Collider[] _stepOverlaps = new Collider[32];
+        private static readonly Vector3[] SeamOffsets = { Vector3.right,Vector3.left,Vector3.forward,Vector3.back,
+            new Vector3(.7071f,0,.7071f),new Vector3(-.7071f,0,.7071f),new Vector3(.7071f,0,-.7071f),new Vector3(-.7071f,0,-.7071f) };
         private Transform _visual;
         public bool Crouched { get; private set; }
         public float EyeHeight => (Crouched?FishingLocomotion.CrouchingHeight:FishingLocomotion.StandingHeight)-.2f;
@@ -99,21 +103,26 @@ namespace BoatAttack.Fishing
         private bool GroundBelow(Vector3 seed,float originY,float distance,out Vector3 point)
         {
             point=seed;
-            var hits=Physics.RaycastAll(new Vector3(seed.x,originY,seed.z),Vector3.down,distance,~(1<<4),QueryTriggerInteraction.Ignore);
-            float top=float.MinValue; bool found=false;
-            foreach(var h in hits)
+            int count=Physics.RaycastNonAlloc(new Vector3(seed.x,originY,seed.z),Vector3.down,_groundHits,distance,~(1<<4),QueryTriggerInteraction.Ignore);
+            if(count==_groundHits.Length)return false;
+            float top=float.MinValue;bool found=false;
+            for(int i=0;i<count;i++)
             {
-                if (Ignored(h.collider) || h.point.y<.6f || h.normal.y<.69f || h.point.y<=top) continue;
-                top=h.point.y; point=h.point; found=true;
+                var h=_groundHits[i];
+                if(Ignored(h.collider) || h.point.y<.6f || h.normal.y<.69f || h.point.y<=top)continue;
+                top=h.point.y;point=h.point;found=true;
             }
-            // Adjacent authored colliders can leave centimetre-wide seams. Use a
-            // bounded footprint only when the centre ray misses, never a wide bridge.
-            if(!found && Body!=null)
-                foreach(var h in Physics.SphereCastAll(new Vector3(seed.x,originY,seed.z),Body.radius*.6f,Vector3.down,distance,~(1<<4),QueryTriggerInteraction.Ignore))
-                {
-                    if(Ignored(h.collider) || h.point.y<.6f || h.normal.y<.69f || h.point.y<=top)continue;
-                    top=h.point.y;point=new Vector3(seed.x,h.point.y,seed.z);found=true;
-                }
+            return found;
+        }
+        private bool WalkingGroundBelow(Vector3 seed,float originY,float distance,out Vector3 point)
+        {
+            if(GroundBelow(seed,originY,distance,out point))return true;
+            // 仅连续步行容忍胶囊足印内的窄缝；登陆和设施支撑仍使用精确中心射线。
+            // 用实际表面射线取坡度，不能把球扫掠在陡边上的接触法线当作平地法线。
+            bool found=false;float top=float.MinValue;
+            foreach(var offset in SeamOffsets)
+                if(GroundBelow(seed+offset*(Body.radius*.6f),originY,distance,out var nearby) && nearby.y>top)
+                {top=nearby.y;point=new Vector3(seed.x,nearby.y,seed.z);found=true;}
             return found;
         }
         public static bool NonSolidSurface(Collider collider)=>collider.GetComponentInParent<WaterSystem.Water>()!=null || collider.name=="NavMesh";
@@ -222,7 +231,7 @@ namespace BoatAttack.Fishing
             var velocity=heading*new Vector3(axes.x,0,axes.y)*(Crouched?1.25f:sprint?4.4f:2.6f);
             var next=Actor.position+velocity*dt;
             // Search through the jump arc, but still reject water/large drops relative to the last grounded feet.
-            bool support=GroundBelow(next,Actor.position.y+.45f,3f,out var floor) && floor.y<=Actor.position.y+.45f && floor.y>=_lastSafe.y-.65f;
+            bool support=WalkingGroundBelow(next,Actor.position.y+.45f,3f,out var floor) && floor.y<=Actor.position.y+.45f && floor.y>=_lastSafe.y-.65f;
             if(!support)
             {
                 velocity=Vector3.zero;
@@ -245,8 +254,9 @@ namespace BoatAttack.Fishing
         private bool StepClear(Vector3 feet)
         {
             float radius=Body.radius;
-            foreach(var collider in Physics.OverlapCapsule(feet+Vector3.up*(radius+.04f),feet+Vector3.up*(Body.height-radius),radius*.99f,~(1<<4),QueryTriggerInteraction.Ignore))
-                if(!Ignored(collider))return false;
+            int count=Physics.OverlapCapsuleNonAlloc(feet+Vector3.up*(radius+.04f),feet+Vector3.up*(Body.height-radius),radius*.99f,_stepOverlaps,~(1<<4),QueryTriggerInteraction.Ignore);
+            if(count==_stepOverlaps.Length)return false;
+            for(int i=0;i<count;i++)if(!Ignored(_stepOverlaps[i]))return false;
             return true;
         }
         public bool Survey()
