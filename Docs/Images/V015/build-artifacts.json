@@ -1,0 +1,17 @@
+{
+  "version": "0.15.0",
+  "platform": "Windows",
+  "totalBytes": 597076662,
+  "files": [
+    {
+      "file": "FishingPrototype.exe",
+      "bytes": 666624,
+      "sha256": "3aa99a12ceadfa13da1ff1262e0f076bdec1c93319989ed000e708d7596550df"
+    },
+    {
+      "file": "FishingPrototype_Data/Managed/Assembly-CSharp.dll",
+      "bytes": 500224,
+      "sha256": "0b0cf9f9c414705d365fd266d6f1534c1e13a5d5afc16e4decbad6b631ead49f"
+    }
+  ]
+}

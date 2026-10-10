@@ -28,7 +28,7 @@ namespace BoatAttack.Fishing
             var root=new GameObject("Coastal XR notebook",typeof(RectTransform),typeof(Canvas));root.transform.SetParent(transform,false);
             _canvas=root.GetComponent<Canvas>();_canvas.renderMode=RenderMode.WorldSpace;_canvas.worldCamera=c.viewCamera;
             var rt=root.GetComponent<RectTransform>();rt.sizeDelta=new Vector2(580,660);rt.localScale=Vector3.one*.0016f;
-            var panel=root.AddComponent<Image>();panel.color=new Color(.98f,.97f,.93f);panel.raycastTarget=false;
+            var panel=root.AddComponent<Image>();panel.color=new Color(.035f,.075f,.09f,.97f);panel.raycastTarget=false;
             _status=Label(root.transform,new Vector2(24,-20),new Vector2(532,224),23);
             for(int i=0;i<9;i++)
             {
@@ -46,7 +46,7 @@ namespace BoatAttack.Fishing
         {
             var go=new GameObject("Notebook label",typeof(RectTransform),typeof(Text));go.transform.SetParent(parent,false);
             var rt=go.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(0,1);rt.pivot=new Vector2(0,1);rt.anchoredPosition=position;rt.sizeDelta=size;
-            var text=go.GetComponent<Text>();text.font=FishingUIFont.Font;text.fontSize=fontSize;text.color=new Color(.08f,.20f,.21f);text.raycastTarget=false;return text;
+            var text=go.GetComponent<Text>();text.font=FishingUIFont.Font;text.fontSize=fontSize;text.color=new Color(.90f,.95f,.92f);text.raycastTarget=false;return text;
         }
         public void Open(int page=0)
         {
@@ -61,7 +61,7 @@ namespace BoatAttack.Fishing
             IsOpen=true;_page=page;_offset=0;_canvas.gameObject.SetActive(true);_c.WorkshopWorld.SelectNearby();Refresh();
         }
         public void Close(){IsOpen=false;if(_canvas!=null)_canvas.gameObject.SetActive(false);if(_ray!=null)_ray.enabled=false;_trigger.Reset();_tipSample=false;}
-        private void Set(int index,string label,Action action){_labels[index].text=label;_actions[index]=action;_plates[index].color=action==null?new Color(.91f,.91f,.88f):new Color(.84f,.91f,.85f);}
+        private void Set(int index,string label,Action action){_labels[index].text=label;_actions[index]=action;_plates[index].color=action==null?new Color(.09f,.13f,.14f):new Color(.12f,.27f,.25f);}
         private void Refresh()
         {
             var day=_c.Career.Calendar;var bag=_c.Career.Backpack;
@@ -98,7 +98,7 @@ namespace BoatAttack.Fishing
             }
             else if(_page==3)
             {
-                _status.text=day.DateLabel+"   "+day.TimeLabel+"\n每季 28 天 · 每日 20 分钟\n今日："+BayClimate.Name(_c.Weather.Climate.Current)+
+                _status.text=day.DateLabel+"   "+day.TimeLabel+"\n每季 28 天 · 每日 15 分钟\n今日："+BayClimate.Name(_c.Weather.Climate.Current)+
                     "\n明日："+BayClimate.Name(FishingCalendar.Forecast(day.Day+1))+"\n夜间提灯照路 · 星灯鱼仅在夜间出现\n打开手册时日历和熔炉暂停";
                 Set(0,"休息至清晨",_c.CanRest?(Action)(()=>{Close();_c.RestUntilMorning();}):null);
                 Set(1,"观察附近动物",()=>{Close();if(_c.Ashore)_c.FieldWorld.Observe();else _c.Ecology.Observe();});

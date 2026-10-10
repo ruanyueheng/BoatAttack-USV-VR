@@ -9,7 +9,7 @@ namespace BoatAttack.Fishing
         private FishingPrototype _c;
         private Transform _rod,_crank,_net,_knob;
         private FishingHandTarget _left,_right;
-        private float _gesture,_cast;
+        private float _gesture,_hook;
         private readonly FishingCastGesture _castGesture=new FishingCastGesture();
         private Vector3 _lastCastPosition;private bool _castSample;
         private int _presentationFrame=-1;
@@ -62,7 +62,8 @@ namespace BoatAttack.Fishing
             _input.Update(false,0,false,false,0,false,0);
             if(_left!=null)_left.Disable();if(_right!=null)_right.Disable();
             _castGesture.Reset();_castSample=false;
-            _gesture=_cast=_pickupTime=0;if(_pickup!=null)_pickup.SetActive(false);
+            _c?.CastMotion.CancelPreparation();
+            _gesture=_hook=_pickupTime=0;if(_pickup!=null)_pickup.SetActive(false);
         }
         public void ReadXRTools()
         {
@@ -89,13 +90,13 @@ namespace BoatAttack.Fishing
             float speed=_castSample && dt>.001f?Vector3.Dot((localPosition-_lastCastPosition)/dt,forward):0;
             bool cast=_castGesture.Step(HoldingRod && _castSample && _c.CanChangeBait,trigger,speed,dt);
             _lastCastPosition=localPosition;_castSample=true;
-            bool action=cast?_c.Cast():_input.Activated && _c.Session.Phase==CatchPhase.Bite && _c.Hook();
+            bool action=cast?_c.Cast(_castGesture.Power):_input.Activated && _c.Session.Phase==CatchPhase.Bite && _c.Hook();
             if(action)Haptic(right,.3f);
         }
         private static void Haptic(InputDevice device,float strength)
         {if(device.TryGetHapticCapabilities(out var capabilities) && capabilities.supportsImpulse)device.SendHapticImpulse(0,strength,.04f);}
-        public void CastGesture(){_cast=.45f;}
         public void ReachGesture(Vector3 target){_gesture=.55f;_gestureTarget=target;}
+        public void HookGesture(){_hook=.32f;}
         /// <summary>Shoulder-centre origin in BOTH desktop views; TP camera position never enters tool placement.</summary>
         public void GetToolFrame(out Vector3 origin,out Quaternion rotation)
         {
@@ -161,7 +162,7 @@ namespace BoatAttack.Fishing
             _pickupTime=Mathf.Max(0,_pickupTime-step);
             if(_pickup!=null)_pickup.SetActive(_pickupTime>0 && _c.Ashore && CanPresent && !xr);
             if(!CanPresent){ResetInteraction();StowRod();return;}
-            _gesture=Mathf.Max(0,_gesture-step);_cast=Mathf.Max(0,_cast-step);
+            _gesture=Mathf.Max(0,_gesture-step);_hook=Mathf.Max(0,_hook-step);
             if(xr)
             {
                 bool leftTracked=Track(_left,XRNode.LeftHand,out _,out _);
@@ -184,7 +185,7 @@ namespace BoatAttack.Fishing
                 _rod.gameObject.SetActive(true);
                 // 同源双手保持在可见的胸前操作区；俯视只改变竿的瞄准，不把整个握持位置压出画面。
                 var holdFrame=Quaternion.Euler(0,frame.eulerAngles.y,0);
-                _rod.SetPositionAndRotation(origin+holdFrame*new Vector3(.10f,-.105f,.41f),holdFrame*Quaternion.Euler(-32f-Mathf.Sin(_cast/.45f*Mathf.PI)*24f,-12f,0));
+                _rod.SetPositionAndRotation(origin+holdFrame*new Vector3(.10f,-.105f,.41f),holdFrame*Quaternion.Euler(_c.CastMotion.RodPitch-Mathf.Sin(_hook/.32f*Mathf.PI)*18,-12f,0));
                 var reelPalm=_rod.InverseTransformPoint(_knob.position+_rod.TransformVector(new Vector3(-.024f,.012f,-.035f)));
                 FitToolPose(_rod,reelPalm,RodPalm);
                 _right.SetFromGrip(_rod,RodPalm,RodPalmRotation,.86f);

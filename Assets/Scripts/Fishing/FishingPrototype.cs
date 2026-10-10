@@ -24,7 +24,10 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.14.0";
+        public const string Version = "0.15.0";
+        public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
+        private Vector3 _castOrigin;
+        private bool _castSplash;
         public Boat boatPrefab;
         public Camera viewCamera;
         public Vector3 spawnPosition;
@@ -178,7 +181,7 @@ namespace BoatAttack.Fishing
             _initialized=true;
             if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }
             else if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
-            Debug.Log("[FISHING] Prototype v"+Version+" initialized. Original procedural fish; desktop preview only.");
+            Debug.Log("[FISHING] Prototype v"+Version+" initialized. Procedural and Hunyuan fish; desktop/XR input.");
         }
 
         private void Update()
@@ -194,6 +197,9 @@ namespace BoatAttack.Fishing
             }
             var k=Keyboard.current;var m=Mouse.current;var g=Gamepad.current;
             bool focused=Automated || Application.isFocused;
+            if(!Anchored || HasPendingCatch)CastMotion.Reset();
+            else if(Paused || !focused)CastMotion.CancelPreparation();
+            else if(Acceptance==null || !Acceptance.FreezeScenario)CastMotion.Tick(Time.deltaTime);
             // 先处理取消边界，再推进接触时钟；暂停/换物品的同帧不能先偷偷提交收益。
             if(WorldActionBusy && focused && !Automated)
             {
@@ -273,7 +279,20 @@ namespace BoatAttack.Fishing
                 if(!xr && _input.Current.interact && !DockConsole.BlocksGameplay && !(_xrActive && Hands.HoldingRod))RequestWorldInteraction();
                 if(ShopBlocksGameplay){Shore.Tick(false);AnimateEquipment();return;}
                 bool press=(pointerReady && !overTools && !rightHeld && m!=null && m.leftButton.wasPressedThisFrame) || (gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame);
-                if(press && Anchored){if(Session.Phase==CatchPhase.Bite)Hook();else Cast();}
+                if(press && Anchored)
+                {
+                    if(Session.Phase==CatchPhase.Bite)Hook();
+                    else if(CanChangeBait && !CastMotion.Casting)
+                    {
+                        if(pointerReady && m!=null && m.leftButton.wasPressedThisFrame)CastMotion.Prepare();
+                        else Cast();
+                    }
+                }
+                if(CastMotion.Preparing)
+                {
+                    if(!pointerReady || overTools || rightHeld || !CanChangeBait)CastMotion.CancelPreparation();
+                    else if(m!=null && m.leftButton.wasReleasedThisFrame)Cast(CastMotion.Release());
+                }
             }
             Shore.Tick(focused && !Automated && !Expedition.Aligning);
             UpdateNearestSpot();
@@ -284,7 +303,7 @@ namespace BoatAttack.Fishing
                 bool reel=Automated?AutomationReel:_xrActive?Hands.XRReeling:(pointerReady && !overTools && !rightHeld && leftHeld)||(gamepadReady && g!=null && g.rightTrigger.ReadValue()>0.5f);
                 _reeling=reel && Session.Phase==CatchPhase.Fighting;
                 if(Session.Phase==CatchPhase.Landing)Session.HoldForNet();
-                if(Acceptance == null || !Acceptance.FreezeScenario) Session.Tick(Time.deltaTime,reel);
+                if(!CastMotion.Casting && (Acceptance == null || !Acceptance.FreezeScenario)) Session.Tick(Time.deltaTime,reel);
                 if(Session.Phase!=_previousPhase)
                 {
                     if(Session.Phase==CatchPhase.Bite)
@@ -409,9 +428,9 @@ namespace BoatAttack.Fishing
             Anchored=true;ChartExpanded=false;ShowDetails=false;HarborDeskOpen=false;_anchor=Player.engine.RB.position;_anchorRotation=Player.transform.rotation;
             var v=Player.engine.RB.velocity;Player.engine.RB.velocity=new Vector3(0,v.y,0);
             Session.Cancel();_previousPhase=CatchPhase.Idle;
-            Notice("已停船。点击左键抛竿；Q 收起工具继续航行。",7f);
+            Notice("已停船。按住左键后摆，松开甩竿；轻点也可近抛。Q 起航。",7f);
         }
-        public bool Cast()
+        public bool Cast(float power = .55f)
         {
             if(HasPendingCatch || Ashore || !Anchored || Paused || !FishingGrounds.Available(Spot,Career.Expedition))return false;
             if(Career.Count>=Career.Capacity){Notice("鱼箱已满！按 Q 起航，返港按 E 出售。");return false;}
@@ -425,7 +444,7 @@ namespace BoatAttack.Fishing
             bool cast=Session.Cast(kind,rare,Career.LineLevel,Guid.NewGuid().ToString("N"),Bait,weather,size,Career.ReelLevel);
             if(cast)
             {
-                if(Hands!=null)Hands.CastGesture();
+                CastMotion.Launch(power);_castOrigin=_rodTip.position;_castSplash=false;
                 _castGround=Spot;_previousPhase=CatchPhase.Waiting;
                 _fish.SetActive(false);Destroy(_fish);
                 _fish=MakeFish(transform,kind,rare);
@@ -434,7 +453,11 @@ namespace BoatAttack.Fishing
             }
             return cast;
         }
-        public bool Hook()=>Anchored && !Paused && Session.Hook();
+        public bool Hook()
+        {
+            if(!Anchored || Paused || !Session.Hook())return false;
+            Hands?.HookGesture();return true;
+        }
         public bool Scoop()=>CatchRig!=null && CatchRig.RequestScoop();
         public void LeaveStation()
         {
@@ -636,12 +659,21 @@ namespace BoatAttack.Fishing
             if(!HasPendingCatch)_fish.SetActive(active && (phase==CatchPhase.Fighting || phase==CatchPhase.Landing || (phase==CatchPhase.Caught && Time.time-_caughtAt<0.8f)));
             var t=Player.transform;var yaw=Quaternion.Euler(0,t.eulerAngles.y,0);
             bool legend=Session.Species.Legendary;
-            float distance=phase==CatchPhase.Fighting?3.4f+Session.Distance*0.24f:5.5f;
+            float distance=phase==CatchPhase.Fighting?3.4f+Session.Distance*0.24f:4.5f+CastMotion.Power*3;
             var target=t.position+yaw*new Vector3(distance,0,1.5f);target.y=phase==CatchPhase.Fighting?0.18f+Mathf.Abs(Mathf.Sin(Time.time*3f))*0.20f:0.25f+Mathf.Sin(Time.time*4f)*0.06f;
             float leap=phase==CatchPhase.Fighting?Session.LeapProgress:0f;
             // The legend clears the water in a readable arc; the HUD warns before the line would snap.
             if(leap>0f)target.y=0.2f+Mathf.Sin(leap*Mathf.PI)*2.4f;
             if(phase==CatchPhase.Landing)target=LandingTarget;
+            if(phase==CatchPhase.Waiting && CastMotion.Casting)
+            {
+                float progress=CastMotion.FlightProgress;
+                target=Vector3.Lerp(_castOrigin,target,progress)+Vector3.up*Mathf.Sin(progress*Mathf.PI)*(1+CastMotion.Power);
+            }
+            else if(phase==CatchPhase.Waiting && !_castSplash)
+            {
+                _castSplash=true;Effects?.Burst(target,new Color(.72f,.9f,1));
+            }
             _bobber.transform.position=target;
             // 入网前由钓鱼轨迹驱动；待处理鱼只交给 CatchRig，避免两套姿态互相覆盖。
             if(!HasPendingCatch)

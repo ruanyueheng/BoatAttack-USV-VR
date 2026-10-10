@@ -10,7 +10,12 @@ namespace BoatAttack.EditorTools
     public static class FishingLivingCoastValidation
     {
         private static string _evidence;
-        public static void Run()=>FishingV011Validation.Begin("LIVING-COAST");
+        public static void Run()
+        {
+            foreach(string guid in UnityEditor.AssetDatabase.FindAssets("t:Model",new[]{"Assets/Resources/FishingFish"}))
+                UnityEditor.AssetDatabase.ImportAsset(UnityEditor.AssetDatabase.GUIDToAssetPath(guid),UnityEditor.ImportAssetOptions.ForceUpdate);
+            FishingV011Validation.Begin("LIVING-COAST");
+        }
         private static void Check(bool ok,string label)
         {
             if(!ok)throw new InvalidOperationException(label);
@@ -18,17 +23,22 @@ namespace BoatAttack.EditorTools
         }
         public static IEnumerator Checks(FishingPrototype c)
         {
-            _evidence=Path.GetFullPath("Logs/v014-visual-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(_evidence);
+            _evidence=Path.GetFullPath("Logs/v015-visual-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(_evidence);
             Check(FishingUIFont.Font!=null && FishingUIFont.Font.HasCharacter('潮') && FishingUIFont.Font.HasCharacter('烤'),"Bundled Chinese UI glyphs available");
             var report=new System.Text.StringBuilder("species,triangles,vertices,length_m\n");
             for(int i=0;i<FishingSpecies.Count;i++)
             {
-                var kind=(FishKind)i;var mesh=FishingMeshBuilder.Fish(kind,false);
+                var kind=(FishKind)i;var owned=new List<Object>();var fish=FishingArt.Fish(c.transform,owned,c.PaletteShader,kind);
+                var mesh=fish.GetComponent<MeshFilter>().sharedMesh;
                 int triangles=mesh.triangles.Length/3;
+                Debug.Log("[LIVING-COAST] Mesh bounds "+kind+" "+mesh.bounds.size.ToString("F5"));
                 Check(triangles<=5000 && mesh.subMeshCount==1,"Single-mesh fish budget "+kind+" / "+triangles+" triangles");
                 Check(Mathf.Abs(mesh.bounds.size.z-FishingSpecies.LengthMeters(kind))<.001f,"Metre-scaled fish "+kind);
                 foreach(var v in mesh.vertices)CheckFinite(v);
-                report.AppendLine(kind+","+triangles+","+mesh.vertexCount+","+mesh.bounds.size.z.ToString(System.Globalization.CultureInfo.InvariantCulture));Object.Destroy(mesh);
+                if(i>=4)Check(fish.name.StartsWith("Hunyuan") && fish.GetComponent<Renderer>().sharedMaterial.GetTexture("_BaseMap")!=null
+                    && Resources.Load<Texture2D>("FishingFish/"+kind+"Thumbnail")!=null,"Imported fish, texture and journal preview "+kind);
+                report.AppendLine(kind+","+triangles+","+mesh.vertexCount+","+mesh.bounds.size.z.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                Object.Destroy(fish);foreach(var item in owned)Object.Destroy(item);
             }
             File.WriteAllText(Path.Combine(_evidence,"fish-budgets.csv"),report.ToString());
             c.MoveToSpotForAutomation(0);c.Interact();for(int f=0;f<12;f++)yield return null;
@@ -101,7 +111,16 @@ namespace BoatAttack.EditorTools
             Check(c.FieldWorld.BeginHunt(),"Live spear windup starts on the sensed rabbit / "+c.Message+" aim="+Vector3.Dot(c.viewCamera.transform.forward,direction.normalized)+" distance="+direction.magnitude);
             for(int i=0;i<90 && c.Career.Hunting.Harvests==before;i++){c.Shore.Move(Vector2.zero,false,false,true,.02f);yield return null;}
             Check(c.Career.Hunting.Harvests==before+1 && c.Career.Backpack.Count(FieldItem.RawMeat)>=2,"Spear-tip contact awards meat through the runtime path");
-            Check(!prey.Root.gameObject.activeSelf,"Harvested animal leaves scene until the saved return day");
+            Check(!prey.Root.gameObject.activeSelf,"Harvested animal leaves scene until recovery");
+            int meat=c.Career.Backpack.Count(FieldItem.RawMeat);
+            Check(FishingCareer.TryRestore(c.Career.Snapshot(),out var reload) && !reload.Hunting.Available(prey.Id,reload.Calendar.TotalMinutes),"Saved cooldown prevents immediate reload farming");
+            for(int i=0;i<1199;i++)c.Career.Calendar.Tick(.25f,false);
+            yield return null;
+            Check(!prey.Root.gameObject.activeSelf,"Animal stays hidden before five active minutes");
+            c.Career.Calendar.Tick(.25f,false);c.Career.Calendar.Tick(.25f,false);
+            yield return null;yield return null;
+            Check(prey.Root.gameObject.activeSelf && Vector3.Distance(prey.Root.position,prey.Home)<.5f
+                && c.Career.Backpack.Count(FieldItem.RawMeat)==meat,"Live animal returns home without adding meat");
             Capture(c.viewCamera,"hunting-result");c.Shore.SetCrouch(false,true);
         }
         private static void TrackedHands(FishingPrototype c)
@@ -116,7 +135,7 @@ namespace BoatAttack.EditorTools
         private static void CheckFinite(Vector3 p)
         {if(float.IsNaN(p.x)||float.IsInfinity(p.x)||float.IsNaN(p.y)||float.IsInfinity(p.y)||float.IsNaN(p.z)||float.IsInfinity(p.z))throw new Exception("Nonfinite fish vertex");}
         private static void AdvanceTo(FishingCalendar clock,float hour)
-        {double minutes=(hour*60-clock.Minute+1440)%1440;for(int i=0;i<Math.Ceiling(minutes/.3);i++)clock.Tick(.25f,false);}
+        {double minutes=(hour*60-clock.Minute+1440)%1440;for(int i=0;i<Math.Ceiling(minutes/(.25*FishingCalendar.MinutesPerSecond));i++)clock.Tick(.25f,false);}
         private static void Equip(FishingPrototype c,FieldItem item)
         {
             var bag=c.Career.Backpack;if(bag.Count(item)==0)Check(bag.TryAdd(item,1),"Fixture equipment "+item);

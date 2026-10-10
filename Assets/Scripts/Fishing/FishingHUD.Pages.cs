@@ -8,7 +8,7 @@ namespace BoatAttack.Fishing
     {
         private static readonly string[] JournalTabs = { "鱼获图鉴", "传说线索", "自然观察", "海岸调查", "海湾日历" };
 
-        private void Dim() => Fill(-_offset / _scale, 0, Screen.width / _scale, _height, new Color(0.01f, 0.025f, 0.04f, 0.83f));
+        private void Dim() => Fill(-_offset / _scale, 0, Screen.width / _scale, _height, new Color(0.01f, 0.025f, 0.04f, 0.55f));
 
         private void DrawJournal()
         {
@@ -18,7 +18,8 @@ namespace BoatAttack.Fishing
             Dim();
             Card(r, Gold);
             Label(r.x + 32, r.y + 24, 600, 44, "航海日志", 30, Color.white, true);
-            Label(r.x + 34, r.y + 74, 820, 24, "已暂停 · 出售、交付或放生都不会丢失图鉴、纪录与观察记录。", 15, Muted);
+            Label(r.x + 34, r.y + 74, 820, 24, "海湾手册   /   已暂停 · 发现与纪录永久保留", 15, Muted);
+            Fill(r.x+32,r.y+105,r.width-64,1,Hairline);
             for (int i = 0; i < JournalTabs.Length; i++)
                 if (Tab(new Rect(r.x + 574 + i * 142, r.y + 28, 132, 42), JournalTabs[i], _journalPage == i)) _journalPage = i;
             if (_journalPage == 1) DrawLegendPage(r);
@@ -49,6 +50,7 @@ namespace BoatAttack.Fishing
             }
         }
         private int _catalogPage;
+        public int CatalogPage { get=>_catalogPage; set=>_catalogPage=Mathf.Clamp(value,0,2); }
         private void DrawCatalogPage(Rect r)
         {
             var career = Controller.Career;
@@ -57,9 +59,8 @@ namespace BoatAttack.Fishing
                 var kind = (FishKind)i;
                 var species = FishingSpecies.Of(kind);
                 var row = new Rect(r.x + 32, r.y + 118 + (i % 4) * 110, 820, 98);
-                Rounded(row, InkRaised, 12);
+                Fill(row.x,row.yMax,row.width,1,Hairline);
                 bool known = career.Discovered(kind) || career.Discovered(kind, true);
-                Rounded(new Rect(row.x + 14, row.y + 12, 120, 74), Ink, 10);
                 if (species.Legendary && !known) Label(new Rect(row.x + 14, row.y + 12, 120, 74), "？", 40, Faint, true, TextAnchor.MiddleCenter);
                 else FishGlyph(new Rect(row.x + 22, row.y + 20, 104, 58), kind, false);
                 Label(row.x + 150, row.y + 10, 40, 24, (i + 1).ToString("00"), 15, Gold, true);
@@ -89,7 +90,7 @@ namespace BoatAttack.Fishing
         private void DrawCatalogPager(Rect r)
         {
             if(Button(new Rect(r.x+32,r.y+566,140,36),"上一页",_catalogPage>0,false,15))_catalogPage--;
-            Label(r.x+192,r.y+572,430,26,"12 种鱼 · 按海域 / 季节 / 昼夜寻找   "+(_catalogPage+1)+" / 3",15,Muted);
+            Label(r.x+192,r.y+572,490,26,"12 种鱼 · 8 种混元模型   /   "+(_catalogPage+1)+" / 3",15,Muted);
             if(Button(new Rect(r.x+712,r.y+566,140,36),"下一页",_catalogPage<2,false,15))_catalogPage++;
         }
         private void DrawLegendPage(Rect r)

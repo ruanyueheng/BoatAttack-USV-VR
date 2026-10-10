@@ -73,7 +73,16 @@ namespace BoatAttack.Fishing
         private void Update()
         {
             if(_c==null)return;
-            foreach(var animal in _animals)animal.Root.gameObject.SetActive(_c.Career.Hunting.Available(animal.Id,_c.Career.Calendar.Day));
+            foreach(var animal in _animals)
+            {
+                bool available=_c.Career.Hunting.Available(animal.Id,_c.Career.Calendar.TotalMinutes);
+                if(available && !animal.Root.gameObject.activeSelf)
+                {
+                    animal.Feet=animal.Target=animal.Home;animal.Fleeing=false;animal.Rest=2;
+                    animal.Root.position=animal.Home;
+                }
+                animal.Root.gameObject.SetActive(available);
+            }
             if(_c.Paused || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen)){CancelHunt();return;}
             TickHunt(Time.deltaTime);
             if(Time.time>=_aiAt){TickAnimals(.1f);_aiAt=Time.time+.1f;}

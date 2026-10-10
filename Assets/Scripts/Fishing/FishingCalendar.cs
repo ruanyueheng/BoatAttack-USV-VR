@@ -7,13 +7,14 @@ namespace BoatAttack.Fishing
         public int day;
         public double minute = 480;
     }
-    /// <summary>Twenty real minutes per day; menus and tracking/focus loss never consume time.</summary>
+    /// <summary>Fifteen active real minutes per day; menus and tracking/focus loss never consume time.</summary>
     public sealed class FishingCalendar
     {
         public const int DaysPerSeason = 28, DaysPerYear = 112, MaxDay = 111887;
-        public const double MinutesPerSecond = 1.2;
+        public const double MinutesPerSecond = 1.6;
         public int Day { get; private set; }
         public double Minute { get; private set; } = 480;
+        public double TotalMinutes => Day * 1440d + Minute;
         public int Year => Day / DaysPerYear + 1;
         public int Season => Day / DaysPerSeason % 4;
         public int Date => Day % DaysPerSeason + 1;
