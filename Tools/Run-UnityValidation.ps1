@@ -1,6 +1,6 @@
 ﻿param(
     [string]$EditorRoot,
-    [ValidateSet("Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild", "FishingWorkshop", "FishingTerrain", "FishingShopInstall", "FishingShop", "FishingMap", "FishingCharacter", "FishingInteraction", "FishingPlayer")]
+    [ValidateSet("Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild", "FishingWorkshop", "FishingTerrain", "FishingShopInstall", "FishingShop", "FishingMap", "FishingCharacter", "FishingInteraction", "FishingPlayer", "FishingPlayerBoundary", "FishingFirstPerson", "FishingCashierBuild", "FishingCashier")]
     [string]$Suite = "Structure",
     [ValidateRange(60, 7200)]
     [int]$TimeoutSeconds = 1200
@@ -21,12 +21,21 @@ if (-not $installedVersion -or $installedVersion.Split('_')[0] -ne $version) {
     throw "Refusing to open project with Unity '$installedVersion'; expected $version."
 }
 # Do not contend with an interactive editor or interrupt another person's work.
-if (Get-Process -Name Unity -ErrorAction SilentlyContinue) { throw 'Close Unity before running batch validation.' }
+# Unity locks each project independently; leave unrelated editors running.
+$projectLock = Join-Path $repo 'Temp/UnityLockfile'
+if (Test-Path -LiteralPath $projectLock) {
+    try { $lockProbe = [IO.File]::Open($projectLock, 'Open', 'Read', 'None'); $lockProbe.Dispose() }
+    catch { throw 'Close the Unity editor using this project before running batch validation.' }
+}
 $logDirectory = Join-Path $repo 'Logs'
 [IO.Directory]::CreateDirectory($logDirectory) | Out-Null
 # Unique logs cannot accidentally satisfy this run with a previous PASS marker.
 $log = Join-Path $logDirectory ("usv-validation-" + [Guid]::NewGuid().ToString('N') + '.log')
 $method = switch ($Suite) {
+    'FishingCashierBuild' { 'BoatAttack.EditorTools.FishingCashierValidation.BuildAndValidate' }
+    'FishingCashier' { 'BoatAttack.EditorTools.FishingCashierValidation.Run' }
+    'FishingFirstPerson' { 'BoatAttack.EditorTools.FishingFirstPersonValidation.Run' }
+    'FishingPlayerBoundary' { 'BoatAttack.EditorTools.FishingPlayerBoundaryValidation.Run' }
     'FishingPlayer' { 'BoatAttack.EditorTools.FishingPlayerRepairValidation.Run' }
     'FishingMap' { 'BoatAttack.EditorTools.FishingMapValidation.Run' }
     'FishingCharacter' { 'BoatAttack.EditorTools.FishingCharacterValidation.Run' }
@@ -52,6 +61,10 @@ $method = switch ($Suite) {
     'FishingExpeditionCapture' { 'BoatAttack.EditorTools.FishingExpeditionValidation.Capture' }
 }
 $marker = switch ($Suite) {
+    'FishingCashierBuild' { '[CASHIER]' }
+    'FishingCashier' { '[CASHIER]' }
+    'FishingFirstPerson' { '[FIRST-PERSON]' }
+    'FishingPlayerBoundary' { '[PLAYER-BOUNDARY]' }
     'FishingPlayer' { '[PLAYER]' }
     'FishingMap' { '[MAP]' }
     'FishingCharacter' { '[CHARACTER]' }
@@ -77,7 +90,7 @@ $marker = switch ($Suite) {
     'FishingExpeditionCapture' { '[EXPEDITION]' }
 }
 $arguments = '-batchmode -nographics -buildTarget StandaloneWindows64 -projectPath "' + $repo.Replace('\', '/') + '" -executeMethod ' + $method + ' -logFile "' + $log + '"'
-if ($Suite -in @('FishingPlayer', 'FishingMap', 'FishingCharacter', 'FishingInteraction', 'FishingShop', 'FishingShore', 'FishingField', 'FishingExpedition', 'FishingSmoke', 'FishingWorkshop', 'FishingExpeditionCapture', 'FishingFieldCapture', 'FishingCatchCapture')) { $arguments = $arguments.Replace(' -nographics', '') }
+if ($Suite -in @('FishingFirstPerson', 'FishingPlayerBoundary', 'FishingPlayer', 'FishingMap', 'FishingCharacter', 'FishingInteraction', 'FishingShop', 'FishingShore', 'FishingField', 'FishingExpedition', 'FishingSmoke', 'FishingWorkshop', 'FishingExpeditionCapture', 'FishingFieldCapture', 'FishingCatchCapture')) { $arguments = $arguments.Replace(' -nographics', '') }
 if ($Suite -eq 'FishingAndroidBuild') { $arguments = $arguments.Replace('StandaloneWindows64', 'Android') }
 if ($Suite -eq 'FishingSmoke') { $arguments += ' -fishing-autoplay' }
 Write-Output "Running Unity $Suite validation. Log: $log"

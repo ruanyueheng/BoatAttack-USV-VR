@@ -38,7 +38,7 @@ namespace BoatAttack.EditorTools
             int count=c.Career.Backpack.Count(pickup.Item);
             bool began=c.RequestWorldInteraction();Debug.Log("[PLAYER] PICKUP BEGAN="+began+" message="+c.Message);
             Check(began,"press E near a low pickup starts the production pickup action");
-            for(int i=0;i<120 && c.WorldActionBusy;i++){c.TickWorldAction(1f/60,true,false);c.PresentCharacterFrame();yield return null;}
+            for(int i=0;i<180 && c.WorldActionBusy;i++)yield return null;
             Check(c.LastActionSucceeded && c.Career.Backpack.Count(pickup.Item)==count+pickup.Count,"nearby pickup commits exactly once");
             yield return null;
             var joins=CheckJoins(c);while(joins.MoveNext())yield return null;
@@ -62,10 +62,12 @@ namespace BoatAttack.EditorTools
         }
         private static int CentralBodyVertices(FishingPrototype c)
         {
-            var skin=c.Shore.Character.BodySkin;var mesh=new Mesh();skin.BakeMesh(mesh);int count=0;
-            foreach(var vertex in mesh.vertices)
+            var skin=c.Shore.Character.FirstPersonSkin;var mesh=new Mesh();skin.BakeMesh(mesh);int count=0;
+            var vertices=mesh.vertices;
+            // 统计真正参与本地绘制的索引，不把只投影的全身网格当成可见遮挡。
+            foreach(int index in skin.sharedMesh.triangles.Distinct())
             {
-                var p=c.viewCamera.WorldToViewportPoint(skin.transform.TransformPoint(vertex));
+                var p=c.viewCamera.WorldToViewportPoint(skin.transform.TransformPoint(vertices[index]));
                 if(p.z>c.viewCamera.nearClipPlane && p.x>.3f && p.x<.7f && p.y>.4f && p.y<.9f)count++;
             }
             UnityEngine.Object.Destroy(mesh);return count;

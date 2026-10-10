@@ -57,10 +57,12 @@ namespace BoatAttack.EditorTools
         public static void CheckVisibility(FishingPrototype c,bool firstPerson)
         {
             var character=c.Shore.Character;
-            foreach(var renderer in character.GetComponentsInChildren<Renderer>())
-                Check(renderer.enabled && renderer.gameObject.activeInHierarchy
-                    && renderer.shadowCastingMode==(firstPerson && renderer==character.HeadSkin?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On),
-                    (firstPerson?"FP head-only shadowing; body/arms visible: ":"TP complete avatar restored: ")+renderer.name);
+            Check(character.BodySkin.enabled && character.BodySkin.shadowCastingMode==(firstPerson?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On),
+                firstPerson?"FP 完整身体只投影，避免颈部漏绘":"TP 完整源身体恢复");
+            Check(character.HeadSkin.enabled && character.HeadSkin.shadowCastingMode==(firstPerson?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On),"头部可见性按本地/世界视角切换");
+            Check(character.FirstPersonSkin!=null && character.FirstPersonSkin.enabled==firstPerson
+                && character.FirstPersonSkin.shadowCastingMode==ShadowCastingMode.Off && character.HiddenNeckTriangles>0,
+                "本地同源身体去掉头颈三角形，不重复投影；第三人称不重复绘制");
             var head=Bone(character,"Head");Check(head.gameObject.activeInHierarchy && head.localScale.sqrMagnitude>1e-8f,"Head bone remains active and unscaled");
         }
         private static Transform Bone(FishingCharacter character,string name)

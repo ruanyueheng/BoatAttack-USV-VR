@@ -25,6 +25,7 @@ namespace BoatAttack.Fishing
             public Vector3 Axis;
             public float Degrees;
             public bool Index;
+            public int Digit;
         }
         private sealed class Arm
         {
@@ -104,7 +105,7 @@ namespace BoatAttack.Fishing
             var thumbward=(index.position-pinky.position).normalized;
             var dorsal=Vector3.Cross(forward,thumbward).normalized*(left?1:-1);
             if(dorsal.sqrMagnitude<.9f)throw new InvalidOperationException("Beach Character degenerate palm calibration");
-            var palm=Vector3.Lerp(arm.Wrist.position,knuckles,.55f);
+            var palm=SurfacePalmCentre(bones,side);
             arm.PalmOffset=arm.Wrist.InverseTransformPoint(palm);
             arm.WristToPalm=Quaternion.Inverse(arm.Wrist.rotation)*Quaternion.LookRotation(forward,dorsal);
             foreach(var digit in new[]{"Index","Middle","Ring","Pinky","Thumb"})
@@ -123,10 +124,38 @@ namespace BoatAttack.Fishing
                     var axis=Vector3.Cross(direction.normalized,bend).normalized;
                     if(axis.sqrMagnitude<.9f)throw new InvalidOperationException("Beach Character degenerate finger axis: "+bone.name);
                     arm.Fingers.Add(new FingerJoint{Bone=bone,Axis=Quaternion.Inverse(bone.rotation)*axis,Index=digit=="Index",
-                        Degrees=thumb?(joint==1?22:joint==2?40:48):(joint==1?4:joint==2?56:joint==3?72:48)});
+                        Digit=digit=="Index"?0:digit=="Middle"?1:digit=="Ring"?2:digit=="Pinky"?3:4,
+                        Degrees=thumb?(joint==1?22:joint==2?40:48):(joint==1?4:joint==2?75:joint==3?85:55)});
                 }
             }
             return arm;
+        }
+        private Vector3 SurfacePalmCentre(Dictionary<string,Transform> bones,string side)
+        {
+            // 该 FBX 的掌骨不是表面中心；按四条掌骨的真实蒙皮分别取质心，避免拓扑密度偏向小指。
+            var mesh=new Mesh();
+            try
+            {
+                BodySkin.BakeMesh(mesh);var vertices=mesh.vertices;var weights=BodySkin.sharedMesh.boneWeights;var skinBones=BodySkin.bones;
+                var sum=Vector3.zero;int groups=0;
+                foreach(var digit in new[]{"Index","Middle","Ring","Pinky"})
+                {
+                    int index=Array.IndexOf(skinBones,Required(bones,digit+"1"+side));
+                    var center=Vector3.zero;float total=0;
+                    for(int i=0;i<vertices.Length;i++)
+                    {
+                        var w=weights[i];float amount=(w.boneIndex0==index?w.weight0:0)+(w.boneIndex1==index?w.weight1:0)
+                            +(w.boneIndex2==index?w.weight2:0)+(w.boneIndex3==index?w.weight3:0);
+                        if(amount<=0)continue;
+                        center+=BodySkin.transform.TransformPoint(vertices[i])*amount;total+=amount;
+                    }
+                    if(total<=.001f)continue;
+                    sum+=center/total;groups++;
+                }
+                if(groups!=4)throw new InvalidOperationException("源角色掌骨蒙皮不完整，无法标定可见手掌 "+side);
+                return sum/groups;
+            }
+            finally{Destroy(mesh);}
         }
         private void RestoreArmRest()
         {
@@ -155,6 +184,7 @@ namespace BoatAttack.Fishing
             if(!HandRigReady)return;
             ApplyArm(_leftArm,left,true);ApplyArm(_rightArm,right,false);
             BodySkin.localBounds=_bodyPresentationBounds;
+            if(FirstPersonSkin!=null)FirstPersonSkin.localBounds=_bodyPresentationBounds;
         }
         private void ApplyArm(Arm arm,FishingHandTarget target,bool left)
         {
@@ -170,7 +200,7 @@ namespace BoatAttack.Fishing
             arm.Wrist.rotation=desiredRotation;
             foreach(var finger in arm.Fingers)
             {
-                float curl=target.Pointing && finger.Index?0:target.Curl;
+                float curl=target.Pointing && finger.Index?0:target.Fingers.Curl(finger.Digit);
                 finger.Bone.localRotation*=Quaternion.AngleAxis(finger.Degrees*curl,finger.Axis);
             }
         }

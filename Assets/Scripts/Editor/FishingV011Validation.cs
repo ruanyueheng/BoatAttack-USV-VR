@@ -36,7 +36,7 @@ namespace BoatAttack.EditorTools
                 string error=SessionState.GetString(Key+"error","");
                 if(!SessionState.GetBool(Key+"finished",false) && error=="")error="检查未完整执行";
                 string marker="["+SessionState.GetString(Key+"suite","")+"]";
-                if(error=="")Debug.Log(marker+" PASS: v0.11 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。");
+                if(error=="")Debug.Log(marker+" PASS: v"+FishingPrototype.Version+" 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。");
                 else Debug.LogError(marker+" FAIL: "+error);
                 EditorApplication.Exit(error==""?0:1);
             };
@@ -132,6 +132,10 @@ namespace BoatAttack.EditorTools
             else if(suite=="INTERACTION")
             {
                 var run=Interactions(c);while(run.MoveNext())yield return null;
+            }
+            else if(suite=="FIRST-PERSON")
+            {
+                var run=FishingFirstPersonValidation.Checks(c);while(run.MoveNext())yield return null;
             }
             else if(suite=="PLAYER")
             {
@@ -238,9 +242,15 @@ namespace BoatAttack.EditorTools
                 }
                 if(item==FieldItem.Binoculars)
                 {
-                    c.UseFieldItem();c.PresentCharacterFrame();
-                    Check(c.BinocularsRaised && c.FieldWorld.HeldTool.gameObject.activeInHierarchy && Mathf.Abs(c.viewCamera.fieldOfView-38)<.01f,"举镜同步 FOV 且实物不消失");
-                    c.ToggleView();c.PresentCharacterFrame();Check(c.BinocularsRaised,"切换视角不放下已举起的望远镜");c.UseFieldItem();
+                    c.UseFieldItem();
+                    for(int step=0;step<100 && c.View.BinocularBlend<.999f;step++)yield return null;
+                    c.PresentCharacterFrame();
+                    Check(c.BinocularsRaised && c.FieldWorld.HeldTool.gameObject.activeInHierarchy && c.FieldWorld.HeldToolRenderer.enabled
+                        && Mathf.Abs(c.viewCamera.fieldOfView-58)<.01f,"第三人称举镜保留实物，不套用光学缩放");
+                    c.ToggleView();c.PresentCharacterFrame();
+                    Check(c.BinocularsRaised && c.View.OpticalView && !c.FieldWorld.HeldToolRenderer.enabled
+                        && Mathf.Abs(c.viewCamera.fieldOfView-FishingViewRig.BinocularFieldOfView)<.01f,"第一人称进入无遮挡光学观察，切视角不放下物品");
+                    c.UseFieldItem();
                 }
             }
             c.ReturnToHarbor();c.MoveToSpotForAutomation(0);c.Interact();
@@ -336,6 +346,21 @@ namespace BoatAttack.EditorTools
             }
             throw new InvalidOperationException("真实姿态或落地未在120帧内稳定，crouched="+crouched);
         }
+        private static IEnumerator SettleFishingSeat(FishingPrototype c)
+        {
+            float deadline=Time.realtimeSinceStartup+3f;int frames=0;
+            do
+            {
+                c.PresentCharacterFrame();
+                if(c.Shore.Character.IsStanceSettled(false,false))
+                {
+                    Check(true,"鱼获夹具等待真实坐姿落位，帧数="+frames);
+                    yield break;
+                }
+                frames++;yield return null;
+            }while(Time.realtimeSinceStartup<deadline);
+            throw new InvalidOperationException("鱼获夹具坐姿未在真实帧中落位");
+        }
         private static IEnumerator Interactions(FishingPrototype c)
         {
             var original=c.Career.Snapshot();var land=Land(c);while(land.MoveNext())yield return null;
@@ -422,15 +447,26 @@ namespace BoatAttack.EditorTools
             // 此段验证鱼获事务和手部几何，隔离救援后的浮力瞬态；实航/抄网物理由独立套件覆盖。
             var handlingBody=c.Player.engine.RB;var handlingConstraints=handlingBody.constraints;
             handlingBody.velocity=Vector3.zero;handlingBody.angularVelocity=Vector3.zero;handlingBody.constraints=RigidbodyConstraints.FreezeAll;
+            // 固定轻度横倾，防止测试只在偶然水平的船姿通过；人物仍使用生产 yaw 参考系。
+            var handlingRotation=Quaternion.Euler(0,handlingBody.rotation.eulerAngles.y,12f);
+            handlingBody.rotation=handlingRotation;c.Player.transform.rotation=handlingRotation;Physics.SyncTransforms();
             var fish=new CatchRecord{id="v011-contact-"+Guid.NewGuid().ToString("N"),kind=FishKind.Coral,grams=1000,value=FishingSpecies.Value(FishKind.Coral,false,1000)};
             Check(c.Career.BeginPending(fish,0,c.Player.transform.position.x,c.Player.transform.position.z),"待处理鱼事务夹具");c.CatchRig.ResetFixture();
-            for(int i=0;i<10;i++){c.PresentCharacterFrame();yield return null;}
+            var seated=SettleFishingSeat(c);while(seated.MoveNext())yield return null;
             Check(c.RequestInspectCatch(),"观察鱼使用延时请求");c.TickWorldAction(.1f,true,false);
             Check(!c.Career.PendingCatch.measured,"接触前不提前测量");c.TickWorldAction(1,true,false);c.PresentCharacterFrame();
             Check(c.HasPendingCatch && c.Career.PendingCatch.measured,"接触后只更新测量，不偷偷入箱");HandOnGoal(c,false,"托鱼");
             yield return null;c.TickWorldAction(.01f,true,false);
             bool storing=c.RequestCatchResolution(true);
-            Check(storing,"入箱使用动作请求；message="+c.Message+" box="+c.FishBox.position+" shoulder="+c.Shore.Character.ShoulderPosition(false)+" reach="+c.Shore.Character.ArmReach(false));id=c.Actions.ActionId;c.SendMessage("OnApplicationFocus",false);c.TickWorldAction(1,true,false);
+            Check(storing,"入箱使用动作请求；message="+c.Message+" box="+c.FishBox.position+" shoulder="+c.Shore.Character.ShoulderPosition(false)+" reach="+c.Shore.Character.ArmReach(false)
+                +" surface="+c.CatchRig.ReceivingPoint(c.Shore.Character.ShoulderPosition(false))+" seated="+c.Shore.Character.IsStanceSettled(false,false)+" boat="+c.Player.transform.position+" euler="+c.Player.transform.eulerAngles);
+            var receivingRim=c.FishBox.GetComponentsInChildren<MeshFilter>().FirstOrDefault(f=>f.name=="Top rim" && f.transform.localPosition.x>0);
+            Check(receivingRim!=null,"木箱保留右侧实体上沿");
+            var rimPoint=receivingRim.transform.InverseTransformPoint(c.ActionTargetPosition);var rimBounds=receivingRim.sharedMesh.bounds;
+            Check(Mathf.Abs(rimPoint.y-rimBounds.max.y)<.002f && rimPoint.x>=rimBounds.min.x-.002f && rimPoint.x<=rimBounds.max.x+.002f
+                && rimPoint.z>=rimBounds.min.z-.002f && rimPoint.z<=rimBounds.max.z+.002f,"接收点位于实际箱沿上表面，不是悬空代理");
+            Check(Mathf.Abs(rimPoint.z)<rimBounds.extents.z-.01f,"入箱锁定箱沿面内接收点，而非远端角点");
+            id=c.Actions.ActionId;c.SendMessage("OnApplicationFocus",false);c.TickWorldAction(1,true,false);
             Check(c.HasPendingCatch && c.Career.Count==0 && !c.Actions.TryConsumeContact(id),"取消入箱保留待处理鱼");yield return null;
             Check(c.RequestCatchResolution(true),"取消后可用新编号重新入箱");c.TickWorldAction(1,true,false);
             Check(!c.HasPendingCatch && c.Career.Count==1 && !c.RequestCatchResolution(true),"鱼获事务只结算一次");
@@ -439,7 +475,7 @@ namespace BoatAttack.EditorTools
             c.CancelWorldAction();yield return null;
             var releasedFish=new CatchRecord{id="v011-release-"+Guid.NewGuid().ToString("N"),kind=FishKind.Coral,grams=1000,value=FishingSpecies.Value(FishKind.Coral,false,1000)};
             Check(c.Career.BeginPending(releasedFish,0,c.Player.transform.position.x,c.Player.transform.position.z),"普通鱼放生夹具");c.CatchRig.ResetFixture();
-            for(int i=0;i<4;i++){c.PresentCharacterFrame();yield return null;}
+            seated=SettleFishingSeat(c);while(seated.MoveNext())yield return null;
             int releaseCoins=c.Career.Coins,releaseCount=c.Career.Count;
             c.CatchRig.RequestRelease(true);Check(c.CatchRig.ReleaseConfirmation && !c.WorldActionBusy,"第一次 X 仅要求确认");
             c.CatchRig.RequestRelease(true);Check(c.WorldActionBusy && c.Actions.Kind==FishingActionKind.Release,"第二次 X 发起可达的真实放生动作；"+c.Message);
@@ -451,7 +487,7 @@ namespace BoatAttack.EditorTools
             int legendGrams=FishingSpecies.Grams(FishKind.Sailfish,.5f);
             var releasedLegend=new CatchRecord{id="v011-legend-release-"+Guid.NewGuid().ToString("N"),kind=FishKind.Sailfish,grams=legendGrams,value=FishingSpecies.Value(FishKind.Sailfish,false,legendGrams)};
             Check(c.Career.BeginPending(releasedLegend,0,c.Player.transform.position.x,c.Player.transform.position.z),"传说鱼放生夹具");c.CatchRig.ResetFixture();
-            for(int i=0;i<4;i++){c.PresentCharacterFrame();yield return null;}
+            seated=SettleFishingSeat(c);while(seated.MoveNext())yield return null;
             Check(!c.ResolveCatch(false) && c.HasPendingCatch,"传说鱼未测量仍不能结算");Check(c.MeasureCatch(),"先测量传说鱼");
             releaseCoins=c.Career.Coins;int legends=c.Career.LegendCatches;
             c.CatchRig.RequestRelease(true);c.CatchRig.RequestRelease(true);

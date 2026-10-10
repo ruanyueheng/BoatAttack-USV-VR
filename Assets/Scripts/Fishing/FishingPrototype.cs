@@ -24,7 +24,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.11.0";
+        public const string Version = "0.13.0";
         public Boat boatPrefab;
         public Camera viewCamera;
         public Vector3 spawnPosition;
@@ -338,7 +338,8 @@ namespace BoatAttack.Fishing
             if(!_initialized)return;
             XRSeat.Apply();Shore.SyncRider();View.ApplyView();Hands.Apply();FieldWorld.ApplyHeldTool();ApplyWorldActionPose();CatchRig.Apply(deltaTime);
             // 全部工具和掌心目标落位后才解同源骨架；随后只读取竿尖画线，不再次采样。
-            Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right);DockConsole.Present();
+            Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right);
+            Shore.Character.SetOpticalView(View.OpticalView);DockConsole.Present();
         }
         public void ToggleView()
         {

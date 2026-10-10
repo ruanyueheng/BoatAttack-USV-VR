@@ -24,7 +24,7 @@ namespace BoatAttack.Fishing
             {
                 if (!Check(() => SelectCase(selected))) yield break;
                 float remaining = Controller.Session.Remaining, tension = Controller.Session.Tension;
-                yield return new WaitForSecondsRealtime(capture ? 1f : .25f);
+                yield return new WaitForSecondsRealtime(capture ? 1f : .45f);
                 if (!Check(() =>
                 {
                     ValidateCase();
@@ -94,14 +94,29 @@ namespace BoatAttack.Fishing
             if (CurrentCase == FishingAcceptanceCase.Details && (!c.ShowDetails || c.HarborDeskOpen)) throw new InvalidOperationException("Details fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.Journal && (!c.JournalOpen || !c.Paused)) throw new InvalidOperationException("Journal fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.Settings && (c.JournalOpen || !c.Paused)) throw new InvalidOperationException("Settings fixture failed.");
-            if(CurrentCase==FishingAcceptanceCase.ShoreFirstPerson || CurrentCase==FishingAcceptanceCase.ShoreThirdPerson)
+            if(FishingAcceptanceCases.IsShoreCase(CurrentCase) && !FishingAcceptanceCases.IsShopCase(CurrentCase))
             {
-                if(!c.Ashore || c.FirstPerson!=(CurrentCase==FishingAcceptanceCase.ShoreFirstPerson)
-                    || c.FieldWorld.HeldTool==null || !c.FieldWorld.HeldTool.gameObject.activeInHierarchy)
+                bool thirdPerson=CurrentCase==FishingAcceptanceCase.ShoreThirdPerson || CurrentCase==FishingAcceptanceCase.BinocularThirdPerson;
+                if(!c.Ashore || c.FirstPerson==thirdPerson || c.FieldWorld.HeldTool==null || !c.FieldWorld.HeldTool.gameObject.activeInHierarchy
+                    || c.FieldWorld.PresentedItem!=FishingAcceptanceCases.ViewItem(CurrentCase))
                     throw new InvalidOperationException("Shore avatar/tool capture fixture failed.");
+                if(CurrentCase==FishingAcceptanceCase.BinocularObserve && (!c.View.OpticalView || c.FieldWorld.HeldToolRenderer.enabled
+                    || Mathf.Abs(c.viewCamera.fieldOfView-FishingViewRig.BinocularFieldOfView)>.01f))
+                    throw new InvalidOperationException("光学观察夹具没有完成举镜或仍有手物遮挡。");
+                if(CurrentCase==FishingAcceptanceCase.BinocularThirdPerson && (!c.BinocularsRaised || !c.FieldWorld.HeldToolRenderer.enabled))
+                    throw new InvalidOperationException("第三人称举镜实物未恢复。");
+                if(CurrentCase==FishingAcceptanceCase.LookDownCrouched && (!c.Shore.Crouched || !c.Shore.Character.IsStanceSettled(true,true)))
+                    throw new InvalidOperationException("低头蹲姿夹具未落位。");
             }
             if(CurrentCase==FishingAcceptanceCase.ShopCounter && (!c.Ashore || !c.ShopOpen || !c.TackleShop.NearCounter))
                 throw new InvalidOperationException("Real shop counter capture fixture failed.");
+            if(CurrentCase==FishingAcceptanceCase.ShopAttendant)
+            {
+                if(!c.Ashore || c.ShopOpen || c.TackleShop.Cashier==null)throw new InvalidOperationException("店员夹具缺少实际角色，或被商店菜单替代。");
+                var face=c.TackleShop.Cashier.FacePosition;var point=c.viewCamera.WorldToViewportPoint(face);
+                if(point.z<=c.viewCamera.nearClipPlane || point.x<.05f || point.x>.95f || point.y<.05f || point.y>.95f
+                    || !c.Shore.ClearSight(c.viewCamera.transform.position,face))throw new InvalidOperationException("实际相机看不到店员面部。");
+            }
         }
 
         private static void ValidateToolbarGates()

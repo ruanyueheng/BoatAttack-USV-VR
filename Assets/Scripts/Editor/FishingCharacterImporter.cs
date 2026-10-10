@@ -11,11 +11,12 @@ namespace BoatAttack.EditorTools
             if(!Character)return;
             var model=(ModelImporter)assetImporter;
             model.importCameras=false;model.importLights=false;model.addCollider=false;
+            model.isReadable=true; // 运行时一次性生成本地头颈三角形遮罩。
             model.animationType=ModelImporterAnimationType.Legacy;model.importAnimation=true;
             model.animationCompression=ModelImporterAnimationCompression.Off;
             model.materialImportMode=ModelImporterMaterialImportMode.ImportStandard;
         }
-        public override uint GetVersion()=>3;
+        public override uint GetVersion()=>4;
         private void OnPostprocessMaterial(Material material)
         {
             if(!Character)return;

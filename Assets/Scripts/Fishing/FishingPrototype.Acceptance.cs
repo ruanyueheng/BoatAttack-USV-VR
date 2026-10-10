@@ -103,6 +103,14 @@ namespace BoatAttack.Fishing
                 case FishingAcceptanceCase.ShoreFirstPerson:
                 case FishingAcceptanceCase.ShoreThirdPerson:
                 case FishingAcceptanceCase.ShopCounter:
+                case FishingAcceptanceCase.StonePickaxe:
+                case FishingAcceptanceCase.IronPickaxe:
+                case FishingAcceptanceCase.BinocularCarry:
+                case FishingAcceptanceCase.BinocularObserve:
+                case FishingAcceptanceCase.LookDownStanding:
+                case FishingAcceptanceCase.LookDownCrouched:
+                case FishingAcceptanceCase.ShopAttendant:
+                case FishingAcceptanceCase.BinocularThirdPerson:
                     PrepareAcceptanceShore(selected);break;
                 case FishingAcceptanceCase.FreePlay:
                     Notice("独立验收进度 · F5/F6 查看预置场景，F9 返回实玩；普通玩家存档不受影响。", 8f);
@@ -114,7 +122,7 @@ namespace BoatAttack.Fishing
         }
         private void PrepareAcceptanceShore(FishingAcceptanceCase selected)
         {
-            bool shop=selected==FishingAcceptanceCase.ShopCounter;
+            bool shop=FishingAcceptanceCases.IsShopCase(selected);
             if(shop && (TackleShop==null || !TackleShop.Available))throw new InvalidOperationException("Shop capture requires the installed prefab.");
             Teleport(shop?TackleShop.mooringPoint.position:Shore.Sites[0].Berth+Vector3.up*.6f,shop?TackleShop.transform.rotation:Quaternion.identity);
             if(!Shore.TryDisembark())throw new InvalidOperationException("Capture landing failed: "+Message);
@@ -126,12 +134,19 @@ namespace BoatAttack.Fishing
                 Shore.Body.enabled=true;Physics.SyncTransforms();Shore.Body.Move(Vector3.down*.1f);
             }
             View.ResetLook();
-            if(selected==FishingAcceptanceCase.ShoreThirdPerson)
+            if(selected==FishingAcceptanceCase.ShoreThirdPerson || selected==FishingAcceptanceCase.BinocularThirdPerson)
             {
                 ToggleView();View.ApplyShoreLookDelta(new Vector2(1500,0));
             }
-            else if(!shop)View.ApplyShoreLookDelta(new Vector2(0,-458));
+            else if(selected==FishingAcceptanceCase.ShoreFirstPerson)View.ApplyShoreLookDelta(new Vector2(0,-458));
+            else if(selected==FishingAcceptanceCase.LookDownStanding || selected==FishingAcceptanceCase.LookDownCrouched)
+                View.ApplyShoreLookDelta(new Vector2(0,-65/.12f));
+            var item=FishingAcceptanceCases.ViewItem(selected);var bag=Career.Backpack;
+            if(bag.Count(item)==0 && !bag.TryAdd(item,1))throw new InvalidOperationException("验收背包无法加入指定道具");
+            for(int i=0;i<FishingBackpack.SlotCount;i++)if(bag.At(i).item==item){if(i!=0)bag.Move(i,0);break;}
             SelectFieldSlot(0);
+            if(selected==FishingAcceptanceCase.LookDownCrouched)Shore.SetCrouch(true);
+            if(selected==FishingAcceptanceCase.BinocularObserve || selected==FishingAcceptanceCase.BinocularThirdPerson)UseFieldItem();
         }
     }
 }

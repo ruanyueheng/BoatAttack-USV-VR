@@ -16,7 +16,7 @@ namespace BoatAttack.EditorTools
         private const string Folder = FantasyCashierImporter.Folder;
         public const string PrefabPath = Folder + "Cashier.prefab";
 
-        [MenuItem("BoatAttack/Fishing/Build FantasyGirl cashier assets")]
+        [MenuItem("BoatAttack/Fishing/Legacy cashier/Build and nest in shop")]
         public static void Build()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Stop Play Mode before authoring cashier assets.");

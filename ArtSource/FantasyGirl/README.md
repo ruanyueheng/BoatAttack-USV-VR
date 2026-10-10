@@ -11,3 +11,11 @@ Open this source via Blender background mode with auto-execution disabled and ru
 - Near/far meshes: about 70k / 22k triangles (exact figures in import-report.json); one renderer/material per active LOD. VR performance has not been certified.
 - Four supplied 4096px textures: base colour, metallic, tangent-space normal, roughness. Unity uses 2048px mipmapped imports; normal is imported as Normal Map, metallic+smoothness as linear data. Smoothness alpha is `1 - roughness`; metalness is the red channel. Original JPGs remain available here.
 - No runtime mesh generation, colliders, NavMesh agent, separate economy or fabricated humanoid Animator. Purchase and saves continue through the existing shop controller.
+
+## v0.13 integration (2026-10-10)
+
+Restored derived Resources assets from `origin/feature/v011-cashier-integration` commit `8f609ab50b94aed9a35a708eaa11ae9520f02152`. The source Blender project and legacy importer scripts were not copied into this working tree. All five binary Resources assets were verified against their upstream Git LFS SHA-256 IDs. The prefab script reference alone was adapted to the existing v13 `FishingShopCashier` GUID (`14b852fc1852a22670fed277a200e2b6`). The v13 explicit builder/validator is `Assets/Scripts/Editor/FishingCashierValidation.cs`; the original shop layout, trading and v8 saves remain in use. This integration does not establish a licence for redistribution.
+
+## Local v0.13 merge
+
+The local integration retains the original Blender source, texture sources and legacy import/preview tools from the cashier branch. Runtime assets and the cashier script GUID follow main v0.13; the existing shop's nested cashier is preserved and creation remains deduplicated.
