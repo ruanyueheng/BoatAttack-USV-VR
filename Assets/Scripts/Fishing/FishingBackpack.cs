@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace BoatAttack.Fishing
 {
-    public enum FieldItem { Empty, FieldGuide, Binoculars, Lantern, Shell, Driftwood, Stone, Fiber, Clay, IronOre, Coal, Sand, Plank, Stick, Rope, Charcoal, IronIngot, Brick, Glass, Workbench, Furnace, StonePickaxe, IronPickaxe }
+    public enum FieldItem { Empty, FieldGuide, Binoculars, Lantern, Shell, Driftwood, Stone, Fiber, Clay, IronOre, Coal, Sand, Plank, Stick, Rope, Charcoal, IronIngot, Brick, Glass, Workbench, Furnace, StonePickaxe, IronPickaxe, HuntingSpear, RawMeat, CookedMeat }
     public enum LandAnimalKind { Rabbit, Fox, Tortoise }
     [Serializable]
     public sealed class FieldStack
@@ -27,11 +27,11 @@ namespace BoatAttack.Fishing
             for(int i=0;i<SlotCount;i++)_slots[i]=new FieldStack();
             if(starter)_slots[0]=new FieldStack {item=FieldItem.FieldGuide,count=1};
         }
-        public static bool Defined(FieldItem item) => item>=FieldItem.Empty && item<=FieldItem.IronPickaxe;
-        public static int Limit(FieldItem item) => !Defined(item) || item==FieldItem.Empty?0:item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe || item==FieldItem.Workbench || item==FieldItem.Furnace?1:item>=FieldItem.Shell?64:1;
+        public static bool Defined(FieldItem item) => item>=FieldItem.Empty && item<=FieldItem.CookedMeat;
+        public static int Limit(FieldItem item) => !Defined(item) || item==FieldItem.Empty?0:item==FieldItem.HuntingSpear || item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe || item==FieldItem.Workbench || item==FieldItem.Furnace?1:item>=FieldItem.Shell?64:1;
         public static string Name(FieldItem item)
         {
-            switch(item){case FieldItem.FieldGuide:return "自然手册";case FieldItem.Binoculars:return "望远镜";case FieldItem.Lantern:return "提灯";case FieldItem.Shell:return "海贝";case FieldItem.Driftwood:return "漂流木";case FieldItem.Stone:return "石料";case FieldItem.Fiber:return "植物纤维";case FieldItem.Clay:return "黏土";case FieldItem.IronOre:return "铁矿石";case FieldItem.Coal:return "煤";case FieldItem.Sand:return "砂";case FieldItem.Plank:return "木板";case FieldItem.Stick:return "木棍";case FieldItem.Rope:return "绳索";case FieldItem.Charcoal:return "木炭";case FieldItem.IronIngot:return "铁锭";case FieldItem.Brick:return "砖";case FieldItem.Glass:return "玻璃";case FieldItem.Workbench:return "工作台";case FieldItem.Furnace:return "熔炉";case FieldItem.StonePickaxe:return "石镐";case FieldItem.IronPickaxe:return "铁镐";default:return "空槽";}
+            switch(item){case FieldItem.FieldGuide:return "自然手册";case FieldItem.Binoculars:return "望远镜";case FieldItem.Lantern:return "提灯";case FieldItem.Shell:return "海贝";case FieldItem.Driftwood:return "漂流木";case FieldItem.Stone:return "石料";case FieldItem.Fiber:return "植物纤维";case FieldItem.Clay:return "黏土";case FieldItem.IronOre:return "铁矿石";case FieldItem.Coal:return "煤";case FieldItem.Sand:return "砂";case FieldItem.Plank:return "木板";case FieldItem.Stick:return "木棍";case FieldItem.Rope:return "绳索";case FieldItem.Charcoal:return "木炭";case FieldItem.IronIngot:return "铁锭";case FieldItem.Brick:return "砖";case FieldItem.Glass:return "玻璃";case FieldItem.Workbench:return "工作台";case FieldItem.Furnace:return "熔炉";case FieldItem.StonePickaxe:return "石镐";case FieldItem.IronPickaxe:return "铁镐";case FieldItem.HuntingSpear:return "猎矛";case FieldItem.RawMeat:return "生兽肉";case FieldItem.CookedMeat:return "炭烤兽肉";default:return "空槽";}
         }
         public static string AnimalName(LandAnimalKind kind) => kind==LandAnimalKind.Rabbit?"海岛野兔":kind==LandAnimalKind.Fox?"赤狐":"陆龟";
         public FieldStack At(int slot) => slot>=0 && slot<SlotCount?_slots[slot].Copy():new FieldStack();

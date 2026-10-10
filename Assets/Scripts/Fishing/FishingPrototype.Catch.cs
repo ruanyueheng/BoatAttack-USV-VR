@@ -41,7 +41,7 @@ namespace BoatAttack.Fishing
             if(!store)StartCoroutine(ReleaseFishVisual(record,_catchStart,_fish.transform.rotation,_fish.transform.localScale));
             LastCatch=new CatchCard{Fish=record.Copy(),ShownAt=Time.unscaledTime,Discovery=discovery,PersonalBest=best>0 && record.grams>best,Bounty=bounty};
             if(legend && _trophy==null)BuildTrophy();
-            RefreshHold();Save();_feedback.PlayOneShot(legend?_legendTone:_successTone);
+            Effects?.Burst(_catchStart,new Color(.46f,.82f,.80f));RefreshHold();Save();_feedback.PlayOneShot(legend?_legendTone:_successTone);
             if(!hadEvidence && Career.Expedition.Has(FishingExpedition.TargetCaught))Notice("北岛捕获记录已收录！鱼货与主线凭证独立，返港可提交捕获记录。",9,false);
             else Notice(FishingSpecies.Name(record.kind)+" "+FishingText.Weight(record.grams)+(legend?" 已测量放生，赏金 +"+bounty:store?" 已放入鱼箱。":" 已放生；保留图鉴与体型记录，不获得售鱼金币。"),7,true);
             CatchRig.Recover();return true;
@@ -77,8 +77,7 @@ namespace BoatAttack.Fishing
         {
             var pending=Career.PendingCatch;if(pending==null)return;
             _fish.SetActive(false);Destroy(_fish);_fish=MakeFish(transform,pending.fish.kind,pending.fish.rare);
-            float size=Mathf.Clamp(Mathf.Pow(pending.fish.grams/1000f,.33f),.75f,1.8f);
-            _fish.transform.localScale=Vector3.one*(pending.fish.kind==FishKind.Sailfish?.65f:size);
+            _fish.transform.localScale=Vector3.one*FishingSpecies.SizeScale(pending.fish.kind,pending.fish.grams);
             var body=_fish.AddComponent<Rigidbody>();body.isKinematic=true;body.useGravity=false;
             var collider=_fish.AddComponent<SphereCollider>();collider.radius=.18f;collider.isTrigger=true;
         }

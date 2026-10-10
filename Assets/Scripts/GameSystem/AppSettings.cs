@@ -114,6 +114,7 @@ namespace BoatAttack
 
         private void SetRenderScale()
         {
+            if(UnityEngine.XR.XRSettings.isDeviceActive)return;
             var res = maxRenderSize switch
             {
                 RenderRes._720p => 1280f,
@@ -138,7 +139,7 @@ namespace BoatAttack
             Utility.CheckQualityLevel(); //TODO - hoping to remove one day when we have a quality level callback
 #endif
 
-            if (!MainCamera) return;
+            if (!MainCamera || UnityEngine.XR.XRSettings.isDeviceActive) return;
 
             if (variableResolution)
             {

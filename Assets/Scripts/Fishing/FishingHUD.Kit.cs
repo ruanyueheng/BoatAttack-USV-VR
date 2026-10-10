@@ -5,20 +5,20 @@ namespace BoatAttack.Fishing
     /// <summary>Drawing primitives for the desktop HUD: one palette, rounded cards and custom buttons.</summary>
     public sealed partial class FishingHUD
     {
-        private static readonly Color Ink = new Color(0.028f, 0.072f, 0.098f, 0.93f);
-        private static readonly Color InkRaised = new Color(0.06f, 0.15f, 0.18f, 0.96f);
-        private static readonly Color Hairline = new Color(1f, 1f, 1f, 0.09f);
-        private static readonly Color CardShadow = new Color(0f, 0f, 0f, 0.32f);
-        private static readonly Color Muted = new Color(0.70f, 0.81f, 0.82f);
-        private static readonly Color Faint = new Color(0.46f, 0.58f, 0.6f);
-        private static readonly Color Mint = new Color(0.37f, 0.93f, 0.77f);
-        private static readonly Color Gold = new Color(1f, 0.76f, 0.42f);
-        private static readonly Color Danger = new Color(1f, 0.46f, 0.35f);
-        private static readonly Color Sky = new Color(0.47f, 0.78f, 1f);
-        private static readonly Color Track = new Color(0.13f, 0.24f, 0.28f);
-        private static readonly Color ButtonFill = new Color(0.075f, 0.23f, 0.28f);
-        private static readonly Color ButtonHover = new Color(0.12f, 0.35f, 0.41f);
-        private static readonly Color ButtonOff = new Color(0.09f, 0.16f, 0.19f, 0.8f);
+        private static readonly Color Ink = new Color(.985f, .977f, .945f, .97f);
+        private static readonly Color InkRaised = new Color(.93f, .95f, .91f, 1);
+        private static readonly Color Hairline = new Color(.18f, .37f, .35f, .16f);
+        private static readonly Color CardShadow = new Color(.08f, .18f, .19f, .16f);
+        private static readonly Color Muted = new Color(.30f, .40f, .41f);
+        private static readonly Color Faint = new Color(.38f, .46f, .44f);
+        private static readonly Color Mint = new Color(.06f, .40f, .34f);
+        private static readonly Color Gold = new Color(.69f, .38f, .08f);
+        private static readonly Color Danger = new Color(.74f, .20f, .15f);
+        private static readonly Color Sky = new Color(.10f, .38f, .59f);
+        private static readonly Color Track = new Color(.81f, .86f, .82f);
+        private static readonly Color ButtonFill = new Color(.89f, .93f, .88f);
+        private static readonly Color ButtonHover = new Color(.77f, .87f, .81f);
+        private static readonly Color ButtonOff = new Color(.90f, .90f, .87f, .8f);
         private static readonly Color InkText = new Color(0.06f, 0.09f, 0.11f);
 
         // Opacity multiplier for everything drawn through this kit (used by fading cards).
@@ -48,7 +48,7 @@ namespace BoatAttack.Fishing
             GUIUtility.RotateAroundPivot(degrees, new Vector2(screen.x, screen.y));
         }
 
-        /// <summary>Raised card: soft drop shadow, translucent ink body, hairline edge and an accent tick.</summary>
+        /// <summary>Raised card: soft drop shadow, warm ivory body, hairline edge and an accent tick.</summary>
         private void Card(Rect r, Color accent)
         {
             Rounded(new Rect(r.x, r.y + 4, r.width, r.height), CardShadow, 14);
@@ -60,8 +60,9 @@ namespace BoatAttack.Fishing
         private void Label(Rect r, string text, int size, Color color, bool bold = false, TextAnchor align = TextAnchor.UpperLeft)
         {
             _label.fontSize = size;
-            _label.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
-            _label.normal.textColor = Faded(color);
+            // The bundled face is Medium; synthetic bold distorts small Chinese counters.
+            _label.fontStyle = FontStyle.Normal;
+            _label.normal.textColor = Faded(color == Color.white ? InkText : color);
             _label.alignment = align;
             GUI.Label(r, text, _label);
         }
@@ -76,10 +77,10 @@ namespace BoatAttack.Fishing
         private bool Button(Rect r, string text, bool enabled = true, bool primary = false, int size = 17)
         {
             bool hover = enabled && r.Contains(Event.current.mousePosition);
-            Color fill = !enabled ? ButtonOff : primary ? (hover ? new Color(1f, 0.84f, 0.55f) : Gold) : hover ? ButtonHover : ButtonFill;
+            Color fill = !enabled ? ButtonOff : primary ? (hover ? new Color(.92f, .72f, .39f) : new Color(.94f, .80f, .51f)) : hover ? ButtonHover : ButtonFill;
             Rounded(r, fill, 10);
-            if (enabled && !primary) Outline(r, hover ? Mint : new Color(0.37f, 0.93f, 0.77f, 0.3f), 10);
-            Color ink = !enabled ? new Color(1f, 1f, 1f, 0.38f) : primary ? InkText : Color.white;
+            if (enabled && !primary) Outline(r, hover ? Mint : new Color(.06f, .40f, .34f, 0.3f), 10);
+            Color ink = !enabled ? new Color(.45f, .48f, .46f, .7f) : primary ? InkText : Color.white;
             Label(r, text, size, ink, true, TextAnchor.MiddleCenter);
             return GUI.Button(r, GUIContent.none, GUIStyle.none) && enabled;
         }
@@ -91,9 +92,9 @@ namespace BoatAttack.Fishing
             else
             {
                 Rounded(r, hover ? ButtonHover : ButtonFill, 10);
-                Outline(r, new Color(0.37f, 0.93f, 0.77f, 0.3f), 10);
+                Outline(r, new Color(.06f, .40f, .34f, 0.3f), 10);
             }
-            Label(r, text, 17, selected ? InkText : Color.white, true, TextAnchor.MiddleCenter);
+            Label(r, text, 17, selected ? new Color(.98f,.99f,.97f) : InkText, true, TextAnchor.MiddleCenter);
             return GUI.Button(r, GUIContent.none, GUIStyle.none);
         }
 
@@ -101,7 +102,7 @@ namespace BoatAttack.Fishing
         private float Chip(float x, float y, string text, Color color, bool filled = false, int size = 13)
         {
             _label.fontSize = size;
-            _label.fontStyle = FontStyle.Bold;
+            _label.fontStyle = FontStyle.Normal;
             float width = _label.CalcSize(new GUIContent(text)).x + 18;
             var r = new Rect(x, y, width, size + 11);
             if (filled) Rounded(r, color, r.height * 0.5f);
@@ -110,7 +111,7 @@ namespace BoatAttack.Fishing
                 Rounded(r, color * new Color(1, 1, 1, 0.16f), r.height * 0.5f);
                 Outline(r, color * new Color(1, 1, 1, 0.55f), r.height * 0.5f);
             }
-            Label(r, text, size, filled ? InkText : color, true, TextAnchor.MiddleCenter);
+            Label(r, text, size, filled ? new Color(.98f,.99f,.97f) : color, true, TextAnchor.MiddleCenter);
             return width;
         }
 

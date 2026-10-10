@@ -148,7 +148,7 @@ namespace BoatAttack.EditorTools
             try
             {
                 body.BakeMesh(baked);var vertices=baked.vertices;var weights=body.sharedMesh.boneWeights;var bones=body.bones;
-                int hands=0,inside=0,lens=0;float scale=binocular?FishingFieldWorld.BinocularScale:FishingFieldWorld.PickScale;
+                int hands=0,inside=0,lens=0;var touched=new bool[5];var digitNames=new[]{"Index","Middle","Ring","Pinky","Thumb"};bool wraps=false;float scale=binocular?FishingFieldWorld.BinocularScale:FishingFieldWorld.PickScale;
                 for(int i=0;i<vertices.Length;i++)
                 {
                     if(Contribution(weights[i],bones,n=>IsHand(n) && (binocular || n.EndsWith(".R")))<.5f)continue;
@@ -166,12 +166,22 @@ namespace BoatAttack.EditorTools
                     else
                     {
                         float radius=Mathf.Lerp(.025f,.038f,Mathf.InverseLerp(-.26f,.33f,p.y));
-                        if(p.y>-.26f && p.y<.33f && new Vector2(p.x,p.z).magnitude<radius-.008f/scale)inside++;
+                        if(p.y>-.26f && p.y<.33f)
+                        {
+                            float gap=new Vector2(p.x,p.z).magnitude-radius;
+                            if(gap<-.008f/scale)inside++;
+                            if(Mathf.Abs(gap)<.009f)
+                            {
+                                for(int digit=0;digit<5;digit++)if(Contribution(weights[i],bones,n=>n.StartsWith(digitNames[digit]) && n.EndsWith(".R"))>.5f)touched[digit]=true;
+                                wraps |= p.x<-.012f;
+                            }
+                        }
                     }
                 }
                 Debug.Log("[FIRST-PERSON] GRASP: "+item+" handVertices="+hands+" deepInside="+inside+" frontLens="+lens);
                 Check(lens==0,item+" 手部不进入前物镜光路");
                 Check(inside<=hands*.01f,item+" 深入物体 8mm 以上的手部顶点不超过 1%");
+                if(pick){int count=0;foreach(bool contact in touched)if(contact)count++;Check(count==5 && wraps,item+" 五指贴近柄面并包到另一侧，不是隔空握拳");}
             }
             finally{UnityEngine.Object.Destroy(baked);}
         }

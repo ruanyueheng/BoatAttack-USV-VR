@@ -6,7 +6,7 @@ namespace BoatAttack.Fishing
     /// <summary>Modal pages: the voyage journal (catches, legend, wildlife) and the pause settings.</summary>
     public sealed partial class FishingHUD
     {
-        private static readonly string[] JournalTabs = { "鱼获图鉴", "传说线索", "自然观察", "海岸调查" };
+        private static readonly string[] JournalTabs = { "鱼获图鉴", "传说线索", "自然观察", "海岸调查", "海湾日历" };
 
         private void Dim() => Fill(-_offset / _scale, 0, Screen.width / _scale, _height, new Color(0.01f, 0.025f, 0.04f, 0.83f));
 
@@ -20,12 +20,13 @@ namespace BoatAttack.Fishing
             Label(r.x + 32, r.y + 24, 600, 44, "航海日志", 30, Color.white, true);
             Label(r.x + 34, r.y + 74, 820, 24, "已暂停 · 出售、交付或放生都不会丢失图鉴、纪录与观察记录。", 15, Muted);
             for (int i = 0; i < JournalTabs.Length; i++)
-                if (Tab(new Rect(r.x + 748 + i * 140, r.y + 28, 132, 42), JournalTabs[i], _journalPage == i)) _journalPage = i;
+                if (Tab(new Rect(r.x + 574 + i * 142, r.y + 28, 132, 42), JournalTabs[i], _journalPage == i)) _journalPage = i;
             if (_journalPage == 1) DrawLegendPage(r);
             else if (_journalPage == 2) DrawNaturePage(r);
             else if (_journalPage == 3) DrawShorePage(r);
-            else DrawCatalogPage(r);
-            DrawJournalSide(r);
+            else if (_journalPage == 4) DrawCalendarPage(r);
+            else { DrawCatalogPage(r); DrawCatalogPager(r); }
+            if (_journalPage != 4) DrawJournalSide(r);
             Label(r.x + 34, r.yMax - 52, 820, 24, _journalPage==3?"岸上调查不占鱼箱 · 每区两项调查返港领 25 金币 · 四区全部交付额外 60 金币。":"自然观察不奖励金币；请保持距离。传说旗鱼测量后放生。", 14, Faint);
             if (Button(new Rect(r.xMax - 286, r.yMax - 64, 254, 44), "J / Esc  返回海湾")) c.ToggleJournal();
         }
@@ -47,23 +48,24 @@ namespace BoatAttack.Fishing
                 }
             }
         }
+        private int _catalogPage;
         private void DrawCatalogPage(Rect r)
         {
             var career = Controller.Career;
-            for (int i = 0; i < FishingSpecies.Count; i++)
+            for (int i = _catalogPage * 4; i < Mathf.Min(FishingSpecies.Count, (_catalogPage + 1) * 4); i++)
             {
                 var kind = (FishKind)i;
                 var species = FishingSpecies.Of(kind);
-                var row = new Rect(r.x + 32, r.y + 118 + i * 110, 820, 98);
+                var row = new Rect(r.x + 32, r.y + 118 + (i % 4) * 110, 820, 98);
                 Rounded(row, InkRaised, 12);
                 bool known = career.Discovered(kind) || career.Discovered(kind, true);
                 Rounded(new Rect(row.x + 14, row.y + 12, 120, 74), Ink, 10);
                 if (species.Legendary && !known) Label(new Rect(row.x + 14, row.y + 12, 120, 74), "？", 40, Faint, true, TextAnchor.MiddleCenter);
                 else FishGlyph(new Rect(row.x + 22, row.y + 20, 104, 58), kind, false);
-                Label(row.x + 150, row.y + 10, 40, 24, "0" + (i + 1), 15, Gold, true);
+                Label(row.x + 150, row.y + 10, 40, 24, (i + 1).ToString("00"), 15, Gold, true);
                 string title = species.Legendary
                     ? (known ? species.Name + " · 航标水道" : "？？？ · 传说怪鱼")
-                    : species.Name + " · " + FishingSpecies.AreaName(i);
+                    : species.Name;
                 Label(row.x + 190, row.y + 8, 620, 30, title, 21, species.Legendary ? Gold : Color.white, true);
                 Label(row.x + 150, row.y + 40, 660, 22, species.Legendary && !known ? "日志“传说线索”页记录着关于它的传闻。" : species.Habitat, 14, Muted);
                 float x = row.x + 150;
@@ -84,6 +86,12 @@ namespace BoatAttack.Fishing
             }
         }
 
+        private void DrawCatalogPager(Rect r)
+        {
+            if(Button(new Rect(r.x+32,r.y+566,140,36),"上一页",_catalogPage>0,false,15))_catalogPage--;
+            Label(r.x+192,r.y+572,430,26,"12 种鱼 · 按海域 / 季节 / 昼夜寻找   "+(_catalogPage+1)+" / 3",15,Muted);
+            if(Button(new Rect(r.x+712,r.y+566,140,36),"下一页",_catalogPage<2,false,15))_catalogPage++;
+        }
         private void DrawLegendPage(Rect r)
         {
             var career = Controller.Career;

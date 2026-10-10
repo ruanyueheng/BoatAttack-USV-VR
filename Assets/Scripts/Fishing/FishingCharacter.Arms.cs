@@ -179,14 +179,14 @@ namespace BoatAttack.Fishing
         /// catch goals -> this method -> rod-tip line. Never Sample after this call.
         /// Repeated calls restore the same sampled TRS, and expired goals restore animation.
         /// </summary>
-        public void ApplyHandTargets(FishingHandTarget left,FishingHandTarget right)
+        public void ApplyHandTargets(FishingHandTarget left,FishingHandTarget right,bool tracked=false)
         {
             if(!HandRigReady)return;
-            ApplyArm(_leftArm,left,true);ApplyArm(_rightArm,right,false);
+            ApplyArm(_leftArm,left,true,tracked);ApplyArm(_rightArm,right,false,tracked);
             BodySkin.localBounds=_bodyPresentationBounds;
             if(FirstPersonSkin!=null)FirstPersonSkin.localBounds=_bodyPresentationBounds;
         }
-        private void ApplyArm(Arm arm,FishingHandTarget target,bool left)
+        private void ApplyArm(Arm arm,FishingHandTarget target,bool left,bool tracked)
         {
             foreach(var bone in arm.Overlay)bone.Sample.Apply(bone.Bone);
             if(_armsPaused || _armBaseFrame!=Time.frameCount || target==null || !target.Visible || target.IsLeft!=left)return;
@@ -198,6 +198,8 @@ namespace BoatAttack.Fishing
             var pole=outward.normalized*.65f-transform.up*.8f-transform.forward*.15f;
             SolveArm(arm,wristTarget,pole);
             arm.Wrist.rotation=desiredRotation;
+            // Tracked hands use the hand-only source mesh: controller reach cannot stretch a visible forearm.
+            if(tracked)arm.Wrist.position=wristTarget;
             foreach(var finger in arm.Fingers)
             {
                 float curl=target.Pointing && finger.Index?0:target.Fingers.Curl(finger.Digit);

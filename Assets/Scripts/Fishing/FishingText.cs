@@ -6,12 +6,21 @@ namespace BoatAttack.Fishing
 
     /// <summary>
     /// Player-facing wording. The catch rules report failure codes; this desktop wording names mouse
-    /// and keyboard controls, so a future XR adapter replaces only this layer.
+    /// and keyboard controls, with tracked-controller instructions selected by the same failure code.
     /// </summary>
     public static class FishingText
     {
-        public static string Failure(CatchFailure failure)
+        public static string Failure(CatchFailure failure, bool tracked = false)
         {
+            if (tracked)
+                switch (failure)
+                {
+                    case CatchFailure.MissedBite: return "错过咬钩：提示出现时按右手扳机或 A 提竿。";
+                    case CatchFailure.LineSnapped: return "鱼线绷断：张力过高时松开左手握键，暂停摇轮。";
+                    case CatchFailure.LeapSnapped: return "旗鱼跃水时仍在收线：跃水时松开左手握键，等落水后再摇轮。";
+                    case CatchFailure.LandingTimeout: return "抄鱼超时：左手握住抄网，覆盖鱼获后缓慢提起。";
+                    case CatchFailure.NetMissed: return "抄网未接住：将网口移到鱼下方，覆盖鱼获后再缓慢提起。";
+                }
             switch (failure)
             {
                 case CatchFailure.MissedBite: return "错过咬钩时机：看到提示后点击左键。";

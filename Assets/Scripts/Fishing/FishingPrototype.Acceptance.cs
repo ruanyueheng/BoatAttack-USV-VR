@@ -99,6 +99,7 @@ namespace BoatAttack.Fishing
                     break;
                 case FishingAcceptanceCase.Details: ToggleDetails(); break;
                 case FishingAcceptanceCase.Journal: ToggleJournal(); break;
+                case FishingAcceptanceCase.Calendar: _hud.JournalPage=4;ToggleJournal();break;
                 case FishingAcceptanceCase.Settings: TogglePause(); break;
                 case FishingAcceptanceCase.ShoreFirstPerson:
                 case FishingAcceptanceCase.ShoreThirdPerson:
@@ -110,6 +111,9 @@ namespace BoatAttack.Fishing
                 case FishingAcceptanceCase.LookDownStanding:
                 case FishingAcceptanceCase.LookDownCrouched:
                 case FishingAcceptanceCase.ShopAttendant:
+                case FishingAcceptanceCase.NightCoast:
+                case FishingAcceptanceCase.LanternCoast:
+                case FishingAcceptanceCase.HuntingSpear:
                 case FishingAcceptanceCase.BinocularThirdPerson:
                     PrepareAcceptanceShore(selected);break;
                 case FishingAcceptanceCase.FreePlay:
@@ -146,6 +150,8 @@ namespace BoatAttack.Fishing
             for(int i=0;i<FishingBackpack.SlotCount;i++)if(bag.At(i).item==item){if(i!=0)bag.Move(i,0);break;}
             SelectFieldSlot(0);
             if(selected==FishingAcceptanceCase.LookDownCrouched)Shore.SetCrouch(true);
+            if(selected==FishingAcceptanceCase.LanternCoast)UseFieldItem();
+            Weather.ApplyEnvironment();
             if(selected==FishingAcceptanceCase.BinocularObserve || selected==FishingAcceptanceCase.BinocularThirdPerson)UseFieldItem();
         }
     }

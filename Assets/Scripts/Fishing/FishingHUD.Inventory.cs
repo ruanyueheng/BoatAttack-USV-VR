@@ -80,7 +80,7 @@ namespace BoatAttack.Fishing
                 Label(972,y+40,286,34,notes[i],13,Faint);
             }
             Label(958,595,316,30,"工具使用",20,Gold,true);
-            Label(958,635,312,85,"自然手册：F 记录看向的动物\n望远镜：F 放大 / 放下，T 记录\n提灯：F 点亮 / 熄灭，照亮附近",15,Muted);
+            Label(958,635,312,92,"自然手册：F 记录 · 望远镜：F 举镜\n提灯：F 点亮 · 夜间照路\n猎矛：蹲下接近，F 刺击野兔 / 赤狐\n生兽肉 + 燃料 → 熔炉炭烤兽肉",14,Muted);
         }
         private void DrawFieldSlot(Rect r,int index,bool equipped,bool source)
         {

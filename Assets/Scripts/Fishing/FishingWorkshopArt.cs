@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 namespace BoatAttack.Fishing
 {
     public sealed partial class FishingMeshBuilder
@@ -18,7 +18,18 @@ namespace BoatAttack.Fishing
         public static Mesh Make(FieldItem item)
         {
             var b=new FishingMeshBuilder();
-            if(item==FieldItem.Workbench)
+            if(item==FieldItem.HuntingSpear)
+            {
+                b.Tube(new Vector3(0,0,-.38f),new Vector3(0,0,.75f),.022f,.014f,Wood,8);
+                b.Tube(new Vector3(0,0,.70f),new Vector3(0,0,.92f),.045f,.001f,Iron,4);
+                for(int i=0;i<5;i++)b.Tube(new Vector3(0,0,-.045f+i*.022f),new Vector3(0,0,-.035f+i*.022f),.025f,.025f,Edge,8);
+            }
+            else if(item==FieldItem.RawMeat || item==FieldItem.CookedMeat)
+            {
+                b.Ellipsoid(new Vector3(0,.03f,0),new Vector3(.16f,.045f,.12f),item==FieldItem.RawMeat?new Color(.67f,.20f,.17f):new Color(.40f,.22f,.10f),12,6);
+                for(int i=0;i<3;i++)b.Tube(new Vector3(-.09f,.07f,(i-1)*.055f),new Vector3(.09f,.07f,(i-1)*.055f),.006f,.006f,item==FieldItem.RawMeat?new Color(.92f,.66f,.50f):Iron,5);
+            }
+            else if(item==FieldItem.Workbench)
             {
                 foreach(float x in new[]{-.53f,.53f})foreach(float z in new[]{-.32f,.32f})b.Box(new Vector3(x,.43f,z),new Vector3(.13f,.86f,.13f),Wood);
                 for(int i=0;i<5;i++)b.Box(new Vector3(0,.9f,(i-2)*.18f),new Vector3(1.3f,.13f,.166f),Edge);

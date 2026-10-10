@@ -5,7 +5,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingHUD
     {
-        private void Glass(Rect r) => Rounded(r, new Color(.018f, .052f, .073f, .78f), 12);
+        private void Glass(Rect r) => Card(r, Mint);
 
         private void DrawCompactHeading()
         {
@@ -16,7 +16,7 @@ namespace BoatAttack.Fishing
             string title = c.Ashore ? c.Shore.LocationName : c.Anchored ? FishingGrounds.Name(c.Spot) : c.NavigationName + "  " + FishingPrototype.FlatDistance(c.ExplorerPosition, c.NavigationPosition).ToString("0") + " m";
             Label(r.x + 56, r.y + 9, 262, 27, title, 19, Color.white, true);
             string motion = c.Ashore ? (c.Shore.Crouched?"蹲行 · 调查 ":"步行 · 调查 ")+FishingExploration.CompletedTasks(c.Career.ShoreTaskMask)+"/8" : c.Anchored ? "已停船 · " + FishingVoyage.BaitName(c.Bait) : (c.Speed * 3.6f).ToString("0.0") + " km/h · N 切换航点";
-            Label(r.x + 56, r.y + 36, 262, 20, BayClimate.Name(c.Weather.Climate.Current) + " · " + motion, 13, Muted);
+            Label(r.x + 56, r.y + 36, 262, 20, c.Career.Calendar.SeasonName+" "+c.Career.Calendar.Date+"日  "+c.Career.Calendar.TimeLabel+" · "+BayClimate.Name(c.Weather.Climate.Current), 13, Muted);
             if (c.Ecology.Candidate.HasValue && !CatchVisible && Button(Layout.Observe, "T 观察 · " + BayClimate.MarineName(c.Ecology.Candidate.Value), true, false, 14)) c.Ecology.Observe();
         }
 

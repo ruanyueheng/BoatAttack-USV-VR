@@ -26,6 +26,7 @@ namespace BoatAttack.Fishing
         }
         public void OpenCrafting()
         {
+            if(UnityEngine.XR.XRSettings.isDeviceActive){XRNotebook.Open(2);return;}
             if(!InventoryOpen)ToggleInventory();
             if(InventoryOpen && _hud!=null)_hud.OpenCraftingPage();
         }
@@ -53,11 +54,12 @@ namespace BoatAttack.Fishing
             if(Paused || ShopBlocksGameplay || WorldActionBlocksGameplay || !Ashore || Expedition.Aligning)return;
             switch(Career.Backpack.Equipped)
             {
+                case FieldItem.HuntingSpear:FieldWorld.BeginHunt();break;
                 case FieldItem.Workbench:case FieldItem.Furnace:RequestPlaceEquipped();break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:RequestHarvest();break;
                 case FieldItem.FieldGuide: FieldWorld.Observe();break;
                 case FieldItem.Binoculars:
-                    BinocularsRaised=!BinocularsRaised;Notice(BinocularsRaised?"望远镜 · T 记录动物 / F 放下":"已放下望远镜",3);break;
+                    BinocularsRaised=!BinocularsRaised;Notice(BinocularsRaised?(_xrActive?"望远镜 · A 记录动物 / 扳机放下":"望远镜 · T 记录动物 / F 放下"):"已放下望远镜",3);break;
                 case FieldItem.Lantern:LanternOn=!LanternOn;Notice(LanternOn?"提灯已点亮":"提灯已熄灭",3);break;
                 default:Notice("1–9 选择自然手册、望远镜或提灯，再按 F 使用。I → 制作查看配方；工作台 / 熔炉放入快捷栏后 F 放置。",4);break;
             }

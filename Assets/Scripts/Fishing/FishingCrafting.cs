@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 namespace BoatAttack.Fishing
 {
@@ -20,6 +20,8 @@ namespace BoatAttack.Fishing
         private static CraftRecipe R(string id,CraftStation station,FieldItem output,int count,params FieldStack[] costs)=>new CraftRecipe(id,station,output,count,station==CraftStation.Furnace?8:0,costs);
         // Append-only identifiers are persisted in active furnace jobs. UI always derives from these rules.
         public static readonly CraftRecipe[] All={
+            R("hunting-spear",CraftStation.Workbench,FieldItem.HuntingSpear,1,Stack(FieldItem.Stick,3),Stack(FieldItem.Stone,2),Stack(FieldItem.Rope,1)),
+            R("roast-meat",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.RawMeat,1)),
             R("planks",CraftStation.Hand,FieldItem.Plank,4,Stack(FieldItem.Driftwood,1)),
             R("sticks",CraftStation.Hand,FieldItem.Stick,4,Stack(FieldItem.Plank,2)),
             R("rope",CraftStation.Hand,FieldItem.Rope,1,Stack(FieldItem.Fiber,3)),

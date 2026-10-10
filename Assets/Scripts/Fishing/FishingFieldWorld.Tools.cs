@@ -8,7 +8,7 @@ namespace BoatAttack.Fishing
         public Transform HeldTool=>_held;
         public Renderer HeldToolRenderer=>_heldRenderer;
         public FieldItem PresentedItem { get; private set; }
-        public static readonly Vector3 PickPalm=new Vector3(.06f,-.09f,-.06f);
+        public static readonly Vector3 PickPalm=new Vector3(.067f,-.09f,.005f);
         public static readonly Vector3 PickTip=new Vector3(.28f,.26f,0);
         public static readonly Vector3 BinocularLeftPalm=new Vector3(-.31f,0,-.055f);
         public static readonly Vector3 BinocularRightPalm=new Vector3(.31f,0,-.055f);
@@ -18,7 +18,7 @@ namespace BoatAttack.Fishing
         private FieldItem _previewItem;
         private float _previewUntil;
         public void ShowPickupPreview(FieldItem item){_previewItem=item;_previewUntil=Time.time+1.4f;}
-        public void ClearToolPresentation(){_previewUntil=0;PresentedItem=FieldItem.Empty;if(_held!=null)_held.gameObject.SetActive(false);if(_lamp!=null)_lamp.enabled=false;}
+        public void ClearToolPresentation(){_previewUntil=0;CancelHunt();PresentedItem=FieldItem.Empty;if(_held!=null)_held.gameObject.SetActive(false);if(_lamp!=null)_lamp.enabled=false;}
         public static Vector3 PickContactPalm(Vector3 contact,Quaternion rotation)=>contact+rotation*((PickPalm-PickTip)*PickScale);
         private Mesh ToolMesh(FieldItem item)
         {
@@ -33,8 +33,8 @@ namespace BoatAttack.Fishing
             if(preview)item=_previewItem;
             bool pick=item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe;
             bool facility=item==FieldItem.Workbench || item==FieldItem.Furnace;
-            bool tool=pick || facility || item==FieldItem.FieldGuide || item==FieldItem.Binoculars || item==FieldItem.Lantern || preview;
-            bool visible=_c.Ashore && _c.Hands.CanPresentTools && !_c.ShopBlocksGameplay && !_c.Hands.HasGesture && !_c.Hands.PresentingPickup && !_c.Expedition.Aligning && !_c.ActionSuppressesHeldTool && tool && !XRSettings.isDeviceActive;
+            bool tool=pick || facility || item==FieldItem.HuntingSpear || item==FieldItem.FieldGuide || item==FieldItem.Binoculars || item==FieldItem.Lantern || preview;
+            bool visible=_c.Ashore && (_c.XRNotebook==null || !_c.XRNotebook.IsOpen) && _c.Hands.CanPresentTools && !_c.ShopBlocksGameplay && !_c.Hands.HasGesture && !_c.Hands.PresentingPickup && !_c.Expedition.Aligning && !_c.ActionSuppressesHeldTool && tool;
             _held.gameObject.SetActive(visible);_lamp.enabled=false;
             PresentedItem=visible?item:FieldItem.Empty;
             if(!visible)return;
@@ -72,6 +72,17 @@ namespace BoatAttack.Fishing
                     rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.right);
                     rotation=frame*Quaternion.Euler(25,-20,14);
                     position=eye+frame*new Vector3(.19f,-.14f,.35f)-rotation*(rightPalm*scale);break;
+                case FieldItem.HuntingSpear:
+                    scale=1;rightPalm=SpearPalm;rightRotation=Quaternion.LookRotation(Vector3.up,Vector3.right);
+                    fingers=FishingFingerPose.Handle;position=eye+frame*new Vector3(.20f,-.32f,.35f);
+                    if(_huntTarget!=null)
+                    {
+                        var target=_huntTarget.Root.position+Vector3.up*.22f;
+                        rotation=Quaternion.LookRotation(target-position,Vector3.up);
+                        var desired=target-rotation*SpearTip;
+                        position=Vector3.Lerp(position,desired,Mathf.Sin(Mathf.Clamp01(_thrust/.48f)*Mathf.PI));
+                    }
+                    break;
                 case FieldItem.Workbench:case FieldItem.Furnace:
                     twoHands=true;scale=.35f;leftPalm=new Vector3(-.52f,.6f,-.3f);rightPalm=new Vector3(.52f,.6f,-.3f);
                     position=eye+frame*new Vector3(0,-.46f,.35f);leftRotation=rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.down);break;
@@ -79,7 +90,15 @@ namespace BoatAttack.Fishing
                     rightPalm=new Vector3(0,-.035f,0);rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.down);break;
             }
             _held.localScale=Vector3.one*scale;_held.SetPositionAndRotation(position,rotation);
-            if(!_c.Hands.FitToolPose(_held,leftPalm,rightPalm,twoHands,true)){_held.gameObject.SetActive(false);PresentedItem=FieldItem.Empty;return;}
+            bool tracked=XRSettings.isDeviceActive;
+            if(tracked)
+            {
+                if(!_c.Hands.TryControllerPalm(false,out var palm,out var palmFrame)){ClearToolPresentation();_held.gameObject.SetActive(false);return;}
+                _held.rotation=palmFrame*Quaternion.Inverse(rightRotation);
+                _held.position=palm-_held.rotation*(rightPalm*scale);
+                twoHands=twoHands && _c.Hands.Left.Visible && Vector3.Distance(_c.Hands.Left.Palm.position,_held.TransformPoint(leftPalm))<.18f;
+            }
+            if(!tracked && !_c.Hands.FitToolPose(_held,leftPalm,rightPalm,twoHands,true)){_held.gameObject.SetActive(false);PresentedItem=FieldItem.Empty;return;}
             if(_c.ActionUsesHeldTool && pick)
             {
                 // 镐尖与接触许可使用同一个目标，不能先夹短手臂再让远处矿石扣减。
@@ -90,10 +109,11 @@ namespace BoatAttack.Fishing
                 _held.position=palm-_held.rotation*(rightPalm*scale);
             }
             if(twoHands)_c.Hands.SetToolTarget(true,_held,leftPalm,leftRotation,curl,fingers:fingers);
-            else _c.Hands.RestHand(true);
+            else if(!tracked)_c.Hands.RestHand(true);
             _c.Hands.SetToolTarget(false,_held,rightPalm,rightRotation,curl,fingers:fingers);
             _lamp.enabled=item==FieldItem.Lantern && _c.LanternOn;
             _lamp.transform.position=_held.TransformPoint(Vector3.up*.27f);
+            if(item==FieldItem.HuntingSpear)CheckSpearContact(tracked);
         }
     }
 }

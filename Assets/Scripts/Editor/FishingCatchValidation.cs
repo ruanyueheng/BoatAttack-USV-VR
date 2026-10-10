@@ -100,7 +100,7 @@ namespace BoatAttack.EditorTools
             Check(!Ray(c,FishingDockAction.Pause,true) && !c.Paused,"recovery with held trigger cannot select");
             Ray(c,FishingDockAction.UpgradeLine,false);Check(Ray(c,FishingDockAction.UpgradeLine,true) && c.Career.LineLevel==0,"disabled action consumes ray click without purchasing");
             Ray(c,FishingDockAction.MarkOrder,false);Check(Ray(c,FishingDockAction.MarkOrder,true) && c.Career.OrderMarked,"world-space order acknowledgement persists");
-            for(int i=0;i<12;i++){c.DockConsole.Press(FishingDockAction.NextWaypoint);Check(c.NavigationTarget<=c.fishingSpots.Length && (c.NavigationTarget==0 || FishingGrounds.Available(c.NavigationTarget-1,c.Career.Expedition)),"XR navigation skips unavailable shore/locked destinations "+i);}
+            for(int i=0;i<12;i++){c.DockConsole.Press(FishingDockAction.NextWaypoint);Check(c.NavigationTarget<c.NavigationCount && (c.NavigationTarget==0 || c.NavigationTarget>c.fishingSpots.Length || FishingGrounds.Available(c.NavigationTarget-1,c.Career.Expedition)),"XR navigation includes coast/shop and skips locked fishing destinations "+i);}
             c.Career.Store(Fish());c.Career.Store(Fish());
             int value=c.Career.SaleValue;Check(value>30,"fixture has unreserved cargo");
             Check(!c.DockConsole.Press(FishingDockAction.Sell) && c.Career.Coins==0,"sale requires confirmation");

@@ -97,6 +97,7 @@ internal static class Program
             Check(lookGate.Update(true,false,false,true),"Fresh look drag accepted");
             lookGate.Reset();Check(!lookGate.Update(true,false,false,true),"Look drag cannot jump on resume");
             Check(lookGate.Update(true,false,false,false),"Look release rearms drag");
+            LivingCoastTests.Run(Check);
             VoyageTests.Run(Check);
             ClimateTests.Run(Check);
             ProgressionTests.Run(Check);

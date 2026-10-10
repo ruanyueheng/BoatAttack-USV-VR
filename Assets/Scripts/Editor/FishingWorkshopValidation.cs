@@ -182,6 +182,7 @@ namespace BoatAttack.EditorTools
                 if(!c.FieldWorld.TryLocation(shore.Sites[0].Landing,7+i/8,i*137.5f,out var p))continue;
                 Feet(c,p+Vector3.up*.04f);shore.Actor.rotation=Quaternion.Euler(0,i*35,0);c.viewCamera.transform.rotation=shore.Actor.rotation;
                 placed=world.PlaceEquipped();
+                if(!placed && i%8==0)Debug.Log("[WORKSHOP] PLACE attempt="+i+" item="+bag.Equipped+" reason="+c.Message);
             }
             Check(placed && bag.Count(FieldItem.Workbench)==0,"F places owned workbench on clear ground");
             int own=world.State.Stations.First(s=>!s.permanent).id;world.SelectNearby();
