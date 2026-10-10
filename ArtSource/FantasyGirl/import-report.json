@@ -1,8 +1,46 @@
 {
   "source_triangles": 997058,
-  "height_metres": 1.72,
+  "height_metres": 1.98,
   "rigged": false,
-  "pose": "Static arms relaxed; no skeleton/animation fabricated",
+  "pose": "Hands gently overlapped at lower abdomen; bent elbows and relaxed shoulders",
+  "source_space_landmarks": [
+    {
+      "side": -1,
+      "shoulder": [
+        0.004999999888241291,
+        -0.08500000089406967,
+        0.7559999823570251
+      ],
+      "elbow": [
+        0.04755186662077904,
+        -0.09053242206573486,
+        0.6578942537307739
+      ],
+      "wrist": [
+        0.07699999958276749,
+        -0.029999999329447746,
+        0.5899999737739563
+      ]
+    },
+    {
+      "side": 1,
+      "shoulder": [
+        0.004999999888241291,
+        0.08500000089406967,
+        0.7559999823570251
+      ],
+      "elbow": [
+        0.05854049697518349,
+        0.09883091598749161,
+        0.6643041968345642
+      ],
+      "wrist": [
+        0.09200000017881393,
+        0.029999999329447746,
+        0.6069999933242798
+      ]
+    }
+  ],
   "lods": [
     {
       "name": "FantasyGirl_LOD0",

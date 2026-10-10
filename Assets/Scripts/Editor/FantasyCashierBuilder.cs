@@ -86,7 +86,7 @@ namespace BoatAttack.EditorTools
                 var mesh = f.sharedMesh;
                 if (mesh == null || mesh.subMeshCount != 1 || mesh.GetIndexCount(0)/3 > (index++ == 0 ? 71000 : 23000)) throw new Exception("Cashier mesh budget invalid.");
                 var b = f.GetComponent<Renderer>().bounds;
-                if (b.size.y < 1.68f || b.size.y > 1.76f || Mathf.Abs(b.min.y) > .02f || b.size.x > 1.3f) throw new Exception("Cashier scale/orientation invalid: " + b);
+                if (Mathf.Abs(b.size.y - FishingShopCashier.AdultHeight) > .03f || Mathf.Abs(b.min.y) > .02f || b.size.x > 1.3f) throw new Exception("Cashier scale/orientation invalid: " + b);
             }
         }
         public static void BuildAndPreview()
@@ -109,10 +109,22 @@ namespace BoatAttack.EditorTools
             var camera=new GameObject("Preview camera",typeof(Camera)).GetComponent<Camera>();camera.nearClipPlane=.05f;camera.farClipPlane=100;camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=new Color(.12f,.18f,.23f);
             camera.GetUniversalAdditionalCameraData().renderPostProcessing=false;
             ShaderUtil.allowAsyncCompilation=false;Directory.CreateDirectory("Logs/FantasyGirl");
-            Shot(camera,new Vector3(-1.4f,1.58f,1.0f),new Vector3(-1.4f,1.38f,4),"counter.png",48);
+            Shot(camera,new Vector3(-1.4f,1.58f,1.0f),new Vector3(-1.4f,1.58f,4),"counter.png",48);
             Shot(camera,new Vector3(0,1.65f,-2.8f),new Vector3(-.4f,1.4f,3.4f),"shop.png",64);
             var group=cashier.GetComponent<LODGroup>();group.ForceLOD(1);
-            Shot(camera,new Vector3(-1.4f,1.58f,1.0f),new Vector3(-1.4f,1.38f,4),"counter-lod1.png",48);group.ForceLOD(-1);
+            Shot(camera,new Vector3(-1.4f,1.58f,1.0f),new Vector3(-1.4f,1.58f,4),"counter-lod1.png",48);group.ForceLOD(-1);
+            // Inspect the authored hands independently of the counter that hides the abdomen.
+            shop.gameObject.SetActive(false);
+            var studio = Object.Instantiate(Required<GameObject>("Cashier.prefab"));
+            studio.transform.SetPositionAndRotation(Vector3.zero,Quaternion.identity);
+            cashier = studio.GetComponent<FishingShopCashier>();
+            group = cashier.GetComponent<LODGroup>();
+            Shot(camera,cashier.transform.TransformPoint(new Vector3(0,1.20f,2.8f)),cashier.transform.TransformPoint(new Vector3(0,1.15f,0)),"cashier-full.png",48);
+            Shot(camera,cashier.transform.TransformPoint(new Vector3(.65f,1.45f,1.5f)),cashier.transform.TransformPoint(new Vector3(0,1.35f,.08f)),"cashier-hands.png",45);
+            group.ForceLOD(1);
+            Shot(camera,cashier.transform.TransformPoint(new Vector3(.65f,1.45f,1.5f)),cashier.transform.TransformPoint(new Vector3(0,1.35f,.08f)),"cashier-hands-lod1.png",45);
+            group.ForceLOD(-1);
+            Object.DestroyImmediate(studio);
             Debug.Log("[CASHIER] PASS: placement, deduplication and both LODs previewed. Not device/performance certification.");
         }
         private static void Shot(Camera camera,Vector3 eye,Vector3 target,string file,float fov)

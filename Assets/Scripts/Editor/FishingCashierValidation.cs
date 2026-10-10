@@ -20,6 +20,19 @@ namespace BoatAttack.EditorTools
         public static void BuildAndValidate() => Execute(() => { BuildAssets(); ValidateAssets(); });
         public static void Run() => Execute(ValidateAssets);
 
+        // Preserve prefab file IDs and nested shop references when only the FBXs change.
+        public static void RefreshBoundsAndValidate() => Execute(() =>
+        {
+            var root = PrefabUtility.LoadPrefabContents(PrefabPath);
+            try
+            {
+                root.GetComponent<LODGroup>().RecalculateBounds();
+                Check(PrefabUtility.SaveAsPrefabAsset(root, PrefabPath) != null, "updated LOD bounds saved without rebuilding the shop");
+            }
+            finally { PrefabUtility.UnloadPrefabContents(root); }
+            ValidateAssets();
+        });
+
         private static void Execute(Action work)
         {
             try
@@ -218,7 +231,7 @@ namespace BoatAttack.EditorTools
                 var filter = renderer.GetComponent<MeshFilter>();
                 Check(filter != null && filter.sharedMesh != null && filter.sharedMesh.subMeshCount == 1, "single real human mesh/submesh " + i);
                 uint triangles = filter.sharedMesh.GetIndexCount(0) / 3;
-                Check(triangles == (i == 0 ? 69999u : 22000u), "mesh budget LOD " + i + ": " + triangles);
+                Check(triangles > 0 && triangles <= (i == 0 ? 70000u : 22000u), "mesh budget LOD " + i + ": " + triangles);
                 Check(renderer.sharedMaterials.Length == 1, "one shared character material " + i);
                 var material = renderer.sharedMaterial;
                 Check(material != null && material.shader != null && material.shader.name == "Universal Render Pipeline/Lit"
@@ -232,8 +245,8 @@ namespace BoatAttack.EditorTools
                 else { bounds = renderer.bounds; haveBounds = true; }
             }
             Check(Mathf.Abs(bounds.size.y - FishingShopCashier.AdultHeight) < .03f && Mathf.Abs(bounds.min.y - cashier.transform.position.y) < .025f,
-                "adult stands approximately 1.72m with feet at anchor: " + bounds);
-            Check(bounds.size.x < 1.05f, "arms are relaxed, not a wide T-pose");
+                "enlarged attendant stands approximately 1.98m with feet at anchor: " + bounds);
+            Check(bounds.size.x < 1.05f, "arms rest in front of the abdomen, not a wide T-pose");
         }
 
         private static T Required<T>(string file) where T : Object

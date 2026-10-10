@@ -6,8 +6,8 @@ namespace BoatAttack.Fishing
     public sealed class FishingShopCashier : MonoBehaviour
     {
         public const string ResourcePath = "FishingCashier/FantasyGirl/Cashier";
-        public const float AdultHeight = 1.72f;
-        public Vector3 FacePosition => transform.TransformPoint(new Vector3(0, 1.56f, .06f));
+        public const float AdultHeight = 1.98f;
+        public Vector3 FacePosition => transform.TransformPoint(new Vector3(0, 1.80f, .07f));
 
         public static FishingShopCashier Create(FishingTackleShop shop)
         {
