@@ -9,15 +9,28 @@ namespace BoatAttack.Fishing
         private FishingPrototype _c;private readonly FishingNetGate _gate=new FishingNetGate();
         private readonly FishingNetTransferGate _transfer=new FishingNetTransferGate();
         private Vector3 _boxLocal;private Transform _tray;
+        private MeshFilter _receivingRim;
         private readonly FishingPressEdge _left=new FishingPressEdge(),_right=new FishingPressEdge();
         private bool _assist,_netHeld,_hadSample;private float _assistTime,_releaseUntil;
         private Vector3 _lastNet;private string _fishId;
         public Place Location { get; private set; }
         public bool NetHeld=>_netHeld;
         public bool ReleaseConfirmation=>Time.unscaledTime<_releaseUntil;
+        /// <summary>投影到右侧箱沿的真实上表面；横倾时不能用远端网格角点代替面内可达点。</summary>
+        public Vector3 ReceivingPoint(Vector3 from)
+        {
+            var surface=_receivingRim.transform;var bounds=_receivingRim.sharedMesh.bounds;
+            var local=surface.InverseTransformPoint(from);
+            local.x=Mathf.Clamp(local.x,bounds.min.x,bounds.max.x);local.y=bounds.max.y;
+            local.z=Mathf.Clamp(local.z,bounds.min.z,bounds.max.z);
+            return surface.TransformPoint(local);
+        }
         public void Build(FishingPrototype c)
         {
             _c=c;Location=Place.Net;_boxLocal=c.FishBox.localPosition;
+            foreach(var filter in c.FishBox.GetComponentsInChildren<MeshFilter>())
+                if(filter.name=="Top rim" && filter.transform.localPosition.x>0){_receivingRim=filter;break;}
+            if(_receivingRim==null)throw new System.InvalidOperationException("捕鱼箱缺少右侧接收上沿");
             _tray=FishingArt.Shape("Safe catch inspection tray",PrimitiveType.Cylinder,c.Player.transform,new Vector3(.65f,1.04f,.45f),new Vector3(.8f,.025f,.8f),c.teal).transform;
             _tray.gameObject.SetActive(false);
             var ring=FishingArt.Line("Fish box receiving rim",c.FishBox,c.teal,.022f,false);ring.positionCount=33;

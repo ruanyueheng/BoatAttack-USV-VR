@@ -45,6 +45,7 @@ namespace BoatAttack.Fishing
         {
             var c = Controller;
             if (c == null || c.Career == null || c.Player == null || XRSettings.isDeviceActive) return;
+            DrawOpticalView();
             _scale = LayoutScale(Screen.width, Screen.height);
             _height = Screen.height / _scale;
             _offset = (Screen.width - 1600 * _scale) * .5f;
@@ -187,6 +188,6 @@ namespace BoatAttack.Fishing
             return "鱼在冲刺 · 放线避开拉力";
         }
 
-        private void OnDestroy() { ReleaseTerrainMap(); if (_font != null) Destroy(_font); }
+        private void OnDestroy() { ReleaseTerrainMap(); ReleaseOptics(); if (_font != null) Destroy(_font); }
     }
 }

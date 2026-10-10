@@ -3,13 +3,14 @@ using UnityEngine.XR;
 
 namespace BoatAttack.Fishing
 {
-    /// <summary>PR #17's authored Tide & Tackle shop, integrated with v10 progression. Empty markers are not NPC AI.</summary>
+    /// <summary>已制作的潮汐钓具店。店员仅提供外观，其余预留站位不代表 NPC AI。</summary>
     public sealed class FishingTackleShop : MonoBehaviour
     {
         public Transform entrance, purchasePoint, mooringPoint;
         public Transform[] clerkSpaces, customerSpaces;
         [System.NonSerialized] public FishingPrototype Controller;
         private Collider _landingDeck;
+        public FishingShopCashier Cashier { get; private set; }
         public const string Name = "潮汐钓具店";
         public string DisplayName => Name;
         public Vector3 Position => transform.position;
@@ -35,7 +36,13 @@ namespace BoatAttack.Fishing
             && !XRSettings.isDeviceActive && (Controller.Automated || Application.isFocused);
 
         private void Awake() => ResolveLandingDeck();
-        public void Bind(FishingPrototype controller) { Controller = controller; ResolveLandingDeck(); }
+        private void Start() => EnsureCashier();
+        public void Bind(FishingPrototype controller) { Controller = controller; ResolveLandingDeck(); EnsureCashier(); }
+        public FishingShopCashier EnsureCashier()
+        {
+            if (Cashier == null) Cashier = FishingShopCashier.Create(this);
+            return Cashier;
+        }
         private void ResolveLandingDeck()
         {
             var deck = transform.Find("04 Porch and beach access/Shore landing deck");
@@ -47,7 +54,9 @@ namespace BoatAttack.Fishing
             if (!NearCounter || !ContextAllowsBrowsing || Controller.ShopBlocksGameplay) return false;
             Open = true;
             Controller.ShopModalChanged();
-            Controller.Notice("欢迎来到潮汐钓具店 · 选择装备升级，金币和装备自动保存。", 5f);
+            Controller.Notice(Cashier != null
+                ? "店员：欢迎来到潮汐钓具店！请选择装备，金币和装备自动保存。"
+                : "欢迎来到潮汐钓具店 · 选择装备升级，金币和装备自动保存。", 5f);
             return true;
         }
         public void Close()

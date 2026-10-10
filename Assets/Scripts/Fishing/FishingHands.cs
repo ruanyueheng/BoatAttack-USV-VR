@@ -102,7 +102,7 @@ namespace BoatAttack.Fishing
                 // Look may steer a desktop grip, but cannot pull arms behind the shoulders.
                 var local=Quaternion.Inverse(rotation)*_c.viewCamera.transform.forward;
                 float yaw=Mathf.Clamp(Mathf.Atan2(local.x,local.z)*Mathf.Rad2Deg,-65,65);
-                float pitch=Mathf.Clamp(-Mathf.Asin(Mathf.Clamp(local.y,-1,1))*Mathf.Rad2Deg,-35,35);
+                float pitch=Mathf.Clamp(-Mathf.Asin(Mathf.Clamp(local.y,-1,1))*Mathf.Rad2Deg,-50,65);
                 rotation*=Quaternion.Euler(pitch,yaw,0);
             }
         }
@@ -136,11 +136,12 @@ namespace BoatAttack.Fishing
             }
         }
         /// <summary>Call AFTER Apply and AFTER positioning the tool, BEFORE final character IK.</summary>
-        public void SetToolTarget(bool left,Transform tool,Vector3 localPalmPosition,Quaternion localPalmRotation,float curl,bool pointing=false)
+        public void SetToolTarget(bool left,Transform tool,Vector3 localPalmPosition,Quaternion localPalmRotation,float curl,bool pointing=false,FishingFingerPose? fingers=null)
         {
             var target=left?_left:_right;
             if(!CanPresent){target.Disable();return;}
             target.SetFromGrip(tool,localPalmPosition,localPalmRotation,curl,pointing);
+            if(fingers.HasValue)target.SetFingers(fingers.Value);
         }
         public void Apply()
         {
@@ -176,7 +177,7 @@ namespace BoatAttack.Fishing
                 _rod.gameObject.SetActive(true);
                 // 同源双手保持在可见的胸前操作区；俯视只改变竿的瞄准，不把整个握持位置压出画面。
                 var holdFrame=Quaternion.Euler(0,frame.eulerAngles.y,0);
-                _rod.SetPositionAndRotation(origin+holdFrame*new Vector3(.10f,-.10f,.36f),holdFrame*Quaternion.Euler(-32f-Mathf.Sin(_cast/.45f*Mathf.PI)*24f,-12f,0));
+                _rod.SetPositionAndRotation(origin+holdFrame*new Vector3(.10f,-.105f,.41f),holdFrame*Quaternion.Euler(-32f-Mathf.Sin(_cast/.45f*Mathf.PI)*24f,-12f,0));
                 var reelPalm=_rod.InverseTransformPoint(_knob.position+_rod.TransformVector(new Vector3(-.024f,.012f,-.035f)));
                 FitToolPose(_rod,reelPalm,RodPalm);
                 _right.SetFromGrip(_rod,RodPalm,RodPalmRotation,.86f);
