@@ -39,7 +39,7 @@ namespace BoatAttack.Fishing
                 || (acceptance && AcceptanceBanner.Contains(point));
         }
 
-        private void Awake() => _font = Font.CreateDynamicFontFromOSFont(new[] { "Microsoft YaHei", "SimHei", "Arial" }, 20);
+        private void Awake() => _font = FishingUIFont.Font;
 
         private void OnGUI()
         {
@@ -188,6 +188,6 @@ namespace BoatAttack.Fishing
             return "鱼在冲刺 · 放线避开拉力";
         }
 
-        private void OnDestroy() { ReleaseTerrainMap(); ReleaseOptics(); if (_font != null) Destroy(_font); }
+        private void OnDestroy() { ReleaseTerrainMap(); ReleaseOptics(); }
     }
 }

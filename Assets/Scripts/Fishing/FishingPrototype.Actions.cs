@@ -267,10 +267,12 @@ namespace BoatAttack.Fishing
         public bool RequestInspectCatch()
         {
             if(!HasPendingCatch || Paused || WorldActionBlocksGameplay)return false;
+            if(FishingSpecies.Of(Career.PendingCatch.fish.kind).Legendary){CatchRig.PrepareHandAction();return MeasureCatch();}
             Shore.SyncRider();
             Hands.GetToolFrame(out var origin,out var frame);
+            var contact=CatchRig.InspectionCenter(frame)+(frame*Quaternion.Euler(0,-90,0))*Vector3.Scale(CatchRig.FishPalmLocal(false),ActiveFish.lossyScale);
             string id=Career.PendingCatch.fish.id;
-            bool began=BeginWorldAction(FishingActionKind.Inspect,"fish:"+id,null,origin+frame*new Vector3(.06f,-.16f,.27f),frame,
+            bool began=BeginWorldAction(FishingActionKind.Inspect,"fish:"+id,null,contact,frame,
                 ()=>HasPendingCatch && Career.PendingCatch.fish.id==id && MeasureCatch(),true);
             if(began)CatchRig.PrepareHandAction();return began;
         }

@@ -28,7 +28,17 @@ namespace BoatAttack.Fishing
         private GameObject _rain;
         private readonly Vector3[] _rainVertices = new Vector3[96 * 4];
         private readonly Color[] _rainColors = new Color[96 * 4];
-        private float _rainTimer, _rainAmount;
+        private float _rainTimer, _rainAmount, _saveTimer;
+        private AmbientMode _ambientMode;
+        private Color _equator, _ground;
+        private float _reflection;
+        private bool _focused = true;
+        private readonly List<(Renderer renderer,int index,LightProbeUsage probes)> _bakedRenderers=new List<(Renderer,int,LightProbeUsage)>();
+        private readonly List<(Terrain terrain,int index)> _bakedTerrains=new List<(Terrain,int)>();
+        public float Daylight => Controller != null && Controller.Career != null ? Controller.Career.Calendar.Daylight : 1;
+        private void OnApplicationFocus(bool focus) { _focused = focus; if (!focus && Controller?.Career != null) Controller.Save(); }
+        private void OnApplicationPause(bool pause) { _focused = !pause; if (pause && Controller?.Career != null) Controller.Save(); }
+        private void OnApplicationQuit() { if (Controller?.Career != null) Controller.Save(); }
 
         private struct Look
         {
@@ -56,8 +66,16 @@ namespace BoatAttack.Fishing
         {
             if(_captured)return; _captured=true;
             _originalSky=RenderSettings.skybox; _sun=RenderSettings.sun;
+            // Baked midday light cannot darken with the clock. Borrow only scene lighting assignments.
+            foreach(var renderer in FindObjectsOfType<Renderer>())
+            {
+                _bakedRenderers.Add((renderer,renderer.lightmapIndex,renderer.lightProbeUsage));
+                renderer.lightmapIndex=-1;renderer.lightProbeUsage=LightProbeUsage.Off;
+            }
+            foreach(var terrain in Terrain.activeTerrains){_bakedTerrains.Add((terrain,terrain.lightmapIndex));terrain.lightmapIndex=-1;}
             _fog=RenderSettings.fog; _fogMode=RenderSettings.fogMode; _fogColor=RenderSettings.fogColor;
             _fogStart=RenderSettings.fogStartDistance; _fogEnd=RenderSettings.fogEndDistance; _fogDensity=RenderSettings.fogDensity;
+            _ambientMode=RenderSettings.ambientMode;_equator=RenderSettings.ambientEquatorColor;_ground=RenderSettings.ambientGroundColor;_reflection=RenderSettings.reflectionIntensity;
             _ambient=RenderSettings.ambientSkyColor; _ambientIntensity=RenderSettings.ambientIntensity;
             if(_sun!=null){_sunColor=_sun.color;_sunIntensity=_sun.intensity;_sunRotation=_sun.transform.rotation;}
             // The original race has independent environment writers; suspend only active instances.
@@ -74,6 +92,11 @@ namespace BoatAttack.Fishing
         }
         private void Start()
         {
+            foreach(var renderer in GetComponentsInChildren<Renderer>())
+            {
+                bool known=false;foreach(var entry in _bakedRenderers)if(entry.renderer==renderer){known=true;break;}
+                if(known)continue;_bakedRenderers.Add((renderer,renderer.lightmapIndex,renderer.lightProbeUsage));renderer.lightmapIndex=-1;renderer.lightProbeUsage=LightProbeUsage.Off;
+            }
             BuildRain();
             _audio=gameObject.AddComponent<AudioSource>(); _audio.playOnAwake=false;_audio.loop=true;_audio.spatialBlend=0;_audio.volume=0;
             var rng=new System.Random(731);var samples=new float[22050*4];float low=0;
@@ -88,7 +111,10 @@ namespace BoatAttack.Fishing
         private void Update()
         {
             if(Controller==null || !_captured)return;
-            Climate.Tick(Time.deltaTime,Controller.Paused);
+            bool frozen=Controller.Paused || (Controller.XRNotebook!=null && Controller.XRNotebook.IsOpen) || (!_focused && !Controller.Automated);
+            Controller.Career.Calendar.Tick(Time.deltaTime, frozen || Controller.Automated);
+            Climate.Tick(Time.deltaTime,frozen,Controller.Automated?(BayWeather?)null:Controller.Career.Calendar.Weather);
+            if(!frozen && !Controller.Automated && (_saveTimer+=Time.deltaTime)>=30){_saveTimer=0;Controller.Save();}
             ApplyEnvironment();
             if(_audio!=null){_audio.mute=Controller.QuietMode || Controller.Paused;_audio.volume=.07f+_rainAmount*.13f;}
             if(_rain!=null)
@@ -102,18 +128,34 @@ namespace BoatAttack.Fishing
             if(!_captured)return;
             var a=Preset(Climate.Previous);var b=Preset(Climate.Current);float t=Mathf.SmoothStep(0,1,Climate.Blend);
             var sky=Color.Lerp(a.sky,b.sky,t);var sun=Color.Lerp(a.sun,b.sun,t);float intensity=Mathf.Lerp(a.light,b.light,t);
-            if(_sun!=null){_sun.color=_sunColor*sun;_sun.intensity=_sunIntensity*intensity;_sun.transform.rotation=Quaternion.Slerp(Quaternion.Euler(a.elevation,_sunRotation.eulerAngles.y,0),Quaternion.Euler(b.elevation,_sunRotation.eulerAngles.y,0),t);}
+            float daylight=Daylight;
+            float twilight=4*daylight*(1-daylight);
+            var nightSky=new Color(.07f,.12f,.24f);
+            sky=Color.Lerp(nightSky,sky,daylight);
+            sun=Color.Lerp(new Color(.38f,.52f,.84f),Color.Lerp(sun,new Color(1,.52f,.27f),twilight*.65f),daylight);
+            if(_sun!=null)
+            {
+                _sun.color=_sunColor*sun;_sun.intensity=_sunIntensity*intensity*Mathf.Lerp(.025f,1,daylight);
+                float hour=Controller.Career.Calendar.Hour;
+                float elevation=daylight>.01f?Mathf.Lerp(8,65,Mathf.Sin(Mathf.Clamp01((hour-6)/12)*Mathf.PI)):32;
+                _sun.transform.rotation=Quaternion.Euler(elevation,_sunRotation.eulerAngles.y+(hour-12)*7,0);
+            }
             if(_sky!=null)
             {
                 // This island uses _SkyTint, not the cubemap shader's _Tint. Its original
                 // exposure=4 blows out the horizon, so only this runtime clone is capped.
                 if(_skyTintProperty!=null)_sky.SetColor(_skyTintProperty,(_skyTintProperty=="_SkyTint"?new Color(.5f,.5f,.5f):_skyTint)*sky);
-                if(_sky.HasProperty("_Exposure"))_sky.SetFloat("_Exposure",Mathf.Min(_skyExposure,1.4f)*Mathf.Lerp(.72f,1,intensity));
+                if(_sky.HasProperty("_Exposure"))_sky.SetFloat("_Exposure",Mathf.Min(_skyExposure,1.4f)*Mathf.Lerp(.72f,1,intensity)*Mathf.Lerp(.08f,1,daylight));
             }
             RenderSettings.fog=true;RenderSettings.fogMode=FogMode.Linear;
-            RenderSettings.fogColor=Color.Lerp(a.fog,b.fog,t);RenderSettings.fogStartDistance=35;
+            RenderSettings.fogColor=Color.Lerp(new Color(.018f,.031f,.064f),Color.Lerp(a.fog,b.fog,t),daylight);RenderSettings.fogStartDistance=35;
             RenderSettings.fogEndDistance=Mathf.Lerp(a.distance,b.distance,t);
-            RenderSettings.ambientSkyColor=_ambient*Color.Lerp(Color.white,sky,.35f);RenderSettings.ambientIntensity=_ambientIntensity*Mathf.Lerp(.82f,1,intensity);
+            RenderSettings.ambientMode=AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor=Color.Lerp(new Color(.015f,.025f,.05f),_ambient*Color.Lerp(Color.white,sky,.35f),daylight);
+            RenderSettings.ambientEquatorColor=Color.Lerp(new Color(.009f,.014f,.025f),new Color(.32f,.38f,.39f),daylight);
+            RenderSettings.ambientGroundColor=Color.Lerp(new Color(.004f,.007f,.012f),new Color(.15f,.18f,.18f),daylight);
+            RenderSettings.ambientIntensity=_ambientIntensity*Mathf.Lerp(.82f,1,intensity);
+            RenderSettings.reflectionIntensity=_reflection*Mathf.Lerp(.08f,1,daylight);
             _rainAmount=Mathf.Lerp(a.rain,b.rain,t);
         }
         public void RefreshForCapture()
@@ -153,8 +195,12 @@ namespace BoatAttack.Fishing
         private void OnDisable()
         {
             if(!_captured)return;_captured=false;
+            foreach(var entry in _bakedRenderers)if(entry.renderer!=null){entry.renderer.lightmapIndex=entry.index;entry.renderer.lightProbeUsage=entry.probes;}
+            foreach(var entry in _bakedTerrains)if(entry.terrain!=null)entry.terrain.lightmapIndex=entry.index;
+            _bakedRenderers.Clear();_bakedTerrains.Clear();
             RenderSettings.skybox=_originalSky;RenderSettings.fog=_fog;RenderSettings.fogMode=_fogMode;RenderSettings.fogColor=_fogColor;
             RenderSettings.fogStartDistance=_fogStart;RenderSettings.fogEndDistance=_fogEnd;RenderSettings.fogDensity=_fogDensity;
+            RenderSettings.ambientMode=_ambientMode;RenderSettings.ambientEquatorColor=_equator;RenderSettings.ambientGroundColor=_ground;RenderSettings.reflectionIntensity=_reflection;
             RenderSettings.ambientSkyColor=_ambient;RenderSettings.ambientIntensity=_ambientIntensity;
             if(_sun!=null){_sun.color=_sunColor;_sun.intensity=_sunIntensity;_sun.transform.rotation=_sunRotation;}
             foreach(var writer in _suspended)if(writer!=null)writer.enabled=true;_suspended.Clear();

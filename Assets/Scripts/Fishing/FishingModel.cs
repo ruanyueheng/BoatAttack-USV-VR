@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace BoatAttack.Fishing
 {
     public enum CatchPhase { Idle, Waiting, Bite, Fighting, Landing, Caught, Escaped }
-    public enum FishKind { Coral, Dart, Puffer, Sailfish }
+    public enum FishKind { Coral, Dart, Puffer, Sailfish, Mackerel, SeaBream, Sardine, Grouper, Butterfly, Tuna, Lanternfish, Lionfish }
 
     [Serializable]
     public sealed class CatchRecord
@@ -160,7 +160,9 @@ namespace BoatAttack.Fishing
     [Serializable]
     public sealed class FishingSaveData
     {
-        public int version = 8;
+        public int version = 9;
+        public CalendarData calendar = new CalendarData();
+        public HuntingData hunting = new HuntingData();
         public WorkshopData workshop = new FishingWorkshop().Snapshot();
         public PendingCatchData pendingCatch;
         public bool hasPendingCatch;
@@ -188,6 +190,8 @@ namespace BoatAttack.Fishing
 
     public sealed partial class FishingCareer
     {
+        public FishingCalendar Calendar { get; private set; } = new FishingCalendar();
+        public FishingHunting Hunting { get; private set; } = new FishingHunting();
         public FishingWorkshop Workshop { get; private set; } = new FishingWorkshop();
         public FishingBackpack Backpack { get; private set; } = new FishingBackpack();
         public const int BaseCapacity = 6;
@@ -384,6 +388,7 @@ namespace BoatAttack.Fishing
         {
             var result = new FishingSaveData
             {
+                calendar = Calendar.Snapshot(), hunting = Hunting.Snapshot(),
                 hasPendingCatch = HasPendingCatch, pendingCatch = _pending?.Copy(), releasedCatches = ReleasedCatches, orderMarked = OrderMarked,
                 workshop = Workshop.Snapshot(), backpack = Backpack.Snapshot(), selectedSlot = Backpack.Selected, collectedPickupMask = Backpack.CollectedMask, landAnimalMask = Backpack.AnimalMask,
                 expeditionFacts = Expedition.Facts,
@@ -400,7 +405,7 @@ namespace BoatAttack.Fishing
         public static bool TryRestore(FishingSaveData data, out FishingCareer career)
         {
             career = null;
-            if (data == null || data.version < 1 || data.version > 8) return false;
+            if (data == null || data.version < 1 || data.version > 9) return false;
             if (!FishingExpedition.TryRestore(data.expeditionFacts, out var expedition)
                 || (data.version < 5 && data.expeditionFacts != 0)) return false;
             bool v3 = data.version >= 3;
@@ -469,6 +474,12 @@ namespace BoatAttack.Fishing
             {
                 if(!FishingWorkshop.TryRestore(data.workshop,out var workshop))return false;
                 result.Workshop=workshop;
+            }
+            if (data.version >= 9)
+            {
+                if (!FishingCalendar.TryRestore(data.calendar, out var calendar) || !FishingHunting.TryRestore(data.hunting, out var hunting)) return false;
+                foreach (int day in data.hunting.availableDays) if (day > calendar.Day + 1) return false;
+                result.Calendar = calendar; result.Hunting = hunting;
             }
             career = result;
             return true;

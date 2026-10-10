@@ -24,7 +24,7 @@ namespace BoatAttack.Fishing
             _c=c;var root=new GameObject("XR dock and catch console",typeof(RectTransform),typeof(Canvas));root.transform.SetParent(transform,false);
             _canvas=root.GetComponent<Canvas>();_canvas.renderMode=RenderMode.WorldSpace;_canvas.worldCamera=c.viewCamera;
             var rect=root.GetComponent<RectTransform>();rect.sizeDelta=new Vector2(500,570);rect.localScale=Vector3.one*.002f;
-            var panel=root.AddComponent<Image>();panel.color=new Color(.025f,.075f,.1f,.97f);panel.raycastTarget=false;
+            var panel=root.AddComponent<Image>();panel.color=new Color(.985f,.977f,.945f,.98f);panel.raycastTarget=false;
             _status=Label(root.transform,new Vector2(18,-16),new Vector2(464,196),21);
             _message=Label(root.transform,new Vector2(18,-500),new Vector2(464,58),19);
             int i=0;foreach(FishingDockAction action in Enum.GetValues(typeof(FishingDockAction)))
@@ -44,7 +44,7 @@ namespace BoatAttack.Fishing
         {
             var go=new GameObject("Readable ASCII label",typeof(RectTransform),typeof(Text));go.transform.SetParent(parent,false);
             var rt=go.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(0,1);rt.pivot=new Vector2(0,1);rt.anchoredPosition=position;rt.sizeDelta=size;
-            var text=go.GetComponent<Text>();text.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");text.fontSize=fontSize;text.color=Color.white;text.raycastTarget=false;return text;
+            var text=go.GetComponent<Text>();text.font=FishingUIFont.Font;text.fontSize=fontSize;text.color=new Color(.07f,.16f,.17f);text.raycastTarget=false;return text;
         }
         public bool Allowed(FishingDockAction action)
         {
@@ -83,7 +83,7 @@ namespace BoatAttack.Fishing
                 case FishingDockAction.UpgradeLine:ok=_c.BuyUpgrade(UpgradeTrack.Line);break;
                 case FishingDockAction.NextWaypoint:
                     int next=_c.NavigationTarget;
-                    for(int i=0;i<=_c.fishingSpots.Length;i++){next=(next+1)%(_c.fishingSpots.Length+1);if(next==0 || FishingGrounds.Available(next-1,_c.Career.Expedition))break;}
+                    for(int i=0;i<_c.NavigationCount;i++){next=(next+1)%_c.NavigationCount;if(next==0 || next>_c.fishingSpots.Length || FishingGrounds.Available(next-1,_c.Career.Expedition))break;}
                     _c.SelectNavigation(next);break;
                 case FishingDockAction.Anchor:if(_c.Anchored)_c.LeaveStation();else _c.Interact();break;
                 case FishingDockAction.Store:
@@ -123,20 +123,21 @@ namespace BoatAttack.Fishing
         private void ClearOffer(){_offer=null;_quote=null;}
         public void Present()
         {
-            if(_canvas==null)return;_canvas.gameObject.SetActive(XRSettings.isDeviceActive || _preview);
+            if(_canvas==null)return;_canvas.gameObject.SetActive((XRSettings.isDeviceActive && !_c.Ashore && (_c.XRNotebook==null || !_c.XRNotebook.IsOpen)) || _preview);
+            if(!_canvas.gameObject.activeSelf)return;
             var yaw=Quaternion.Euler(0,_c.Player.transform.eulerAngles.y+(_c.Anchored?35:0),0);
             _canvas.transform.SetPositionAndRotation(_c.Player.transform.position+Vector3.up*1.55f+yaw*new Vector3(-.75f,0,2),yaw);
             for(int i=0;i<_rings.Length;i++)_rings[i].gameObject.SetActive(_c.Career.LineLevel>i);
-            foreach(var p in _buttons)p.Value.color=_hover!=null && _hover.Action==p.Key && Allowed(p.Key)?new Color(.2f,.55f,.4f):Allowed(p.Key)?new Color(.07f,.24f,.27f):new Color(.1f,.12f,.13f);
+            foreach(var p in _buttons)p.Value.color=_hover!=null && _hover.Action==p.Key && Allowed(p.Key)?new Color(.66f,.85f,.74f):Allowed(p.Key)?new Color(.86f,.93f,.87f):new Color(.87f,.88f,.85f);
             string state=_c.HasPendingCatch?"PENDING: "+_c.Career.PendingCatch.fish.kind+" "+_c.Career.PendingCatch.fish.grams+"g"+(_c.Career.PendingCatch.measured?" [MEASURED]":""):_c.Anchored?"FISHING: "+_c.Session.Phase:"HELM: "+(_c.Speed*3.6f).ToString("0")+" km/h";
             _status.text="TIDE & FIN  /  "+state+"\nCOINS "+_c.Career.Coins+"    HOLD "+_c.Career.Count+"/"+_c.Career.Capacity+"    LINE "+_c.Career.LineLevel+"\nORDER "+(_c.Career.OrdersCompleted+1)+(_c.Career.OrderMarked?" [MARKED]":"")+(_c.Career.OrderReady?" READY":"")+"\n";
             for(int i=0;i<_c.Career.CurrentOrder.LineCount;i++){var line=_c.Career.CurrentOrder.Line(i);_status.text+=line.Kind+" x"+line.Count+(line.Rare?" pearl":"")+"  ";}
             _status.text+="\n"+(_c.Session.Phase==CatchPhase.Fighting?(_c.Session.Beat+" / LINE "+(_c.Session.Tension*100).ToString("0")+"%  "+(_c.Session.Beat==FishBeat.Rest?"REEL":"EASE / RELEASE")):"NET: COVER, LIFT; BOX: GENTLE TILT");
-            _status.text+="\nBEACON: "+(_c.Career.Expedition.Has(FishingExpedition.TargetCaught)?"EVIDENCE RECORDED":_c.Career.Expedition.Has(FishingExpedition.BeaconRepaired)?"NORTH UNLOCKED":"SHORE ROUTE (DESKTOP)");
+            _status.text+="\nBEACON: "+(_c.Career.Expedition.Has(FishingExpedition.TargetCaught)?"EVIDENCE RECORDED":_c.Career.Expedition.Has(FishingExpedition.BeaconRepaired)?"NORTH UNLOCKED":"SHORE: X BOARD / B NOTEBOOK");
             var delta=_c.NavigationPosition-_c.Player.transform.position;
             float bearing=Mathf.DeltaAngle(_c.Player.transform.eulerAngles.y,Mathf.Atan2(delta.x,delta.z)*Mathf.Rad2Deg);
             string turn=Mathf.Abs(bearing)<12?"AHEAD":(bearing<0?"LEFT ":"RIGHT ")+Mathf.Abs(bearing).ToString("0")+" deg";
-            _status.text+="\n"+(_c.NavigationTarget==0?"HARBOR":"FISH #"+_c.NavigationTarget)+" "+FishingPrototype.FlatDistance(_c.ExplorerPosition,_c.NavigationPosition).ToString("0")+"m  "+turn;
+            _status.text+="\n"+_c.NavigationName+" "+FishingPrototype.FlatDistance(_c.ExplorerPosition,_c.NavigationPosition).ToString("0")+"m  "+turn;
         }
         private static string Name(FishingDockAction a)
         {

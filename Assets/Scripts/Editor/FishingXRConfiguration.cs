@@ -49,7 +49,7 @@ namespace BoatAttack.EditorTools
                 var feature=FeatureHelpers.GetFeatureWithIdForBuildTarget(BuildTargetGroup.Android,id);
                 if(feature==null)throw new Exception("Missing pinned SDK feature: "+id);feature.enabled=true;EditorUtility.SetDirty(feature);
             }
-            xr.renderMode=OpenXRSettings.RenderMode.MultiPass;EditorUtility.SetDirty(xr);
+            xr.renderMode=OpenXRSettings.RenderMode.SinglePassInstanced;EditorUtility.SetDirty(xr);
             PlayerSettings.bundleVersion=FishingPrototype.Version;
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android,ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures=AndroidArchitecture.ARM64;

@@ -19,6 +19,7 @@ Shader "BoatAttack/FishingPalette"
             #pragma fragment Frag
             #pragma multi_compile_instancing
             #pragma multi_compile_fog
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             CBUFFER_START(UnityPerMaterial)
@@ -50,11 +51,19 @@ Shader "BoatAttack/FishingPalette"
                 half diffuse=saturate(dot(normal,light.direction))*.7h+.22h;
                 half3 ambient=SampleSH(normal);
                 half3 color=input.color.rgb*(light.color*diffuse+ambient*.35h);
+                #if defined(_ADDITIONAL_LIGHTS) || defined(_ADDITIONAL_LIGHTS_VERTEX)
+                uint count=GetAdditionalLightsCount();
+                for(uint i=0u;i<count;i++)
+                {
+                    Light local=GetAdditionalLight(i,input.positionWS);
+                    color+=input.color.rgb*local.color*saturate(dot(normal,local.direction))*local.distanceAttenuation;
+                }
+                #endif
                 // Optional stylised gloss and rim; both default to zero so existing palettes are unchanged.
                 half3 view=GetWorldSpaceNormalizeViewDir(input.positionWS);
                 half3 halfway=normalize(light.direction+view);
                 color+=light.color*pow(saturate(dot(normal,halfway)),48.0h)*_Gloss;
-                color+=(ambient*.6h+.25h)*pow(1.0h-saturate(dot(normal,view)),3.0h)*_Rim;
+                color+=(ambient*.6h+light.color*.12h)*pow(1.0h-saturate(dot(normal,view)),3.0h)*_Rim;
                 color=lerp(color,input.color.rgb,_Unlit);
                 return half4(MixFog(color,input.fog),1);
             }
