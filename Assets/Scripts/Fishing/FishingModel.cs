@@ -477,7 +477,7 @@ namespace BoatAttack.Fishing
             }
             if (data.version >= 9)
             {
-                if (!FishingCalendar.TryRestore(data.calendar, out var calendar) || !FishingHunting.TryRestore(data.hunting, out var hunting)) return false;
+                if (!FishingCalendar.TryRestore(data.calendar, out var calendar) || !FishingHunting.TryRestore(data.hunting, out var hunting, calendar.TotalMinutes)) return false;
                 foreach (int day in data.hunting.availableDays) if (day > calendar.Day + 1) return false;
                 result.Calendar = calendar; result.Hunting = hunting;
             }

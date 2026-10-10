@@ -6,6 +6,7 @@ namespace BoatAttack.Fishing
     {
         private bool _ready,_held;
         private float _age,_peak;
+        public float Power { get; private set; } = .55f;
         public void Reset(){_ready=_held=false;_age=_peak=0;}
         public bool Step(bool available,bool trigger,float forwardSpeed,float dt)
         {
@@ -19,6 +20,7 @@ namespace BoatAttack.Fishing
                 _age+=dt;_peak=Math.Max(_peak,forwardSpeed);return false;
             }
             bool cast=_held && _age>=.05f && _age<2.5f && _peak>=1.15f;
+            if(cast)Power=.35f+Math.Max(0,Math.Min(1,(_peak-1.15f)/2))* .65f;
             _held=false;_peak=_age=0;return cast;
         }
     }

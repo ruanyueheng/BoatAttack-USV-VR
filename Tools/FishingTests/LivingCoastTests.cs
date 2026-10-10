@@ -16,6 +16,9 @@ internal static class LivingCoastTests
         check(clock.Night && clock.Daylight<.001f,"Night really has a dark environment factor");
         clock.RestUntilMorning();check(clock.Day==1 && clock.Hour==6,"Sleep crosses midnight to 06:00");
         check(!FishingCalendar.TryRestore(new CalendarData{minute=double.NaN},out _) && !FishingCalendar.TryRestore(new CalendarData{day=-1},out _),"Bad calendar save rejected");
+        clock=new FishingCalendar();double start=clock.TotalMinutes;
+        for(int i=0;i<3600;i++)clock.Tick(.25f,false);
+        check(clock.Day==1 && Math.Abs(clock.TotalMinutes-start-1440)<.0001,"One full day takes exactly 15 active real minutes");
         var bits=new HashSet<int>();
         for(int i=0;i<FishingSpecies.Count;i++)
         {
@@ -34,15 +37,27 @@ internal static class LivingCoastTests
         gesture.Step(true,false,0,.02f);
         for(int i=0;i<5;i++)gesture.Step(true,true,1.5f,.02f);
         check(gesture.Step(true,false,.2f,.02f) && !gesture.Step(true,false,2,.02f),"Forward swing casts once on release");
+        float gentlePower=gesture.Power;
+        for(int i=0;i<5;i++)gesture.Step(true,true,3.5f,.02f);
+        check(gesture.Step(true,false,0,.02f) && gesture.Power>gentlePower && gesture.Power<=1,"A stronger controller swing increases bounded cast power");
         for(int i=0;i<5;i++)gesture.Step(true,true,.4f,.02f);
         check(!gesture.Step(true,false,0,.02f),"Slow movements do not cast accidentally");
         gesture.Step(true,true,2,.02f);gesture.Step(false,true,0,.02f);
         check(!gesture.Step(true,false,0,.02f),"Tracking loss cancels an armed cast");
         var career=new FishingCareer();var bag=career.Backpack;
         bag.TryAdd(FieldItem.HuntingSpear,1);bag.Select(1);
-        check(career.Hunting.Harvest(bag,0,LandAnimalKind.Rabbit,0) && bag.Count(FieldItem.RawMeat)==2,"Successful hunt commits meat and return date together");
-        check(!career.Hunting.Harvest(bag,0,LandAnimalKind.Rabbit,0) && !career.Hunting.Harvest(bag,1,LandAnimalKind.Tortoise,0),"No repeat hunt or protected animal reward");
-        check(FishingCareer.TryRestore(career.Snapshot(),out var restored) && !restored.Hunting.Available(0,0) && restored.Hunting.Available(0,1),"Hunting dates survive reload");
+        double now=career.Calendar.TotalMinutes;
+        check(career.Hunting.Harvest(bag,0,LandAnimalKind.Rabbit,now) && bag.Count(FieldItem.RawMeat)==2,"Successful hunt commits meat and return time together");
+        check(!career.Hunting.Harvest(bag,0,LandAnimalKind.Rabbit,now) && !career.Hunting.Harvest(bag,1,LandAnimalKind.Tortoise,now),"No repeat hunt or protected animal reward");
+        check(FishingCareer.TryRestore(career.Snapshot(),out var restored) && !restored.Hunting.Available(0,now+479.99) && restored.Hunting.Available(0,now+480),"Five-minute recovery survives reload and has an exact boundary");
+        double pausedTime=restored.Calendar.TotalMinutes;restored.Calendar.Tick(300,true);
+        check(restored.Calendar.TotalMinutes==pausedTime && !restored.Hunting.Available(0,restored.Calendar.TotalMinutes),"Pausing cannot advance animal recovery");
+        var legacy=career.Snapshot();legacy.hunting.availableMinutes=null;
+        check(FishingCareer.TryRestore(legacy,out restored) && !restored.Hunting.Available(0,now) && restored.Hunting.Available(0,now+480),"v14 return dates migrate to bounded recovery without free meat");
+        var invalid=career.Snapshot();invalid.hunting.availableMinutes[0]=double.NaN;
+        check(!FishingCareer.TryRestore(invalid,out _),"Invalid saved recovery is rejected");
+        var midnight=new FishingHunting();midnight.Harvest(bag,2,LandAnimalKind.Fox,1400);
+        check(!midnight.Available(2,1440) && midnight.Available(2,1880) && FishingHunting.TryRestore(midnight.Snapshot(),out _,1400),"Recovery spans midnight without premature respawn");
         var old=career.Snapshot();old.version=8;old.calendar=null;old.hunting=null;
         check(FishingCareer.TryRestore(old,out restored) && restored.Calendar.Hour==8 && restored.Coins==career.Coins,"v8 save migrates without losing progress");
         var full=new FishingBackpack(false);full.TryAdd(FieldItem.HuntingSpear,1);
@@ -52,5 +67,14 @@ internal static class LivingCoastTests
         check(career.Workshop.Start(bag,furnace,"roast-meat",2,FieldItem.Coal),"Furnace consumes raw meat plus fuel");
         for(int i=0;i<16;i++)career.Workshop.Tick(1);
         check(career.Workshop.Collect(bag,furnace) && bag.Count(FieldItem.CookedMeat)==2 && !career.Workshop.Collect(bag,furnace),"Cooking completion is collected exactly once");
+        var motion=new FishingCastMotion();motion.Prepare();
+        for(int i=0;i<12;i++)motion.Tick(.1f);
+        check(motion.Charge>.99f && motion.RodPitch<-70,"Held input winds the rod back");
+        motion.Launch(motion.Release());check(motion.Casting && motion.Power>.99f && motion.FlightProgress==0,"Release starts full-power flight");
+        motion.Tick(float.NaN);check(motion.FlightProgress==0,"Invalid motion time cannot advance flight");
+        for(int i=0;i<13;i++)motion.Tick(.1f);
+        check(!motion.Casting && motion.FlightProgress==1,"Bite clock may run only after landing");
+        motion.Prepare();motion.CancelPreparation();check(!motion.Preparing,"Cancelled preparation does not launch");
+        motion.Reset();motion.Prepare();motion.Launch(motion.Release());check(motion.Power<.4f,"A short tap keeps an accessible near cast");
     }
 }

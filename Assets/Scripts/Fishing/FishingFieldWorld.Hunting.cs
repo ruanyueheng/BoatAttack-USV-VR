@@ -44,12 +44,12 @@ namespace BoatAttack.Fishing
                 if(Vector3.Distance(tip,target)<.30f && Vector3.Distance(tip,_c.ExplorerPosition)<2.1f
                     && _c.Shore.ClearSight(_held.TransformPoint(SpearPalm),target))
                 {
-                    bool ok=_c.Career.Hunting.Harvest(_c.Career.Backpack,_huntTarget.Id,_huntTarget.Kind,_c.Career.Calendar.Day);
+                    bool ok=_c.Career.Hunting.Harvest(_c.Career.Backpack,_huntTarget.Id,_huntTarget.Kind,_c.Career.Calendar.TotalMinutes);
                     if(ok)
                     {
                         _huntTarget.Root.gameObject.SetActive(false);_c.Save();
                         _c.Effects?.Burst(target,new Color(.91f,.73f,.44f));
-                        _c.Notice("获得生兽肉 · 熔炉加入燃料，选择炭烤兽肉；动物将在次日恢复。",5);
+                        _c.Notice("获得生兽肉 · 熔炉可烤肉；动物在继续游玩 5 分钟后恢复，休息也会推进恢复。",5);
                         var device=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
                         if(tracked && device.TryGetHapticCapabilities(out var h) && h.supportsImpulse)device.SendHapticImpulse(0,.35f,.06f);
                     }

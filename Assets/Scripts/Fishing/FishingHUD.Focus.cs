@@ -5,7 +5,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingHUD
     {
-        private void Glass(Rect r) => Card(r, Mint);
+        private void Glass(Rect r) => Rounded(r,new Color(.025f,.065f,.08f,.78f),6);
 
         private void DrawCompactHeading()
         {
@@ -33,10 +33,16 @@ namespace BoatAttack.Fishing
         private void DrawCompactToolbar()
         {
             var r = Layout.Toolbar;
-            if (Button(new Rect(r.x, r.y, 76, r.height), "J 日志", true, false, 14)) Controller.ToggleJournal();
-            if (Button(new Rect(r.x + 86, r.y, 76, r.height), "C 视角", true, false, 14)) Controller.ToggleView();
-            if (Button(new Rect(r.x + 172, r.y, 76, r.height), Controller.ShowDetails ? "H 收起" : "H 详情", true, Controller.ShowDetails, 14)) Controller.ToggleDetails();
-            if (Button(new Rect(r.x + 258, r.y, 78, r.height), "Esc 设置", true, false, 14)) Controller.TogglePause();
+            Glass(r);
+            if (TextButton(new Rect(r.x, r.y, 76, r.height), "J 日志")) Controller.ToggleJournal();
+            if (TextButton(new Rect(r.x + 86, r.y, 76, r.height), "C 视角")) Controller.ToggleView();
+            if (TextButton(new Rect(r.x + 172, r.y, 76, r.height), Controller.ShowDetails ? "H 收起" : "H 详情")) Controller.ToggleDetails();
+            if (TextButton(new Rect(r.x + 258, r.y, 78, r.height), "Esc 设置")) Controller.TogglePause();
+        }
+        private bool TextButton(Rect r,string text)
+        {
+            Label(r,text,14,r.Contains(Event.current.mousePosition)?Mint:Muted,false,TextAnchor.MiddleCenter);
+            return GUI.Button(r,GUIContent.none,GUIStyle.none);
         }
 
         private void DrawFocusedAction()
@@ -77,17 +83,20 @@ namespace BoatAttack.Fishing
             {
                 switch (s.Phase)
                 {
-                    case CatchPhase.Waiting: title = "等待咬钩…"; help = "留意浮标与声音，出现咬钩提示再点击左键"; break;
+                    case CatchPhase.Waiting: title = c.CastMotion.Casting?"浮标飞向海面":"等待咬钩…"; help = c.CastMotion.Casting?"鱼线正在放出 · 落水后开始等待":"留意浮标与声音，出现咬钩提示再点击左键"; break;
                     case CatchPhase.Bite: title = (s.Species.Legendary ? "金帆旗鱼！" : "咬钩了！") + "点击左键提竿"; help = "剩余 " + s.Remaining.ToString("0.0") + " 秒"; accent = Gold; break;
                     case CatchPhase.Fighting: title = FightTitle(s); help = ""; accent = s.Beat == FishBeat.Leap || s.Tension > .78f ? Danger : Mint; break;
                     case CatchPhase.Landing: title = "E 辅助抄网 · 套住鱼后轻抬"; help = "XR：左握键拿网；网口覆盖鱼体，保持片刻再轻抬"; break;
                     case CatchPhase.Caught: title = "捕获成功 · 点击左键再抛一竿"; help = "B 换饵 · Q 起航 · J 查看图鉴与纪录"; break;
                     case CatchPhase.Escaped: title = "鱼逃走了 · 点击左键重试"; help = "B 换饵 · Q 起航"; break;
-                    default: title = "点击左键抛竿"; help = "B 换饵 · 咬钩时再点击提竿 · Q 起航"; break;
+                    default: title = c.CastMotion.Preparing?"松开左键甩竿 · 蓄力 "+(c.CastMotion.Charge*100).ToString("0")+"%":"按住左键后摆，松开甩竿"; help = "轻点近抛 · 按住远抛 · B 换饵 · Q 起航"; break;
                 }
             }
+            if(c.CastMotion.Preparing)
+            {title="松开左键甩竿 · 蓄力 "+(c.CastMotion.Charge*100).ToString("0")+"%";help="轻点近抛 · 按住远抛 · B 换饵 · Q 起航";}
             Rounded(new Rect(r.x + 8, r.y + 15, 3, r.height - 30), accent, 1.5f);
             Label(r.x + 20, r.y + 12, r.width - 40, 28, title, 20, accent, true);
+            if(c.CastMotion.Preparing)Bar(new Rect(r.x+20,r.yMax-5,r.width-40,2),c.CastMotion.Charge,Mint);
             if (c.Anchored && s.Phase == CatchPhase.Fighting) DrawCompactFight(r, s, accent);
             else if (c.Anchored && s.Phase == CatchPhase.Landing)
             {
@@ -139,6 +148,7 @@ namespace BoatAttack.Fishing
             string text = NoticeText;
             if (text.Length == 0) return;
             var r = Layout.Notice;
+            if(c.Acceptance!=null)r.y=102;
             Glass(r);
             Label(new Rect(r.x + 14, r.y + 3, r.width - 28, r.height - 6), text, 14, warning ? Danger : Muted, false, TextAnchor.MiddleCenter);
         }

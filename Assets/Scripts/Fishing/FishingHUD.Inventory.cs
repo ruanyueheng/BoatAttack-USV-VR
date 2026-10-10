@@ -14,7 +14,7 @@ namespace BoatAttack.Fishing
             Label(new Rect(r.x+16,r.y+9,r.width-32,r.height-18),text,17,Controller.SaveWarning.Length>0?Danger:Mint);
         }
         public static Rect BackpackPanel => new Rect(288,130,1024,646);
-        public static Rect HotbarRect(float height)=>new Rect(486,height-82,628,68);
+        public static Rect HotbarRect(float height)=>new Rect(556,height-70,488,52);
         private static Rect BagSlot(int slot)
         {
             int n=slot<9?slot:slot-9;
@@ -22,11 +22,11 @@ namespace BoatAttack.Fishing
         }
         private void DrawHotbar()
         {
-            var c=Controller;var r=HotbarRect(_height);Glass(new Rect(r.x-8,r.y-29,r.width+16,r.height+36));
-            Label(new Rect(r.x,r.y-25,r.width,22),"I 背包  ·  1–9 / 滚轮选择  ·  F 使用："+FishingBackpack.Name(c.Career.Backpack.Equipped),14,Muted,false,TextAnchor.MiddleCenter);
+            var c=Controller;var r=HotbarRect(_height);
+            Label(new Rect(r.x,r.y-23,r.width,20),"I 背包   ·   "+FishingBackpack.Name(c.Career.Backpack.Equipped)+"   ·   F 使用",13,Muted,false,TextAnchor.MiddleCenter);
             for(int i=0;i<9;i++)
             {
-                var slot=new Rect(r.x+7+i*69,r.y+2,62,62);
+                var slot=new Rect(r.x+4+i*54,r.y+2,48,48);
                 DrawFieldSlot(slot,i,c.Career.Backpack.Selected==i,false);
                 if(GUI.Button(slot,GUIContent.none,GUIStyle.none))c.SelectFieldSlot(i);
             }
@@ -89,9 +89,9 @@ namespace BoatAttack.Fishing
             if(index<9)Label(r.x+4,r.y+2,18,16,(index+1).ToString(),11,equipped?Gold:Faint,true);
             if(stack.count>0)
             {
-                FieldIcon(new Rect(r.x+19,r.y+8,27,30),stack.item);
+                FieldIcon(new Rect(r.center.x-13,r.y+8,26,r.height<60?23:30),stack.item);
                 Label(new Rect(r.x+2,r.yMax-21,r.width-4,20),FishingBackpack.Name(stack.item),11,Color.white,false,TextAnchor.MiddleCenter);
-                if(stack.count>1)Label(new Rect(r.x+30,r.y+23,r.width-33,20),stack.count.ToString(),13,Gold,true,TextAnchor.MiddleRight);
+                if(stack.count>1)Label(new Rect(r.x+2,r.y+18,r.width-5,20),stack.count.ToString(),12,Gold,true,TextAnchor.MiddleRight);
             }
         }
         private void FieldIcon(Rect r,FieldItem item)

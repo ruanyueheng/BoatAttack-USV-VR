@@ -17,6 +17,9 @@ namespace BoatAttack.Fishing
             public Transform transform; public MarineKind kind; public Vector3 home; public float phase, radius;
         }
         private readonly List<Creature> _creatures=new List<Creature>();
+        private sealed class ShoalFish { public Transform root; public FishKind kind; public int zone; public float phase; }
+        private readonly List<ShoalFish> _shoal=new List<ShoalFish>();
+        public int ShoalFishCount=>_shoal.Count;
         private readonly List<Object> _owned=new List<Object>();
         private readonly List<GameObject> _reefs=new List<GameObject>();
         private readonly RaycastHit[] _hits=new RaycastHit[24];
@@ -47,6 +50,16 @@ namespace BoatAttack.Fishing
                 }
             }
             for(int i=0;i<3;i++)BuildReef(i);
+            for(int kind=4;kind<FishingSpecies.Count;kind++)
+            {
+                var species=(FishKind)kind;
+                for(int i=0;i<3;i++)
+                {
+                    int zone=species==FishKind.Mackerel || species==FishKind.Tuna?1:species==FishKind.Grouper || species==FishKind.Lionfish?2:species==FishKind.Sardine || species==FishKind.Lanternfish?i:0;
+                    var fish=FishingArt.Fish(transform,_owned,Controller.PaletteShader,species);
+                    _shoal.Add(new ShoalFish{root=fish.transform,kind=species,zone=zone,phase=kind*.7f+i*.4f});
+                }
+            }
             Debug.Log("[FISHING] Living bay: "+CreatureCount+" wildlife renderers, 3 habitat meshes; "+MeshVertices+" unique vertices.");
         }
         private GameObject MeshObject(string name,Mesh mesh)
@@ -119,6 +132,16 @@ namespace BoatAttack.Fishing
                 // The turtle rides low so only its shell breaks the surface.
                 else {pos.y=c.kind==MarineKind.School?-.06f:c.kind==MarineKind.Turtle?-.04f:.04f;roll=Mathf.Sin(a*4)*(c.kind==MarineKind.Ray?9:4);}
                 c.transform.SetPositionAndRotation(pos,Quaternion.Euler(pitch,-a*Mathf.Rad2Deg,roll));
+            }
+            foreach(var fish in _shoal)
+            {
+                bool visible=FishingSpecies.InHabitat(fish.kind,fish.zone,Controller.Career.Calendar,climate.Current)
+                    && (Controller.ExplorerPosition-Controller.fishingSpots[fish.zone]).sqrMagnitude<65*65;
+                fish.root.gameObject.SetActive(visible);if(!visible)continue;
+                fish.phase=Mathf.Repeat(fish.phase+Time.deltaTime*(fish.kind==FishKind.Tuna?.32f:.17f),Mathf.PI*2);
+                float a=fish.phase,r=6+(int)fish.kind*.18f;
+                var point=Controller.fishingSpots[fish.zone]+new Vector3(Mathf.Cos(a)*r,-.09f+Mathf.Sin(a*3)*.02f,Mathf.Sin(a)*r);
+                fish.root.SetPositionAndRotation(point,Quaternion.LookRotation(new Vector3(-Mathf.Sin(a),0,Mathf.Cos(a))));
             }
             if(Time.time<_nextSense)return;_nextSense=Time.time+.25f;Sense();
         }
