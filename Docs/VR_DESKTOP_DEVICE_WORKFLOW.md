@@ -19,7 +19,7 @@
 当前 ProjectVersion 仍是原版 2020.3.23f1，manifest 已撤回本轮的猜测式修改并恢复到 HEAD：URP 10.7.0。
 不要把配置文件存在、SDK 已复制或纯 C# 测试通过误解为 Unity 已成功迁移。
 
-本轮尝试复制的 PICO 6.1.1 SDK 和单独抽出的样例 prefab 已移到项目外 IntegrationStaging。
+本轮尝试复制的 PICO 6.1.1 SDK 和单独抽出的样例 prefab 已移到项目外 IntegrationStaging。（2026-10-09 整理后位于作业目录 `References/IntegrationStaging`，内容保留。）
 原因：本地 6.1 硬件要求文档列 PICO Space Pro / OS 6；不能仅凭包名断言 PICO 4 Ultra 兼容。
 单独复制示例 prefab 也会遗漏 Starter Assets 等依赖，不采用该方式创建正式 rig。
 后续按 PICO 4 Ultra 的实际固件版本选官方支持的 SDK，通过 Unity Package Manager / PICO MCP 安装并校验。

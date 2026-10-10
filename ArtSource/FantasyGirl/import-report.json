@@ -1,0 +1,18 @@
+{
+  "source_triangles": 997058,
+  "height_metres": 1.72,
+  "rigged": false,
+  "pose": "Static arms relaxed; no skeleton/animation fabricated",
+  "lods": [
+    {
+      "name": "FantasyGirl_LOD0",
+      "triangles": 69999,
+      "vertices": 34940
+    },
+    {
+      "name": "FantasyGirl_LOD1",
+      "triangles": 22000,
+      "vertices": 10940
+    }
+  ]
+}

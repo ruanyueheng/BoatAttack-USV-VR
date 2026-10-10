@@ -11,6 +11,13 @@ namespace BoatAttack.Fishing
         public bool FirstPerson { get; private set; } = true;
         public bool OwnsCamera => !XRSettings.isDeviceActive;
         public bool IsLooking { get; private set; }
+        public const float DesktopFieldOfView=68f;
+        public const float BinocularFieldOfView=38f;
+        public const float BinocularTransitionSeconds=.28f;
+        public float BinocularBlend { get; private set; }
+        public bool OpticalView=>OwnsCamera && FirstPerson && BinocularBlend>=.88f;
+        public float OpticalOpacity=>OwnsCamera && FirstPerson?Mathf.SmoothStep(0,1,Mathf.InverseLerp(.68f,.9f,BinocularBlend)):0;
+        private int _binocularFrame=-1;
         public Vector3 StableBoatOrigin=>new Vector3(Controller.Player.transform.position.x,_waterY,Controller.Player.transform.position.z);
         private bool _wasFishingSeat, _wasFirstPerson = true, _reset = true;
         private float _shoreYaw;
@@ -36,7 +43,7 @@ namespace BoatAttack.Fishing
             set { ReleaseCursor(); _pointer=value??new FishingSystemCursor(); }
         }
         private void ReleaseCursor() { if(!_cursorOwned)return; _pointer.LockState=CursorLockMode.None;_pointer.Visible=true;_cursorOwned=false; }
-        private void OnDisable() { ReleaseCursor(); }
+        private void OnDisable() { ReleaseCursor();BinocularBlend=0; }
         public void ApplyShoreLookDelta(Vector2 delta)
         {
             if(Controller==null || !Controller.Ashore || Controller.Paused || Controller.ShopBlocksGameplay || !OwnsCamera || Controller.Expedition.Aligning)return;
@@ -45,12 +52,31 @@ namespace BoatAttack.Fishing
             _lookPitch=Mathf.Clamp(_lookPitch-delta.y*.12f,-65,65);
         }
 
+        private void UpdateBinocularView()
+        {
+            var c=Controller;
+            bool available=OwnsCamera && c!=null && c.Ashore && c.Career!=null
+                && c.Career.Backpack.Equipped==FieldItem.Binoculars && !c.Paused && !c.InventoryOpen && !c.ShopBlocksGameplay;
+            if(!available)
+            {
+                bool hadOptics=BinocularBlend>0;
+                BinocularBlend=0;_binocularFrame=Time.frameCount;
+                // 模态会提前返回相机更新；取消光学状态时也必须立即归还桌面投影。
+                if(hadOptics && OwnsCamera && c!=null && c.viewCamera!=null)c.viewCamera.fieldOfView=FirstPerson?DesktopFieldOfView:58;
+                return;
+            }
+            if(_binocularFrame==Time.frameCount)return;
+            _binocularFrame=Time.frameCount;
+            BinocularBlend=Mathf.MoveTowards(BinocularBlend,c.BinocularsRaised?1:0,Time.deltaTime/BinocularTransitionSeconds);
+        }
+
         public void ApplyView() => ApplyView(Application.isFocused, Controller != null && Controller.Automated);
 
         /// <summary>Environment boundary used by isolated input tests. Mouse/keyboard still pass through Input System; Pointer isolates the OS lock boundary.</summary>
         public void ApplyView(bool focused, bool automated)
         {
             var c = Controller;
+            UpdateBinocularView();
             if (c == null || c.Player == null || c.viewCamera == null || !OwnsCamera) { ReleaseCursor(); return; }
             if (c.Paused || c.InventoryOpen || c.ShopBlocksGameplay) { ResetInput(); return; }
             if(c.Ashore){ApplyShoreView(focused,automated);return;}
@@ -85,7 +111,7 @@ namespace BoatAttack.Fishing
                 c.viewCamera.nearClipPlane = .04f;
                 float pitch = Mathf.Clamp((fishingSeat ? 25f : 0f) + _lookPitch, -45f, 70f);
                 c.viewCamera.transform.rotation = yaw * Quaternion.Euler(pitch, (fishingSeat ? FishingPrototype.FishingSeatYaw : 0f) + _lookYaw, 0f);
-                c.viewCamera.fieldOfView = 72f;
+                c.viewCamera.fieldOfView = DesktopFieldOfView;
             }
             else
             {
@@ -132,7 +158,9 @@ namespace BoatAttack.Fishing
             c.viewCamera.transform.position=FirstPerson?eye:ConstrainToVisibleSegment(eye,eye+rotation*new Vector3(0,.65f,-4.2f),c.Player.transform);
             c.viewCamera.transform.rotation=FirstPerson?rotation:Quaternion.LookRotation(eye-Vector3.up*.45f-c.viewCamera.transform.position,Vector3.up);
             c.viewCamera.nearClipPlane=.04f;
-            c.viewCamera.fieldOfView=c.BinocularsRaised?38:FirstPerson?72:58;
+            // Unity 的 fieldOfView 是垂直角；只放大第一人称世界，不放大第三人称或实体双手。
+            float zoom=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.72f,1,BinocularBlend));
+            c.viewCamera.fieldOfView=FirstPerson?Mathf.Lerp(DesktopFieldOfView,BinocularFieldOfView,zoom):58;
             _reset=true; // Boarding must not interpolate the boat camera from an inland position.
         }
         private Vector3 ConstrainToVisibleSegment(Vector3 pivot,Vector3 position,Transform boat)

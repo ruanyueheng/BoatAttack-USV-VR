@@ -288,7 +288,7 @@ namespace BoatAttack.Fishing
             var shoulder=Shore.Character.ShoulderPosition(false);
             var releasePoint=shoulder+(frame*new Vector3(.08f,-.10f,.3f)).normalized*Mathf.Max(.05f,Shore.Character.ArmReach(false)-.06f);
             var root=store?FishBox:Player.transform;
-            var target=store?FishingContactGeometry.ClosestPoint(FishBox,shoulder):releasePoint;
+            var target=store?CatchRig.ReceivingPoint(shoulder):releasePoint;
             bool began=BeginWorldAction(store?FishingActionKind.Store:FishingActionKind.Release,"fish:"+id,root,target,
                 store?Quaternion.Euler(0,Player.transform.eulerAngles.y,0):frame,()=>HasPendingCatch && Career.PendingCatch.fish.id==id && ResolveCatch(store),true);
             if(began)CatchRig.PrepareHandAction();return began;

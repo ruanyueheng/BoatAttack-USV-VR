@@ -11,7 +11,6 @@ namespace BoatAttack.Fishing
         private Transform _model,_body,_leftThigh,_rightThigh,_leftShin,_rightShin,_leftAnkle,_rightAnkle,_leftFoot,_rightFoot;
         private Renderer[] _renderers;
         private readonly Dictionary<string,string> _clips=new Dictionary<string,string>();
-        private bool _hidden;
         private readonly Dictionary<Transform,Quaternion> _rest=new Dictionary<Transform,Quaternion>();
         private readonly Dictionary<Transform,Vector3> _restPositions=new Dictionary<Transform,Vector3>();
         public bool Ready=>_model!=null && _clips.Count>=3 && HandRigReady;
@@ -52,8 +51,8 @@ namespace BoatAttack.Fishing
             if(!first)
             {
                 _eyeHeight=Mathf.Clamp(hasEyes?eyes.center.y:Mathf.Lerp(bounds.min.y,bounds.max.y,.60f),1.35f,1.70f);
-                // 桌面观察原点位于眼睛与头部体积中心之间，避免贴在角膜表面让短臂道具穿入近裁剪面。
-                _eyeForward=Mathf.Clamp(hasEyes?Mathf.Lerp(eyes.center.z,bounds.center.z,.5f):bounds.center.z,-.05f,.22f);
+                // 眼位位于实际双眼后方 2 cm，而不是头颈中心；仍处于角色胶囊内部。
+                _eyeForward=Mathf.Clamp(hasEyes?eyes.center.z-.02f:bounds.center.z,-.05f,.22f);
             }
         }
         public void Build()
@@ -106,7 +105,7 @@ namespace BoatAttack.Fishing
                 if(bone==null)throw new InvalidOperationException("Beach Character stance rig incomplete");
                 _rest[bone]=bone.localRotation;_restPositions[bone]=bone.localPosition;
             }
-            BuildArms();CalibrateEye();
+            BuildArms();CalibrateEye();BuildFirstPersonSkin();
             _animation.Play(_clips["Idle"]);
         }
         private static void CalibrateAnkle(Transform thigh,Transform shin,Transform ankle)
@@ -118,9 +117,7 @@ namespace BoatAttack.Fishing
         public void Pose(bool ashore,float speed,bool crouched,bool grounded,bool hidden,bool paused)
         {
             if(_model==null)return;
-            // Keep the same body/arms in FP, TP and XR. Never disable or rescale Head:
-            // this source has a separate head renderer, so no skeleton/bind path surgery is needed.
-            if(_hidden!=hidden){HeadSkin.shadowCastingMode=hidden?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;_hidden=hidden;}
+            SetBodyPresentation(hidden);
             string clip=_clips[ashore && grounded && speed>.1f?(speed>3?"Run":"Walk"):"Idle"];
             if(!_animation.IsPlaying(clip))_animation.CrossFade(clip,.15f);
             foreach(AnimationState state in _animation)state.speed=paused?0:1;

@@ -113,6 +113,7 @@ namespace BoatAttack.EditorTools
             try
             {
                 if(!File.Exists(ScenePath))throw new Exception("Generate the fishing scene first.");
+                FishingCashierValidation.ValidateAssets();
                 FishingScriptBinding.ValidateScene();
                 PlayerSettings.bundleVersion=FishingPrototype.Version;
                 AddressableAssetSettings.BuildPlayerContent(out var content);
