@@ -125,6 +125,10 @@ namespace BoatAttack.EditorTools
             {
                 var run=FishingLivingCoastValidation.Checks(c);while(run.MoveNext())yield return null;
             }
+            else if(suite=="V016")
+            {
+                var run=FishingV016Validation.Checks(c);while(run.MoveNext())yield return null;
+            }
             else if(suite=="MAP")
             {
                 var run=Map(c);while(run.MoveNext())yield return null;

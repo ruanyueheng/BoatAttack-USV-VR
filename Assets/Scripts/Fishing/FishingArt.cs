@@ -49,6 +49,9 @@ namespace BoatAttack.Fishing
             go.transform.position = position;
             go.transform.localScale = Vector3.one * scale;
             go.GetComponent<MeshFilter>().sharedMesh = Cached(owned, "Fishing v0.4 navigation buoy", FishingMeshBuilder.Buoy);
+            var collider=go.AddComponent<CapsuleCollider>();
+            var bounds=go.GetComponent<MeshFilter>().sharedMesh.bounds;
+            collider.center=bounds.center;collider.radius=Mathf.Max(bounds.extents.x,bounds.extents.z);collider.height=bounds.size.y;
             var renderer = go.GetComponent<MeshRenderer>();
             renderer.sharedMaterial = Palette(owned, palette, "Fishing v0.4 buoy paint", .3f, .12f);
             renderer.shadowCastingMode = ShadowCastingMode.Off;

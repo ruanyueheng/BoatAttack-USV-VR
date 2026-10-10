@@ -13,9 +13,9 @@ namespace BoatAttack.Fishing
         public Transform FishBox=>_box.transform;
         public Vector3 BoatPoint(Vector3 point)=>Player.transform.position+Quaternion.Euler(0,Player.transform.eulerAngles.y,0)*point;
         public Vector3 LandingTarget=>LandingTargetForMode(UnityEngine.XR.XRSettings.isDeviceActive);
-        public Vector3 LandingTargetForMode(bool xr)=>BoatPoint(new Vector3(xr?-1.65f:1.8f,1.05f,.5f));
-        public Vector3 NetTray=>BoatPoint(new Vector3(.65f,1.15f,.45f));
-        internal Vector3 StowedNetPosition=>Vector3.Lerp(new Vector3(1.15f,.65f,-.7f),new Vector3(1.15f,.9f,-.4f),_netDeployment);
+        public Vector3 LandingTargetForMode(bool xr)=>BoatPoint(new Vector3(xr?-1.15f:1.5f,.93f,.55f));
+        public Vector3 NetTray=>BoatPoint(new Vector3(.55f,.99f,-.28f));
+        internal Vector3 StowedNetPosition=>new Vector3(-.8f,.70f,-.55f);
         internal Quaternion StowedNetRotation=>Quaternion.Euler(0,Mathf.Lerp(85f,0f,_netDeployment),-Mathf.Sin(_netMotion*Mathf.PI)*35f);
         public bool BeginNetCatch()
         {

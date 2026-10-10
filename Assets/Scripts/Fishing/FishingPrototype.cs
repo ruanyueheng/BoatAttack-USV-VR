@@ -24,7 +24,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.15.0";
+        public const string Version = "0.16.0";
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
         private Vector3 _castOrigin;
         private bool _castSplash;
@@ -133,7 +133,9 @@ namespace BoatAttack.Fishing
             if (viewCamera == null) throw new InvalidOperationException("Fishing scene camera is missing; regenerate the prototype scene.");
             foreach (var brain in FindObjectsOfType<CinemachineBrain>()) brain.enabled=false;
             foreach (var replay in FindObjectsOfType<ReplayCamera>()) replay.enabled=false;
-            Player=Instantiate(boatPrefab,spawnPosition,spawnRotation);
+            var skiff=Resources.Load<Boat>("FishingBoat/SoloSkiffBoat");
+            if(skiff==null)throw new InvalidOperationException("Missing SoloSkiffBoat prefab; run FishingSkiffBuilder.Build.");
+            Player=Instantiate(skiff,spawnPosition,spawnRotation);
             Player.name="Fishing player boat";Player.ParticipateInRaces=false;
             Player.Setup(1,true,new BoatLivery {primaryColor=new Color(0.05f,0.65f,0.65f),trimColor=new Color(1f,0.58f,0.14f)});
             // Buoyancy initialization temporarily moves the prefab to the origin for voxel sampling.
@@ -603,14 +605,13 @@ namespace BoatAttack.Fishing
 
         private void BuildWorld()
         {
+            // Race buoys are particle impostors with no collision; fishing has its own physical markers.
+            foreach(var raceBuoys in FindObjectsOfType<BuoyManager>())raceBuoys.gameObject.SetActive(false);
             for(int i=0;i<fishingSpots.Length;i++)
             {
                 FishingArt.Ring("Fishing area "+i,transform,new Vector3(fishingSpots[i].x,0.22f,fishingSpots[i].z),9f,orange);
-                for(int j=0;j<4;j++)
-                {
-                    var pos=fishingSpots[i]+Quaternion.Euler(0,j*90,0)*new Vector3(9,0,0);pos.y=0f;
-                    _buoys.Add(FishingArt.Buoy(transform,_owned,PaletteShader,pos,0.85f).transform);
-                }
+                var pos=fishingSpots[i]+new Vector3(0,0,11);pos.y=0f;
+                _buoys.Add(FishingArt.Buoy(transform,_owned,PaletteShader,pos,.65f).transform);
             }
             FishingArt.Ring("Harbor safe zone",transform,new Vector3(harbor.x,0.25f,harbor.z),11f,teal);
             FishingDetailArt.Market(this,_owned);
@@ -620,7 +621,8 @@ namespace BoatAttack.Fishing
         private void BuildEquipment()
         {
             var boat=Player.transform;
-            _box=FishingDetailArt.Crate(boat,new Vector3(0,0.85f,-1.3f),wood,teal,dark);
+            _box=FishingDetailArt.Crate(boat,new Vector3(.55f,.72f,-.28f),wood,teal,dark);
+            _box.localScale=new Vector3(.42f,.6f,.42f);
             FishingDetailArt.Rod(boat,dark,wood,cream,orange,out _rodTip,out _reelCrank);
             _net=FishingDetailArt.Net(boat,dark,teal,cream);
             Hands=gameObject.AddComponent<FishingHands>();Hands.Build(this,_rodTip,_reelCrank,_net);
@@ -653,7 +655,8 @@ namespace BoatAttack.Fishing
         private void AnimateEquipment()
         {
             var phase=Session.Phase;
-            if(_reeling)_reelCrank.Rotate(Vector3.right,Time.deltaTime*400f,Space.Self);
+            if(_reeling && !Paused && Anchored && phase==CatchPhase.Fighting && !UnityEngine.XR.XRSettings.isDeviceActive)
+                _reelCrank.Rotate(Vector3.right,Time.deltaTime*300f,Space.Self);
             bool active=Anchored && phase!=CatchPhase.Idle && phase!=CatchPhase.Escaped;
             _line.enabled=active && phase!=CatchPhase.Caught;_bobber.SetActive(active && (phase==CatchPhase.Waiting || phase==CatchPhase.Bite));
             if(!HasPendingCatch)_fish.SetActive(active && (phase==CatchPhase.Fighting || phase==CatchPhase.Landing || (phase==CatchPhase.Caught && Time.time-_caughtAt<0.8f)));
