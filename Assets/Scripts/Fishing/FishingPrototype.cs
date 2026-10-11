@@ -24,7 +24,9 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.17.0";
+        public const string Version = "0.18.0";
+        public FishingFleetPresentation Fleet { get; private set; }
+        public FishingIslandWorld Islands { get; private set; }
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
         private Vector3 _castOrigin;
         private bool _castSplash;
@@ -47,7 +49,8 @@ namespace BoatAttack.Fishing
         public FishingExpeditionScene Expedition { get; private set; }
         public bool Ashore => Shore != null && Shore.Ashore;
         public Vector3 ExplorerPosition => Ashore ? Shore.Position : Player.transform.position;
-        public int NavigationCount => ShopNavigationIndex + 1;
+        public int NavigationCount => ShopNavigationIndex + 1 + FishingAdventure.Count;
+        public int IslandNavigationIndex(int island) => ShopNavigationIndex + 1 + island;
         public FishingWeather Weather { get; private set; }
         public FishingEcology Ecology { get; private set; }
         public Shader PaletteShader { get; private set; }
@@ -64,7 +67,7 @@ namespace BoatAttack.Fishing
         public bool QuietMode { get; private set; }
         public int NavigationTarget { get; private set; }
         public Vector3 NavigationPosition => NavigationWorldPosition();
-        public string NavigationName => NavigationTarget == ShopNavigationIndex ? ShopName : NavigationTarget == 0 ? "潮汐渔港" : NavigationTarget <= fishingSpots.Length ? FishingGrounds.Name(NavigationTarget - 1) : FishingExploration.SiteName(NavigationTarget - fishingSpots.Length - 1);
+        public string NavigationName => NavigationTarget > ShopNavigationIndex ? FishingAdventure.Name(NavigationTarget-ShopNavigationIndex-1) : NavigationTarget == ShopNavigationIndex ? ShopName : NavigationTarget == 0 ? "潮汐渔港" : NavigationTarget <= fishingSpots.Length ? FishingGrounds.Name(NavigationTarget - 1) : FishingExploration.SiteName(NavigationTarget - fishingSpots.Length - 1);
         public bool CanChangeBait => Session.Phase == CatchPhase.Idle || Session.Phase == CatchPhase.Caught || Session.Phase == CatchPhase.Escaped;
         public CatchCard LastCatch { get; private set; }
         public bool LegendTrophy => Career != null && Career.LegendCatches > 0;
@@ -117,10 +120,11 @@ namespace BoatAttack.Fishing
             Automated = Application.isBatchMode || HasArgument("-fishing-field-capture") || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
             SavePath = AcceptanceOptions != null ? AcceptanceOptions.ProfilePath(Application.temporaryCachePath, false)
                 : Path.Combine(Automated ? Application.temporaryCachePath : Application.persistentDataPath,
-                Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v9.json");
-            // v9 owns a separate file; earlier files are read-only migration sources.
+                Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v10.json");
+            // v10 owns a separate file; earlier files are read-only migration sources.
             string warning;
-            string legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v8.json");
+            string legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v9.json");
+            if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v8.json");
             if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v7.json");
             if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v6.json");
             if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v5.json");
@@ -158,6 +162,9 @@ namespace BoatAttack.Fishing
                 fishingSpots[FishingGrounds.NorthIsland] = new Vector3(FishingGrounds.NorthX,0,FishingGrounds.NorthZ);
             }
             BuildWorld(); BuildEquipment();
+            var fleet = new GameObject("Fleet upgrades"); fleet.transform.SetParent(Player.transform,false);
+            Fleet = fleet.AddComponent<FishingFleetPresentation>(); Fleet.Build(this);
+            Islands = gameObject.AddComponent<FishingIslandWorld>(); Islands.Build(this);
             Weather=gameObject.AddComponent<FishingWeather>();Weather.Controller=this;
             Ecology=gameObject.AddComponent<FishingEcology>();Ecology.Controller=this;
             View=gameObject.AddComponent<FishingViewRig>();View.Controller=this;
@@ -179,7 +186,7 @@ namespace BoatAttack.Fishing
             gameObject.AddComponent<FishingWorldInstruments>().Controller=this;
             _feedback.mute=QuietMode;
             if(LegendTrophy)BuildTrophy();
-            Notice(string.IsNullOrEmpty(warning)?"重燃旧港信标：港口 Tab 交易台接受委托；N 选海岸，低速 G 下船，岸上 E 互动。J 查看线索。":warning,10f);
+            Notice(string.IsNullOrEmpty(warning)?"群岛来信：N 选择岛屿，低速 G 下船，E 读线索 / 寻宝。J 查看群岛航记；钓具店出售船只升级与探索用品。":warning,10f);
             _initialized=true;
             if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }
             else if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
@@ -272,6 +279,7 @@ namespace BoatAttack.Fishing
                 if(k!=null && k.nKey.wasPressedThisFrame)CycleNavigation();
                 if(k!=null && k.oKey.wasPressedThisFrame)DeliverOrder();
                 if(k!=null && k.tKey.wasPressedThisFrame){if(Ashore)FieldWorld.Observe();else Ecology.Observe();}
+                if(k!=null && k.fKey.wasPressedThisFrame && Ashore)Islands.ConfirmNearby();
                 ReadFieldShortcuts(k,m);
                 if(!xr && _input.Current.reset)ReturnToHarbor();
                 if(k!=null && k.qKey.wasPressedThisFrame)LeaveStation();
@@ -423,7 +431,7 @@ namespace BoatAttack.Fishing
             }
             UpdateNearestSpot();
             if(Anchored){if(Session.Phase==CatchPhase.Landing)Scoop();return;}
-            if(AtHarbor){int survey=ClaimShoreRewards();if(Career.OrderReady)DeliverOrder();else if(survey==0 || Career.SaleValue>0)Sell();return;}
+            if(AtHarbor){int voyage=Islands.CompleteAtHarbor();int survey=ClaimShoreRewards();if(Career.OrderReady)DeliverOrder();else if((survey==0 && voyage==0) || Career.SaleValue>0)Sell();return;}
             if(!FishingGrounds.Available(Spot,Career.Expedition)){Notice("北岛渔场尚未开放：先完成旧港信标修复。");return;}
             if(SpotDistance>22f){Notice("先驶入任一黄色渔区，再按 E 停船。");return;}
             if(Speed>3f){Notice("速度过快，按住 Shift 刹车再停船。");return;}
@@ -495,7 +503,7 @@ namespace BoatAttack.Fishing
             bool ok=Career.Upgrade(track);
             if(ok)
             {
-                Save();if(track==UpgradeTrack.Hold)RefreshHold();_feedback.PlayOneShot(_successTone);
+                Fleet.Refresh();Save();if(track==UpgradeTrack.Hold)RefreshHold();_feedback.PlayOneShot(_successTone);
                 int level=Career.Level(track);
                 if(ShopOpen)Hands.ReachGesture(Shore.Character.HandReferencePosition+Shore.Actor.forward*.28f);
                 Notice(FishingText.UpgradeName(track)+" 升至 Lv."+level+" · "+FishingText.UpgradeEffect(track,level)+" · 花费 "+cost+" 金币，余额 "+Career.Coins,7f);

@@ -60,10 +60,10 @@ for side in [-1,1]:
 box('Compact outboard', (0,.69,-1.94),(.34,.42,.32),'iron',.035)
 box('Outboard enamel', (0,.93,-1.94),(.35,.06,.33),'teal',.014)
 tube('Tiller arm',[(0,.71,-1.8),(.24,.74,-1.3)],.022,'iron',8)
-tube('Outboard shaft',[(0,.50,-1.96),(0,-.70,-1.96)],.06,'edge',8)
+tube('Outboard shaft',[(0,.50,-1.96),(0,-.95,-1.96)],.06,'edge',8)
 for side in [-1,1]:
     box('Outboard transom bracket',(side*.16,.57,-1.83),(.055,.25,.18),'edge',.009)
-box('Outboard propeller',(0,-.68,-2.04),(.28,.065,.055),'iron',.008)
+box('Outboard propeller',(0,-.93,-2.04),(.28,.065,.055),'iron',.008)
 tube('Deck lantern post',[(.6,.68,-.85),(.6,1.52,-.85)],.022,'brass',8)
 tube('Lantern hanging arm',[(.6,1.52,-.85),(.6,1.52,-1.0)],.021,'brass',8)
 box('Lantern glass',(.6,1.35,-.85),(.115,.20,.115),'ivory',.012)

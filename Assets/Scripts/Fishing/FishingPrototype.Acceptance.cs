@@ -42,6 +42,7 @@ namespace BoatAttack.Fishing
             UpdateNearestSpot();
             SavePath = AcceptanceOptions.ProfilePath(Application.temporaryCachePath, fixture != null);
             Career = fixture ?? FishingSaveStore.Load(SavePath, out _);
+            Fleet.Refresh();Islands.Refresh();_hud.ShopCategory=0;
             Shore.RefreshMarkers();
             FieldWorld.RefreshPickups();
             WorkshopWorld.RefreshFromCareer();
@@ -105,6 +106,13 @@ namespace BoatAttack.Fishing
                 case FishingAcceptanceCase.CastFlight: Cast(1);CastMotion.Tick(.1f);CastMotion.Tick(.1f);CastMotion.Tick(.1f);CastMotion.Tick(.1f);break;
                 case FishingAcceptanceCase.Calendar: _hud.JournalPage=4;ToggleJournal();break;
                 case FishingAcceptanceCase.NightBoat: ToggleView();break;
+                case FishingAcceptanceCase.LuxuryBoat: ToggleView();break;
+                case FishingAcceptanceCase.IslandJournal: _hud.JournalPage=5;ToggleJournal();break;
+                case FishingAcceptanceCase.IslandLanding:
+                    Teleport(FishingIslandWorld.Berth(0),Quaternion.Euler(0,180,0));
+                    if(!Shore.TryDisembark())throw new InvalidOperationException("Island fixture failed to disembark.");
+                    ToggleView();View.ApplyShoreLookDelta(new Vector2(900,0));NavigationTarget=IslandNavigationIndex(0);break;
+                case FishingAcceptanceCase.ShopSupplies: PrepareAcceptanceShore(selected);_hud.ShopCategory=2;break;
                 case FishingAcceptanceCase.Settings: TogglePause(); break;
                 case FishingAcceptanceCase.ShoreFirstPerson:
                 case FishingAcceptanceCase.ShoreThirdPerson:

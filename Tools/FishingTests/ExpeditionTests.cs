@@ -43,7 +43,7 @@ internal static class ExpeditionTests
         var legacy = old.Snapshot(); legacy.version = 4; legacy.backpack=null; legacy.selectedSlot=legacy.collectedPickupMask=legacy.landAnimalMask=0;
         check(FishingCareer.TryRestore(legacy, out restored) && restored.Coins == 160 && restored.ShoreTaskMask == 255
             && restored.Expedition.Facts == 0 && restored.ClaimShoreRewards() == 0, "Expedition preserves completed v4 shore rewards");
-        check(!FishingCareer.TryRestore(new FishingSaveData { version = 10 }, out _), "Expedition rejects future v10 save");
+        check(!FishingCareer.TryRestore(new FishingSaveData { version = 11 }, out _), "Expedition rejects future v11 save");
         for (int ground = 0; ground < 3; ground++)
         {
             check(FishingGrounds.Available(ground, new FishingExpedition()), "Original ground remains open " + ground);

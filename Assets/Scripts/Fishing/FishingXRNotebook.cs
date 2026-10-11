@@ -17,6 +17,7 @@ namespace BoatAttack.Fishing
         private readonly FishingPressEdge _menu=new FishingPressEdge(),_primary=new FishingPressEdge(),_board=new FishingPressEdge(),_slot=new FishingPressEdge(),_trigger=new FishingPressEdge();
         private LineRenderer _ray;
         private int _page,_offset;
+        public bool StorePage => IsOpen && (_page==4 || _page==5);
         private bool _turnReady;
         private float _nextText,_nextStrike;
         private Vector3 _lastTip;
@@ -73,7 +74,8 @@ namespace BoatAttack.Fishing
                 Set(0,"背包 / 装备",()=>Open(1));Set(1,"制作 / 熔炉",()=>Open(2));Set(2,"日历 / 预报",()=>Open(3));
                 Set(3,_c.Ashore?"返回船上":"靠岸下船",()=>{Close();if(_c.Ashore)_c.Shore.TryBoard();else _c.Shore.TryDisembark();});
                 Set(4,"航海 / 委托 / 升级",()=>Open(4));Set(5,"领取炉内成品",()=>_c.WorkshopWorld.Collect());
-                Set(6,"校准眼高",()=>_c.XRSeat.Recenter());Set(7,"切换鱼饵",()=>{Close();_c.CycleBait();});Set(8,"返回海湾",Close);
+                Set(6,"校准眼高",()=>_c.XRSeat.Recenter());Set(7,"港口事务 / 炉内成品",()=>Open(7));Set(8,"返回海湾",Close);
+                Set(5,"群岛航记 / 寻宝",()=>Open(6));
             }
             else if(_page==1)
             {
@@ -107,14 +109,39 @@ namespace BoatAttack.Fishing
                 Set(4,"推进至夜晚\n21:00",_c.CanSetTime?(Action)(()=>_c.SetDayNight(true)):null);
                 Set(5,day.Automatic?"自动流逝\n点击固定":"时间固定\n点击自动",_c.CanSetTime?(Action)_c.ToggleClock:null);
             }
+            else if(_page==5)
+            {
+                _status.text="海湾百货 · 金币 "+_c.Career.Coins+"\n港口或店内柜台可购买\n用品进入背包；船舶升级立即生效\n"+_c.Message;
+                for(int i=0;i<6;i++)
+                {
+                    int product=_offset+i;if(product>=FishingSupplies.Items.Length)break;
+                    Set(i,FishingBackpack.Name(FishingSupplies.Items[product])+" ×"+FishingSupplies.Quantity(product)+"\n"+FishingSupplies.Price(product)+" 金币",()=>{_c.BuySupply(product);Refresh();});
+                }
+                Set(6,_offset==0?"下一页":"上一页",()=>{_offset=_offset==0?6:0;Refresh();});Set(7,"船舶 / 钓具升级",()=>Open(4));Set(8,"关闭",Close);
+            }
+            else if(_page==6)
+            {
+                int island=_c.Islands.NearIsland(out int nearby)?nearby:0;
+                _status.text="群岛来信 · "+FishingAdventure.Name(island)+"\n"+FishingAdventure.Clue(island)+"\n读信 → 地标寻宝 / 校准信标\n四灯已亮后返港提交 +150 金币\n"+_c.Message;
+                for(int i=0;i<4;i++){int dest=i;Set(i,FishingAdventure.Name(i)+"\n"+(_c.Career.Adventure.Restored(i)?"信标已亮":"设为航点"),()=>{_c.SelectNavigation(_c.IslandNavigationIndex(dest));Refresh();});}
+                Set(4,"E 同等操作\n读信 / 开箱 / 转动",()=>{Close();_c.RequestWorldInteraction();});
+                Set(5,"确认灯头方向",()=>{Close();_c.Islands.ConfirmNearby();});
+                Set(6,"返港提交群岛航记",()=>{Close();_c.Islands.CompleteAtHarbor();});Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
+            }
+            else if(_page==7)
+            {
+                Set(0,"接取 / 提交旧港任务",()=>{Close();_c.Expedition.PortAction();});
+                Set(1,"交付海岸调查",()=>{Close();_c.ClaimShoreRewards();});
+                Set(2,"领取炉内成品",()=>_c.WorkshopWorld.Collect());
+                Set(3,"下一航点\n"+_c.NavigationName,()=>{_c.CycleNavigation();Refresh();});
+                Set(4,"切换鱼饵",()=>{Close();_c.CycleBait();});
+                Set(5,"提交群岛航记",()=>{Close();_c.Islands.CompleteAtHarbor();});
+                Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
+            }
             else
             {
-                Set(0,"接取 / 提交信标任务",()=>{Close();_c.Expedition.PortAction();});
-                Set(1,"升级鱼线",()=>{Close();_c.BuyUpgrade(UpgradeTrack.Line);});
-                Set(2,"升级卷线器",()=>{Close();_c.BuyUpgrade(UpgradeTrack.Reel);});
-                Set(3,"升级鱼箱",()=>{Close();_c.BuyUpgrade(UpgradeTrack.Hold);});
-                Set(6,"下一航点\n"+_c.NavigationName,()=>{_c.CycleNavigation();Refresh();});
-                Set(4,"交付海岸调查",()=>{Close();_c.ClaimShoreRewards();});
+                for(int i=0;i<6;i++){var track=(UpgradeTrack)i;Set(i,FishingText.UpgradeName(track)+" Lv."+_c.Career.Level(track)+"\n"+_c.Career.NextUpgradeCost(track)+" 金币",()=>{_c.BuyUpgrade(track);Refresh();});}
+                Set(6,"购买探索用品",()=>Open(5));
                 Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
             }
         }

@@ -160,7 +160,9 @@ namespace BoatAttack.Fishing
     [Serializable]
     public sealed class FishingSaveData
     {
-        public int version = 9;
+        public int version = 10;
+        public int engineLevel, rudderLevel, cabinLevel;
+        public AdventureData adventure = new AdventureData();
         public CalendarData calendar = new CalendarData();
         public HuntingData hunting = new HuntingData();
         public WorkshopData workshop = new FishingWorkshop().Snapshot();
@@ -198,7 +200,7 @@ namespace BoatAttack.Fishing
         public const int MaxLevel = 2;
         // Enough history to reject any replayed catch while keeping the save file bounded.
         public const int RecentIdLimit = 256;
-        private static readonly int[,] UpgradeCosts = { { 30, 90 }, { 40, 100 }, { 50, 120 } };
+        private static readonly int[,] UpgradeCosts = { { 30, 90 }, { 40, 100 }, { 50, 120 }, { 80, 180 }, { 65, 150 }, { 90, 220 } };
 
         public int Coins { get; private set; }
         public FishingExpedition Expedition { get; private set; } = new FishingExpedition();
@@ -287,7 +289,12 @@ namespace BoatAttack.Fishing
             return count;
         }
 
-        public int Level(UpgradeTrack track) => track == UpgradeTrack.Line ? LineLevel : track == UpgradeTrack.Reel ? ReelLevel : HoldLevel;
+        public int Level(UpgradeTrack track)
+        {
+            switch (track) { case UpgradeTrack.Line: return LineLevel; case UpgradeTrack.Reel: return ReelLevel;
+                case UpgradeTrack.Hold: return HoldLevel; case UpgradeTrack.Engine: return EngineLevel;
+                case UpgradeTrack.Rudder: return RudderLevel; case UpgradeTrack.Cabin: return CabinLevel; default: return -1; }
+        }
 
         /// <summary>Price of the next level, or 0 when the track is complete.</summary>
         public static int UpgradeCost(UpgradeTrack track, int level)
@@ -302,7 +309,10 @@ namespace BoatAttack.Fishing
             Coins -= cost;
             if (track == UpgradeTrack.Line) LineLevel++;
             else if (track == UpgradeTrack.Reel) ReelLevel++;
-            else HoldLevel++;
+            else if (track == UpgradeTrack.Hold) HoldLevel++;
+            else if (track == UpgradeTrack.Engine) EngineLevel++;
+            else if (track == UpgradeTrack.Rudder) RudderLevel++;
+            else CabinLevel++;
             return true;
         }
 
@@ -389,6 +399,7 @@ namespace BoatAttack.Fishing
             var result = new FishingSaveData
             {
                 calendar = Calendar.Snapshot(), hunting = Hunting.Snapshot(),
+                engineLevel = EngineLevel, rudderLevel = RudderLevel, cabinLevel = CabinLevel, adventure = Adventure.Snapshot(),
                 hasPendingCatch = HasPendingCatch, pendingCatch = _pending?.Copy(), releasedCatches = ReleasedCatches, orderMarked = OrderMarked,
                 workshop = Workshop.Snapshot(), backpack = Backpack.Snapshot(), selectedSlot = Backpack.Selected, collectedPickupMask = Backpack.CollectedMask, landAnimalMask = Backpack.AnimalMask,
                 expeditionFacts = Expedition.Facts,
@@ -405,7 +416,11 @@ namespace BoatAttack.Fishing
         public static bool TryRestore(FishingSaveData data, out FishingCareer career)
         {
             career = null;
-            if (data == null || data.version < 1 || data.version > 9) return false;
+            if (data == null || data.version < 1 || data.version > 10) return false;
+            if (data.engineLevel < 0 || data.engineLevel > MaxLevel || data.rudderLevel < 0 || data.rudderLevel > MaxLevel
+                || data.cabinLevel < 0 || data.cabinLevel > MaxLevel
+                || (data.version < 10 && (data.engineLevel != 0 || data.rudderLevel != 0 || data.cabinLevel != 0))) return false;
+            if(data.version<10 && data.adventure!=null && (data.adventure.visited!=0 || data.adventure.treasures!=0 || data.adventure.beacons!=0 || data.adventure.finale))return false;
             if (!FishingExpedition.TryRestore(data.expeditionFacts, out var expedition)
                 || (data.version < 5 && data.expeditionFacts != 0)) return false;
             bool v3 = data.version >= 3;
@@ -480,6 +495,12 @@ namespace BoatAttack.Fishing
                 if (!FishingCalendar.TryRestore(data.calendar, out var calendar) || !FishingHunting.TryRestore(data.hunting, out var hunting, calendar.TotalMinutes)) return false;
                 foreach (int day in data.hunting.availableDays) if (day > calendar.Day + 1) return false;
                 result.Calendar = calendar; result.Hunting = hunting;
+            }
+            if (data.version >= 10)
+            {
+                if (!FishingAdventure.TryRestore(data.adventure, out var adventure)) return false;
+                result.Adventure = adventure; result.EngineLevel = data.engineLevel;
+                result.RudderLevel = data.rudderLevel; result.CabinLevel = data.cabinLevel;
             }
             career = result;
             return true;

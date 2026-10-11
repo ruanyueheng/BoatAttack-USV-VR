@@ -30,14 +30,15 @@ namespace BoatAttack.Fishing
         // The customer must be inside, close to the counter, and not separated by a wall/fixture.
         public bool NearCounter => Inside && Vector3.Distance(Controller.ExplorerPosition, purchasePoint.position) < 2.6f
             && Controller.Shore.ClearSight(Controller.ExplorerPosition + Vector3.up * 1.2f, purchasePoint.position + Vector3.up * 1.2f);
-        public bool CanPurchase => Open && NearCounter && ContextAllowsBrowsing;
+        public bool CanPurchase => NearCounter && ((Open && ContextAllowsBrowsing) || (XRSettings.isDeviceActive && Controller.XRNotebook!=null
+            && Controller.XRNotebook.StorePage && !Controller.Paused && !Controller.HasPendingCatch && !Controller.Expedition.Aligning));
         private bool ContextAllowsBrowsing => Controller != null && !Controller.Paused && !Controller.InventoryOpen
             && !Controller.JournalOpen && !Controller.HasPendingCatch && !Controller.Expedition.Aligning
             && !XRSettings.isDeviceActive && (Controller.Automated || Application.isFocused);
 
         private void Awake() => ResolveLandingDeck();
-        private void Start() => EnsureCashier();
-        public void Bind(FishingPrototype controller) { Controller = controller; ResolveLandingDeck(); EnsureCashier(); }
+        private void Start() { EnsureCashier(); FishingShopDisplay.Ensure(this); }
+        public void Bind(FishingPrototype controller) { Controller = controller; ResolveLandingDeck(); EnsureCashier(); FishingShopDisplay.Ensure(this); }
         public FishingShopCashier EnsureCashier()
         {
             if (Cashier == null) Cashier = FishingShopCashier.Create(this);
@@ -71,6 +72,11 @@ namespace BoatAttack.Fishing
             return Controller.BuyUpgrade(track);
         }
         // Called by the controller BEFORE world input. No independent Update ordering race.
+        public bool BuySupply(int product)
+        {
+            if(!CanPurchase)return false;
+            return Controller.BuySupply(product);
+        }
         public void ValidateContext(bool focused, bool xrActive)
         {
             if (Open && (!focused || xrActive || !NearCounter || !ContextAllowsBrowsing)) Close();

@@ -11,7 +11,7 @@ namespace BoatAttack.Fishing
         {
             yield return new WaitForSecondsRealtime(1f);
             string baseline = null;
-            string normalPath = Path.Combine(Application.persistentDataPath, "boatattack-fishing-v1.json");
+            string normalPath = Path.Combine(Application.persistentDataPath, "boatattack-fishing-v10.json");
             string normalStamp = SaveStamp(normalPath), backupStamp = SaveStamp(normalPath + ".bak");
             int comfort = PlayerPrefs.GetInt("Fishing.V3.Comfort", int.MinValue), quiet = PlayerPrefs.GetInt("Fishing.V3.Quiet", int.MinValue);
             if (!Check(() =>
@@ -115,6 +115,10 @@ namespace BoatAttack.Fishing
             }
             if(CurrentCase==FishingAcceptanceCase.ShopCounter && (!c.Ashore || !c.ShopOpen || !c.TackleShop.NearCounter))
                 throw new InvalidOperationException("Real shop counter capture fixture failed.");
+            if(CurrentCase==FishingAcceptanceCase.ShopSupplies && (!c.Ashore || !c.ShopOpen || c.GetComponent<FishingHUD>().ShopCategory!=2))throw new InvalidOperationException("Supply fixture failed.");
+            if(CurrentCase==FishingAcceptanceCase.LuxuryBoat && (c.Career.CabinLevel!=2 || c.FirstPerson || c.Player.engine.horsePower!=FishingFleet.Power(2)))throw new InvalidOperationException("Fleet fixture failed.");
+            if(CurrentCase==FishingAcceptanceCase.IslandLanding && (!c.Ashore || c.Shore.LocationName!=FishingAdventure.Name(0)))throw new InvalidOperationException("Island fixture failed.");
+            if(CurrentCase==FishingAcceptanceCase.IslandJournal && (!c.JournalOpen || c.GetComponent<FishingHUD>().JournalPage!=5))throw new InvalidOperationException("Island journal fixture failed.");
             if(CurrentCase==FishingAcceptanceCase.ShopAttendant)
             {
                 if(!c.Ashore || c.ShopOpen || c.TackleShop.Cashier==null)throw new InvalidOperationException("店员夹具缺少实际角色，或被商店菜单替代。");

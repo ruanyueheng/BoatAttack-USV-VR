@@ -37,8 +37,8 @@ namespace BoatAttack.EditorTools
                 rb.constraints=RigidbodyConstraints.FreezeRotationX|RigidbodyConstraints.FreezeRotationZ;
                 var buoyancy=root.GetComponent<BuoyantObject>();buoyancy.centerOfMass=new Vector3(0,-.5f,-.2f);buoyancy.voxelResolution=.22f;
                 boat.engine.transform.localPosition=new Vector3(0,.25f,-1.9f);
-                boat.engine.enginePosition=new Vector3(0,-.95f,0);
-                boat.engine.stableHull=true;boat.engine.horsePower=7;
+                boat.engine.enginePosition=new Vector3(0,-1.20f,0);
+                boat.engine.stableHull=true;boat.engine.horsePower=FishingFleet.Power(0);boat.engine.forwardSpeedLimit=FishingFleet.SpeedLimit(0);
                 var lamp=new GameObject("Skiff deck night light").AddComponent<Light>();lamp.transform.SetParent(root.transform,false);
                 lamp.transform.localPosition=new Vector3(-.6f,1.35f,-.85f);
                 lamp.type=LightType.Point;lamp.color=new Color(1,.78f,.48f);lamp.range=5;lamp.intensity=3;lamp.shadows=LightShadows.None;lamp.enabled=false;
