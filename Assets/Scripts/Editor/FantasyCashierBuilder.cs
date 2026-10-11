@@ -121,6 +121,7 @@ namespace BoatAttack.EditorTools
             group = cashier.GetComponent<LODGroup>();
             Shot(camera,cashier.transform.TransformPoint(new Vector3(0,1.20f,2.8f)),cashier.transform.TransformPoint(new Vector3(0,1.15f,0)),"cashier-full.png",48);
             Shot(camera,cashier.transform.TransformPoint(new Vector3(.65f,1.45f,1.5f)),cashier.transform.TransformPoint(new Vector3(0,1.35f,.08f)),"cashier-hands.png",45);
+            Shot(camera,cashier.transform.TransformPoint(new Vector3(1.55f,1.45f,.60f)),cashier.transform.TransformPoint(new Vector3(0,1.35f,.08f)),"cashier-elbow-side.png",45);
             group.ForceLOD(1);
             Shot(camera,cashier.transform.TransformPoint(new Vector3(.65f,1.45f,1.5f)),cashier.transform.TransformPoint(new Vector3(0,1.35f,.08f)),"cashier-hands-lod1.png",45);
             group.ForceLOD(-1);

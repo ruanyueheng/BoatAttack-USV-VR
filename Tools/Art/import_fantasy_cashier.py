@@ -31,20 +31,22 @@ for side in (-1,1):
     elbow=Vector((.005,side*.190,.735))
     wrist=Vector((.012,side*.284,.719))
     # Slight asymmetry lets one hand rest on the other instead of occupying it.
-    target_wrist=Vector((.092 if side==1 else .077,side*.030,.607 if side==1 else .590))
+    target_wrist=Vector((.092 if side==1 else .087,side*.025,.637 if side==1 else .622))
     upper_length=(elbow-shoulder).length
     lower_length=(wrist-elbow).length
     direction=(target_wrist-shoulder).normalized()
     distance=(target_wrist-shoulder).length
     assert distance < upper_length+lower_length
     along=(upper_length**2-lower_length**2+distance**2)/(2*distance)
-    outward=Vector((0,side,0))
+    # Elbows stay beside/slightly behind the torso. The forearms turn forward
+    # from those joints, instead of following one continuous circular arc.
+    outward=Vector((-.35,side,0))
     outward=(outward-direction*outward.dot(direction)).normalized()
     target_elbow=shoulder+direction*along+outward*math.sqrt(max(0,upper_length**2-along**2))
     upper_rotation=(elbow-shoulder).rotation_difference(target_elbow-shoulder).to_matrix()
     lower_rotation=(wrist-elbow).rotation_difference(target_wrist-target_elbow).to_matrix()
     # Palms lie across the lower abdomen, fingers angled gently down and inward.
-    hand_direction=Vector((.015,-side*.070,-.030)).normalized()
+    hand_direction=Vector((.012,-side*.070,-.023)).normalized()
     hand_rotation=Vector((0,side,0)).rotation_difference(hand_direction).to_matrix()
     def transformed(rotation,source_pivot,target_pivot):
         return (original-np.array(source_pivot))@np.array(rotation).T+np.array(target_pivot)
@@ -52,14 +54,18 @@ for side in (-1,1):
     lower_coords=transformed(lower_rotation,elbow,target_elbow)
     hand_coords=transformed(hand_rotation,wrist,target_wrist)
     lateral=side*original[:,1]
-    elbow_blend=smooth(.172,.210,lateral)[:,None]
-    wrist_blend=smooth(.275,.300,lateral)[:,None]
+    # Keep both limb segments rigid; blend only within a small joint crease.
+    # The previous broad blend rounded ~8 cm of sleeve into a rubber loop.
+    elbow_blend=smooth(.187,.195,lateral)[:,None]
+    wrist_blend=smooth(.281,.290,lateral)[:,None]
     posed=upper_coords*(1-elbow_blend)+lower_coords*elbow_blend
     posed=posed*(1-wrist_blend)+hand_coords*wrist_blend
     sleeve_floor=.665-.105*smooth(.125,.245,lateral)
-    weight=smooth(.078,.120,lateral)*smooth(sleeve_floor,sleeve_floor+.028,original[:,2])*(1-smooth(.807,.850,original[:,2]))
+    weight=smooth(.080,.100,lateral)*smooth(sleeve_floor,sleeve_floor+.028,original[:,2])*(1-smooth(.807,.850,original[:,2]))
     coords+=((posed-original)*weight[:,None]).astype(np.float32)
-    pose_landmarks.append({'side':side,'shoulder':list(shoulder),'elbow':list(target_elbow),'wrist':list(target_wrist)})
+    elbow_flex=math.degrees((target_elbow-shoulder).angle(target_wrist-target_elbow))
+    assert 55 < elbow_flex < 100, 'Forearm must visibly articulate at the elbow'
+    pose_landmarks.append({'side':side,'shoulder':list(shoulder),'elbow':list(target_elbow),'wrist':list(target_wrist),'elbow_flex_degrees':elbow_flex})
 obj.data.vertices.foreach_set('co',coords.reshape(-1));obj.data.update()
 # Feet at zero, standard height, front -Y in Blender (+Z in Unity).
 height=float(coords[:,2].max()-coords[:,2].min());scale=1.98/height
@@ -87,7 +93,7 @@ m=m.reshape(-1,4);r=r.reshape(-1,4);m[:,1]=m[:,0];m[:,2]=m[:,0];m[:,3]=1-r[:,0]
 packed=bpy.data.images.new('Unity metallic smoothness',width=metal.size[0],height=metal.size[1],alpha=True)
 packed.colorspace_settings.name='Non-Color';packed.pixels.foreach_set(m.reshape(-1));packed.file_format='PNG';packed.filepath_raw=str(OUT/'FantasyGirl_metallic_smoothness.png');packed.save()
 source_triangles=sum(len(p.vertices)-2 for p in obj.data.polygons)
-report={'source_triangles':source_triangles,'height_metres':1.98,'rigged':False,'pose':'Hands gently overlapped at lower abdomen; bent elbows and relaxed shoulders','source_space_landmarks':pose_landmarks,'lods':[]}
+report={'source_triangles':source_triangles,'height_metres':1.98,'rigged':False,'pose':'Hands overlapped at lower abdomen; rigid upper arms and forearms with localized elbow creases','source_space_landmarks':pose_landmarks,'lods':[]}
 models=[]
 for index,target in enumerate((70000,22000)):
     lod=obj.copy();lod.data=obj.data.copy();bpy.context.collection.objects.link(lod);lod.name=f'FantasyGirl_LOD{index}'
@@ -113,5 +119,9 @@ area('Key',(3,-4,4),400,4);area('Fill',(-3,-1,3),220,3);area('Rim',(1,3,3),300,2
 d=bpy.data.cameras.new('Preview');cam=bpy.data.objects.new('Preview',d);scene.collection.objects.link(cam);scene.camera=cam;d.type='ORTHO';d.ortho_scale=2.25
 cam.location=(0,-4,1.12);cam.rotation_euler=(Vector((0,0,.99))-cam.location).to_track_quat('-Z','Y').to_euler()
 scene.render.filepath=str(LOG/'textured-posed.png');bpy.ops.render.render(write_still=True)
+d.ortho_scale=1.25
+for label,position in [('joint-front',(0,-4,1.40)),('joint-side',(3,-2,1.40))]:
+    cam.location=position;cam.rotation_euler=(Vector((0,0,1.40))-cam.location).to_track_quat('-Z','Y').to_euler()
+    scene.render.filepath=str(LOG/(label+'.png'));bpy.ops.render.render(write_still=True)
 (ROOT/'ArtSource/FantasyGirl/import-report.json').write_text(json.dumps(report,indent=2),encoding='utf8')
 print('CASHIER EXPORT PASS',report)
