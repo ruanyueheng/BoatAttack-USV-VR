@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-12",
+  "files": [
+    {
+      "bytes": 666624,
+      "sha256": "3AA99A12CEADFA13DA1FF1262E0F076BDEC1C93319989ED000E708D7596550DF",
+      "file": "Builds/FishingPrototype-v0.19.0/FishingPrototype.exe"
+    },
+    {
+      "bytes": 567808,
+      "sha256": "6E5E1049A623F1B15102272FFF4A13504EE71D5A0A47587D52A9BEBC80746029",
+      "file": "Builds/FishingPrototype-v0.19.0/FishingPrototype_Data/Managed/Assembly-CSharp.dll"
+    },
+    {
+      "bytes": 298580,
+      "sha256": "4C8A27A7533BDBBEA01F7A7F274FF632593A0C634A4FD0461F17AD435FD08A6E",
+      "file": "Builds/FishingPrototype-v0.19.0/FishingPrototype_Data/globalgamemanagers"
+    }
+  ],
+  "version": "0.19.0"
+}

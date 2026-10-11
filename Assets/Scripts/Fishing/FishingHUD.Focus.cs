@@ -5,7 +5,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingHUD
     {
-        private void Glass(Rect r) => Rounded(r,new Color(.025f,.065f,.08f,.78f),6);
+        private void Glass(Rect r) { Rounded(r,new Color(.022f,.046f,.08f,.84f),7);Outline(r,Gold*new Color(1,1,1,.22f),7); }
 
         private void DrawCompactHeading()
         {
@@ -15,7 +15,6 @@ namespace BoatAttack.Fishing
             WeatherIcon(new Rect(r.x + 12, r.y + 15, 32, 32), c.Weather.Climate.Current);
             string title = c.Ashore ? c.Shore.LocationName : c.Anchored ? FishingGrounds.Name(c.Spot) : c.NavigationName + "  " + FishingPrototype.FlatDistance(c.ExplorerPosition, c.NavigationPosition).ToString("0") + " m";
             Label(r.x + 56, r.y + 9, 262, 27, title, 19, Color.white, true);
-            string motion = c.Ashore ? (c.Shore.Crouched?"蹲行 · 调查 ":"步行 · 调查 ")+FishingExploration.CompletedTasks(c.Career.ShoreTaskMask)+"/8" : c.Anchored ? "已停船 · " + FishingVoyage.BaitName(c.Bait) : (c.Speed * 3.6f).ToString("0.0") + " km/h · N 切换航点";
             Label(r.x + 56, r.y + 36, 262, 20, c.Career.Calendar.SeasonName+" "+c.Career.Calendar.Date+"日  "+c.Career.Calendar.TimeLabel+" · "+BayClimate.Name(c.Weather.Climate.Current), 13, Muted);
             if (c.Ecology.Candidate.HasValue && !CatchVisible && Button(Layout.Observe, "T 观察 · " + BayClimate.MarineName(c.Ecology.Candidate.Value), true, false, 14)) c.Ecology.Observe();
         }
@@ -61,7 +60,7 @@ namespace BoatAttack.Fishing
             else if(c.Ashore)
             {
                 title=(c.Expedition.Aligning?c.Expedition.ActionTitle:c.WorldInteractionTitle) ?? c.Shore.ActionTitle;
-                help=c.Expedition.Aligning?c.Expedition.AlignmentHint:c.Islands.NearbyHint!=null?"E 读信 / 开箱 / 转盘 · F 点灯 · J 群岛航记 · G 上船":"空格跳跃 · Ctrl 蹲下 · E 采集 / 制作 · T 观察 · I 背包 · R 救援";
+                help=c.Shore.Swimming?"Shift加速 · 停步恢复体力 · 空格上低岸 · R救援":c.Shore.Climbing?"W / S上下攀登 · 空格离开 · 停步恢复体力":c.Realms.Inside?"E操作机关 / 回响台 · 入口E返回岛屿 · J世界航记":c.Expedition.Aligning?c.Expedition.AlignmentHint:c.Islands.NearbyHint!=null?"E 读信 / 开箱 / 转盘 · F 点灯 · J 群岛航记 · G 上船":"空格跳跃 · Ctrl蹲下 · E交谈 / 采集 · T观察 · I背包 · R救援";
             }
             else if (!c.Anchored)
             {

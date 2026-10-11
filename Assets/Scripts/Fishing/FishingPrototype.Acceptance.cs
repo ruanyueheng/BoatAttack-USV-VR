@@ -31,7 +31,7 @@ namespace BoatAttack.Fishing
                 throw new InvalidOperationException("Acceptance fixtures require an explicitly opted-in test profile.");
             // Validate before changing any live state. FreePlay is intentionally never synthesized.
             FishingCareer fixture = selected == FishingAcceptanceCase.FreePlay ? null : FishingAcceptanceCases.CreateCareer(selected);
-            CancelWorldAction();_workshopReceipt=false;TackleShop?.Close();
+            CancelWorldAction();_workshopReceipt=false;TackleShop?.Close();Residents?.Close();Realms?.Abort();
             if (InventoryOpen) ToggleInventory();
             if (JournalOpen) ToggleJournal();
             else if (Paused) TogglePause();
@@ -61,6 +61,7 @@ namespace BoatAttack.Fishing
             if (!FirstPerson) ToggleView();
             View.ResetLook();
             ResetToolInput();
+            _storyConsumedFrame=-1;
             var climate = Weather.Climate;
             climate.Hold();
             for (int i = 0; i < 64 && climate.Blend < 1f; i++) climate.Tick(.25f, false);
@@ -94,6 +95,17 @@ namespace BoatAttack.Fishing
             }
             switch (selected)
             {
+                case FishingAcceptanceCase.ResidentDialogue:
+                case FishingAcceptanceCase.WindSanctuary:
+                case FishingAcceptanceCase.ForestSanctuary:
+                case FishingAcceptanceCase.WreckSanctuary:
+                case FishingAcceptanceCase.StarSanctuary:
+                case FishingAcceptanceCase.LoreJournal:
+                case FishingAcceptanceCase.ShopRations:
+                case FishingAcceptanceCase.RegionArrival:
+                case FishingAcceptanceCase.SwimmingView:
+                case FishingAcceptanceCase.ClimbingView:
+                    PrepareStoryFixture(selected);break;
                 case FishingAcceptanceCase.HarborOrders:
                 case FishingAcceptanceCase.MaxUpgrades: ToggleHarborDesk(); break;
                 case FishingAcceptanceCase.FullHold:
@@ -166,6 +178,44 @@ namespace BoatAttack.Fishing
             if(selected==FishingAcceptanceCase.LanternCoast)UseFieldItem();
             Weather.ApplyEnvironment();
             if(selected==FishingAcceptanceCase.BinocularObserve || selected==FishingAcceptanceCase.BinocularThirdPerson)UseFieldItem();
+        }
+        private void PrepareStoryFixture(FishingAcceptanceCase selected)
+        {
+            if(selected==FishingAcceptanceCase.LoreJournal){_hud.JournalPage=6;ToggleJournal();return;}
+            if(selected==FishingAcceptanceCase.ShopRations){PrepareAcceptanceShore(selected);_hud.ShopCategory=4;return;}
+            int island=selected==FishingAcceptanceCase.ForestSanctuary?1:selected==FishingAcceptanceCase.WreckSanctuary?2:selected==FishingAcceptanceCase.StarSanctuary?3:0;
+            Teleport(FishingIslandWorld.Berth(island),Quaternion.identity);
+            if(!Shore.TryDisembark())throw new InvalidOperationException("V19 fixture cannot land on island "+island);
+            if(selected==FishingAcceptanceCase.ResidentDialogue)
+            {
+                var npc=Residents.Person(0);
+                if(!Shore.Relocate(npc.position+Vector3.forward*1.8f,Quaternion.Euler(0,180,0)))throw new InvalidOperationException("NPC fixture footing rejected");
+                View.ResetLook();viewCamera.transform.SetPositionAndRotation(Shore.Position+Vector3.up*1.5f,Quaternion.LookRotation(npc.position+Vector3.up*1.4f-Shore.Position-Vector3.up*1.5f));
+                if(!Residents.Talk(0))throw new InvalidOperationException("NPC fixture dialogue rejected");Residents.Choose(0);Residents.Reveal();return;
+            }
+            if(selected>=FishingAcceptanceCase.WindSanctuary && selected<=FishingAcceptanceCase.StarSanctuary)
+            {
+                if(!Shore.Relocate(Realms.Portal(island).position+Vector3.forward*1.8f,Quaternion.identity) || !Realms.Enter(island))
+                    throw new InvalidOperationException("Sanctuary fixture entry rejected "+island);
+                return;
+            }
+            if(selected==FishingAcceptanceCase.RegionArrival)
+            {
+                ToggleView();View.ApplyShoreLookDelta(new Vector2(900,0));Regions.Show(FishingAdventure.Name(0),FishingLore.Subtitle(0),0);return;
+            }
+            if(selected==FishingAcceptanceCase.SwimmingView)
+            {
+                if(!Shore.Relocate(FishingIslandWorld.Center(0)+new Vector3(0,1.12f,33),Quaternion.identity))throw new InvalidOperationException("Swimming fixture jetty rejected");
+                viewCamera.transform.rotation=Quaternion.LookRotation(Vector3.right);
+                for(int i=0;i<65;i++)Shore.Move(Vector2.up,true,false,false,.05f);
+                if(!Shore.Swimming)throw new InvalidOperationException("Swimming fixture did not leave jetty");
+                ToggleView();View.ResetLook();return;
+            }
+            FishingClimbRoute route=null;
+            foreach(var candidate in FindObjectsOfType<FishingClimbRoute>())if(FlatDistance(candidate.Bottom,FishingIslandWorld.Center(0))<35)route=candidate;
+            if(route==null || !Shore.Relocate(route.Bottom,Quaternion.identity) || !Shore.TryClimb())throw new InvalidOperationException("Climbing fixture route rejected");
+            for(int i=0;i<55;i++)Shore.Move(Vector2.up,false,false,false,.05f);
+            ToggleView();View.ResetLook();
         }
     }
 }

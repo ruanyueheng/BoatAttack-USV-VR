@@ -27,10 +27,10 @@ namespace BoatAttack.Fishing
                     float y=.48f+shelf*.57f;b.Box(new Vector3(x,y,-1),new Vector3(1.25f,.07f,2.5f),cream);
                     for(int k=0;k<10;k++)
                     {
-                        var p=new Vector3(x+(k%2-.5f)*.55f,y+.13f,-2+(k/2)*.48f);
-                        if(shelf==0){b.Box(p,new Vector3(.35f,.22f,.3f),colors[k%4]);b.Box(p+Vector3.up*.01f+Vector3.back*.155f,new Vector3(.22f,.09f,.01f),cream);}
-                        else if(shelf==1){b.Tube(p-Vector3.up*.09f,p+Vector3.up*.09f,.12f,.12f,colors[k%4],12);b.Tube(p-Vector3.up*.1f,p-Vector3.up*.08f,.15f,.15f,brass,12);b.Tube(p+Vector3.up*.08f,p+Vector3.up*.1f,.15f,.15f,brass,12);}
-                        else {b.Box(p,new Vector3(.23f,.19f,.24f),colors[k%4]);b.Tube(p+Vector3.up*.12f,p+Vector3.up*.2f,.05f,.05f,brass,8);}
+                        var p=new Vector3(x+(k%2-.5f)*.55f,y+.04f,-2+(k/2)*.48f);
+                        string[] goods=x<0?new[]{"Compass","RopeCoil","Lantern","Binoculars","Telescope","WindBell","bottle","tool-paddle","tool-shovel","StarPrism"}
+                            :new[]{"bread","apple","banana","fish","cheese","bag","bottle-oil","mug","pot","crate-bottles"};
+                        FishingV019Art.Spawn(goods[(k+shelf*3)%goods.Length],transform,p,.34f,160+k*19+shelf*30);
                     }
                 }
                 var collider=gameObject.AddComponent<BoxCollider>();collider.center=new Vector3(x,1.05f,-1);collider.size=new Vector3(1.25f,2.1f,2.5f);
@@ -43,8 +43,9 @@ namespace BoatAttack.Fishing
                     b.Box(new Vector3(x,y,4.45f),new Vector3(2.2f,.08f,.65f),wood);
                     for(int k=0;k<7;k++)
                     {
-                        var p=new Vector3(x+(k-3)*.28f,y+.18f,4.45f);
-                        b.Box(p,new Vector3(.22f,.28f,.4f),colors[(k+shelf)%4]);b.Box(p+Vector3.back*.205f,new Vector3(.13f,.12f,.01f),cream);
+                        var p=new Vector3(x+(k-3)*.28f,y+.05f,4.45f);
+                        string[] goods={"RopeCoil","bottle-large","bag","Compass","apple","Lantern","bread"};
+                        FishingV019Art.Spawn(goods[(k+shelf)%goods.Length],transform,p,.24f,180+k*12);
                     }
                 }
             }
@@ -67,6 +68,8 @@ namespace BoatAttack.Fishing
             gameObject.AddComponent<MeshFilter>().sharedMesh=_mesh;var renderer=gameObject.AddComponent<MeshRenderer>();renderer.sharedMaterial=_material;renderer.shadowCastingMode=ShadowCastingMode.Off;
             Sign("航海设备  /  船只升级",new Vector3(-2.9f,2.22f,-2.28f));Sign("探索工具  /  制作补给",new Vector3(2.9f,2.22f,-2.28f));
             Sign("TIDE & TACKLE  ·  海湾用品",new Vector3(0,2.9f,4.75f));
+            FishingV019Art.Spawn("Telescope",transform,new Vector3(-4.55f,.53f,-3.65f),.64f);
+            FishingV019Art.Spawn("chest",transform,new Vector3(4.55f,.53f,-3.65f),.74f,180);
             var light=new GameObject("Chandlery warm pendant").AddComponent<Light>();light.transform.SetParent(transform,false);light.transform.localPosition=new Vector3(0,2.7f,-.3f);
             light.type=LightType.Point;light.color=new Color(1,.84f,.65f);light.range=7;light.intensity=3.2f;light.shadows=LightShadows.None;
         }

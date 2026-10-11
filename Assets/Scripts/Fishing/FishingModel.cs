@@ -160,7 +160,8 @@ namespace BoatAttack.Fishing
     [Serializable]
     public sealed class FishingSaveData
     {
-        public int version = 10;
+        public int version = 11;
+        public LoreData lore = new LoreData();
         public int engineLevel, rudderLevel, cabinLevel;
         public AdventureData adventure = new AdventureData();
         public CalendarData calendar = new CalendarData();
@@ -398,7 +399,7 @@ namespace BoatAttack.Fishing
         {
             var result = new FishingSaveData
             {
-                calendar = Calendar.Snapshot(), hunting = Hunting.Snapshot(),
+                calendar = Calendar.Snapshot(), hunting = Hunting.Snapshot(), lore = Lore.Snapshot(),
                 engineLevel = EngineLevel, rudderLevel = RudderLevel, cabinLevel = CabinLevel, adventure = Adventure.Snapshot(),
                 hasPendingCatch = HasPendingCatch, pendingCatch = _pending?.Copy(), releasedCatches = ReleasedCatches, orderMarked = OrderMarked,
                 workshop = Workshop.Snapshot(), backpack = Backpack.Snapshot(), selectedSlot = Backpack.Selected, collectedPickupMask = Backpack.CollectedMask, landAnimalMask = Backpack.AnimalMask,
@@ -416,7 +417,8 @@ namespace BoatAttack.Fishing
         public static bool TryRestore(FishingSaveData data, out FishingCareer career)
         {
             career = null;
-            if (data == null || data.version < 1 || data.version > 10) return false;
+            if (data == null || data.version < 1 || data.version > 11) return false;
+            if (data.version < 11 && data.lore != null && (data.lore.residents != 0 || data.lore.shrines != 0 || data.lore.finale)) return false;
             if (data.engineLevel < 0 || data.engineLevel > MaxLevel || data.rudderLevel < 0 || data.rudderLevel > MaxLevel
                 || data.cabinLevel < 0 || data.cabinLevel > MaxLevel
                 || (data.version < 10 && (data.engineLevel != 0 || data.rudderLevel != 0 || data.cabinLevel != 0))) return false;
@@ -501,6 +503,11 @@ namespace BoatAttack.Fishing
                 if (!FishingAdventure.TryRestore(data.adventure, out var adventure)) return false;
                 result.Adventure = adventure; result.EngineLevel = data.engineLevel;
                 result.RudderLevel = data.rudderLevel; result.CabinLevel = data.cabinLevel;
+            }
+            if (data.version >= 11)
+            {
+                if (!FishingLore.TryRestore(data.lore, out var lore)) return false;
+                result.Lore = lore;
             }
             career = result;
             return true;

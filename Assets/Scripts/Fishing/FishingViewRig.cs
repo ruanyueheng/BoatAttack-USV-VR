@@ -78,7 +78,7 @@ namespace BoatAttack.Fishing
             var c = Controller;
             UpdateBinocularView();
             if (c == null || c.Player == null || c.viewCamera == null || !OwnsCamera) { ReleaseCursor(); return; }
-            if (c.Paused || c.InventoryOpen || c.ShopBlocksGameplay) { ResetInput(); return; }
+            if (c.Paused || c.InventoryOpen || c.ShopBlocksGameplay || c.StoryBlocksGameplay) { ResetInput(); return; }
             if(c.Ashore){ApplyShoreView(focused,automated);return;}
             ReleaseCursor();
             var boat = c.Player.transform;

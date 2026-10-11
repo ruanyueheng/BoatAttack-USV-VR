@@ -7,6 +7,14 @@ namespace BoatAttack.Fishing
         public const float StandingHeight=1.75f, CrouchingHeight=1.08f, Gravity=18f, JumpHeight=1.1f;
         private bool _jumpReady;
         public float VerticalSpeed { get; private set; }
+        public float Stamina { get; private set; } = 1;
+        public void RestoreStamina() => Stamina = Math.Min(1, Stamina + .5f);
+        public void Exert(bool effort, bool resting, float dt)
+        {
+            if (float.IsNaN(dt) || float.IsInfinity(dt) || dt <= 0) return;
+            dt = Math.Min(dt, .05f);
+            Stamina = Math.Max(0, Math.Min(1, Stamina + (effort ? -1f / 12f : resting ? .18f : .07f) * dt));
+        }
         public void ResetInput(){_jumpReady=false;}
         public void Reset(){VerticalSpeed=0;ResetInput();}
         public void HitCeiling(){if(VerticalSpeed>0)VerticalSpeed=0;}

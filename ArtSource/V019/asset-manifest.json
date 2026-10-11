@@ -1,0 +1,497 @@
+[
+  {
+    "name": "bottle",
+    "triangles": 124,
+    "dimensions": [
+      0.36432087421417236,
+      0.36432087421417236,
+      0.8904509544372559
+    ],
+    "source": "ArtSource\\V019\\Kenney\\pirate-kit\\Models\\GLB format\\bottle.glb",
+    "sha256": "a1e1b7051e44a46e6aaf44fed10ea49a8f52c36a859df4640c84159250019caa"
+  },
+  {
+    "name": "bottle-large",
+    "triangles": 108,
+    "dimensions": [
+      0.4658176004886627,
+      0.4658176004886627,
+      0.8904509544372559
+    ],
+    "source": "ArtSource\\V019\\Kenney\\pirate-kit\\Models\\GLB format\\bottle-large.glb",
+    "sha256": "ed3982ca8346d7158dbdd730445ee5a2c228771a243e7e4d0bcedf96cb2400be"
+  },
+  {
+    "name": "crate-bottles",
+    "triangles": 572,
+    "dimensions": [
+      1.0779999494552612,
+      1.309000015258789,
+      1.0568609237670898
+    ],
+    "source": "ArtSource\\V019\\Kenney\\pirate-kit\\Models\\GLB format\\crate-bottles.glb",
+    "sha256": "43b440fdece63a328035079dad3ed02788e3cbc407749a2224df5a0701437f70"
+  },
+  {
+    "name": "barrel",
+    "triangles": 148,
+    "dimensions": [
+      1.3360981941223145,
+      1.3360981941223145,
+      1.229142665863037
+    ],
+    "source": "ArtSource\\V019\\Kenney\\pirate-kit\\Models\\GLB format\\barrel.glb",
+    "sha256": "77f7ab807c032842af0ea0cbf726b4d81b734dfaf3d58bb5382689ae841b30ca"
+  },
+  {
+    "name": "chest",
+    "triangles": 232,
+    "dimensions": [
+      1.274999976158142,
+      1.3137471675872803,
+      1.3478325605392456
+    ],
+    "source": "ArtSource\\V019\\Kenney\\pirate-kit\\Models\\GLB format\\chest.glb",
+    "sha256": "e08cb3bc26a05a594e17dc922ea30199408c7ed7905fb25f4a15401ce362e638"
+  },
+  {
+    "name": "tool-shovel",
+    "triangles": 168,
+    "dimensions": [
+      0.6578308939933777,
+      0.28290000557899475,
+      2.3491268157958984
+    ],
+    "source": "ArtSource\\V019\\Kenney\\pirate-kit\\Models\\GLB format\\tool-shovel.glb",
+    "sha256": "b013175113d2f3470570143bc69da61908ceda02b49dff845b4e00c950a0184b"
+  },
+  {
+    "name": "tool-paddle",
+    "triangles": 60,
+    "dimensions": [
+      0.6578308939933777,
+      0.2075311839580536,
+      2.3491265773773193
+    ],
+    "source": "ArtSource\\V019\\Kenney\\pirate-kit\\Models\\GLB format\\tool-paddle.glb",
+    "sha256": "bfd43b9a84f1265803331031c345577c718b2086f8a3e7b3c98ece2a5132c5df"
+  },
+  {
+    "name": "ship-wreck",
+    "triangles": 2282,
+    "dimensions": [
+      4.8000006675720215,
+      10.600001335144043,
+      9.963520050048828
+    ],
+    "source": "ArtSource\\V019\\Kenney\\pirate-kit\\Models\\GLB format\\ship-wreck.glb",
+    "sha256": "6b1c16e1f33b89a574f0e274d83fc134669df3728eea91fa2ca54e7366113e24"
+  },
+  {
+    "name": "mast-ropes",
+    "triangles": 350,
+    "dimensions": [
+      4.385666847229004,
+      2.348839282989502,
+      7.8880181312561035
+    ],
+    "source": "ArtSource\\V019\\Kenney\\pirate-kit\\Models\\GLB format\\mast-ropes.glb",
+    "sha256": "4dffe8e7ee1ec037f3348c8147d208dd44932b1925b4fefa88e9f43ea2c8d842"
+  },
+  {
+    "name": "cannon-mobile",
+    "triangles": 472,
+    "dimensions": [
+      1.6787500381469727,
+      1.9249999523162842,
+      1.379662275314331
+    ],
+    "source": "ArtSource\\V019\\Kenney\\pirate-kit\\Models\\GLB format\\cannon-mobile.glb",
+    "sha256": "36155f9c2d581a615b6d9ff53c1e3175cfca0bf36fc6d713bc35aefd5f3ef46d"
+  },
+  {
+    "name": "tower-watch",
+    "triangles": 248,
+    "dimensions": [
+      3.048802375793457,
+      3.048802375793457,
+      2.7850000858306885
+    ],
+    "source": "ArtSource\\V019\\Kenney\\pirate-kit\\Models\\GLB format\\tower-watch.glb",
+    "sha256": "a0bb4577dafb5e72686f5ed61a2299238ae7927e0732ad6b0c39415420eaa5c9"
+  },
+  {
+    "name": "flag-pennant",
+    "triangles": 118,
+    "dimensions": [
+      1.76155424118042,
+      0.39890819787979126,
+      2.0968432426452637
+    ],
+    "source": "ArtSource\\V019\\Kenney\\pirate-kit\\Models\\GLB format\\flag-pennant.glb",
+    "sha256": "6d64f0eb6e6493f69cab69ea25c6175d678500360eb6229a835c03eaa8cdd0ac"
+  },
+  {
+    "name": "apple",
+    "triangles": 136,
+    "dimensions": [
+      0.19629456102848053,
+      0.19629456102848053,
+      0.19075341522693634
+    ],
+    "source": "ArtSource\\V019\\Kenney\\food-kit\\Models\\GLB format\\apple.glb",
+    "sha256": "f996291826a62cceb32aa7990e785478bad32e27ad5bd83aeb2eca52905b024b"
+  },
+  {
+    "name": "banana",
+    "triangles": 104,
+    "dimensions": [
+      0.13759998977184296,
+      0.6298712491989136,
+      0.19580039381980896
+    ],
+    "source": "ArtSource\\V019\\Kenney\\food-kit\\Models\\GLB format\\banana.glb",
+    "sha256": "3ce68132fbda0d4d10bce49a7c9fae1b65dd4c9e62b87323dcff30cce075ec12"
+  },
+  {
+    "name": "bread",
+    "triangles": 116,
+    "dimensions": [
+      0.4423206150531769,
+      0.3659040033817291,
+      0.03974400833249092
+    ],
+    "source": "ArtSource\\V019\\Kenney\\food-kit\\Models\\GLB format\\bread.glb",
+    "sha256": "884d61f163003cd3cde17765b52195c03dce08164f30c0c7c36eaaf5e85c6970"
+  },
+  {
+    "name": "fish",
+    "triangles": 233,
+    "dimensions": [
+      0.19783182442188263,
+      0.6207826733589172,
+      0.322201132774353
+    ],
+    "source": "ArtSource\\V019\\Kenney\\food-kit\\Models\\GLB format\\fish.glb",
+    "sha256": "dee024b0f3a667e540e491a72b1435186600e02cf7646ad18150ea3542c71418"
+  },
+  {
+    "name": "bag",
+    "triangles": 46,
+    "dimensions": [
+      0.22010000050067902,
+      0.41179996728897095,
+      0.5997589826583862
+    ],
+    "source": "ArtSource\\V019\\Kenney\\food-kit\\Models\\GLB format\\bag.glb",
+    "sha256": "4a3d3546eb0aac4a24a8be0b104d73fa87b09253fd96f3cbe01ec7a35f751482"
+  },
+  {
+    "name": "bottle-oil",
+    "triangles": 96,
+    "dimensions": [
+      0.14000000059604645,
+      0.14000000059604645,
+      0.6218000054359436
+    ],
+    "source": "ArtSource\\V019\\Kenney\\food-kit\\Models\\GLB format\\bottle-oil.glb",
+    "sha256": "162545b71cdf32d8e75847608dd2cf63d09a27df8f8bf249d939a232b149ee84"
+  },
+  {
+    "name": "mug",
+    "triangles": 232,
+    "dimensions": [
+      0.3436693549156189,
+      0.28512001037597656,
+      0.273360013961792
+    ],
+    "source": "ArtSource\\V019\\Kenney\\food-kit\\Models\\GLB format\\mug.glb",
+    "sha256": "c2a2efbd1aa438108c2cd1b31d80459b87819d0bc022597737f8fef086ad9372"
+  },
+  {
+    "name": "pot",
+    "triangles": 228,
+    "dimensions": [
+      0.6574494242668152,
+      0.8220716118812561,
+      0.36079999804496765
+    ],
+    "source": "ArtSource\\V019\\Kenney\\food-kit\\Models\\GLB format\\pot.glb",
+    "sha256": "cfee9c56c8f4fbf0f351d289e0c4139127954ad20843cd83af2d857fd4d89a77"
+  },
+  {
+    "name": "cheese",
+    "triangles": 576,
+    "dimensions": [
+      0.6800000667572021,
+      0.6800000667572021,
+      0.2199999839067459
+    ],
+    "source": "ArtSource\\V019\\Kenney\\food-kit\\Models\\GLB format\\cheese.glb",
+    "sha256": "656a9016480e72143e3b63a3ef5f2731f5c1641f6b3102069af15c9379f3181d"
+  },
+  {
+    "name": "whole-ham",
+    "triangles": 128,
+    "dimensions": [
+      0.38094696402549744,
+      0.6397409439086914,
+      0.4398796856403351
+    ],
+    "source": "ArtSource\\V019\\Kenney\\food-kit\\Models\\GLB format\\whole-ham.glb",
+    "sha256": "34a6581599cb777c7f278757b9c7a99ee316c8b886c2cffbe136a4558c5c65d3"
+  },
+  {
+    "name": "tree_oak",
+    "triangles": 196,
+    "dimensions": [
+      0.6405540108680725,
+      0.7396479845046997,
+      1.2262399196624756
+    ],
+    "source": "ArtSource\\V019\\Kenney\\nature-kit\\Models\\GLTF format\\tree_oak.glb",
+    "sha256": "fdd6bbf0f6b9f7f4188761ab227e2be2b7bb217976522a0e218b33cf58a811cb"
+  },
+  {
+    "name": "tree_pineTallA",
+    "triangles": 78,
+    "dimensions": [
+      0.3862729072570801,
+      0.39195001125335693,
+      1.5296059846878052
+    ],
+    "source": "ArtSource\\V019\\Kenney\\nature-kit\\Models\\GLTF format\\tree_pineTallA.glb",
+    "sha256": "c0610076738e52c761358b30e79e69760f09defb4ad61d2623a4c5d2fc75a8cf"
+  },
+  {
+    "name": "tree_palmDetailedTall",
+    "triangles": 336,
+    "dimensions": [
+      1.0343290567398071,
+      1.0343290567398071,
+      1.4234669208526611
+    ],
+    "source": "ArtSource\\V019\\Kenney\\nature-kit\\Models\\GLTF format\\tree_palmDetailedTall.glb",
+    "sha256": "e18422ce1e6d63b7d74b8f1dd524c0187c5f799bce63289fe1da4d523328c608"
+  },
+  {
+    "name": "tent_detailedOpen",
+    "triangles": 232,
+    "dimensions": [
+      0.8749279975891113,
+      0.6663999557495117,
+      0.5611308217048645
+    ],
+    "source": "ArtSource\\V019\\Kenney\\nature-kit\\Models\\GLTF format\\tent_detailedOpen.glb",
+    "sha256": "7cd239a04f7b24f59550de4bc527d339249268b5c40c09988cd0506ce5966839"
+  },
+  {
+    "name": "mushroom_redGroup",
+    "triangles": 144,
+    "dimensions": [
+      0.2696309983730316,
+      0.2541965842247009,
+      0.2504880130290985
+    ],
+    "source": "ArtSource\\V019\\Kenney\\nature-kit\\Models\\GLTF format\\mushroom_redGroup.glb",
+    "sha256": "bfdc6c3253b4e1bfa24c60f855c30e20d004b14cd8b03325a6740bbd1a3dfb7d"
+  },
+  {
+    "name": "flower_purpleA",
+    "triangles": 76,
+    "dimensions": [
+      0.15909752249717712,
+      0.1810590624809265,
+      0.24249999225139618
+    ],
+    "source": "ArtSource\\V019\\Kenney\\nature-kit\\Models\\GLTF format\\flower_purpleA.glb",
+    "sha256": "01b0b3eae7c6627bf00af37d255290419856e32749524f5cc6299e20e7479327"
+  },
+  {
+    "name": "plant_bush",
+    "triangles": 32,
+    "dimensions": [
+      0.3959999978542328,
+      0.3959999978542328,
+      0.24444358050823212
+    ],
+    "source": "ArtSource\\V019\\Kenney\\nature-kit\\Models\\GLTF format\\plant_bush.glb",
+    "sha256": "8c30c93069da34ccaed6d7c5a8aee8392b46b305f57707e5977975d391b9573e"
+  },
+  {
+    "name": "campfire_logs",
+    "triangles": 112,
+    "dimensions": [
+      0.29185232520103455,
+      0.29185232520103455,
+      0.06259983032941818
+    ],
+    "source": "ArtSource\\V019\\Kenney\\nature-kit\\Models\\GLTF format\\campfire_logs.glb",
+    "sha256": "254f31d4ec2bbb03e3d82edb76de937cca543a82a01d5cd2e7752186d1191002"
+  },
+  {
+    "name": "stump_old",
+    "triangles": 120,
+    "dimensions": [
+      0.3565270006656647,
+      0.3709999918937683,
+      0.26649996638298035
+    ],
+    "source": "ArtSource\\V019\\Kenney\\nature-kit\\Models\\GLTF format\\stump_old.glb",
+    "sha256": "9c6dde502ec32912bc673327452831db83c9e406392fc09c83132bd72dc958c3"
+  },
+  {
+    "name": "stone_tallC",
+    "triangles": 37,
+    "dimensions": [
+      0.4561944305896759,
+      0.4365076422691345,
+      0.7829360365867615
+    ],
+    "source": "ArtSource\\V019\\Kenney\\nature-kit\\Models\\GLTF format\\stone_tallC.glb",
+    "sha256": "861d261774699d0953bc49b5a927179f938c997853509f3bf5d1a278349b3294"
+  },
+  {
+    "name": "cliff_blockCave_rock",
+    "triangles": 56,
+    "dimensions": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "source": "ArtSource\\V019\\Kenney\\nature-kit\\Models\\GLTF format\\cliff_blockCave_rock.glb",
+    "sha256": "cdeb3d39288870116a9ebc519e7624be077b1ad08409d4727088cc953a0e6ab0"
+  },
+  {
+    "name": "Compass",
+    "triangles": 980,
+    "dimensions": [
+      0.47999998927116394,
+      0.5870000123977661,
+      0.08400000631809235
+    ],
+    "source": "Project-authored Blender geometry",
+    "sha256": "8a1e1e51f94de2618772e13e6f5541d98ad3331dd74e5620dc069d1d67274f68"
+  },
+  {
+    "name": "RopeCoil",
+    "triangles": 2748,
+    "dimensions": [
+      0.6944358944892883,
+      0.5239999890327454,
+      0.12971282005310059
+    ],
+    "source": "Project-authored Blender geometry",
+    "sha256": "8b928f35ee78942d91f72ea9d00611671acf8400f05d4918e5287ed02dbc49e2"
+  },
+  {
+    "name": "Lantern",
+    "triangles": 676,
+    "dimensions": [
+      0.3199999928474426,
+      0.3199999928474426,
+      0.5739999413490295
+    ],
+    "source": "Project-authored Blender geometry",
+    "sha256": "e79d1e2d62645f8b43418b632e35736ee170bc8e2125c2948464c58c102a5e11"
+  },
+  {
+    "name": "Binoculars",
+    "triangles": 1116,
+    "dimensions": [
+      0.38999998569488525,
+      0.3400000333786011,
+      0.16999998688697815
+    ],
+    "source": "Project-authored Blender geometry",
+    "sha256": "c3ae503216e9a5e115d2fa87a9bd8dc6e2154d232003fe3abdf7e546b082dc1c"
+  },
+  {
+    "name": "Telescope",
+    "triangles": 360,
+    "dimensions": [
+      0.3400690257549286,
+      0.7993332147598267,
+      0.719967782497406
+    ],
+    "source": "Project-authored Blender geometry",
+    "sha256": "3f5207d1c7d46d68b6936f32dcaf99cc10e82ad9ad3fc25b09d0cdeded8ce0c4"
+  },
+  {
+    "name": "WindBell",
+    "triangles": 504,
+    "dimensions": [
+      0.23999999463558197,
+      0.23999999463558197,
+      0.5269999504089355
+    ],
+    "source": "Project-authored Blender geometry",
+    "sha256": "603732be44059b602c746edd4581e3cf8a927641a06a85c45b3e89567296cb4b"
+  },
+  {
+    "name": "StarPrism",
+    "triangles": 48,
+    "dimensions": [
+      0.4999999701976776,
+      0.4999999701976776,
+      0.8910000324249268
+    ],
+    "source": "Project-authored Blender geometry",
+    "sha256": "4137f39a686e5baee9d55edd6f45e2b19237d0bb55312f2313e2a4486768fa7c"
+  },
+  {
+    "name": "Resident0",
+    "triangles": 9140,
+    "dimensions": [
+      0.742438554763794,
+      0.3199999928474426,
+      1.7098145484924316
+    ],
+    "source": "ArtSource\\V019\\Characters\\Superhero_Female_FullBody.fbx",
+    "sha256": "0729457b488446ca18b09ce14e243cd06501829ac3bf05c721dca1805fb2001c"
+  },
+  {
+    "name": "Resident1",
+    "triangles": 7219,
+    "dimensions": [
+      0.742438554763794,
+      0.3199999928474426,
+      1.7127717733383179
+    ],
+    "source": "ArtSource\\V019\\Characters\\Superhero_Female_FullBody.fbx",
+    "sha256": "e8c1a4f8d350bdb44ec8c9559a0cda66e5cd4e41a5c3ef73907db1ea9275805c"
+  },
+  {
+    "name": "Resident2",
+    "triangles": 6494,
+    "dimensions": [
+      0.8923529386520386,
+      0.3700000047683716,
+      1.783229947090149
+    ],
+    "source": "ArtSource\\V019\\Characters\\Superhero_Male_FullBody.fbx",
+    "sha256": "4e5b8b98861c7f4fae1c8aad421769c06d6c6952eb5a9e02faf46b7a52a412a4"
+  },
+  {
+    "name": "Resident3",
+    "triangles": 6965,
+    "dimensions": [
+      0.8923529386520386,
+      0.3700000047683716,
+      1.8088682889938354
+    ],
+    "source": "ArtSource\\V019\\Characters\\Superhero_Male_FullBody.fbx",
+    "sha256": "df16fc54d55fe218f41a489736aa5a93adb323f87c6d69cbb831f2b66d8898c0"
+  },
+  {
+    "name": "Resident5",
+    "triangles": 6698,
+    "dimensions": [
+      0.8923529386520386,
+      0.3700000047683716,
+      1.7792181968688965
+    ],
+    "source": "ArtSource\\V019\\Characters\\Superhero_Male_FullBody.fbx",
+    "sha256": "a7169b9e01c19cef2270bad5149877e403974bcd629d039d71fef754532c5187"
+  }
+]

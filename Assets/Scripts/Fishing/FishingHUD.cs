@@ -22,7 +22,7 @@ namespace BoatAttack.Fishing
         private bool CatchVisible => Controller.LastCatch.Fish != null && CatchAge < CardSeconds;
 
         public bool BlocksPointer(Vector2 screen, int width, int height)
-            => Controller.ShopBlocksGameplay || Controller.InventoryOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
+            => Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || Controller.InventoryOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
                 Controller.HarborDeskOpen && Controller.AtHarbor, Controller.AtHarbor,
                 Controller.Ecology.Candidate.HasValue && !CatchVisible, Controller.Acceptance != null);
 
@@ -56,7 +56,8 @@ namespace BoatAttack.Fishing
                 GUI.matrix = Matrix4x4.TRS(new Vector3(_offset, 0, 0), Quaternion.identity, new Vector3(_scale, _scale, 1));
                 if (_label == null) _label = new GUIStyle(GUI.skin.label) { font = _font, wordWrap = true, richText = false, padding = new RectOffset() };
                 _fade = 1f;
-                if (c.ShopOpen) DrawTackleShop();
+                if (c.DialogueOpen) DrawDialogue();
+                else if (c.ShopOpen) DrawTackleShop();
                 else if (c.InventoryOpen) { DrawInventory(); DrawInventoryNotice(); }
                 else if (c.JournalOpen) DrawJournal();
                 else if (c.Paused) DrawPause();
@@ -72,7 +73,10 @@ namespace BoatAttack.Fishing
                     DrawCatchToast();
                     DrawCompactNotice();
                     DrawHotbar();
+                    DrawExplorationStatus();
+                    DrawRegionTitle();
                 }
+                if(c.Realms!=null && c.Realms.Blackout>0)Fill(-_offset/_scale,0,Screen.width/_scale,_height,new Color(.008f,.016f,.025f,c.Realms.Blackout));
                 if (c.Acceptance != null) DrawAcceptanceToolbar();
             }
             finally { GUI.matrix = matrix; GUI.color = color; }

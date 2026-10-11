@@ -182,6 +182,7 @@ namespace BoatAttack.Fishing
             else if(!check.ArmSight || !check.ToolSight)check.GeometryReason="手臂/工具到目标的视线被阻挡";
             if(Paused || InventoryOpen || JournalOpen)check.Reason="暂停或背包/日志模态";
             else if(ShopBlocksGameplay)check.Reason="商店模态或开关帧";
+            else if(StoryBlocksGameplay)check.Reason="对话或地区过渡占用输入";
             else if(WorldActionBlocksGameplay || Actions.Active || Actions.ContactPending)check.Reason="已有动作或动作消费帧";
             else if(_xrActive || Expedition.Aligning)check.Reason="XR 或信标校准占用输入";
             else if((!Ashore && !fish) || (HasPendingCatch && !fish))check.Reason="岸船/待处理鱼状态不允许";
@@ -194,6 +195,11 @@ namespace BoatAttack.Fishing
             get
             {
                 if(WorldActionBusy)return "动作进行中 · "+Mathf.RoundToInt(Actions.Progress*100)+"% · Esc 取消";
+                if(Shore.Swimming)return "游泳 · 朝低岸移动并按空格上岸 · 靠近船边G上船";
+                if(Shore.Climbing)return Shore.ClimbHint;
+                if(Realms!=null && Realms.NearbyHint!=null)return Realms.NearbyHint;
+                if(Residents!=null && Residents.TryNearby(out int resident))return "E 与"+FishingLore.ResidentName(resident)+"交谈";
+                if(Shore.ClimbHint!=null)return Shore.ClimbHint;
                 if(TackleShop!=null && TackleShop.NearCounter)return "E / Tab 潮汐钓具店 · 柜台购买升级";
                 var target=ResolveWorldTarget(false);
                 switch(target.Kind)
@@ -212,8 +218,12 @@ namespace BoatAttack.Fishing
         /// <summary>真实输入与 HUD 使用同一候选选择；接触阶段只提交已经锁定的目标。</summary>
         public bool RequestWorldInteraction()
         {
-            if(Paused || InventoryOpen || JournalOpen || ShopBlocksGameplay || WorldActionBlocksGameplay)return false;
+            if(Paused || InventoryOpen || JournalOpen || ShopBlocksGameplay || StoryBlocksGameplay || WorldActionBlocksGameplay)return false;
             if(!Ashore){Interact();return true;}
+            if(Shore.Swimming || Shore.Climbing)return false;
+            if(Realms.TryTarget(out _,out _))return Realms.Interact();
+            if(Residents.TryNearby(out int resident))return Residents.Talk(resident);
+            if(Shore.TryClimb())return true;
             if(TackleShop!=null && TackleShop.NearCounter)return ToggleShop();
             var target=ResolveWorldTarget(true);
             if(target.Kind==WorldTargetKind.None){Notice("靠近可互动对象后按 E；低处物品可蹲下触及。",3);return false;}
@@ -327,7 +337,7 @@ namespace BoatAttack.Fishing
         public void TickWorldAction(float deltaTime,bool focused,bool xrActive)
         {
             var request=_action;if(request==null)return;
-            if(!focused || xrActive || Paused || InventoryOpen || JournalOpen || ShopOpen || Expedition.Aligning || request.Profile!=Career
+            if(!focused || xrActive || Paused || InventoryOpen || JournalOpen || ShopOpen || StoryBlocksGameplay || Expedition.Aligning || request.Profile!=Career
                 || request.Ashore!=Ashore || (Ashore && request.Crouched!=Shore.Crouched) || request.Tool!=Career.Backpack.Equipped || request.Slot!=Career.Backpack.Selected
                 || (!request.Attempted && request.HadRoot && (request.ContactRoot==null || !request.ContactRoot.gameObject.activeInHierarchy)))
             {CancelWorldAction();return;}

@@ -24,7 +24,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.18.0";
+        public const string Version = "0.19.0";
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
@@ -120,10 +120,11 @@ namespace BoatAttack.Fishing
             Automated = Application.isBatchMode || HasArgument("-fishing-field-capture") || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
             SavePath = AcceptanceOptions != null ? AcceptanceOptions.ProfilePath(Application.temporaryCachePath, false)
                 : Path.Combine(Automated ? Application.temporaryCachePath : Application.persistentDataPath,
-                Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v10.json");
-            // v10 owns a separate file; earlier files are read-only migration sources.
+                Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v11.json");
+            // Older executables keep their own files; migration never overwrites their progress.
             string warning;
-            string legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v9.json");
+            string legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v10.json");
+            if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v9.json");
             if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v8.json");
             if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v7.json");
             if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v6.json");
@@ -178,6 +179,10 @@ namespace BoatAttack.Fishing
             CatchRig=gameObject.AddComponent<FishingCatchRig>();CatchRig.Build(this);
             DockConsole=gameObject.AddComponent<FishingDockConsole>();DockConsole.Build(this);
             XRNotebook=gameObject.AddComponent<FishingXRNotebook>();XRNotebook.Build(this);
+            Realms=gameObject.AddComponent<FishingRealmWorld>();Realms.Build(this);
+            Residents=gameObject.AddComponent<FishingResidents>();Residents.Build(this);
+            Regions=gameObject.AddComponent<FishingRegionPresentation>();Regions.Build(this);
+            Shore.RefreshClimbRoutes();
             ConfigurePresentation();
             _feedback=gameObject.AddComponent<AudioSource>();_feedback.spatialBlend=0f;_feedback.volume=0.45f;
             _biteTone=Tone(780f,0.13f);_successTone=Tone(1150f,0.2f);
@@ -186,7 +191,7 @@ namespace BoatAttack.Fishing
             gameObject.AddComponent<FishingWorldInstruments>().Controller=this;
             _feedback.mute=QuietMode;
             if(LegendTrophy)BuildTrophy();
-            Notice(string.IsNullOrEmpty(warning)?"群岛来信：N 选择岛屿，低速 G 下船，E 读线索 / 寻宝。J 查看群岛航记；钓具店出售船只升级与探索用品。":warning,10f);
+            Notice(string.IsNullOrEmpty(warning)?"潮汐回响：N选择岛屿，低速G下船，E与居民交谈 / 进入潮纹秘境。J查看世界航记；店员可介绍商品，离岸可游泳。":warning,10f);
             _initialized=true;
             if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }
             else if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
@@ -206,6 +211,7 @@ namespace BoatAttack.Fishing
             }
             var k=Keyboard.current;var m=Mouse.current;var g=Gamepad.current;
             bool focused=Automated || Application.isFocused;
+            if(TickStoryInput(k,focused,xr)){Shore.Tick(false);AnimateEquipment();return;}
             if(!Anchored || HasPendingCatch)CastMotion.Reset();
             else if(Paused || !focused)CastMotion.CancelPreparation();
             else if(Acceptance==null || !Acceptance.FreezeScenario)CastMotion.Tick(Time.deltaTime);
@@ -287,7 +293,7 @@ namespace BoatAttack.Fishing
                 if(k!=null && k.uKey.wasPressedThisFrame)BuyUpgrade(UpgradeTrack.Line);
                 if(k!=null && k.xKey.wasPressedThisFrame)SellAll();
                 if(!xr && _input.Current.interact && !DockConsole.BlocksGameplay && !(_xrActive && Hands.HoldingRod))RequestWorldInteraction();
-                if(ShopBlocksGameplay){Shore.Tick(false);AnimateEquipment();return;}
+                if(ShopBlocksGameplay || StoryBlocksGameplay){Shore.Tick(false);AnimateEquipment();return;}
                 bool press=(pointerReady && !overTools && !rightHeld && m!=null && m.leftButton.wasPressedThisFrame) || (gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame);
                 if(press && Anchored)
                 {
@@ -344,7 +350,7 @@ namespace BoatAttack.Fishing
                 rb.MoveRotation(Quaternion.Slerp(rb.rotation,yaw,Time.fixedDeltaTime*2f));
                 return;
             }
-            if(HasPendingCatch || DockConsole.BlocksGameplay || XRNotebook.IsOpen || ShopBlocksGameplay)return;
+            if(HasPendingCatch || DockConsole.BlocksGameplay || XRNotebook.IsOpen || ShopBlocksGameplay || StoryBlocksGameplay)return;
             var state=_input.Current;
             float comfort=ComfortMode?0.65f:1f;
             Player.engine.Accelerate(state.throttle*comfort);Player.engine.Turn(state.steering*comfort);
@@ -374,6 +380,7 @@ namespace BoatAttack.Fishing
             XRSeat.Apply();Shore.SyncRider();View.ApplyView();Hands.Apply();FieldWorld.ApplyHeldTool();XRNotebook.SampleTool();ApplyWorldActionPose();CatchRig.Apply(deltaTime);
             // 全部工具和掌心目标落位后才解同源骨架；随后只读取竿尖画线，不再次采样。
             Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right,UnityEngine.XR.XRSettings.isDeviceActive);
+            Shore.ApplyTraversalPose();
             Shore.Character.SetOpticalView(View.OpticalView);DockConsole.Present();
         }
         public void ToggleView()
@@ -392,6 +399,7 @@ namespace BoatAttack.Fishing
         {
             CancelWorldAction();FieldWorld?.ClearToolPresentation();
             TackleShop?.Close();
+            Residents?.Close();
             if(Expedition!=null)Expedition.Cancel();
             _pointerGate.Reset();_gamepadGate.Reset();
             if(View!=null)View.ResetInput();
@@ -580,6 +588,7 @@ namespace BoatAttack.Fishing
         }
         public void ReturnToHarbor()
         {
+            Residents?.Close();Realms?.Abort();
             CancelWorldAction();
             TackleShop?.Close();
             if(Paused)return;if(CatchRig!=null)CatchRig.Recover();Expedition.Cancel();if(Ashore)Shore.BoardImmediately();if(HasPendingCatch){Anchored=false;Session.Cancel();}else LeaveStation();Teleport(spawnPosition,spawnRotation);Notice("已救援回港；鱼箱和金币保留。",5f);

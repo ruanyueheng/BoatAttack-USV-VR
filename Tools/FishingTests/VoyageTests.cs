@@ -43,7 +43,7 @@ internal static class VoyageTests
         check(FishingOrders.For(0).Name == "海湾早餐" && FishingOrders.For(3).Name == FishingOrders.For(3).Name, "V4 tutorial orders stay first; later requests are deterministic");
         check(!career.Store(Fish("normal-coral", FishKind.Coral)), "V3 delivered IDs stay deduplicated");
         var data = career.Snapshot();
-        check(data.version == 10 && FishingCareer.TryRestore(data, out var restored) && restored.DiscoveryMask == career.DiscoveryMask && restored.OrdersCompleted == 3 && restored.Catches == 7, "V3 extended progress round trip");
+        check(data.version == 11 && FishingCareer.TryRestore(data, out var restored) && restored.DiscoveryMask == career.DiscoveryMask && restored.OrdersCompleted == 3 && restored.Catches == 7, "V3 extended progress round trip");
         var legacy = new FishingSaveData { version = 1, coins = 44, rodLevel = 1 };
         legacy.inventory.Add(Fish("legacy", FishKind.Dart, true)); legacy.recordedIds.Add("historical-sale");
         check(FishingCareer.TryRestore(legacy, out restored) && restored.Coins == 44 && restored.LineLevel == 1 && restored.Count == 1, "V3 migrates v1 wallet equipment hold");

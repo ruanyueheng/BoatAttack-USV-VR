@@ -14,9 +14,10 @@ namespace BoatAttack.Fishing
     {
         public static readonly FieldItem[] Items = { FieldItem.Binoculars, FieldItem.Lantern, FieldItem.StonePickaxe,
             FieldItem.IronPickaxe, FieldItem.HuntingSpear, FieldItem.Rope, FieldItem.Plank, FieldItem.Coal,
-            FieldItem.IronIngot, FieldItem.Glass, FieldItem.Workbench, FieldItem.Furnace };
-        private static readonly int[] Prices = { 55, 40, 30, 95, 35, 14, 18, 16, 35, 28, 65, 85 };
-        private static readonly int[] Counts = { 1, 1, 1, 1, 1, 4, 6, 4, 3, 4, 1, 1 };
+            FieldItem.IronIngot, FieldItem.Glass, FieldItem.Workbench, FieldItem.Furnace,
+            FieldItem.CookedMeat, FieldItem.Fiber, FieldItem.Stick, FieldItem.Charcoal, FieldItem.Sand, FieldItem.Stone };
+        private static readonly int[] Prices = { 55, 40, 30, 95, 35, 14, 18, 16, 35, 28, 65, 85, 16, 14, 12, 18, 12, 16 };
+        private static readonly int[] Counts = { 1, 1, 1, 1, 1, 4, 6, 4, 3, 4, 1, 1, 3, 8, 8, 4, 8, 8 };
         public static bool Valid(int product) => product >= 0 && product < Items.Length;
         public static int Price(int product) => Valid(product) ? Prices[product] : 0;
         public static int Quantity(int product) => Valid(product) ? Counts[product] : 0;

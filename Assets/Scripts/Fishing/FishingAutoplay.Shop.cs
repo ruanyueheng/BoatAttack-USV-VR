@@ -86,7 +86,7 @@ namespace BoatAttack.Fishing
                     RequireShop(c.Career.Level(track) == 1 && c.Career.Coins == before - price && bag.Selected == 2, "exact price/effect without hotbar leak " + track);
                 }
                 var reloaded = FishingSaveStore.Load(c.SavePath, out var warning);
-                RequireShop(warning.Length == 0 && reloaded.Snapshot().version == 10 && reloaded.Coins == c.Career.Coins
+                RequireShop(warning.Length == 0 && reloaded.Snapshot().version == 11 && reloaded.Coins == c.Career.Coins
                     && reloaded.LineLevel == 1 && reloaded.ReelLevel == 1 && reloaded.HoldLevel == 1, "v9 upgrade save round trip");
                 RequireShop(reloaded.ShoreTaskMask == 1 && reloaded.Backpack.Collected(0) && reloaded.Backpack.Seen(LandAnimalKind.Fox)
                     && reloaded.Backpack.Selected == 2 && reloaded.Backpack.Count(FieldItem.Plank) == bag.Count(FieldItem.Plank), "survey, pickup, animal, hotbar and crafted materials survive shopping");
