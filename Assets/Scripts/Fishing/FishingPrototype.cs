@@ -24,7 +24,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.16.0";
+        public const string Version = "0.17.0";
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
         private Vector3 _castOrigin;
         private bool _castSplash;

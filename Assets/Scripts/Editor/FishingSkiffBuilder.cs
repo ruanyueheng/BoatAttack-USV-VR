@@ -26,13 +26,22 @@ namespace BoatAttack.EditorTools
                 var hull=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Resources/FishingBoat/SkiffHull.fbx").GetComponentInChildren<MeshFilter>().sharedMesh;
                 if(hull.bounds.size.x<1.8f || hull.bounds.size.z<3.8f)throw new InvalidOperationException("Skiff FBX metre/axis conversion failed: "+hull.bounds);
                 var colliderHull=root.AddComponent<MeshCollider>();colliderHull.sharedMesh=hull;colliderHull.convex=true;
+                const string contactPath="Assets/Resources/FishingBoat/SkiffContact.physicMaterial";
+                var contact=AssetDatabase.LoadAssetAtPath<PhysicMaterial>(contactPath);
+                if(contact==null){contact=new PhysicMaterial("Skiff contact");AssetDatabase.CreateAsset(contact,contactPath);}
+                contact.dynamicFriction=contact.staticFriction=0;contact.bounciness=0;contact.frictionCombine=PhysicMaterialCombine.Minimum;
+                EditorUtility.SetDirty(contact);colliderHull.sharedMaterial=contact;
                 var boat=root.GetComponent<Boat>();boat.boatRenderer=model.GetComponentInChildren<MeshRenderer>();
-                var rb=root.GetComponent<Rigidbody>();rb.mass=650;rb.angularDrag=2;rb.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;
+                var rb=root.GetComponent<Rigidbody>();rb.mass=650;rb.drag=.12f;rb.angularDrag=1;rb.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;
                 // shortcut: constrain roll/pitch for the seated view; revisit if wave-driven tilt becomes gameplay.
                 rb.constraints=RigidbodyConstraints.FreezeRotationX|RigidbodyConstraints.FreezeRotationZ;
                 var buoyancy=root.GetComponent<BuoyantObject>();buoyancy.centerOfMass=new Vector3(0,-.5f,-.2f);buoyancy.voxelResolution=.22f;
                 boat.engine.transform.localPosition=new Vector3(0,.25f,-1.9f);
-                boat.engine.enginePosition=new Vector3(0,-.45f,0);
+                boat.engine.enginePosition=new Vector3(0,-.95f,0);
+                boat.engine.stableHull=true;boat.engine.horsePower=7;
+                var lamp=new GameObject("Skiff deck night light").AddComponent<Light>();lamp.transform.SetParent(root.transform,false);
+                lamp.transform.localPosition=new Vector3(-.6f,1.35f,-.85f);
+                lamp.type=LightType.Point;lamp.color=new Color(1,.78f,.48f);lamp.range=5;lamp.intensity=3;lamp.shadows=LightShadows.None;lamp.enabled=false;
                 // Keep the shared engine and water effects; size their wake origins to this hull.
                 foreach(var wake in root.GetComponentsInChildren<BoatFoamGenerator>())
                     wake.transform.localPosition=new Vector3(0,wake.transform.localPosition.y,wake.transform.localPosition.z>0?1.6f:-1.6f);

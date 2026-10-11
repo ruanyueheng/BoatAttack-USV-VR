@@ -20,18 +20,27 @@ def shell(name, rings, color, caps=False):
     return finish(obj,color)
 
 begin('SoloSkiff')
-shell('Teal clinker hull',[(.70,-.28),(.86,.10),(1,.68)],'teal',True)
-# The cockpit floor is above the closed buoyancy shell; inner walls cover its top cap.
-# Remove the upper cap so the actual cockpit remains open.
+# One closed skin connects exterior, gunwale, inward-facing cockpit and floor.
+skin=shell('Continuous thick hull',[(.70,-.28),(.86,.10),(1,.68),(.94,.68),(.75,.24)],'teal',True)
 import bmesh
-bm=bmesh.new();bm.from_mesh(PARTS[-1].data);bm.faces.ensure_lookup_table()
-bmesh.ops.delete(bm,geom=[bm.faces[-1]],context='FACES');bm.to_mesh(PARTS[-1].data);bm.free()
-shell('Cream inner hull',[(.75,.24),(.94,.67)],'paint')
+bm=bmesh.new();bm.from_mesh(skin.data)
+assert all(e.is_manifold for e in bm.edges), 'Hull skin must be watertight'
+inner=[p for p in skin.data.polygons if p.center.z>.25 and p.normal.dot(Vector((p.center.x,p.center.y,0)))<-.1]
+assert len(inner)==len(outline), 'Cockpit wall normals must face inward'
+bm.free()
+attr=skin.data.color_attributes.active_color
+for poly in skin.data.polygons:
+    if poly.index>=2*len(outline) and poly.index!=4*len(outline):
+        for i in poly.loop_indices: attr.data[i].color_srgb=(*PALETTE['paint'][:3],1)
 shell('Rubber rubbing strake',[(1,.59),(1.015,.65),(1,.70)],'iron')
 tube('Rounded gunwale',[(x,.72,z) for x,z in outline],.034,'ivory',8,True)
 for i in range(9):
     x=(i-4)*.15
     box('Oiled floor board',(x,.26,-.15),(.143,.045,2.6),'wood_light',.005)
+for z,w in [(-1.15,.87),(-.05,.91),(.9,.79)]:
+    for side in [-1,1]:
+        tube('Cream cockpit rib',[(side*w*.78,.29,z),(side*w*.96,.61,z)],.025,'ivory',6)
+box('Bow storage deck',(0,.65,1.62),(.52,.06,.57),'wood_light',.01)
 for z,w,y in [(-.7,1.65,.72),(1.13,1.3,.68)]:
     for dz in [-.11,0,.11]:box('Slatted bench',(0,y,z+dz),(w,.06,.103),'wood_light',.006)
     for x in [-w*.38,w*.38]:box('Bench support',(x,.47,z),(.055,.45,.25),'teal',.004)
@@ -49,9 +58,18 @@ for side in [-1,1]:
         tube('Fender lanyard',[(side*.97,.70,z),(side*1.01,.44,z)],.009,'rope',6)
         tube('Cream fender',[(side*1.02,.20,z),(side*1.02,.49,z)],.065,'paint',8)
 box('Compact outboard', (0,.69,-1.94),(.34,.42,.32),'iron',.035)
-box('Outboard enamel', (0,.87,-1.94),(.35,.06,.33),'teal',.014)
+box('Outboard enamel', (0,.93,-1.94),(.35,.06,.33),'teal',.014)
 tube('Tiller arm',[(0,.71,-1.8),(.24,.74,-1.3)],.022,'iron',8)
-tube('Outboard shaft',[(0,.50,-1.96),(0,-.33,-1.96)],.06,'edge',8)
+tube('Outboard shaft',[(0,.50,-1.96),(0,-.70,-1.96)],.06,'edge',8)
+for side in [-1,1]:
+    box('Outboard transom bracket',(side*.16,.57,-1.83),(.055,.25,.18),'edge',.009)
+box('Outboard propeller',(0,-.68,-2.04),(.28,.065,.055),'iron',.008)
+tube('Deck lantern post',[(.6,.68,-.85),(.6,1.52,-.85)],.022,'brass',8)
+tube('Lantern hanging arm',[(.6,1.52,-.85),(.6,1.52,-1.0)],.021,'brass',8)
+box('Lantern glass',(.6,1.35,-.85),(.115,.20,.115),'ivory',.012)
+for y in [1.23,1.47]:box('Lantern cap',(.6,y,-.85),(.18,.035,.18),'iron',.01)
+for dx in [-.065,.065]:
+    for dz in [-.065,.065]:tube('Lantern protective cage',[(.6+dx,1.24,-.85+dz),(.6+dx,1.46,-.85+dz)],.008,'brass',6)
 export('SoloSkiff')
 assert STATS['SoloSkiff']['triangles'] < 6500, STATS
 begin('SkiffHull')

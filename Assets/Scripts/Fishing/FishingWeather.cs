@@ -13,6 +13,7 @@ namespace BoatAttack.Fishing
         public bool ReducedEffects { get; private set; }
         public int RainQuadBudget => ReducedEffects || UnityEngine.XR.XRSettings.isDeviceActive ? 32 : 96;
         private Light _sun;
+        public Light DeckLight { get; private set; }
         private Material _sky, _originalSky;
         private Color _sunColor, _fogColor, _ambient, _skyTint;
         private string _skyTintProperty;
@@ -92,6 +93,7 @@ namespace BoatAttack.Fishing
         }
         private void Start()
         {
+            DeckLight=Controller.Player.GetComponentInChildren<Light>(true);
             foreach(var renderer in GetComponentsInChildren<Renderer>())
             {
                 bool known=false;foreach(var entry in _bakedRenderers)if(entry.renderer==renderer){known=true;break;}
@@ -129,6 +131,7 @@ namespace BoatAttack.Fishing
             var a=Preset(Climate.Previous);var b=Preset(Climate.Current);float t=Mathf.SmoothStep(0,1,Climate.Blend);
             var sky=Color.Lerp(a.sky,b.sky,t);var sun=Color.Lerp(a.sun,b.sun,t);float intensity=Mathf.Lerp(a.light,b.light,t);
             float daylight=Daylight;
+            if(DeckLight!=null){DeckLight.intensity=3f*(1-daylight);DeckLight.enabled=daylight<.95f;}
             float twilight=4*daylight*(1-daylight);
             var nightSky=new Color(.07f,.12f,.24f);
             sky=Color.Lerp(nightSky,sky,daylight);

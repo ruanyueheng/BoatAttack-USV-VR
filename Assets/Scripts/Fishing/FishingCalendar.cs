@@ -6,6 +6,7 @@ namespace BoatAttack.Fishing
     {
         public int day;
         public double minute = 480;
+        public bool timeFixed;
     }
     /// <summary>Fifteen active real minutes per day; menus and tracking/focus loss never consume time.</summary>
     public sealed class FishingCalendar
@@ -14,6 +15,15 @@ namespace BoatAttack.Fishing
         public const double MinutesPerSecond = 1.6;
         public int Day { get; private set; }
         public double Minute { get; private set; } = 480;
+        public bool Automatic { get; private set; } = true;
+        public void ToggleAutomatic() => Automatic = !Automatic;
+        public bool AdvanceToHour(float hour)
+        {
+            if(float.IsNaN(hour) || float.IsInfinity(hour) || hour<0 || hour>=24)return false;
+            double minutes=hour*60-Minute;if(minutes<0)minutes+=1440;
+            if(Day==MaxDay && Minute+minutes>=1440)return false;
+            Advance(minutes);return true;
+        }
         public double TotalMinutes => Day * 1440d + Minute;
         public int Year => Day / DaysPerYear + 1;
         public int Season => Day / DaysPerSeason % 4;
@@ -29,7 +39,7 @@ namespace BoatAttack.Fishing
         private static float Smooth(float v) { v = Math.Max(0, Math.Min(1, v)); return v * v * (3 - 2 * v); }
         public void Tick(float seconds, bool paused)
         {
-            if (paused || float.IsNaN(seconds) || float.IsInfinity(seconds) || seconds <= 0) return;
+            if (!Automatic || paused || float.IsNaN(seconds) || float.IsInfinity(seconds) || seconds <= 0) return;
             Advance(Math.Min(seconds, .25f) * MinutesPerSecond);
         }
         private void Advance(double minutes)
@@ -39,13 +49,13 @@ namespace BoatAttack.Fishing
             Minute = total % 1440;
         }
         public void RestUntilMorning() => Advance(Minute < 360 ? 360 - Minute : 1800 - Minute);
-        public CalendarData Snapshot() => new CalendarData { day = Day, minute = Minute };
+        public CalendarData Snapshot() => new CalendarData { day = Day, minute = Minute, timeFixed = !Automatic };
         public static bool TryRestore(CalendarData data, out FishingCalendar calendar)
         {
             calendar = null;
             if (data == null || data.day < 0 || data.day > MaxDay || double.IsNaN(data.minute)
                 || double.IsInfinity(data.minute) || data.minute < 0 || data.minute >= 1440) return false;
-            calendar = new FishingCalendar { Day = data.day, Minute = data.minute }; return true;
+            calendar = new FishingCalendar { Day = data.day, Minute = data.minute, Automatic = !data.timeFixed }; return true;
         }
         public static BayWeather Forecast(int day, int period = 1)
         {

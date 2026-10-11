@@ -1,8 +1,8 @@
 {
   "SoloSkiff": {
-    "triangles": 3863,
-    "vertices": 2056,
-    "source_parts": 52,
+    "triangles": 4906,
+    "vertices": 2600,
+    "source_parts": 70,
     "renderers": 1
   },
   "SkiffHull": {
