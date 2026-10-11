@@ -29,7 +29,7 @@ namespace BoatAttack.Fishing
             var root=new GameObject("Coastal XR notebook",typeof(RectTransform),typeof(Canvas));root.transform.SetParent(transform,false);
             _canvas=root.GetComponent<Canvas>();_canvas.renderMode=RenderMode.WorldSpace;_canvas.worldCamera=c.viewCamera;
             var rt=root.GetComponent<RectTransform>();rt.sizeDelta=new Vector2(580,660);rt.localScale=Vector3.one*.0016f;
-            var panel=root.AddComponent<Image>();panel.color=new Color(.035f,.075f,.09f,.97f);panel.raycastTarget=false;
+            var panel=root.AddComponent<Image>();panel.color=new Color(.025f,.048f,.082f,.97f);panel.raycastTarget=false;
             _status=Label(root.transform,new Vector2(24,-20),new Vector2(532,224),23);
             for(int i=0;i<9;i++)
             {
@@ -65,6 +65,7 @@ namespace BoatAttack.Fishing
         private void Set(int index,string label,Action action){_labels[index].text=label;_actions[index]=action;_plates[index].color=action==null?new Color(.09f,.13f,.14f):new Color(.12f,.27f,.25f);}
         private void Refresh()
         {
+            _status.fontSize=23;
             var day=_c.Career.Calendar;var bag=_c.Career.Backpack;
             _status.text="潮汐手册  ·  "+day.DateLabel+"  "+day.TimeLabel+"\n"+BayClimate.Name(_c.Weather.Climate.Current)+"   金币 "+_c.Career.Coins+
                 "\n装备："+FishingBackpack.Name(bag.Equipped)+"\nB 关闭 · 右手射线 + 扳机选择\n"+_c.Message;
@@ -75,7 +76,7 @@ namespace BoatAttack.Fishing
                 Set(3,_c.Ashore?"返回船上":"靠岸下船",()=>{Close();if(_c.Ashore)_c.Shore.TryBoard();else _c.Shore.TryDisembark();});
                 Set(4,"航海 / 委托 / 升级",()=>Open(4));Set(5,"领取炉内成品",()=>_c.WorkshopWorld.Collect());
                 Set(6,"校准眼高",()=>_c.XRSeat.Recenter());Set(7,"港口事务 / 炉内成品",()=>Open(7));Set(8,"返回海湾",Close);
-                Set(5,"群岛航记 / 寻宝",()=>Open(6));
+                Set(5,"潮汐回响 / 秘境",()=>Open(9));
             }
             else if(_page==1)
             {
@@ -108,6 +109,24 @@ namespace BoatAttack.Fishing
                 Set(3,"推进至白昼\n08:00",_c.CanSetTime?(Action)(()=>_c.SetDayNight(false)):null);
                 Set(4,"推进至夜晚\n21:00",_c.CanSetTime?(Action)(()=>_c.SetDayNight(true)):null);
                 Set(5,day.Automatic?"自动流逝\n点击固定":"时间固定\n点击自动",_c.CanSetTime?(Action)_c.ToggleClock:null);
+            }
+            else if(_page==8 && _c.DialogueOpen)
+            {
+                _c.Residents.Reveal();
+                _status.text=FishingLore.ResidentName(_c.Residents.ActiveId)+" · "+FishingLore.ResidentRole(_c.Residents.ActiveId)+"\n"+_c.Residents.Speech;
+                _status.fontSize=18;
+                for(int i=0;i<3;i++){int choice=i;Set(i,_c.Residents.Choice(i),()=>{_c.Residents.Choose(choice);Refresh();});}
+                if(_c.Residents.ActiveId==4)Set(6,"查看商品",()=>{_c.Residents.Close();Open(4);});
+                Set(8,"结束交谈",()=>_c.Residents.Close());
+            }
+            else if(_page==9)
+            {
+                _status.fontSize=21;
+                _status.text="潮汐回响 · "+_c.Career.Lore.ClearCount+" / 4\n"+(_c.Realms.Inside?FishingLore.ShrineName(_c.Realms.Island)+"\n"+FishingLore.TrialHint(_c.Realms.Island):"向岛上居民询问故事与机关线索\n刻着潮纹的石门通向独立秘境")+"\n完成四处后向港口林舟汇报。";
+                for(int i=0;i<4;i++){int island=i;Set(i,FishingAdventure.Name(i)+"\n"+(_c.Career.Lore.Cleared(i)?"回响已取回":"秘境尚待探索"),()=>{Close();_c.SelectNavigation(_c.IslandNavigationIndex(island));});}
+                Set(4,"群岛来信 / 航标",()=>Open(6));
+                Set(5,"附近互动",()=>{Close();if(_c.Realms.TryTarget(out _,out _))_c.Realms.Interact();else if(_c.Residents.TryNearby(out int npc))_c.Residents.Talk(npc);else _c.Shore.TryClimb();});
+                Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
             }
             else if(_page==5)
             {
@@ -142,7 +161,7 @@ namespace BoatAttack.Fishing
             {
                 for(int i=0;i<6;i++){var track=(UpgradeTrack)i;Set(i,FishingText.UpgradeName(track)+" Lv."+_c.Career.Level(track)+"\n"+_c.Career.NextUpgradeCost(track)+" 金币",()=>{_c.BuyUpgrade(track);Refresh();});}
                 Set(6,"购买探索用品",()=>Open(5));
-                Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
+                Set(7,_c.TackleShop.NearCounter?"店员介绍 / 故事":"返回首页",_c.TackleShop.NearCounter?(Action)(()=>_c.Residents.Talk(4)):(Action)(()=>Open()));Set(8,"关闭",Close);
             }
         }
         private void Pager(int count)
@@ -238,6 +257,9 @@ namespace BoatAttack.Fishing
         private void InteractTracked()
         {
             if(!_c.Ashore){_c.Interact();return;}
+            if(_c.Realms.TryTarget(out _,out _)){_c.Realms.Interact();return;}
+            if(_c.Residents.TryNearby(out int npc)){_c.Residents.Talk(npc);return;}
+            if(_c.Shore.TryClimb())return;
             if(_c.TackleShop!=null && _c.TackleShop.NearCounter){Open(4);return;}
             if(_c.WorkshopWorld.TryInteractionTarget(out int station,out var resource) && station>=0){_c.WorkshopWorld.OpenStation(station);return;}
             if(!_c.Hands.TryControllerPalm(false,out var palm,out _))return;

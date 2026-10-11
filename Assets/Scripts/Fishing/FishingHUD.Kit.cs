@@ -5,8 +5,8 @@ namespace BoatAttack.Fishing
     /// <summary>Drawing primitives for the desktop HUD: one palette, rounded cards and custom buttons.</summary>
     public sealed partial class FishingHUD
     {
-        private static readonly Color Ink = new Color(.035f, .075f, .09f, .96f);
-        private static readonly Color InkRaised = new Color(.065f, .12f, .13f, .65f);
+        private static readonly Color Ink = new Color(.025f, .048f, .082f, .96f);
+        private static readonly Color InkRaised = new Color(.055f, .10f, .15f, .82f);
         private static readonly Color Hairline = new Color(.64f, .77f, .75f, .16f);
         private static readonly Color CardShadow = new Color(.08f, .18f, .19f, .16f);
         private static readonly Color Muted = new Color(.70f, .80f, .79f);
@@ -51,8 +51,11 @@ namespace BoatAttack.Fishing
         /// <summary>Raised card: soft drop shadow, warm ivory body, hairline edge and an accent tick.</summary>
         private void Card(Rect r, Color accent)
         {
-            Rounded(new Rect(r.x, r.y + 3, r.width, r.height), CardShadow, 8);
-            Rounded(r, Ink, 8);
+            Rounded(new Rect(r.x-3, r.y+5, r.width+6, r.height), new Color(0,0,0,.3f), 10);
+            Rounded(r, Ink, 10);
+            Outline(r, accent*new Color(1,1,1,.35f), 10);
+            Fill(r.x+24,r.y,Mathf.Min(84,r.width-48),2,accent);
+            foreach(float x in new[]{r.x+9,r.xMax-9})Disc(new Vector2(x,r.y+9),1.5f,accent*new Color(1,1,1,.5f));
         }
 
         private void Label(Rect r, string text, int size, Color color, bool bold = false, TextAnchor align = TextAnchor.UpperLeft)
@@ -77,6 +80,7 @@ namespace BoatAttack.Fishing
             bool hover = enabled && r.Contains(Event.current.mousePosition);
             Color fill = !enabled ? ButtonOff : primary ? (hover ? new Color(.20f, .48f, .40f) : new Color(.12f, .34f, .29f)) : hover ? ButtonHover : ButtonFill;
             Rounded(r, fill, 6);
+            Outline(r,!enabled?Hairline:primary?Mint*new Color(1,1,1,.55f):hover?Gold*new Color(1,1,1,.55f):Hairline,6);
             Color ink = !enabled ? Faint : primary ? Mint : Color.white;
             Label(r, text, size, ink, true, TextAnchor.MiddleCenter);
             return GUI.Button(r, GUIContent.none, GUIStyle.none) && enabled;

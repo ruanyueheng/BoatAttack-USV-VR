@@ -8,6 +8,7 @@ namespace BoatAttack.Fishing
         private void DrawChart()
         {
             var c = Controller;
+            if(c.Realms!=null && c.Realms.Inside){DrawRealmChart();return;}
             if (!c.ChartExpanded)
             {
                 if (Button(Layout.ChartTab, "M 航海图  ·  " + FishingPrototype.FlatDistance(c.ExplorerPosition, c.NavigationPosition).ToString("0") + " m", true, false, 14)) c.ToggleChart();

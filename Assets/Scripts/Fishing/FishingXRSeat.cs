@@ -43,7 +43,8 @@ namespace BoatAttack.Fishing
                 _headFade=root.AddComponent<Image>();_headFade.raycastTarget=false;_headFade.color=Color.clear;
             }
             _headFade.gameObject.SetActive(_active);
-            _headFade.color=new Color(0,0,0,Mathf.MoveTowards(_headFade.color.a,HeadBlocked?1:0,Time.unscaledDeltaTime*8));
+            float travel=_c.Realms==null?0:_c.Realms.Blackout;
+            _headFade.color=new Color(0,0,0,Mathf.Max(travel,Mathf.MoveTowards(_headFade.color.a,HeadBlocked?1:0,Time.unscaledDeltaTime*8)));
         }
         public void Build(FishingPrototype c)
         {

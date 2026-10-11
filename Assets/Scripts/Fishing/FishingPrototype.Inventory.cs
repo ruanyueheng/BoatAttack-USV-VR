@@ -51,9 +51,11 @@ namespace BoatAttack.Fishing
         }
         public void UseFieldItem()
         {
-            if(Paused || ShopBlocksGameplay || WorldActionBlocksGameplay || !Ashore || Expedition.Aligning)return;
+            if(Paused || ShopBlocksGameplay || StoryBlocksGameplay || WorldActionBlocksGameplay || !Ashore || Expedition.Aligning)return;
+            if((Shore.Swimming || Shore.Climbing) && Career.Backpack.Equipped!=FieldItem.CookedMeat){Notice("游泳或攀登时先收起工具；可选择口粮恢复体力。",3);return;}
             switch(Career.Backpack.Equipped)
             {
+                case FieldItem.CookedMeat:if(!Shore.EatRation())Notice("体力充足时不消耗口粮；快跑、游泳或攀登后可食用。",3);break;
                 case FieldItem.HuntingSpear:FieldWorld.BeginHunt();break;
                 case FieldItem.Workbench:case FieldItem.Furnace:RequestPlaceEquipped();break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:RequestHarvest();break;

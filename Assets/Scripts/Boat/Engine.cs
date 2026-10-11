@@ -64,7 +64,7 @@ namespace BoatAttack
             if (!stableHull || RB == null) return;
             // Rotation constraints use inertia axes; the asymmetric hull otherwise couples yaw into roll.
             RB.inertiaTensorRotation = Quaternion.identity;
-            RB.maxAngularVelocity = 1f;
+            RB.maxAngularVelocity = 1.8f;
         }
 
         private void FixedUpdate()
@@ -132,8 +132,8 @@ namespace BoatAttack
                 modifier = Mathf.Clamp(modifier, -1f, 1f); // clamp for reasonable values
                 if (stableHull)
                 {
-                    float rate = Mathf.Lerp(45f, 26f, Mathf.Clamp01(Mathf.Sqrt(VelocityMag) / forwardSpeedLimit)) * rudderResponse * Mathf.Deg2Rad;
-                    RB.AddTorque(Vector3.up * (modifier * rate - RB.angularVelocity.y) * 4f * rudderResponse, ForceMode.Acceleration);
+                    float rate = Mathf.Lerp(60f, 38f, Mathf.Clamp01(Mathf.Sqrt(VelocityMag) / forwardSpeedLimit)) * rudderResponse * Mathf.Deg2Rad;
+                    RB.AddTorque(Vector3.up * (modifier * rate - RB.angularVelocity.y) * 4.8f * rudderResponse, ForceMode.Acceleration);
                 }
                 else RB.AddRelativeTorque(new Vector3(0f, steeringTorque, -steeringTorque * 0.5f) * modifier, ForceMode.Acceleration);
             }

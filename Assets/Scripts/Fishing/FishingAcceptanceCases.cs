@@ -9,13 +9,14 @@ namespace BoatAttack.Fishing
         ShoreFirstPerson, ShoreThirdPerson, ShopCounter,
         StonePickaxe, IronPickaxe, BinocularCarry, BinocularObserve,
         LookDownStanding, LookDownCrouched, ShopAttendant, BinocularThirdPerson, Calendar, NightCoast, LanternCoast, HuntingSpear,
-        HunyuanCatalog, HunyuanNightCatalog, CastFlight, NightBoat, LuxuryBoat, IslandLanding, ShopSupplies, IslandJournal
+        HunyuanCatalog, HunyuanNightCatalog, CastFlight, NightBoat, LuxuryBoat, IslandLanding, ShopSupplies, IslandJournal,
+        ResidentDialogue, WindSanctuary, ForestSanctuary, WreckSanctuary, StarSanctuary, LoreJournal, ShopRations, RegionArrival, SwimmingView, ClimbingView
     }
 
     /// <summary>Deterministic fixtures built through the production rules, not unchecked save JSON.</summary>
     public static class FishingAcceptanceCases
     {
-        public const int Count = 35;
+        public const int Count = 45;
         private static readonly string[] Titles =
         {
             "自由实玩 / 继续验收进度", "咬钩提示", "高张力收线", "抄网时机", "捕获与后续反馈", "传说跃水",
@@ -23,7 +24,8 @@ namespace BoatAttack.Fishing
             "岸上第一人称同源手臂", "岸上第三人称人物", "实体钓具店柜台",
             "石镐实际握持", "铁镐实际握持", "望远镜双手携带", "望远镜光学观察",
             "站立低头视野", "蹲下低头视野", "成年女性店员", "第三人称举镜", "季节日历与天气预报", "海岸夜景", "夜间提灯照明", "猎矛握持",
-            "混元鱼种图鉴", "夜鱼与礁区图鉴", "甩竿与浮标飞行", "船上夜灯与厚壁船壳", "豪华钓艇与动力升级", "风铃岛实际登陆", "探索用品商店", "自由探索群岛航记"
+            "混元鱼种图鉴", "夜鱼与礁区图鉴", "甩竿与浮标飞行", "船上夜灯与厚壁船壳", "豪华钓艇与动力升级", "风铃岛实际登陆", "探索用品商店", "自由探索群岛航记",
+            "居民剧情对话", "风之回廊", "森光庭院", "沉潮机库", "星轨圣所", "世界与秘境航记", "远航口粮与物资", "地区名称渐显", "海岸游泳与体力", "绳梯攀登与瞭望台"
         };
 
         public static string Title(FishingAcceptanceCase value)
@@ -39,7 +41,7 @@ namespace BoatAttack.Fishing
         }
 
         public static bool IsShoreCase(FishingAcceptanceCase value)=>value>=FishingAcceptanceCase.ShoreFirstPerson && value<=FishingAcceptanceCase.HuntingSpear && value!=FishingAcceptanceCase.Calendar;
-        public static bool IsShopCase(FishingAcceptanceCase value)=>value==FishingAcceptanceCase.ShopCounter || value==FishingAcceptanceCase.ShopAttendant || value==FishingAcceptanceCase.ShopSupplies;
+        public static bool IsShopCase(FishingAcceptanceCase value)=>value==FishingAcceptanceCase.ShopCounter || value==FishingAcceptanceCase.ShopAttendant || value==FishingAcceptanceCase.ShopSupplies || value==FishingAcceptanceCase.ShopRations;
         public static FieldItem ViewItem(FishingAcceptanceCase value)
         {
             if(value==FishingAcceptanceCase.StonePickaxe || value==FishingAcceptanceCase.LookDownStanding || value==FishingAcceptanceCase.LookDownCrouched)return FieldItem.StonePickaxe;

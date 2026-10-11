@@ -113,7 +113,7 @@ namespace BoatAttack.Fishing
         private void Update()
         {
             if(Controller==null || !_captured)return;
-            bool frozen=Controller.Paused || (Controller.XRNotebook!=null && Controller.XRNotebook.IsOpen) || (!_focused && !Controller.Automated);
+            bool frozen=Controller.Paused || Controller.StoryBlocksGameplay || (Controller.XRNotebook!=null && Controller.XRNotebook.IsOpen) || (!_focused && !Controller.Automated);
             Controller.Career.Calendar.Tick(Time.deltaTime, frozen || Controller.Automated);
             Climate.Tick(Time.deltaTime,frozen,Controller.Automated?(BayWeather?)null:Controller.Career.Calendar.Weather);
             if(!frozen && !Controller.Automated && (_saveTimer+=Time.deltaTime)>=30){_saveTimer=0;Controller.Save();}
@@ -121,7 +121,8 @@ namespace BoatAttack.Fishing
             if(_audio!=null){_audio.mute=Controller.QuietMode || Controller.Paused;_audio.volume=.07f+_rainAmount*.13f;}
             if(_rain!=null)
             {
-                _rain.SetActive(_rainAmount>.03f);
+                bool covered=(Controller.Realms!=null && Controller.Realms.Inside) || (Controller.TackleShop!=null && Controller.TackleShop.Inside);
+                _rain.SetActive(_rainAmount>.03f && !covered);
                 if(!Controller.Paused){_rainTimer+=Time.deltaTime; if(_rainTimer>=.05f){_rainTimer=0;UpdateRain();}}
             }
         }

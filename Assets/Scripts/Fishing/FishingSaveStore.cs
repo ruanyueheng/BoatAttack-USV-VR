@@ -22,7 +22,7 @@ namespace BoatAttack.Fishing
                 || (!File.Exists(legacyPath) && !File.Exists(legacyPath + ".bak")))
                 return Load(path, out message);
             var career = Load(legacyPath, out message);
-            if (message.Length == 0) message = "已读取旧版进度；后续保存使用独立 v10 存档，旧档保留。";
+            if (message.Length == 0) message = "已读取旧版进度；后续保存使用独立 v11 存档，旧档保留。";
             return career;
         }
         public static void Save(string path, FishingCareer career)
