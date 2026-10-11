@@ -2,45 +2,55 @@
   "source_triangles": 997058,
   "height_metres": 1.98,
   "rigged": false,
-  "pose": "Hands overlapped at lower abdomen; rigid upper arms and forearms with localized elbow creases",
+  "pose": "Hands overlapped at lower abdomen; anatomical shoulder centres, lowered upper arms and localized elbow creases",
   "source_space_landmarks": [
     {
       "side": -1,
+      "source_shoulder": [
+        0.004999999888241291,
+        -0.08500000089406967,
+        0.7900000214576721
+      ],
       "shoulder": [
         0.004999999888241291,
         -0.08500000089406967,
-        0.7559999823570251
+        0.7699999809265137
       ],
       "elbow": [
-        0.04366988688707352,
-        -0.10240038484334946,
-        0.6576747298240662
+        0.0419146865606308,
+        -0.09726569056510925,
+        0.6700206995010376
       ],
       "wrist": [
         0.08699999749660492,
         -0.02500000037252903,
         0.621999979019165
       ],
-      "elbow_flex_degrees": 67.99160986651216
+      "elbow_flex_degrees": 57.86974762979517
     },
     {
       "side": 1,
+      "source_shoulder": [
+        0.004999999888241291,
+        0.08500000089406967,
+        0.7900000214576721
+      ],
       "shoulder": [
         0.004999999888241291,
         0.08500000089406967,
-        0.7559999823570251
+        0.7699999809265137
       ],
       "elbow": [
-        0.04973934590816498,
-        0.10724890232086182,
-        0.6612932085990906
+        0.046596627682447433,
+        0.10380077362060547,
+        0.6729162931442261
       ],
       "wrist": [
         0.09200000017881393,
         0.02500000037252903,
         0.6370000243186951
       ],
-      "elbow_flex_degrees": 76.66369615000227
+      "elbow_flex_degrees": 68.20945875008972
     }
   ],
   "lods": [

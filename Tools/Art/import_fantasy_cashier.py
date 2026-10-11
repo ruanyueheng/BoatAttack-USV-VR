@@ -27,30 +27,33 @@ def smooth(a,b,x):
 original=coords.copy()
 pose_landmarks=[]
 for side in (-1,1):
-    shoulder=Vector((.005,side*.085,.756))
-    elbow=Vector((.005,side*.190,.735))
-    wrist=Vector((.012,side*.284,.719))
+    # Joint axes follow the centre of the original T-pose flesh, not its lower
+    # silhouette. A pivot below the deltoid swung the shoulder cap outward.
+    shoulder=Vector((.005,side*.085,.790))
+    target_shoulder=Vector((.005,side*.085,.770))
+    elbow=Vector((.005,side*.190,.768))
+    wrist=Vector((.012,side*.284,.742))
     # Slight asymmetry lets one hand rest on the other instead of occupying it.
     target_wrist=Vector((.092 if side==1 else .087,side*.025,.637 if side==1 else .622))
     upper_length=(elbow-shoulder).length
     lower_length=(wrist-elbow).length
-    direction=(target_wrist-shoulder).normalized()
-    distance=(target_wrist-shoulder).length
+    direction=(target_wrist-target_shoulder).normalized()
+    distance=(target_wrist-target_shoulder).length
     assert distance < upper_length+lower_length
     along=(upper_length**2-lower_length**2+distance**2)/(2*distance)
     # Elbows stay beside/slightly behind the torso. The forearms turn forward
     # from those joints, instead of following one continuous circular arc.
     outward=Vector((-.35,side,0))
     outward=(outward-direction*outward.dot(direction)).normalized()
-    target_elbow=shoulder+direction*along+outward*math.sqrt(max(0,upper_length**2-along**2))
-    upper_rotation=(elbow-shoulder).rotation_difference(target_elbow-shoulder).to_matrix()
+    target_elbow=target_shoulder+direction*along+outward*math.sqrt(max(0,upper_length**2-along**2))
+    upper_rotation=(elbow-shoulder).rotation_difference(target_elbow-target_shoulder).to_matrix()
     lower_rotation=(wrist-elbow).rotation_difference(target_wrist-target_elbow).to_matrix()
     # Palms lie across the lower abdomen, fingers angled gently down and inward.
     hand_direction=Vector((.012,-side*.070,-.023)).normalized()
     hand_rotation=Vector((0,side,0)).rotation_difference(hand_direction).to_matrix()
     def transformed(rotation,source_pivot,target_pivot):
         return (original-np.array(source_pivot))@np.array(rotation).T+np.array(target_pivot)
-    upper_coords=transformed(upper_rotation,shoulder,shoulder)
+    upper_coords=transformed(upper_rotation,shoulder,target_shoulder)
     lower_coords=transformed(lower_rotation,elbow,target_elbow)
     hand_coords=transformed(hand_rotation,wrist,target_wrist)
     lateral=side*original[:,1]
@@ -63,9 +66,9 @@ for side in (-1,1):
     sleeve_floor=.665-.105*smooth(.125,.245,lateral)
     weight=smooth(.080,.100,lateral)*smooth(sleeve_floor,sleeve_floor+.028,original[:,2])*(1-smooth(.807,.850,original[:,2]))
     coords+=((posed-original)*weight[:,None]).astype(np.float32)
-    elbow_flex=math.degrees((target_elbow-shoulder).angle(target_wrist-target_elbow))
+    elbow_flex=math.degrees((target_elbow-target_shoulder).angle(target_wrist-target_elbow))
     assert 55 < elbow_flex < 100, 'Forearm must visibly articulate at the elbow'
-    pose_landmarks.append({'side':side,'shoulder':list(shoulder),'elbow':list(target_elbow),'wrist':list(target_wrist),'elbow_flex_degrees':elbow_flex})
+    pose_landmarks.append({'side':side,'source_shoulder':list(shoulder),'shoulder':list(target_shoulder),'elbow':list(target_elbow),'wrist':list(target_wrist),'elbow_flex_degrees':elbow_flex})
 obj.data.vertices.foreach_set('co',coords.reshape(-1));obj.data.update()
 # Feet at zero, standard height, front -Y in Blender (+Z in Unity).
 height=float(coords[:,2].max()-coords[:,2].min());scale=1.98/height
@@ -93,7 +96,7 @@ m=m.reshape(-1,4);r=r.reshape(-1,4);m[:,1]=m[:,0];m[:,2]=m[:,0];m[:,3]=1-r[:,0]
 packed=bpy.data.images.new('Unity metallic smoothness',width=metal.size[0],height=metal.size[1],alpha=True)
 packed.colorspace_settings.name='Non-Color';packed.pixels.foreach_set(m.reshape(-1));packed.file_format='PNG';packed.filepath_raw=str(OUT/'FantasyGirl_metallic_smoothness.png');packed.save()
 source_triangles=sum(len(p.vertices)-2 for p in obj.data.polygons)
-report={'source_triangles':source_triangles,'height_metres':1.98,'rigged':False,'pose':'Hands overlapped at lower abdomen; rigid upper arms and forearms with localized elbow creases','source_space_landmarks':pose_landmarks,'lods':[]}
+report={'source_triangles':source_triangles,'height_metres':1.98,'rigged':False,'pose':'Hands overlapped at lower abdomen; anatomical shoulder centres, lowered upper arms and localized elbow creases','source_space_landmarks':pose_landmarks,'lods':[]}
 models=[]
 for index,target in enumerate((70000,22000)):
     lod=obj.copy();lod.data=obj.data.copy();bpy.context.collection.objects.link(lod);lod.name=f'FantasyGirl_LOD{index}'
