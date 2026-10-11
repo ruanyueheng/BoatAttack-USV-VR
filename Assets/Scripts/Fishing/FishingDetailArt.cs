@@ -41,21 +41,22 @@ namespace BoatAttack.Fishing
             foreach(var renderer in go.GetComponentsInChildren<Renderer>())renderer.sharedMaterial=Resources.Load<Material>("FishingProps/HarborPalette");
             return go;
         }
-        public const float NetMouthOffset=1.2f;
+        public const float NetMouthOffset=.86f;
+        public const float NetRadius=.28f;
         public static Transform Net(Transform boat,Material dark,Material rim,Material cord)
         {
             var root=new GameObject("Woven landing net").transform;root.SetParent(boat,false);root.localPosition=new Vector3(1.0f,0.95f,0.15f);
-            FishingArt.Pole("Net handle",root,Vector3.zero,new Vector3(.65f,0,0),0.035f,dark);
-            FishingArt.Pole("Net grip",root,Vector3.zero,new Vector3(0.3f,0,0),0.055f,rim);
+            FishingArt.Pole("Net handle",root,Vector3.zero,new Vector3(.60f,0,0),0.014f,dark);
+            FishingArt.Pole("Net grip",root,Vector3.zero,new Vector3(0.22f,0,0),0.022f,rim);
             for(int layer=0;layer<4;layer++)
             {
-                float radius=0.6f*(1-layer/4.5f);var hoop=FishingArt.Line(layer==0?"Rigid hoop":"Woven basket ring",root,layer==0?rim:cord,layer==0?0.035f:0.012f,false);hoop.positionCount=33;
-                for(int j=0;j<33;j++){float a=j*Mathf.PI*2/32;hoop.SetPosition(j,new Vector3(NetMouthOffset+Mathf.Cos(a)*radius,-layer*0.14f,Mathf.Sin(a)*radius*0.8f));}
+                float radius=NetRadius*(1-layer/4.5f);var hoop=FishingArt.Line(layer==0?"Rigid hoop":"Woven basket ring",root,layer==0?rim:cord,layer==0?.014f:.004f,false);hoop.positionCount=33;
+                for(int j=0;j<33;j++){float a=j*Mathf.PI*2/32;hoop.SetPosition(j,new Vector3(NetMouthOffset+Mathf.Cos(a)*radius,-layer*.07f,Mathf.Sin(a)*radius*.8f));}
             }
             for(int i=0;i<16;i++)
             {
-                float a=i*Mathf.PI*2/16;var line=FishingArt.Line("Net basket strand",root,cord,0.01f,false);line.positionCount=5;
-                for(int j=0;j<5;j++){float r=0.6f*(1-j/4.5f);line.SetPosition(j,new Vector3(NetMouthOffset+Mathf.Cos(a)*r,-j*0.14f,Mathf.Sin(a)*r*0.8f));}
+                float a=i*Mathf.PI*2/16;var line=FishingArt.Line("Net basket strand",root,cord,.003f,false);line.positionCount=5;
+                for(int j=0;j<5;j++){float r=NetRadius*(1-j/4.5f);line.SetPosition(j,new Vector3(NetMouthOffset+Mathf.Cos(a)*r,-j*.07f,Mathf.Sin(a)*r*.8f));}
             }
             return root;
         }

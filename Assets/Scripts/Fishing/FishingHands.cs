@@ -32,6 +32,7 @@ namespace BoatAttack.Fishing
         public FishingHandTarget Right=>_right;
         public Transform Rod=>_rod;
         public Transform Knob=>_knob;
+        public Transform Crank=>_crank;
         public Transform Net=>_net;
         public bool HasGesture=>_gesture>0;
         public bool PresentingPickup=>_pickup!=null && _pickup.activeSelf;
@@ -81,6 +82,7 @@ namespace BoatAttack.Fishing
             var local=_rod.InverseTransformPoint(lp)-_crank.localPosition;
             float angle=Mathf.Atan2(local.z,-local.y)*Mathf.Rad2Deg;bool wasHolding=HoldingRod;
             _input.Update(available,grip,trigger,Vector3.Distance(rp,_rod.position)<.24f,leftGrip,Vector3.Distance(lp,_knob.position)<.16f,angle);
+            if(_input.Reeling)_crank.localRotation=Quaternion.AngleAxis(-angle,Vector3.right);
             if(HoldingRod && !wasHolding)Haptic(right,.22f);
             if(HoldingRod && _c.Session.Phase==CatchPhase.Fighting && _c.Session.Beat!=_lastCue)
             {_lastCue=_c.Session.Beat;Haptic(right,_lastCue==FishBeat.Leap?.3f:.12f);}
@@ -169,8 +171,9 @@ namespace BoatAttack.Fishing
                 bool rightTracked=Track(_right,XRNode.RightHand,out var rp,out var rq);
                 if(!leftTracked || !rightTracked)_input.Update(false,0,false,false,0,false,0);
                 StowRod();
-                if(HoldingRod && rightTracked)
+                if((HoldingRod || _c.Session.Phase==CatchPhase.Landing) && rightTracked && _c.Anchored && !_c.HasPendingCatch)
                 {
+                    _rod.gameObject.SetActive(true);
                     TryControllerPalm(false,out var palm,out var palmFrame);
                     var rotation=palmFrame*Quaternion.Inverse(RodPalmRotation);
                     _rod.SetPositionAndRotation(palm-rotation*RodPalm,rotation);
@@ -179,17 +182,23 @@ namespace BoatAttack.Fishing
                 return;
             }
             GetToolFrame(out var origin,out var frame);
-            bool fishing=_c.Anchored && !_c.Ashore && !_c.HasPendingCatch && _c.Session.Phase!=CatchPhase.Landing;
+            bool fishing=_c.Anchored && !_c.Ashore && !_c.HasPendingCatch;
             if(fishing)
             {
                 _rod.gameObject.SetActive(true);
                 // 同源双手保持在可见的胸前操作区；俯视只改变竿的瞄准，不把整个握持位置压出画面。
                 var holdFrame=Quaternion.Euler(0,frame.eulerAngles.y,0);
                 _rod.SetPositionAndRotation(origin+holdFrame*new Vector3(.10f,-.105f,.41f),holdFrame*Quaternion.Euler(_c.CastMotion.RodPitch-Mathf.Sin(_hook/.32f*Mathf.PI)*18,-12f,0));
-                var reelPalm=_rod.InverseTransformPoint(_knob.position+_rod.TransformVector(new Vector3(-.024f,.012f,-.035f)));
+                // The knob spins freely on its axle: fingers wrap across it, without rolling the wrist with the crank.
+                var reelPalm=_rod.InverseTransformPoint(_knob.position)+new Vector3(-.012f,.022f,-.018f);
+                bool landing=_c.Session.Phase==CatchPhase.Landing;
                 FitToolPose(_rod,reelPalm,RodPalm);
                 _right.SetFromGrip(_rod,RodPalm,RodPalmRotation,.86f);
-                _left.SetFromGrip(_rod,reelPalm,Quaternion.identity,.85f);
+                if(!landing)
+                {
+                    _left.SetFromGrip(_rod,reelPalm,Quaternion.LookRotation(Vector3.right,Vector3.up),.6f);
+                    _left.SetFingers(new FishingFingerPose(.55f,.64f,.66f,.62f,.72f));
+                }
             }
             else
             {
@@ -219,9 +228,9 @@ namespace BoatAttack.Fishing
         }
         private void StowRod()
         {
-            _rod.gameObject.SetActive(!_c.Ashore);
-            _rod.localPosition=XRSettings.isDeviceActive && _c.Anchored?new Vector3(.48f,1.45f,.1f):new Vector3(.75f,.95f,.9f);
-            _rod.localRotation=Quaternion.LookRotation(new Vector3(1.9f,1.7f,1.35f));
+            _rod.gameObject.SetActive(XRSettings.isDeviceActive && _c.Anchored && !_c.Ashore && !_c.HasPendingCatch);
+            _rod.localPosition=new Vector3(.8f,.72f,.25f);
+            _rod.localRotation=Quaternion.LookRotation(new Vector3(.25f,1,.2f));
         }
         public bool TryControllerPalm(bool left,out Vector3 position,out Quaternion rotation)
         {

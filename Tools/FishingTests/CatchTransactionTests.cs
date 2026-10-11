@@ -41,6 +41,7 @@ internal static class CatchTransactionTests
         check(!invalid.BeginPending(null,0,0,0),"Null catch rejected");
         var gate=new FishingNetGate();
         for(int i=0;i<20;i++)check(!gate.Step(true,.6f,0,1,0,1,.02f),"Outside net rim cannot capture "+i);
+        for(int i=0;i<20;i++)check(!gate.Step(true,.28f,0,1,0,1,.02f),"Compact net rejects overlap beyond its real mouth "+i);
         for(int i=0;i<12;i++)gate.Step(true,0,0,1,0,1,.02f);
         check(gate.Step(true,0,-.22f,1,.5f,1.22f,.02f),"Stable coverage followed by a small lift captures");
         check(!gate.Step(true,0,0,1,0,1.22f,.02f),"One overlap cannot emit repeated capture events");

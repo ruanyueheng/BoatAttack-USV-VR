@@ -37,7 +37,11 @@ namespace BoatAttack.Fishing
                 var command=go.AddComponent<FishingDockButton>();command.Owner=this;command.Action=action;i++;
             }
             _ray=FishingArt.Line("XR controller action ray",transform,c.lineMaterial,.006f);_ray.positionCount=2;_ray.enabled=false;
-            _rings=new Transform[2];for(int r=0;r<2;r++)_rings[r]=FishingArt.Shape("Line upgrade marker "+r,PrimitiveType.Cylinder,c.Hands.Rod,new Vector3(0,.08f+r*.045f,0),new Vector3(.1f,.015f,.1f),c.orange).transform;
+            _rings=new Transform[2];for(int r=0;r<2;r++)
+            {
+                _rings[r]=FishingArt.Shape("Line upgrade marker "+r,PrimitiveType.Cylinder,c.Hands.Rod,new Vector3(0,0,.21f+r*.035f),new Vector3(.035f,.004f,.035f),c.orange).transform;
+                _rings[r].localRotation=Quaternion.Euler(90,0,0);
+            }
             Present();
         }
         private static Text Label(Transform parent,Vector2 position,Vector2 size,int fontSize)
