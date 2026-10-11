@@ -104,6 +104,7 @@ namespace BoatAttack.Fishing
                 case FishingAcceptanceCase.HunyuanNightCatalog: _hud.JournalPage=0;_hud.CatalogPage=2;ToggleJournal();break;
                 case FishingAcceptanceCase.CastFlight: Cast(1);CastMotion.Tick(.1f);CastMotion.Tick(.1f);CastMotion.Tick(.1f);CastMotion.Tick(.1f);break;
                 case FishingAcceptanceCase.Calendar: _hud.JournalPage=4;ToggleJournal();break;
+                case FishingAcceptanceCase.NightBoat: ToggleView();break;
                 case FishingAcceptanceCase.Settings: TogglePause(); break;
                 case FishingAcceptanceCase.ShoreFirstPerson:
                 case FishingAcceptanceCase.ShoreThirdPerson:

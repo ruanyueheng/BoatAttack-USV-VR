@@ -1,38 +1,15 @@
-# BoatAttack USV VR — v0.13.0 第一人称握持与海岸店员
+# BoatAttack USV VR — v0.17.0 稳定钓艇与船上夜灯
 
-基于 Unity Boat Attack，使用 **Unity 2022.3.62f1 / URP 14.0.12**。v0.13.0 在已合并的 v0.12 上继续改进：按实际蒙皮标定掌心、逐物品握点与手指姿态、低头时的本地身体遮罩与腰口封闭、望远镜的举镜/光学观察过渡，并补齐原商店站位上的成年女性店员。
+基于 Unity Boat Attack，使用 **Unity 2022.3.62f1 / URP 14.0.12**。第17版修正转向翻船和波浪中的动力中断，重建有厚度、内外可见的船壳，并加入随昼夜渐亮的甲板灯。
 
-女店员按本次要求接入同学 `feature/v011-cashier-integration` 分支中的 **FantasyGirl 原模型**，复用 v13 柜台、交易与去重逻辑，并修正旧 prefab 对店员脚本的 GUID 引用。原素材 README 未提供作者/许可证，本地开发接入不代表取得公开再分发许可。原 PR #20 的玩家修复、#21 的实体商店/商品说明/余额与经济测试继续保留。女店员是可见的静态角色，不是 NPC AI；其他顾客站位仍为空。
+**J 日志 → 日历**可推进至白昼08:00或夜晚21:00，并切换自动流逝/固定时间；PICO潮汐手册提供相同功能。原有捕鱼、背包、工坊、商店、海岸探索与存档继续沿用。素材检索记录和实际验收范围见下方文档。
 
-航行捕鱼、抄网收鱼、真实地形地图、背包采集制作、港口委托、日志、第一/第三人称、v8 存档与第十航点继续保留。验收扩展为 **23 个场景、三种桌面画幅**；具体通过/失败、构建、Player 图像和审查状态见本版记录，不以历史日志冒充本次通过。**PICO 真机、人工键鼠完整流程与持续性能仍需单独验收。**
-
-- [v0.13.0 改进、PR 核对与验收记录](Docs/FISHING_V013_FIRST_PERSON.md)
-- [第一人称技术调研与实现取舍](Docs/FIRST_PERSON_RESEARCH_V013.md)
-- [原店员来源与导入说明](ArtSource/FantasyGirl/README.md)
-- [v0.12.0 PR 审查、玩家修复与验收](Docs/FISHING_V012_PLAYER_REPAIRS.md)
-- [v0.11.0 地形地图、同源人物与接触事务](Docs/FISHING_V011_TERRAIN_AVATAR.md)
-- [人物来源与 CC0 许可](ArtSource/Characters/ATTRIBUTION.md)
-- [v0.10.0 海岸工坊、人物与上下船改进](Docs/FISHING_V010_WORKSHOP.md)
-- [v0.9.0 net handling, catch transactions and XR candidate / 实体抄鱼与 XR 闭环](Docs/FISHING_V09_CATCH_LOOP.md)
-- [v0.8.0 backpack, land exploration and reverse / 背包与陆地探索](Docs/FISHING_V08_FIELD.md)
-- [v0.7.1 shore mouse-look fix and regression review](Docs/FISHING_V071_LOOK_FIX.md)
-- [v0.7.0 first-person hands, spinning rod and shore mouse-look](Docs/FISHING_V07_HANDS.md)
-- [v0.6.1 harbor prop art integration and validation](Docs/FISHING_PROP_ART.md)
-- [v0.6.0 review and acceptance / 重燃旧港信标](Docs/FISHING_V06_REVIEW.md)
-- [v0.6 design and implementation history](Docs/FISHING_V06_DESIGN.md)
-- [v0.5.0 embodied shore exploration / 海陆探索](Docs/FISHING_V05_SHORE.md)
-- [Play the fishing prototype / 捕鱼试玩说明](Docs/FISHING_PROTOTYPE.md)
-- [v0.4.2 focused HUD: review, regression and acceptance limits](Docs/FISHING_V042_REVIEW.md)
-- [v0.4.1 review: progression, performance and order HUD fixes](Docs/FISHING_V04_REVIEW.md)
-- [v0.3.1 living bay: weather, wildlife and modeling](Docs/FISHING_LIVING_BAY.md)
-- [v0.3 bay exploration, UI and XR preparation](Docs/FISHING_V03.md)
-- [v0.2 modeling, presentation and first-person desktop view](Docs/FISHING_V02.md)
-- [Current integration status](Docs/INTEGRATION_STATUS.md)
-- [Reproduced fixes and remaining risks](Docs/PROJECT_HEALTH_CHECK.md)
-- [Team collaboration and synchronization](Docs/TEAM_COLLABORATION.md)
-- [Validation commands and limits](Docs/TESTING.md)
-- [Gameplay candidates — not implemented](Docs/GAMEPLAY_OPTIONS.md)
-- [How to Fish research and design rationale](Docs/HOW_TO_FISH_RESEARCH.md)
+- [第17版改进与使用说明](Docs/FISHING_V017_BOAT_HANDLING.md)
+- [第17版测试、构建与截图](Docs/VALIDATION_V017.md)
+- [8种船舶素材、许可与选型](Docs/BOAT_ASSET_RESEARCH_V017.md)
+- [第16版单人钓艇与真实握持](Docs/FISHING_V016_SOLO_SKIFF.md)
+- [第15版海湾体验](Docs/FISHING_V015_COASTAL_EXPERIENCE.md)
+- [运行与验收工具](Docs/TESTING.md)
 
 The original project description and credits follow below.
 

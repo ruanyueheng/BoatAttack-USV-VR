@@ -5,6 +5,20 @@ internal static class LivingCoastTests
 {
     public static void Run(Action<bool,string> check)
     {
+        var manual=new FishingCalendar();
+        manual.ToggleAutomatic();double held=manual.TotalMinutes;manual.Tick(.25f,false);
+        check(manual.TotalMinutes==held && !manual.Automatic,"Manual clock holds during active play");
+        check(manual.AdvanceToHour(21) && manual.Night && manual.Day==0,"Manual night updates the real calendar");
+        double night=manual.TotalMinutes;
+        check(manual.AdvanceToHour(8) && !manual.Night && manual.Day==1 && manual.TotalMinutes>night,"Manual dawn advances monotonically across midnight");
+        check(FishingCalendar.TryRestore(manual.Snapshot(),out var heldClock) && !heldClock.Automatic,"Manual clock preference survives save reload");
+        heldClock.ToggleAutomatic();held=heldClock.TotalMinutes;heldClock.Tick(.25f,false);
+        check(heldClock.TotalMinutes>held,"Automatic time resumes from chosen hour");
+        held=heldClock.TotalMinutes;
+        check(!heldClock.AdvanceToHour(float.NaN) && !heldClock.AdvanceToHour(float.PositiveInfinity) && !heldClock.AdvanceToHour(-1) && !heldClock.AdvanceToHour(24) && heldClock.TotalMinutes==held,"Invalid manual hours cannot mutate time");
+        FishingCalendar.TryRestore(new CalendarData{day=FishingCalendar.MaxDay,minute=1320},out var limit);
+        check(!limit.AdvanceToHour(8) && limit.Minute==1320,"Manual clock rejects overflow at maximum day");
+        check(!new CalendarData().timeFixed,"Old calendar saves default to automatic time");
         check(FishingCalendar.TryRestore(new CalendarData{day=27,minute=1439.9},out var clock),"Calendar accepts season boundary");
         clock.Tick(.25f,false);
         check(clock.Day==28 && clock.Season==1 && clock.Date==1 && clock.Minute<1,"Midnight advances season once");

@@ -84,6 +84,8 @@ namespace BoatAttack.Fishing
             if (CurrentCase == FishingAcceptanceCase.Bite && c.Session.Phase != CatchPhase.Bite) throw new InvalidOperationException("Bite fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.Fighting && (c.Session.Phase != CatchPhase.Fighting || c.Session.Tension < .78f)) throw new InvalidOperationException("Fight fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.Landing && (!c.Session.CanLand || !c.NetDeployed)) throw new InvalidOperationException("Landing/net fixture failed.");
+            if(CurrentCase==FishingAcceptanceCase.NightBoat && (!c.Career.Calendar.Night || c.FirstPerson || c.Weather.DeckLight==null || !c.Weather.DeckLight.enabled))
+                throw new InvalidOperationException("Night boat fixture did not enable local deck illumination.");
             if (CurrentCase == FishingAcceptanceCase.Catch && (c.Session.Phase != CatchPhase.Caught || c.LastCatch.Fish == null || c.Career.Count != 1)) throw new InvalidOperationException("Catch/store fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.LegendLeap && (c.Session.Kind != FishKind.Sailfish || c.Session.Beat != FishBeat.Leap)) throw new InvalidOperationException("Legend fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.FullHold && (c.Career.Count != c.Career.Capacity || c.Cast())) throw new InvalidOperationException("Full-hold cast guard failed.");

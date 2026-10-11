@@ -85,7 +85,7 @@ namespace BoatAttack.EditorTools
             Capture(c,evidence,"06-skiff");
             Debug.Log("[V016] EVIDENCE: "+evidence);
         }
-        private static void Capture(FishingPrototype c,string directory,string label)
+        internal static void Capture(FishingPrototype c,string directory,string label)
         {
             var camera=c.viewCamera;var target=camera.targetTexture;var active=RenderTexture.active;float aspect=camera.aspect;
             var rt=new RenderTexture(1600,900,24);var image=new Texture2D(1600,900,TextureFormat.RGB24,false);
