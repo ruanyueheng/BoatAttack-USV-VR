@@ -125,6 +125,10 @@ namespace BoatAttack.EditorTools
             {
                 var run=FishingLivingCoastValidation.Checks(c);while(run.MoveNext())yield return null;
             }
+            else if(suite=="V018")
+            {
+                var run=FishingV018Validation.Checks(c);while(run.MoveNext())yield return null;
+            }
             else if(suite=="V017")
             {
                 var run=FishingV017Validation.Checks(c);while(run.MoveNext())yield return null;
@@ -483,7 +487,7 @@ namespace BoatAttack.EditorTools
             Check(c.RequestCatchResolution(true),"取消后可用新编号重新入箱");c.TickWorldAction(1,true,false);
             Check(!c.HasPendingCatch && c.Career.Count==1 && !c.RequestCatchResolution(true),"鱼获事务只结算一次");
             var reloaded=FishingSaveStore.Load(c.SavePath,out var warning);
-            Check(warning=="" && reloaded.Snapshot().version==9 && reloaded.Count==1 && reloaded.Workshop.Initialized,"新动作仍保存 v9 鱼获/工坊数据");
+            Check(warning=="" && reloaded.Snapshot().version == 10 && reloaded.Count==1 && reloaded.Workshop.Initialized,"新动作仍保存 v9 鱼获/工坊数据");
             c.CancelWorldAction();yield return null;
             var releasedFish=new CatchRecord{id="v011-release-"+Guid.NewGuid().ToString("N"),kind=FishKind.Coral,grams=1000,value=FishingSpecies.Value(FishKind.Coral,false,1000)};
             Check(c.Career.BeginPending(releasedFish,0,c.Player.transform.position.x,c.Player.transform.position.z),"普通鱼放生夹具");c.CatchRig.ResetFixture();

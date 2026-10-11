@@ -18,6 +18,8 @@ namespace BoatAttack
         public float steeringTorque = 5f;
         public float horsePower = 18f;
         public bool stableHull;
+        public float forwardSpeedLimit = 7f;
+        public float rudderResponse = 1f;
         private NativeArray<float3> _point; // engine submerged check
         private float3[] _heights = new float3[1]; // engine submerged check
         private float3[] _normals = new float3[1]; // engine submerged check
@@ -113,7 +115,7 @@ namespace BoatAttack
                 forward.y = 0f;
                 forward.Normalize();
                 if (stableHull && modifier > 0f)
-                    modifier *= Mathf.Clamp01(1f - Vector3.Dot(RB.velocity, forward) / 7f);
+                    modifier *= Mathf.Clamp01(1f - Vector3.Dot(RB.velocity, forward) / Mathf.Max(1f, forwardSpeedLimit));
                 RB.AddForce(horsePower * modifier * forward, ForceMode.Acceleration); // add force forward based on input and horsepower
                 if (!stableHull) RB.AddRelativeTorque(-Vector3.right * modifier, ForceMode.Acceleration);
             }
@@ -130,8 +132,8 @@ namespace BoatAttack
                 modifier = Mathf.Clamp(modifier, -1f, 1f); // clamp for reasonable values
                 if (stableHull)
                 {
-                    float rate = Mathf.Lerp(45f, 26f, Mathf.Clamp01(Mathf.Sqrt(VelocityMag) / 7f)) * Mathf.Deg2Rad;
-                    RB.AddTorque(Vector3.up * (modifier * rate - RB.angularVelocity.y) * 4f, ForceMode.Acceleration);
+                    float rate = Mathf.Lerp(45f, 26f, Mathf.Clamp01(Mathf.Sqrt(VelocityMag) / forwardSpeedLimit)) * rudderResponse * Mathf.Deg2Rad;
+                    RB.AddTorque(Vector3.up * (modifier * rate - RB.angularVelocity.y) * 4f * rudderResponse, ForceMode.Acceleration);
                 }
                 else RB.AddRelativeTorque(new Vector3(0f, steeringTorque, -steeringTorque * 0.5f) * modifier, ForceMode.Acceleration);
             }

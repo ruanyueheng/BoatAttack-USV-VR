@@ -61,7 +61,7 @@ namespace BoatAttack.Fishing
             else if(c.Ashore)
             {
                 title=(c.Expedition.Aligning?c.Expedition.ActionTitle:c.WorldInteractionTitle) ?? c.Shore.ActionTitle;
-                help=c.Expedition.Aligning?c.Expedition.AlignmentHint:"空格跳跃 · Ctrl 蹲下 · E 采集 / 制作 · T 观察 · I 背包 · R 救援";
+                help=c.Expedition.Aligning?c.Expedition.AlignmentHint:c.Islands.NearbyHint!=null?"E 读信 / 开箱 / 转盘 · F 点灯 · J 群岛航记 · G 上船":"空格跳跃 · Ctrl 蹲下 · E 采集 / 制作 · T 观察 · I 背包 · R 救援";
             }
             else if (!c.Anchored)
             {

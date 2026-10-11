@@ -2,7 +2,7 @@ using System;
 
 namespace BoatAttack.Fishing
 {
-    public enum UpgradeTrack { Line, Reel, Hold }
+    public enum UpgradeTrack { Line, Reel, Hold, Engine, Rudder, Cabin }
 
     /// <summary>Immutable tuning for one species. Unity-free so desktop, future XR tools and tests share it.</summary>
     public sealed class FishSpecies

@@ -4563,7 +4563,7 @@ PrefabInstance:
     - target: {fileID: 4301521246144889673, guid: fc3ffb83d6eafb1489a5b23bc82d25b6,
         type: 3}
       propertyPath: horsePower
-      value: 7
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 4301521246144889673, guid: fc3ffb83d6eafb1489a5b23bc82d25b6,
         type: 3}
@@ -4573,12 +4573,17 @@ PrefabInstance:
     - target: {fileID: 4301521246144889673, guid: fc3ffb83d6eafb1489a5b23bc82d25b6,
         type: 3}
       propertyPath: enginePosition.y
-      value: -0.95
+      value: -1.2
       objectReference: {fileID: 0}
     - target: {fileID: 4301521246144889673, guid: fc3ffb83d6eafb1489a5b23bc82d25b6,
         type: 3}
       propertyPath: enginePosition.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4301521246144889673, guid: fc3ffb83d6eafb1489a5b23bc82d25b6,
+        type: 3}
+      propertyPath: forwardSpeedLimit
+      value: 11
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 64258884862185400, guid: fc3ffb83d6eafb1489a5b23bc82d25b6, type: 3}

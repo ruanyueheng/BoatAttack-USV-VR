@@ -58,7 +58,7 @@ namespace BoatAttack.Fishing
         }
         private static bool IsPick(FieldItem item)=>item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe;
 
-        private enum WorldTargetKind { None,Expedition,Station,Resource,Pickup,Survey }
+        private enum WorldTargetKind { None,Expedition,Station,Resource,Pickup,Survey,Island }
         private struct WorldTarget
         {
             public WorldTargetKind Kind;public int Id;public Transform Root;
@@ -92,6 +92,7 @@ namespace BoatAttack.Fishing
             if(FieldWorld.TryPickupTarget(out var pickup,refresh))Offer(new WorldTarget{Kind=WorldTargetKind.Pickup,Id=pickup.Id,Root=pickup.Root,Pickup=pickup},pickup.Feet);
             if(refresh)Shore.UpdateProximity();int task=Shore.NearbyTask;var marker=Shore.SurveyMarker(task);
             if(marker!=null)Offer(new WorldTarget{Kind=WorldTargetKind.Survey,Id=task,Root=marker},marker.position);
+            if(Islands.TryTarget(out int islandTarget,out var islandRoot))Offer(new WorldTarget{Kind=WorldTargetKind.Island,Id=islandTarget,Root=islandRoot},islandRoot.position);
             if(trace!=null)trace.Append(" categories: expedition=").Append(expedition).Append(" station=").Append(station)
                 .Append(" resource=").Append(resource==null?-1:resource.Id).Append(" pickup=").Append(pickup==null?-1:pickup.Id).Append(" survey=").Append(task);
             return best;
@@ -136,8 +137,8 @@ namespace BoatAttack.Fishing
                 else
                 {
                     point=FishingContactGeometry.ClosestPoint(target.Root,Shore.Character.ShoulderPosition(false));rotation=Shore.Actor.rotation;
-                    kind=target.Kind==WorldTargetKind.Pickup?FishingActionKind.Pickup:target.Kind==WorldTargetKind.Expedition && target.Id==4?FishingActionKind.Repair:FishingActionKind.Inspect;
-                    targetId=(target.Kind==WorldTargetKind.Pickup?"pickup:":target.Kind==WorldTargetKind.Expedition?"expedition:":"survey:")+target.Id;
+                    kind=target.Kind==WorldTargetKind.Pickup || (target.Kind==WorldTargetKind.Island && target.Id%3==1)?FishingActionKind.Pickup:target.Kind==WorldTargetKind.Expedition && target.Id==4?FishingActionKind.Repair:FishingActionKind.Inspect;
+                    targetId=(target.Kind==WorldTargetKind.Pickup?"pickup:":target.Kind==WorldTargetKind.Expedition?"expedition:":target.Kind==WorldTargetKind.Island?"island:":"survey:")+target.Id;
                 }
                 check=EvaluateActionStart(kind,target.Root,point,rotation,false);check.TargetId=targetId;
                 if(target.Kind==WorldTargetKind.Resource)
@@ -203,6 +204,7 @@ namespace BoatAttack.Fishing
                     case WorldTargetKind.Resource:return "E 采集 "+FishingBackpack.Name(target.Resource.Item);
                     case WorldTargetKind.Pickup:return "E 拾取 "+FishingBackpack.Name(target.Pickup.Item)+" ×"+target.Pickup.Count;
                     case WorldTargetKind.Survey:return "E "+FishingExploration.TaskName(target.Id);
+                    case WorldTargetKind.Island:return Islands.NearbyHint;
                     default:return null;
                 }
             }
@@ -218,6 +220,8 @@ namespace BoatAttack.Fishing
             if(target.Kind==WorldTargetKind.Station)return WorkshopWorld.OpenStation(target.Id);
             if(target.Kind==WorldTargetKind.Resource)return RequestHarvest(target.Resource);
             var point=FishingContactGeometry.ClosestPoint(target.Root,Shore.Character.ShoulderPosition(false));int id=target.Id;
+            if(target.Kind==WorldTargetKind.Island)
+                return _xrActive ? Islands.InteractAt(id) : BeginWorldAction(id%3==1?FishingActionKind.Pickup:FishingActionKind.Inspect,"island:"+id,target.Root,point,Shore.Actor.rotation,()=>Islands.InteractAt(id));
             if(target.Kind==WorldTargetKind.Expedition)
                 return BeginWorldAction(id==4?FishingActionKind.Repair:FishingActionKind.Inspect,"expedition:"+id,target.Root,point,Shore.Actor.rotation,()=>
                 {

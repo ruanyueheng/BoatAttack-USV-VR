@@ -135,6 +135,7 @@ namespace BoatAttack.Fishing
             return Chip(x, y, (met ? "√ " : "") + text, met ? Mint : Muted, met);
         }
 
+        private bool _harborBoatUpgrades;
         private void DrawHarborDesk()
         {
             var c = Controller;
@@ -162,11 +163,12 @@ namespace BoatAttack.Fishing
             y = layout.ReservedY;
             Label(x, y, w, 20, reserved > 0 ? "已为委托保留 " + reserved + " 条，普通出售不会卖掉它们。" : "没有需要保留的委托鱼。", 13, reserved > 0 ? Mint : Faint);
             y = layout.UpgradeHeadingY;
-            Section(x, y, w, "装备升级", "点击下方按钮升级");
+            Section(x, y, w, _harborBoatUpgrades?"船舶升级":"钓具升级", "点击下方按钮升级");
+            if(Button(new Rect(x+w-170,y,170,28),_harborBoatUpgrades?"切换钓具":"切换船舶",true,false,13))_harborBoatUpgrades=!_harborBoatUpgrades;
             for (int t = 0; t < 3; t++)
             {
                 y = layout.UpgradeY(t);
-                var track = (UpgradeTrack)t;
+                var track = (UpgradeTrack)(t+(_harborBoatUpgrades?3:0));
                 int level = career.Level(track);
                 int cost = career.NextUpgradeCost(track);
                 Label(x, y, 110, 24, FishingText.UpgradeName(track), 17, Color.white, true);

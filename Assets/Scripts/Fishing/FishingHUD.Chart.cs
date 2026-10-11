@@ -42,6 +42,8 @@ namespace BoatAttack.Fishing
                         c.fishingSpots.Length+1+i,MapShoreColor);
             if(c.TackleShop!=null && c.TackleShop.Available)
                 ChartMarker(c.Ashore?c.TackleShop.Position:c.TackleShop.mooringPoint.position,center,"店",c.ShopNavigationIndex,MapShoreColor);
+            for(int i=0;i<FishingAdventure.Count;i++)
+                ChartMarker(c.Ashore?FishingIslandWorld.Center(i):FishingIslandWorld.Berth(i),center,((char)('E'+i)).ToString(),c.IslandNavigationIndex(i),c.Career.Adventure.Restored(i)?Gold:MapShoreColor);
             if(c.Ashore)
             {
                 var boat=ChartPoint(c.Player.transform.position,center);Disc(boat,7,MapSurface);Disc(boat,5,MapPortColor);
