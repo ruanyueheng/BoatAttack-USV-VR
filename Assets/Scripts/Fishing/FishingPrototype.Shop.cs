@@ -48,6 +48,7 @@ namespace BoatAttack.Fishing
                 else if (keyboard.digit1Key.wasPressedThisFrame) TackleShop.Buy(UpgradeTrack.Line);
                 else if (keyboard.digit2Key.wasPressedThisFrame) TackleShop.Buy(UpgradeTrack.Reel);
                 else if (keyboard.digit3Key.wasPressedThisFrame) TackleShop.Buy(UpgradeTrack.Hold);
+                else if (keyboard.digit4Key.wasPressedThisFrame) TackleShop.BuyRifle();
                 return true;
             }
             if (ShopBlocksGameplay) return true;

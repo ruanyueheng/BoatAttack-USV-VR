@@ -72,6 +72,7 @@ namespace BoatAttack.Fishing
                     DrawCatchToast();
                     DrawCompactNotice();
                     DrawHotbar();
+                    DrawHuntingAim();
                 }
                 if (c.Acceptance != null) DrawAcceptanceToolbar();
             }

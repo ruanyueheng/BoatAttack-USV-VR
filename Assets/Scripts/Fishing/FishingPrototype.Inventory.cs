@@ -11,6 +11,7 @@ namespace BoatAttack.Fishing
         internal void NotifyWorkshopTransaction(){_workshopReceipt=true;}
         public FishingWorkshopWorld WorkshopWorld { get; private set; }
         public FishingFieldWorld FieldWorld { get; private set; }
+        public FishingHunting Hunting { get; private set; }
         public void LowerFieldTools(){BinocularsRaised=false;LanternOn=false;}
         public void ToggleInventory()
         {
@@ -53,6 +54,7 @@ namespace BoatAttack.Fishing
             if(Paused || ShopBlocksGameplay || WorldActionBlocksGameplay || !Ashore || Expedition.Aligning)return;
             switch(Career.Backpack.Equipped)
             {
+                case FieldItem.HuntingRifle:Hunting.TryFire();break;
                 case FieldItem.Workbench:case FieldItem.Furnace:RequestPlaceEquipped();break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:RequestHarvest();break;
                 case FieldItem.FieldGuide: FieldWorld.Observe();break;

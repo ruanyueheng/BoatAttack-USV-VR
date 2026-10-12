@@ -71,7 +71,7 @@ namespace BoatAttack.Fishing
             Label(545,698,365,45,confirming?"不可撤销；点击其他格取消确认。":"自然手册受保护；满包不吞拾取物。",13,confirming?Danger:Faint);
             Fill(933,235,1,495,Hairline);
             Label(958,239,300,30,"野外手册",23,Mint,true);
-            string[] notes={"蹲下慢慢接近，留意跳跃的小耳朵。","奔跑会惊动赤狐；远距离使用望远镜。","在海岸内陆缓慢活动，不捕捉、不伤害。"};
+            string[] notes={"蹲下慢慢接近；猎取后获得兽肉和毛皮。","奔跑会惊动赤狐；猎取后获得兽肉和毛皮。","在海岸内陆缓慢活动；猎取后可获得兽肉。"};
             for(int i=0;i<3;i++)
             {
                 bool seen=Controller.Career.Backpack.Seen((LandAnimalKind)i);float y=288+i*93;
@@ -80,7 +80,7 @@ namespace BoatAttack.Fishing
                 Label(972,y+40,286,34,notes[i],13,Faint);
             }
             Label(958,595,316,30,"工具使用",20,Gold,true);
-            Label(958,635,312,85,"自然手册：F 记录看向的动物\n望远镜：F 放大 / 放下，T 记录\n提灯：F 点亮 / 熄灭，照亮附近",15,Muted);
+            Label(958,635,312,110,"手册：F 记录；望远镜：F 放大\n提灯：F 点亮 / 熄灭\n猎枪：左键 / F 单发，靠近 E 收取\n兽肉、毛皮：背包材料，可堆叠",15,Muted);
         }
         private void DrawFieldSlot(Rect r,int index,bool equipped,bool source)
         {
@@ -97,7 +97,12 @@ namespace BoatAttack.Fishing
         private void FieldIcon(Rect r,FieldItem item)
         {
             float x=r.x,y=r.y,w=r.width,h=r.height;
-            if(item==FieldItem.Binoculars)
+            if(item==FieldItem.HuntingRifle)
+            {
+                Fill(x,y+h*.35f,w*.85f,4,Sky);Rounded(new Rect(x+w*.38f,y+h*.31f,w*.48f,9),Muted,2);
+                Rounded(new Rect(x+w*.78f,y+h*.4f,w*.22f,10),Gold,2);Fill(x+w*.45f,y+h*.52f,5,h*.28f,Muted);
+            }
+            else if(item==FieldItem.Binoculars)
             {
                 Rounded(new Rect(x,y+4,w*.4f,h*.7f),Sky,4);Rounded(new Rect(x+w*.6f,y+4,w*.4f,h*.7f),Sky,4);
                 Fill(x+w*.3f,y+h*.35f,w*.4f,5,Gold);Disc(new Vector2(x+w*.2f,y+h*.65f),4,Ink);Disc(new Vector2(x+w*.8f,y+h*.65f),4,Ink);

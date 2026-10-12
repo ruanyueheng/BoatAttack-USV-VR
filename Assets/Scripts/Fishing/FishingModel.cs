@@ -160,6 +160,7 @@ namespace BoatAttack.Fishing
     [Serializable]
     public sealed class FishingSaveData
     {
+        public List<HuntedAnimalData> huntedAnimals = new List<HuntedAnimalData>();
         public int version = 8;
         public WorkshopData workshop = new FishingWorkshop().Snapshot();
         public PendingCatchData pendingCatch;
@@ -186,8 +187,51 @@ namespace BoatAttack.Fishing
         public List<string> recordedIds = new List<string>();
     }
 
+    [Serializable]
+    public sealed class HuntedAnimalData
+    {
+        public int id;
+        public LandAnimalKind kind;
+        public float x,y,z,yaw;
+        public bool collected;
+        public HuntedAnimalData Copy() => (HuntedAnimalData)MemberwiseClone();
+    }
+
     public sealed partial class FishingCareer
     {
+        private readonly List<HuntedAnimalData> _huntedAnimals = new List<HuntedAnimalData>();
+        public static int HuntingRiflePrice => 3 * UpgradeCost(UpgradeTrack.Line, 0);
+        public bool BuyHuntingRifle()
+        {
+            if(Coins<HuntingRiflePrice || Backpack.Count(FieldItem.HuntingRifle)>0 || !Backpack.TryAdd(FieldItem.HuntingRifle,1))return false;
+            Coins-=HuntingRiflePrice;return true;
+        }
+        public HuntedAnimalData HuntedAnimal(int id)
+        {
+            foreach(var entry in _huntedAnimals)if(entry.id==id)return entry.Copy();
+            return null;
+        }
+        public bool KillLandAnimal(int id,LandAnimalKind kind,float x,float y,float z,float yaw)
+        {
+            var entry=new HuntedAnimalData{id=id,kind=kind,x=x,y=y,z=z,yaw=yaw};
+            if(Backpack.Equipped!=FieldItem.HuntingRifle || !ValidHuntedAnimal(entry) || HuntedAnimal(id)!=null)return false;
+            _huntedAnimals.Add(entry);return true;
+        }
+        public bool CollectHuntedAnimal(int id)
+        {
+            var entry=_huntedAnimals.Find(a=>a.id==id);
+            if(entry==null || entry.collected)return false;
+            var meat=new FieldStack{item=FieldItem.Meat,count=entry.kind==LandAnimalKind.Rabbit?1:2};
+            bool ok=entry.kind==LandAnimalKind.Tortoise?Backpack.TryAddBundle(meat):Backpack.TryAddBundle(meat,new FieldStack{item=FieldItem.Fur,count=1});
+            if(!ok)return false;
+            entry.collected=true;return true;
+        }
+        private static bool ValidHuntedAnimal(HuntedAnimalData a)
+        {
+            return a!=null && a.id>=0 && a.id<FishingBackpack.PickupCount && (int)a.kind==a.id%3
+                && FiniteHunt(a.x) && FiniteHunt(a.y) && FiniteHunt(a.z) && FiniteHunt(a.yaw);
+        }
+        private static bool FiniteHunt(float value)=>!float.IsNaN(value) && !float.IsInfinity(value) && Math.Abs(value)<=10000;
         public FishingWorkshop Workshop { get; private set; } = new FishingWorkshop();
         public FishingBackpack Backpack { get; private set; } = new FishingBackpack();
         public const int BaseCapacity = 6;
@@ -394,6 +438,7 @@ namespace BoatAttack.Fishing
                 bestGrams = new List<int>(_bestGrams), recordedIds = new List<string>(_recentIds)
             };
             foreach (var item in _inventory) result.inventory.Add(item.Copy());
+            foreach (var animal in _huntedAnimals) result.huntedAnimals.Add(animal.Copy());
             return result;
         }
 
@@ -469,6 +514,15 @@ namespace BoatAttack.Fishing
             {
                 if(!FishingWorkshop.TryRestore(data.workshop,out var workshop))return false;
                 result.Workshop=workshop;
+            }
+            if(data.huntedAnimals!=null)
+            {
+                if(data.huntedAnimals.Count>FishingBackpack.PickupCount || (data.version<8 && data.huntedAnimals.Count>0))return false;
+                foreach(var animal in data.huntedAnimals)
+                {
+                    if(!ValidHuntedAnimal(animal) || result.HuntedAnimal(animal.id)!=null)return false;
+                    result._huntedAnimals.Add(animal.Copy());
+                }
             }
             career = result;
             return true;

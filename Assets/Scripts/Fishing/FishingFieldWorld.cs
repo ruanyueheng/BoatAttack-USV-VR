@@ -10,6 +10,7 @@ namespace BoatAttack.Fishing
         }
         public sealed class Animal
         {
+            public int Id;public bool Dead;public Collider Hitbox;
             public LandAnimalKind Kind;public Transform Root;public Vector3 Home,Feet,Target;public bool Fleeing;public float Rest;
         }
         private FishingPrototype _c;
@@ -44,7 +45,7 @@ namespace BoatAttack.Fishing
                     if(TryLocation(shore.Landing,4f+j*1.3f,40+id*113,out var home))
                     {
                         var kind=(LandAnimalKind)(id%3);var root=MeshObject("Land animal / "+kind,animalMeshes[(int)kind]);root.position=home;
-                        _animals.Add(new Animal{Kind=kind,Root=root,Home=home,Feet=home,Target=home,Rest=id*.2f});
+                        _animals.Add(new Animal{Id=id,Kind=kind,Root=root,Home=home,Feet=home,Target=home,Rest=id*.2f});
                     }
                 }
             }
@@ -69,13 +70,14 @@ namespace BoatAttack.Fishing
             }
             return false;
         }
-        public void RefreshPickups(){foreach(var p in _pickups)if(p.Root!=null)p.Root.gameObject.SetActive(!_c.Career.Backpack.Collected(p.Id));_nearby=null;}
+        public void RefreshPickups(){foreach(var p in _pickups)if(p.Root!=null)p.Root.gameObject.SetActive(!_c.Career.Backpack.Collected(p.Id));_nearby=null;_c.Hunting?.RefreshAnimals();}
         private void Update()
         {
             if(_c==null || _c.Paused)return;
             if(Time.time>=_aiAt){TickAnimals(.1f);_aiAt=Time.time+.1f;}
             foreach(var a in _animals)
             {
+                if(a.Dead)continue;
                 float moving=Vector3.Distance(a.Feet,a.Target)>.12f?1:0;
                 float hop=a.Kind==LandAnimalKind.Rabbit?Mathf.Abs(Mathf.Sin(Time.time*8))*moving*.085f:Mathf.Sin(Time.time*5)*moving*.014f;
                 a.Root.position=Vector3.Lerp(a.Root.position,a.Feet+Vector3.up*hop,Mathf.Min(1,Time.deltaTime*16));
@@ -89,6 +91,7 @@ namespace BoatAttack.Fishing
             if(_c.Paused || dt<=0 || float.IsNaN(dt) || float.IsInfinity(dt))return;dt=Mathf.Min(dt,.1f);
             foreach(var a in _animals)
             {
+                if(a.Dead)continue;
                 var away=Vector3.ProjectOnPlane(a.Feet-_c.ExplorerPosition,Vector3.up);
                 a.Fleeing=_c.Ashore && away.magnitude<AlertRadius(_c.Shore.Crouched,_c.Shore.WalkSpeed>3);
                 a.Rest-=dt;
@@ -142,6 +145,7 @@ namespace BoatAttack.Fishing
             nearest=float.MaxValue;float range=_c.BinocularsRaised?22:8;
             foreach(var a in _animals)
             {
+                if(a.Dead)continue;
                 var target=a.Root.position+Vector3.up*.4f;float d=Vector3.Distance(target,_c.viewCamera.transform.position);
                 if(d<nearest && Visible(target,range,.92f)){_candidate=a;nearest=d;}
             }

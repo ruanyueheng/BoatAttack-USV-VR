@@ -158,6 +158,7 @@ namespace BoatAttack.Fishing
             BindTackleShop();
             Expedition=gameObject.AddComponent<FishingExpeditionScene>();Expedition.Build(this);
             FieldWorld=gameObject.AddComponent<FishingFieldWorld>();FieldWorld.Build(this);
+            Hunting=gameObject.AddComponent<FishingHunting>();Hunting.Build(this);
             WorkshopWorld=gameObject.AddComponent<FishingWorkshopWorld>();WorkshopWorld.Build(this);
             XRSeat=gameObject.AddComponent<FishingXRSeat>();XRSeat.Build(this);
             CatchRig=gameObject.AddComponent<FishingCatchRig>();CatchRig.Build(this);
@@ -268,6 +269,7 @@ namespace BoatAttack.Fishing
                 if(ShopBlocksGameplay){Shore.Tick(false);AnimateEquipment();return;}
                 bool press=(pointerReady && !overTools && !rightHeld && m!=null && m.leftButton.wasPressedThisFrame) || (gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame);
                 if(press && Anchored){if(Session.Phase==CatchPhase.Bite)Hook();else Cast();}
+                else if(press && Ashore && (k==null || (!k.leftAltKey.isPressed && !k.rightAltKey.isPressed)))Hunting.TryFire();
             }
             Shore.Tick(focused && !Automated && !Expedition.Aligning);
             UpdateNearestSpot();
@@ -337,6 +339,7 @@ namespace BoatAttack.Fishing
         {
             if(!_initialized)return;
             XRSeat.Apply();Shore.SyncRider();View.ApplyView();Hands.Apply();FieldWorld.ApplyHeldTool();ApplyWorldActionPose();CatchRig.Apply(deltaTime);
+            Hunting.Present();
             // 全部工具和掌心目标落位后才解同源骨架；随后只读取竿尖画线，不再次采样。
             Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right);
             Shore.Character.SetOpticalView(View.OpticalView);DockConsole.Present();

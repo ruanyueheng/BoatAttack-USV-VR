@@ -58,7 +58,7 @@ namespace BoatAttack.Fishing
         }
         private static bool IsPick(FieldItem item)=>item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe;
 
-        private enum WorldTargetKind { None,Expedition,Station,Resource,Pickup,Survey }
+        private enum WorldTargetKind { None,Expedition,Station,Resource,Pickup,Survey,Carcass }
         private struct WorldTarget
         {
             public WorldTargetKind Kind;public int Id;public Transform Root;
@@ -90,6 +90,7 @@ namespace BoatAttack.Fishing
                 else if(resource!=null)Offer(new WorldTarget{Kind=WorldTargetKind.Resource,Id=resource.Id,Root=resource.Root,Resource=resource},resource.Feet);
             }
             if(FieldWorld.TryPickupTarget(out var pickup,refresh))Offer(new WorldTarget{Kind=WorldTargetKind.Pickup,Id=pickup.Id,Root=pickup.Root,Pickup=pickup},pickup.Feet);
+            if(Hunting!=null && Hunting.TryLootTarget(out var carcass))Offer(new WorldTarget{Kind=WorldTargetKind.Carcass,Id=carcass.Id,Root=carcass.Root},carcass.Feet);
             if(refresh)Shore.UpdateProximity();int task=Shore.NearbyTask;var marker=Shore.SurveyMarker(task);
             if(marker!=null)Offer(new WorldTarget{Kind=WorldTargetKind.Survey,Id=task,Root=marker},marker.position);
             if(trace!=null)trace.Append(" categories: expedition=").Append(expedition).Append(" station=").Append(station)
@@ -136,8 +137,8 @@ namespace BoatAttack.Fishing
                 else
                 {
                     point=FishingContactGeometry.ClosestPoint(target.Root,Shore.Character.ShoulderPosition(false));rotation=Shore.Actor.rotation;
-                    kind=target.Kind==WorldTargetKind.Pickup?FishingActionKind.Pickup:target.Kind==WorldTargetKind.Expedition && target.Id==4?FishingActionKind.Repair:FishingActionKind.Inspect;
-                    targetId=(target.Kind==WorldTargetKind.Pickup?"pickup:":target.Kind==WorldTargetKind.Expedition?"expedition:":"survey:")+target.Id;
+                    kind=target.Kind==WorldTargetKind.Pickup || target.Kind==WorldTargetKind.Carcass?FishingActionKind.Pickup:target.Kind==WorldTargetKind.Expedition && target.Id==4?FishingActionKind.Repair:FishingActionKind.Inspect;
+                    targetId=(target.Kind==WorldTargetKind.Carcass?"carcass:":target.Kind==WorldTargetKind.Pickup?"pickup:":target.Kind==WorldTargetKind.Expedition?"expedition:":"survey:")+target.Id;
                 }
                 check=EvaluateActionStart(kind,target.Root,point,rotation,false);check.TargetId=targetId;
                 if(target.Kind==WorldTargetKind.Resource)
@@ -202,6 +203,7 @@ namespace BoatAttack.Fishing
                         var station=Career.Workshop.Station(target.Id);return station==null?null:"E 打开"+FishingRecipes.StationName(station.kind);
                     case WorldTargetKind.Resource:return "E 采集 "+FishingBackpack.Name(target.Resource.Item);
                     case WorldTargetKind.Pickup:return "E 拾取 "+FishingBackpack.Name(target.Pickup.Item)+" ×"+target.Pickup.Count;
+                    case WorldTargetKind.Carcass:return "E 收取猎物 · 兽肉 / 毛皮";
                     case WorldTargetKind.Survey:return "E "+FishingExploration.TaskName(target.Id);
                     default:return null;
                 }
@@ -218,6 +220,8 @@ namespace BoatAttack.Fishing
             if(target.Kind==WorldTargetKind.Station)return WorkshopWorld.OpenStation(target.Id);
             if(target.Kind==WorldTargetKind.Resource)return RequestHarvest(target.Resource);
             var point=FishingContactGeometry.ClosestPoint(target.Root,Shore.Character.ShoulderPosition(false));int id=target.Id;
+            if(target.Kind==WorldTargetKind.Carcass)
+                return BeginWorldAction(FishingActionKind.Pickup,"carcass:"+id,target.Root,point,Shore.Actor.rotation,()=>Hunting.CollectAnimal(id));
             if(target.Kind==WorldTargetKind.Expedition)
                 return BeginWorldAction(id==4?FishingActionKind.Repair:FishingActionKind.Inspect,"expedition:"+id,target.Root,point,Shore.Actor.rotation,()=>
                 {

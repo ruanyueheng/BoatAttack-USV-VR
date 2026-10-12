@@ -137,6 +137,10 @@ namespace BoatAttack.EditorTools
             {
                 var run=FishingFirstPersonValidation.Checks(c);while(run.MoveNext())yield return null;
             }
+            else if(suite=="HUNTING")
+            {
+                var run=FishingHuntingValidation.Checks(c);while(run.MoveNext())yield return null;
+            }
             else if(suite=="PLAYER")
             {
                 var run=FishingPlayerRepairValidation.Checks(c);while(run.MoveNext())yield return null;
