@@ -85,7 +85,7 @@ namespace BoatAttack.EditorTools
                 var d=Vector3.ProjectOnPlane(target-c.Shore.Position,Vector3.up).normalized;
                 c.Shore.Body.Move(d*.1f+Vector3.down*.03f);yield return null;
             }
-            Check(FishingPrototype.FlatDistance(c.Shore.Position,target)<.4f,"Island interior walk has continuous collision support");
+            Check(FishingPrototype.FlatDistance(c.Shore.Position,target)<.4f,"Island interior walk has continuous collision support: target="+target+" actual="+c.Shore.Position);
         }
         private static IEnumerator Contact(FishingPrototype c,Transform target)
         {

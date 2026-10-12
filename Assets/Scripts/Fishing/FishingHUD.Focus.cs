@@ -67,7 +67,7 @@ namespace BoatAttack.Fishing
                 if (c.AtHarbor)
                 {
                     Label(r.x + 18, r.y + 10, r.width - 175, 25, "潮汐渔港 · E 快速交付 / 出售", 18, Color.white, true);
-                    Label(r.x + 18, r.y + 42, r.width - 175, 22, "G 靠岸下船· Tab 升级 · E 提交调查", 14, Muted);
+                    Label(r.x + 18, r.y + 42, r.width - 175, 22, "Ctrl + W 加速 · Shift 刹车 · G 下船", 14, Muted);
                     if (Button(Layout.HarborButton, c.HarborDeskOpen ? "Tab 收起" : "Tab 交易台", true, c.HarborDeskOpen, 15)) c.ToggleHarborDesk();
                     return;
                 }
@@ -75,8 +75,9 @@ namespace BoatAttack.Fishing
                 title = near ? (c.Speed > 3f ? "按住 Shift 减速，再按 E 停船" : "进入 " + FishingGrounds.Name(c.Spot) + " · E 停船") : "驶向彩色航标，靠近后按 E 停船";
                 if(near && !FishingGrounds.Available(c.Spot,c.Career.Expedition))title="北岛信标渔场 · 修复旧港信标后开放";
                 if(c.Shore.BerthDistance<18 || c.NavigationTarget>c.fishingSpots.Length)
-                {title=c.Expedition.ActionTitle ?? c.Shore.ActionTitle;help="Shift 刹车至 5.4 km/h 以下 · S 倒航 · N 航点 · M 地图";}
-                else help = c.Shore.ActionTitle;
+                {title=c.Expedition.ActionTitle ?? c.Shore.ActionTitle;help="Ctrl + W 加速 · Shift 刹车 · S 倒航 · N 航点";}
+                else help = "Ctrl + W 加速 · Shift 刹车 · S 倒航 · N 航点";
+                if(c.Boosting){title="引擎加速中 · " + (c.Speed*3.6f).ToString("0.0") + " km/h";accent=Gold;}
             }
             else
             {

@@ -5,10 +5,10 @@ namespace BoatAttack.Fishing
 {
     public static class FishingV019Art
     {
-        public static Transform Spawn(string name, Transform parent, Vector3 point, float span, float yaw = 0)
+        public static Transform Spawn(string name, Transform parent, Vector3 point, float span, float yaw = 0, string folder = "FishingV019")
         {
-            var source = Resources.Load<GameObject>("FishingV019/" + name);
-            if (source == null) throw new System.InvalidOperationException("Missing v19 art: " + name);
+            var source = Resources.Load<GameObject>(folder + "/" + name);
+            if (source == null) throw new System.InvalidOperationException("Missing art: " + folder + "/" + name);
             var root = new GameObject(name).transform; root.SetParent(parent, false);
             var model = Object.Instantiate(source, root, false).transform;
             var bounds = new Bounds(); bool first = true;

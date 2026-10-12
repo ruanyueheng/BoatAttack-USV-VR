@@ -17,6 +17,7 @@ namespace BoatAttack.VR
                 s.steering = ((k.dKey.isPressed || k.rightArrowKey.isPressed) ? 1f : 0f)
                     - ((k.aKey.isPressed || k.leftArrowKey.isPressed) ? 1f : 0f);
                 s.brake = (k.leftShiftKey.isPressed || k.rightShiftKey.isPressed) ? 1f : 0f;
+                s.boost = k.leftCtrlKey.isPressed || k.rightCtrlKey.isPressed;
                 s.reset = k.rKey.isPressed;
                 s.pause = k.escapeKey.isPressed;
                 s.interact = k.eKey.isPressed || k.enterKey.isPressed;
@@ -33,6 +34,7 @@ namespace BoatAttack.VR
                 if (Mathf.Abs(throttle) > Mathf.Abs(s.throttle)) s.throttle = throttle;
                 if (Mathf.Abs(stick.x) > Mathf.Abs(s.steering)) s.steering = stick.x;
                 s.brake = Mathf.Max(s.brake, g.leftShoulder.isPressed ? 1f : 0f);
+                s.boost |= g.rightShoulder.isPressed;
                 s.reset |= g.selectButton.isPressed;
                 s.pause |= g.startButton.isPressed;
                 s.interact |= g.buttonWest.isPressed;
