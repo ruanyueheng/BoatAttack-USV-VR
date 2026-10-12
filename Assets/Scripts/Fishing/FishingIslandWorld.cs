@@ -9,7 +9,7 @@ namespace BoatAttack.Fishing
     {
         public const string WorldName = "V018 explorable islands";
         public const float Radius = 30f;
-        private static readonly Vector3[] Centers = { new Vector3(-210,0,180), new Vector3(210,0,160), new Vector3(-245,0,-220), new Vector3(285,0,-210) };
+        private static readonly Vector3[] Centers = { new Vector3(-210,0,180), new Vector3(210,0,160), new Vector3(-350,0,-340), new Vector3(350,0,-340) };
         public static Vector3 Center(int island) => Centers[Mathf.Clamp(island,0,3)];
         public static Vector3 Berth(int island) => Center(island) + new Vector3(0,0,Radius+7);
         public static Vector3 Landing(int island) => Center(island) + new Vector3(0,1.08f,Radius*.88f);

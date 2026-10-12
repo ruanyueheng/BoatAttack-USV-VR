@@ -1,0 +1,80 @@
+{
+  "version": "0.20.0",
+  "inputTests": 70,
+  "fishingTests": 2152,
+  "indexExportAlsoVerified": true,
+  "unity": [
+    {
+      "suite": "FishingBuild",
+      "log": "Logs/usv-validation-c62f6a95eadd4236a20675567e47f5b6.log",
+      "sha256": "1833119FCFF4291B7942E8F0BD901A1065FFE3EEC5C5C15CC8B8BD5F3E022243",
+      "result": "[FISHING] PASS: Windows prototype built: E:\\University\\Homework\\虚拟现实作业\\BoatAttack\\Builds\\FishingPrototype-v0.20.0\\FishingPrototype.exe"
+    },
+    {
+      "suite": "FishingShop",
+      "log": "Logs/usv-validation-9bc1d54ea2e44f9b950e2190c1c57067.log",
+      "sha256": "DC13F21205A31AB2636CE3408B005BCCE2800FBAB3A154751D011AC5C56D1E18",
+      "result": "[BEACH-SHOP] PASS: real shop route, counter-only upgrades, input modal isolation, fourteen waypoints and v10/workshop save regression; simulated desktop input, no NPC AI or PICO hardware claim."
+    },
+    {
+      "suite": "FishingShore",
+      "log": "Logs/usv-validation-56d6656f824e487382ff7505adac31f9.log",
+      "sha256": "691DB3AC3DC9D7378C7DFE8C30FEB9A735816F4B1D867FD9322270EC9D9AB1B4",
+      "result": "[SHORE] PASS: four landing routes, embodiment, task rewards, boarding and rescue."
+    },
+    {
+      "suite": "FishingSmoke",
+      "log": "Logs/usv-validation-de9001a177654c95b3ea94f0c87d3643.log",
+      "sha256": "0A0DE1C4D7FBEC7008353E1F2F54460BC915DE7C7F9AEF71416C6FAF50343A26",
+      "result": "[FISHING] PASS: live prototype smoke finished and exited Play Mode."
+    },
+    {
+      "suite": "FishingTerrain",
+      "log": "Logs/usv-validation-6207032049d84c1a9501206b6dfa4cf4.log",
+      "sha256": "4276C2107F2CF1BAFD55C105307558E6D392641574B88D2F43789EEDA4259032",
+      "result": "[FISHING-TERRAIN] PASS: both terrain tiles deserialize with enabled heightmaps and matching above-water collision."
+    },
+    {
+      "suite": "FishingV016",
+      "log": "Logs/usv-validation-e15c66510caf46e298c945b61666681f.log",
+      "sha256": "0C0C30DA873790A3182F42C551B45AE31B153C8D74F7B0435E07B3C7066621F6",
+      "result": "[V016] PASS: v0.20.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。"
+    },
+    {
+      "suite": "FishingV017",
+      "log": "Logs/usv-validation-b3cba22d23d240928ff3bd7935eeaddc.log",
+      "sha256": "2B9E80DEFABE4AE86174267DEB5E16922C6C22EA022BA1690149F698A6515C40",
+      "result": "[V017] PASS: v0.20.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。"
+    },
+    {
+      "suite": "FishingV018",
+      "log": "Logs/usv-validation-953bc21020ab45f09846de53361bf2c7.log",
+      "sha256": "77F3102B6EC12C8818516DF9916190F681B553359D823ADE6F0F939C9AE4084E",
+      "result": "[V018] PASS: v0.20.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。"
+    },
+    {
+      "suite": "FishingV019",
+      "log": "Logs/usv-validation-4f382ba09c3249e1b4a93cbd8d121550.log",
+      "sha256": "0E162FE4AC830CC8B2B635FED83615036A2D32767B119757178A77CC6056C492",
+      "result": "[V019] PASS: v0.20.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。"
+    },
+    {
+      "suite": "FishingV020",
+      "log": "Logs/usv-validation-6f3bfb0ed93d44abb173f0579f6c104c.log",
+      "sha256": "451FA5151D33239358F2AD0DE9F1969B2A64435309CAA1CA0471AB6442668B4A",
+      "result": "[V020] PASS: v0.20.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。"
+    },
+    {
+      "suite": "Regression",
+      "log": "Logs/usv-validation-6a060557fa464d09859c9a7f08fa5fe2.log",
+      "sha256": "749AEBAF6D6A3896AEE850C156C1D19C2687828F2B337EB738C01646DF7A4EBE",
+      "result": "[USV-REGRESSION] PASS: component regression checks."
+    },
+    {
+      "suite": "Structure",
+      "log": "Logs/usv-validation-b2bbc66e13fb4d059cd16cbe8d03b33a.log",
+      "sha256": "A21231AF99FF2322A5D7605706E2B819AA15EC8B0A94138DECB0523E8F4DBDB6",
+      "result": "[USV-VALIDATION] PASS: import, input settings and three scene structures only; no Play Mode, build, rendering or headset test."
+    }
+  ]
+}

@@ -1,9 +1,13 @@
-# BoatAttack USV VR — v0.18.0 群岛来信
+# BoatAttack USV VR — v0.20.0 海岸重塑
 
-基于 Unity Boat Attack，使用 **Unity 2022.3.62f1 / URP 14.0.12**。第18版提升巡航动力，加入金币购买的动力、操舵和豪华甲板升级；新增四座可登陆的主题岛屿、来信寻宝和航向信标谜题，并将商店扩充为海湾百货。
+基于 Unity Boat Attack，使用 **Unity 2022.3.62f1 / URP 14.0.12**。第20版提高钓艇转向响应，加入按住 Ctrl 的前进加速，使用 Blender 原创模型重做四岛海岸、岩拱、树林、沉船、观星台、石门和木板栈桥。
 
-**J 日志 → 群岛航记**设定新岛航点；低速G下船，E读信、开箱与转盘，F点亮信标，四灯点亮后返港E领取奖励。店内提供6类升级和12种探索工具/制作补给。**J → 日历**保留昼夜控制，PICO的B潮汐手册同步提供新任务和商品。旧进度读取后另存为独立v10存档。
+**Ctrl + W 加速，Shift 刹车，S 倒航。** J 日志设置四岛航点，低速 G 下船；E 与居民交谈、读信、寻宝与进入秘境，F 点亮信标。六条升级线、18种用品及第19版剧情、游泳、攀登继续可用，沿用 v11 存档。Windows试玩入口：`Builds/FishingPrototype-v0.20.0/FishingPrototype.exe`。
 
+- [第20版操作与改进](Docs/PLAY_V020.md)
+- [第20版测试、构建与实际画面](Docs/VALIDATION_V020.md)
+- [第20版Blender模型与来源](ArtSource/V020/BUILD_NOTES.md)
+- [第19版潮汐回响玩法](Docs/PLAY_V019.md)
 - [第18版设计、调研与使用说明](Docs/FISHING_V018_DESIGN.md)
 - [第18版测试、构建与截图](Docs/VALIDATION_V018.md)
 - [第17版改进与使用说明](Docs/FISHING_V017_BOAT_HANDLING.md)

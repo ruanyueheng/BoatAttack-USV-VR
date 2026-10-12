@@ -50,6 +50,13 @@ internal static class Program
             CheckIndependentCommands();
             CheckAxisInvariants();
             CheckFrameBudgets();
+            s=p.Process(new USVInputState {throttle=1f,boost=true},USVInputSourceKind.Desktop,.12f);
+            Check("Forward boost is a held control", s.boost && p.Process(new USVInputState {throttle=1f,boost=true},USVInputSourceKind.Desktop,.12f).boost);
+            Check("Release ends boost", !p.Process(new USVInputState {throttle=1f},USVInputSourceKind.Desktop,.12f).boost);
+            foreach(float throttle in new[]{0f,-1f,float.NaN,float.PositiveInfinity})
+                Check("Neutral, reverse and invalid thrust cannot boost: "+throttle,!p.Process(new USVInputState {throttle=throttle,boost=true},USVInputSourceKind.Desktop,.12f).boost);
+            Check("Braking takes priority over boost",!p.Process(new USVInputState {throttle=1f,boost=true,brake=.1f},USVInputSourceKind.Desktop,.12f).boost);
+            Check("Focus or tracking loss clears boost",!p.Process(new USVInputState {throttle=1f,boost=true},USVInputSourceKind.None,.12f).boost);
             Console.WriteLine("TOTAL: " + _passed + " passed. Pure input/render policy logic only; not Unity/device validation.");
             return 0;
         }

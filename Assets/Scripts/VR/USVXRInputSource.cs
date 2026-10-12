@@ -24,6 +24,7 @@ namespace BoatAttack.VR
             {
                 if (left.TryGetFeatureValue(CommonUsages.primary2DAxis, out var axis)) s.throttle = axis.y;
                 if (right.TryGetFeatureValue(CommonUsages.primary2DAxis, out axis)) s.steering = axis.x;
+                left.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out s.boost);
             }
             if (leftTracked)
             {

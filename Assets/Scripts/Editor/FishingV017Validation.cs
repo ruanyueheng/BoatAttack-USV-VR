@@ -58,7 +58,7 @@ namespace BoatAttack.EditorTools
                     }
                 }
                 Check(maxTilt<1,"Thirty seconds of full-throttle turns cannot capsize; maximum tilt="+maxTilt);
-                Check(maxSpeed<7.5f && maxYaw<=1.05f,"Open-water speed and turn rate stay bounded; speed="+maxSpeed+" yaw="+maxYaw);
+                Check(maxSpeed<7.5f && maxYaw<=84f*Mathf.Deg2Rad+.01f,"Open-water speed and turn rate stay below the v20 base-rudder envelope; speed="+maxSpeed+" yaw="+maxYaw);
                 Check(wet>(samples*.95f),"Propeller retains power through waves; wet samples="+wet+"/"+samples);
                 Place(c,sea);driver.Steering=0;driver.Throttle=-1;until=Time.time+5;
                 while(Time.time<until)yield return null;
