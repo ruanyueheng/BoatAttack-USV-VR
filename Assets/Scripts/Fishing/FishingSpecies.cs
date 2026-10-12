@@ -2,7 +2,7 @@ using System;
 
 namespace BoatAttack.Fishing
 {
-    public enum UpgradeTrack { Line, Reel, Hold }
+    public enum UpgradeTrack { Line, Reel, Hold, Engine, Rudder, Cabin }
 
     /// <summary>Immutable tuning for one species. Unity-free so desktop, future XR tools and tests share it.</summary>
     public sealed class FishSpecies
@@ -43,13 +43,13 @@ namespace BoatAttack.Fishing
     /// <summary>The single source of species numbers; prices and saves are validated against this table.</summary>
     public static class FishingSpecies
     {
-        public const int Count = 4;
+        public const int Count = 12;
         // Fishing areas 0-2 each hold one common species. The legend shares area 1.
         public const int AreaCount = 3;
         public const int LegendArea = 1;
         // Discovery bits: common normal 0-2, common pearl 3-5 (the v2 layout), legend 6.
         public const int LegendDiscoveryBit = 6;
-        public const int DiscoveryMaskLimit = 127;
+        public const int DiscoveryMaskLimit = (1 << 23) - 1;
 
         private static readonly FishSpecies[] Table =
         {
@@ -57,9 +57,47 @@ namespace BoatAttack.Fishing
             new FishSpecies(FishKind.Dart, "飞梭鱼", "航标水道 · 冲刺频繁，提前放线", 16, 900, 2200, 2.55f, 12f, 0.45f, 3.6f, 1.55f, 75f, false),
             new FishSpecies(FishKind.Puffer, "鼓鼓鱼", "鼓鼓礁群 · 蓄力较久，冲刺更强", 22, 1200, 3000, 2.9f, 14f, 0.54f, 6.4f, 1.8f, 75f, false),
             new FishSpecies(FishKind.Sailfish, "金帆旗鱼", "航标水道 · 金色夕照 · 追逐珍珠饵", 120, 18000, 32000, 3.2f, 24f, 0.5f, 6.8f, 1.7f, 120f, true),
+            new FishSpecies(FishKind.Mackerel, "青花鲭", "航标水道 · 春秋 / 雨天 · 银腹与青纹", 18, 300, 1100, 2.3f, 12, .41f, 4.2f, 1.5f, 80, false),
+            new FishSpecies(FishKind.SeaBream, "金线海鲷", "珊瑚浅湾 · 春夏白昼 · 高身金鳍", 24, 500, 1800, 2.6f, 12, .43f, 5.5f, 1.6f, 80, false),
+            new FishSpecies(FishKind.Sardine, "银沙丁", "各海域 · 白昼 · 小型群游鱼", 8, 80, 240, 1.8f, 8, .29f, 5.8f, 1.3f, 70, false),
+            new FishSpecies(FishKind.Grouper, "斑点石斑", "鼓鼓礁 · 秋冬 / 薄雾 · 底栖伏击", 32, 900, 3800, 3.2f, 15, .5f, 6.2f, 1.8f, 90, false),
+            new FishSpecies(FishKind.Butterfly, "月纹蝶鱼", "珊瑚浅湾 · 夏季白昼 · 蝶形侧影", 20, 120, 400, 2.5f, 10, .34f, 5.2f, 1.4f, 75, false),
+            new FishSpecies(FishKind.Tuna, "蓝鳍鲔", "航标水道 · 夏秋白昼 · 急速冲刺", 45, 2000, 7000, 3.1f, 18, .51f, 4.1f, 1.8f, 100, false),
+            new FishSpecies(FishKind.Lanternfish, "星灯鱼", "各海域 · 仅夜间 · 腹部星斑", 28, 100, 450, 2.4f, 11, .38f, 5.8f, 1.5f, 80, false),
+            new FishSpecies(FishKind.Lionfish, "赤羽狮子鱼", "鼓鼓礁 · 夜间 / 夏季 · 羽扇胸鳍", 36, 400, 1500, 3, 14, .48f, 6.4f, 1.75f, 90, false),
         };
         private static readonly string[] Areas = { "珊瑚浅湾", "飞梭水道", "鼓鼓礁" };
 
+        private static readonly float[] Lengths = { .24f, .32f, .21f, .82f, .29f, .27f, .17f, .35f, .20f, .38f, .18f, .26f };
+        public static float LengthMeters(FishKind kind) => IsDefined(kind) ? Lengths[(int)kind] : .3f;
+        public static float SizeScale(FishKind kind, int grams) => .85f + .3f * SizePermille(kind, grams) / 1000f;
+        public static bool InHabitat(FishKind kind, int area, FishingCalendar calendar, BayWeather weather)
+        {
+            int zone = Math.Max(0, area) % 3;
+            int season = calendar.Season; bool night = calendar.Night;
+            switch (kind)
+            {
+                case FishKind.Mackerel: return zone == 1 && (season == 0 || season == 2 || weather == BayWeather.Rain);
+                case FishKind.SeaBream: return zone == 0 && !night && season < 2;
+                case FishKind.Sardine: return !night;
+                case FishKind.Grouper: return zone == 2 && (season >= 2 || weather == BayWeather.Mist);
+                case FishKind.Butterfly: return zone == 0 && season == 1 && !night;
+                case FishKind.Tuna: return zone == 1 && !night && (season == 1 || season == 2);
+                case FishKind.Lanternfish: return night;
+                case FishKind.Lionfish: return zone == 2 && (night || season == 1);
+                default: return kind == AreaSpecies(zone);
+            }
+        }
+        public static FishKind Select(int area, FishingCalendar calendar, BayWeather weather, float roll)
+        {
+            var fallback = AreaSpecies(Math.Max(0, area) % 3);
+            if (calendar == null || float.IsNaN(roll) || roll < .4f || roll > 1) return fallback;
+            int count = 0;
+            for (int i = 4; i < Count; i++) if (InHabitat((FishKind)i, area, calendar, weather)) count++;
+            int pick = Math.Min(count - 1, (int)((roll - .4f) / .6f * count));
+            for (int i = 4; i < Count; i++) if (InHabitat((FishKind)i, area, calendar, weather) && pick-- == 0) return (FishKind)i;
+            return fallback;
+        }
         public static bool IsDefined(FishKind kind) => (int)kind >= 0 && (int)kind < Count;
 
         public static FishSpecies Of(FishKind kind)
@@ -71,7 +109,7 @@ namespace BoatAttack.Fishing
         public static string Name(FishKind kind) => IsDefined(kind) ? Table[(int)kind].Name : "未知鱼种";
         public static string AreaName(int area) => area >= 0 && area < AreaCount ? Areas[area] : "开阔海域";
         public static FishKind AreaSpecies(int area) => (FishKind)Math.Max(0, Math.Min(AreaCount - 1, area));
-        public static int DiscoveryBit(FishKind kind, bool rare) => kind == FishKind.Sailfish ? LegendDiscoveryBit : (int)kind + (rare ? 3 : 0);
+        public static int DiscoveryBit(FishKind kind, bool rare) => kind == FishKind.Sailfish ? LegendDiscoveryBit : (int)kind < 3 ? (int)kind + (rare ? 3 : 0) : 7 + ((int)kind - 4) * 2 + (rare ? 1 : 0);
 
         /// <summary>Whole grams from a 0..1 size roll. Stored as an integer so saves match on every runtime.</summary>
         public static int Grams(FishKind kind, float size)

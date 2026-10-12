@@ -9,7 +9,9 @@ namespace BoatAttack.Fishing
         private FishingPrototype _c;
         private Transform _rod,_crank,_net,_knob;
         private FishingHandTarget _left,_right;
-        private float _gesture,_cast;
+        private float _gesture,_hook;
+        private readonly FishingCastGesture _castGesture=new FishingCastGesture();
+        private Vector3 _lastCastPosition;private bool _castSample;
         private int _presentationFrame=-1;
         private FishBeat _lastCue;
         private readonly FishingHandInput _input=new FishingHandInput();
@@ -30,6 +32,7 @@ namespace BoatAttack.Fishing
         public FishingHandTarget Right=>_right;
         public Transform Rod=>_rod;
         public Transform Knob=>_knob;
+        public Transform Crank=>_crank;
         public Transform Net=>_net;
         public bool HasGesture=>_gesture>0;
         public bool PresentingPickup=>_pickup!=null && _pickup.activeSelf;
@@ -59,13 +62,15 @@ namespace BoatAttack.Fishing
         {
             _input.Update(false,0,false,false,0,false,0);
             if(_left!=null)_left.Disable();if(_right!=null)_right.Disable();
-            _gesture=_cast=_pickupTime=0;if(_pickup!=null)_pickup.SetActive(false);
+            _castGesture.Reset();_castSample=false;
+            _c?.CastMotion.CancelPreparation();
+            _gesture=_hook=_pickupTime=0;if(_pickup!=null)_pickup.SetActive(false);
         }
         public void ReadXRTools()
         {
             bool available=XRSettings.isDeviceActive && _c.Anchored && !_c.Paused && !_c.HasPendingCatch
-                && _c.Session.Phase!=CatchPhase.Landing && Application.isFocused;
-            if(!available){_input.Update(false,0,false,false,0,false,0);return;}
+                && !_c.XRSeat.HeadBlocked && _c.Session.Phase!=CatchPhase.Landing && Application.isFocused;
+            if(!available){_input.Update(false,0,false,false,0,false,0);_castGesture.Reset();_castSample=false;return;}
             // Read fresh controller poses, not previous-frame palm targets or solved bones.
             bool rightTracked=FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out var rp,out _);
             bool leftTracked=FishingXRTracking.TryPose(_c.viewCamera,XRNode.LeftHand,out var lp,out _);
@@ -77,19 +82,23 @@ namespace BoatAttack.Fishing
             var local=_rod.InverseTransformPoint(lp)-_crank.localPosition;
             float angle=Mathf.Atan2(local.z,-local.y)*Mathf.Rad2Deg;bool wasHolding=HoldingRod;
             _input.Update(available,grip,trigger,Vector3.Distance(rp,_rod.position)<.24f,leftGrip,Vector3.Distance(lp,_knob.position)<.16f,angle);
+            if(_input.Reeling)_crank.localRotation=Quaternion.AngleAxis(-angle,Vector3.right);
             if(HoldingRod && !wasHolding)Haptic(right,.22f);
             if(HoldingRod && _c.Session.Phase==CatchPhase.Fighting && _c.Session.Beat!=_lastCue)
             {_lastCue=_c.Session.Beat;Haptic(right,_lastCue==FishBeat.Leap?.3f:.12f);}
-            if(_input.Activated)
-            {
-                bool action=_c.Session.Phase==CatchPhase.Bite?_c.Hook():_c.Session.Phase==CatchPhase.Landing?_c.Scoop():_c.Cast();
-                if(action)Haptic(right,.3f);
-            }
+            var localPosition=_c.XRSeat.Origin.transform.InverseTransformPoint(rp);
+            float dt=Time.unscaledDeltaTime;
+            var forward=_c.XRSeat.Origin.transform.InverseTransformDirection(_c.viewCamera.transform.forward);
+            float speed=_castSample && dt>.001f?Vector3.Dot((localPosition-_lastCastPosition)/dt,forward):0;
+            bool cast=_castGesture.Step(HoldingRod && _castSample && _c.CanChangeBait,trigger,speed,dt);
+            _lastCastPosition=localPosition;_castSample=true;
+            bool action=cast?_c.Cast(_castGesture.Power):_input.Activated && _c.Session.Phase==CatchPhase.Bite && _c.Hook();
+            if(action)Haptic(right,.3f);
         }
         private static void Haptic(InputDevice device,float strength)
         {if(device.TryGetHapticCapabilities(out var capabilities) && capabilities.supportsImpulse)device.SendHapticImpulse(0,strength,.04f);}
-        public void CastGesture(){_cast=.45f;}
         public void ReachGesture(Vector3 target){_gesture=.55f;_gestureTarget=target;}
+        public void HookGesture(){_hook=.32f;}
         /// <summary>Shoulder-centre origin in BOTH desktop views; TP camera position never enters tool placement.</summary>
         public void GetToolFrame(out Vector3 origin,out Quaternion rotation)
         {
@@ -155,33 +164,41 @@ namespace BoatAttack.Fishing
             _pickupTime=Mathf.Max(0,_pickupTime-step);
             if(_pickup!=null)_pickup.SetActive(_pickupTime>0 && _c.Ashore && CanPresent && !xr);
             if(!CanPresent){ResetInteraction();StowRod();return;}
-            _gesture=Mathf.Max(0,_gesture-step);_cast=Mathf.Max(0,_cast-step);
+            _gesture=Mathf.Max(0,_gesture-step);_hook=Mathf.Max(0,_hook-step);
             if(xr)
             {
                 bool leftTracked=Track(_left,XRNode.LeftHand,out _,out _);
                 bool rightTracked=Track(_right,XRNode.RightHand,out var rp,out var rq);
                 if(!leftTracked || !rightTracked)_input.Update(false,0,false,false,0,false,0);
                 StowRod();
-                if(HoldingRod && rightTracked)
+                if((HoldingRod || _c.Session.Phase==CatchPhase.Landing) && rightTracked && _c.Anchored && !_c.HasPendingCatch)
                 {
-                    var rotation=rq*Quaternion.Euler(0,90,0);
-                    _rod.SetPositionAndRotation(rp-rotation*RodPalm,rotation);
+                    _rod.gameObject.SetActive(true);
+                    TryControllerPalm(false,out var palm,out var palmFrame);
+                    var rotation=palmFrame*Quaternion.Inverse(RodPalmRotation);
+                    _rod.SetPositionAndRotation(palm-rotation*RodPalm,rotation);
                     _right.SetFromGrip(_rod,RodPalm,RodPalmRotation,.86f);
                 }
                 return;
             }
             GetToolFrame(out var origin,out var frame);
-            bool fishing=_c.Anchored && !_c.Ashore && !_c.HasPendingCatch && _c.Session.Phase!=CatchPhase.Landing;
+            bool fishing=_c.Anchored && !_c.Ashore && !_c.HasPendingCatch;
             if(fishing)
             {
                 _rod.gameObject.SetActive(true);
                 // 同源双手保持在可见的胸前操作区；俯视只改变竿的瞄准，不把整个握持位置压出画面。
                 var holdFrame=Quaternion.Euler(0,frame.eulerAngles.y,0);
-                _rod.SetPositionAndRotation(origin+holdFrame*new Vector3(.10f,-.105f,.41f),holdFrame*Quaternion.Euler(-32f-Mathf.Sin(_cast/.45f*Mathf.PI)*24f,-12f,0));
-                var reelPalm=_rod.InverseTransformPoint(_knob.position+_rod.TransformVector(new Vector3(-.024f,.012f,-.035f)));
+                _rod.SetPositionAndRotation(origin+holdFrame*new Vector3(.10f,-.105f,.41f),holdFrame*Quaternion.Euler(_c.CastMotion.RodPitch-Mathf.Sin(_hook/.32f*Mathf.PI)*18,-12f,0));
+                // The knob spins freely on its axle: fingers wrap across it, without rolling the wrist with the crank.
+                var reelPalm=_rod.InverseTransformPoint(_knob.position)+new Vector3(-.012f,.022f,-.018f);
+                bool landing=_c.Session.Phase==CatchPhase.Landing;
                 FitToolPose(_rod,reelPalm,RodPalm);
                 _right.SetFromGrip(_rod,RodPalm,RodPalmRotation,.86f);
-                _left.SetFromGrip(_rod,reelPalm,Quaternion.identity,.85f);
+                if(!landing)
+                {
+                    _left.SetFromGrip(_rod,reelPalm,Quaternion.LookRotation(Vector3.right,Vector3.up),.6f);
+                    _left.SetFingers(new FishingFingerPose(.55f,.64f,.66f,.62f,.72f));
+                }
             }
             else
             {
@@ -211,9 +228,15 @@ namespace BoatAttack.Fishing
         }
         private void StowRod()
         {
-            _rod.gameObject.SetActive(!_c.Ashore);
-            _rod.localPosition=XRSettings.isDeviceActive && _c.Anchored?new Vector3(.48f,1.45f,.1f):new Vector3(.75f,.95f,.9f);
-            _rod.localRotation=Quaternion.LookRotation(new Vector3(1.9f,1.7f,1.35f));
+            _rod.gameObject.SetActive(XRSettings.isDeviceActive && _c.Anchored && !_c.Ashore && !_c.HasPendingCatch);
+            _rod.localPosition=new Vector3(.8f,.72f,.25f);
+            _rod.localRotation=Quaternion.LookRotation(new Vector3(.25f,1,.2f));
+        }
+        public bool TryControllerPalm(bool left,out Vector3 position,out Quaternion rotation)
+        {
+            if(!FishingXRTracking.TryPose(_c.viewCamera,left?XRNode.LeftHand:XRNode.RightHand,out position,out rotation))return false;
+            position+=rotation*(left?_leftControllerPalmOffset:_rightControllerPalmOffset);
+            rotation*=Quaternion.Euler(left?_leftControllerPalmEuler:_rightControllerPalmEuler);return true;
         }
         private bool Track(FishingHandTarget hand,XRNode node,out Vector3 position,out Quaternion rotation)
         {
@@ -221,8 +244,8 @@ namespace BoatAttack.Fishing
             if(!FishingXRTracking.TryPose(_c.viewCamera,node,out position,out rotation)){hand.Disable();return false;}
             var device=InputDevices.GetDeviceAtXRNode(node);device.TryGetFeatureValue(CommonUsages.grip,out float grip);
             bool left=node==XRNode.LeftHand;
-            hand.SetPose(position+rotation*(left?_leftControllerPalmOffset:_rightControllerPalmOffset),
-                rotation*Quaternion.Euler(left?_leftControllerPalmEuler:_rightControllerPalmEuler),grip);
+            TryControllerPalm(left,out var palm,out var palmFrame);
+            hand.SetPose(palm,palmFrame,grip);
             return hand.Visible;
         }
         private void OnApplicationFocus(bool focus){if(!focus)ResetInteraction();}

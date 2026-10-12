@@ -22,7 +22,7 @@ namespace BoatAttack.Fishing
         private bool CatchVisible => Controller.LastCatch.Fish != null && CatchAge < CardSeconds;
 
         public bool BlocksPointer(Vector2 screen, int width, int height)
-            => Controller.ShopBlocksGameplay || Controller.InventoryOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
+            => Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || Controller.InventoryOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
                 Controller.HarborDeskOpen && Controller.AtHarbor, Controller.AtHarbor,
                 Controller.Ecology.Candidate.HasValue && !CatchVisible, Controller.Acceptance != null);
 
@@ -39,7 +39,7 @@ namespace BoatAttack.Fishing
                 || (acceptance && AcceptanceBanner.Contains(point));
         }
 
-        private void Awake() => _font = Font.CreateDynamicFontFromOSFont(new[] { "Microsoft YaHei", "SimHei", "Arial" }, 20);
+        private void Awake() => _font = FishingUIFont.Font;
 
         private void OnGUI()
         {
@@ -56,7 +56,8 @@ namespace BoatAttack.Fishing
                 GUI.matrix = Matrix4x4.TRS(new Vector3(_offset, 0, 0), Quaternion.identity, new Vector3(_scale, _scale, 1));
                 if (_label == null) _label = new GUIStyle(GUI.skin.label) { font = _font, wordWrap = true, richText = false, padding = new RectOffset() };
                 _fade = 1f;
-                if (c.ShopOpen) DrawTackleShop();
+                if (c.DialogueOpen) DrawDialogue();
+                else if (c.ShopOpen) DrawTackleShop();
                 else if (c.InventoryOpen) { DrawInventory(); DrawInventoryNotice(); }
                 else if (c.JournalOpen) DrawJournal();
                 else if (c.Paused) DrawPause();
@@ -73,7 +74,10 @@ namespace BoatAttack.Fishing
                     DrawCompactNotice();
                     DrawHotbar();
                     DrawHuntingAim();
+                    DrawExplorationStatus();
+                    DrawRegionTitle();
                 }
+                if(c.Realms!=null && c.Realms.Blackout>0)Fill(-_offset/_scale,0,Screen.width/_scale,_height,new Color(.008f,.016f,.025f,c.Realms.Blackout));
                 if (c.Acceptance != null) DrawAcceptanceToolbar();
             }
             finally { GUI.matrix = matrix; GUI.color = color; }
@@ -136,6 +140,7 @@ namespace BoatAttack.Fishing
             return Chip(x, y, (met ? "√ " : "") + text, met ? Mint : Muted, met);
         }
 
+        private bool _harborBoatUpgrades;
         private void DrawHarborDesk()
         {
             var c = Controller;
@@ -163,11 +168,12 @@ namespace BoatAttack.Fishing
             y = layout.ReservedY;
             Label(x, y, w, 20, reserved > 0 ? "已为委托保留 " + reserved + " 条，普通出售不会卖掉它们。" : "没有需要保留的委托鱼。", 13, reserved > 0 ? Mint : Faint);
             y = layout.UpgradeHeadingY;
-            Section(x, y, w, "装备升级", "点击下方按钮升级");
+            Section(x, y, w, _harborBoatUpgrades?"船舶升级":"钓具升级", "点击下方按钮升级");
+            if(Button(new Rect(x+w-170,y,170,28),_harborBoatUpgrades?"切换钓具":"切换船舶",true,false,13))_harborBoatUpgrades=!_harborBoatUpgrades;
             for (int t = 0; t < 3; t++)
             {
                 y = layout.UpgradeY(t);
-                var track = (UpgradeTrack)t;
+                var track = (UpgradeTrack)(t+(_harborBoatUpgrades?3:0));
                 int level = career.Level(track);
                 int cost = career.NextUpgradeCost(track);
                 Label(x, y, 110, 24, FishingText.UpgradeName(track), 17, Color.white, true);
@@ -189,6 +195,6 @@ namespace BoatAttack.Fishing
             return "鱼在冲刺 · 放线避开拉力";
         }
 
-        private void OnDestroy() { ReleaseTerrainMap(); ReleaseOptics(); if (_font != null) Destroy(_font); }
+        private void OnDestroy() { ReleaseTerrainMap(); ReleaseOptics(); }
     }
 }

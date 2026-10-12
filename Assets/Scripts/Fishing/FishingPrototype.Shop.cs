@@ -24,6 +24,14 @@ namespace BoatAttack.Fishing
             }
         }
         public bool ToggleShop() => TackleShop != null && TackleShop.Toggle();
+        public bool BuySupply(int product)
+        {
+            if(Paused || InventoryOpen || JournalOpen || HasPendingCatch || (!AtHarbor && (TackleShop==null || !TackleShop.CanPurchase)))return false;
+            bool ok=Career.BuySupply(product);
+            if(ok){Save();Notice("购入 "+FishingBackpack.Name(FishingSupplies.Items[product])+" ×"+FishingSupplies.Quantity(product)+" · 已放入背包，I 查看并装备。",5);}
+            else Notice("无法购买：请检查金币余额和背包空位。",4);
+            return ok;
+        }
         internal void ShopModalChanged()
         {
             CancelWorldAction();FieldWorld?.ClearToolPresentation();
@@ -45,10 +53,12 @@ namespace BoatAttack.Fishing
                 else if (keyboard.escapeKey.wasPressedThisFrame || keyboard.eKey.wasPressedThisFrame || keyboard.tabKey.wasPressedThisFrame) TackleShop.Close();
                 else if (keyboard.iKey.wasPressedThisFrame) ToggleInventory();
                 else if (keyboard.jKey.wasPressedThisFrame) ToggleJournal();
-                else if (keyboard.digit1Key.wasPressedThisFrame) TackleShop.Buy(UpgradeTrack.Line);
-                else if (keyboard.digit2Key.wasPressedThisFrame) TackleShop.Buy(UpgradeTrack.Reel);
-                else if (keyboard.digit3Key.wasPressedThisFrame) TackleShop.Buy(UpgradeTrack.Hold);
-                else if (keyboard.digit4Key.wasPressedThisFrame) TackleShop.BuyRifle();
+                else if (keyboard.digit1Key.wasPressedThisFrame) _hud.BuyShopSlot(0);
+                else if (keyboard.digit2Key.wasPressedThisFrame) _hud.BuyShopSlot(1);
+                else if (keyboard.digit3Key.wasPressedThisFrame) _hud.BuyShopSlot(2);
+                else if (keyboard.digit4Key.wasPressedThisFrame) _hud.BuyShopSlot(3);
+                else if (keyboard.digit5Key.wasPressedThisFrame) _hud.BuyShopSlot(4);
+                else if (keyboard.digit6Key.wasPressedThisFrame) _hud.BuyShopSlot(5);
                 return true;
             }
             if (ShopBlocksGameplay) return true;
@@ -59,6 +69,8 @@ namespace BoatAttack.Fishing
         }
         private Vector3 NavigationWorldPosition()
         {
+            if (NavigationTarget > ShopNavigationIndex)
+                return Ashore ? FishingIslandWorld.Center(NavigationTarget-ShopNavigationIndex-1) : FishingIslandWorld.Berth(NavigationTarget-ShopNavigationIndex-1);
             if (NavigationTarget == ShopNavigationIndex)
                 return TackleShop == null || !TackleShop.Available ? harbor : Ashore ? TackleShop.entrance.position : TackleShop.mooringPoint.position;
             if (NavigationTarget == 0) return harbor;

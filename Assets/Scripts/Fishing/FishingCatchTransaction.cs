@@ -66,7 +66,7 @@ namespace BoatAttack.Fishing
             if(!ready || !Finite(radial) || !Finite(vertical) || !Finite(upright) || !Finite(speed) || !Finite(height) || !Finite(dt) || dt<=0)
             {Reset();return false;}
             if(Captured)return false;
-            bool safe=radial>=0 && radial<.48f && Math.Abs(vertical)<.6f && upright>.6f && speed>=0 && speed<1.8f;
+            bool safe=radial>=0 && radial<.24f && Math.Abs(vertical)<.32f && upright>.6f && speed>=0 && speed<1.8f;
             if(!safe){Reset();return false;}
             if(!_armed)
             {

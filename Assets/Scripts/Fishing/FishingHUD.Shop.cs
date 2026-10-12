@@ -4,40 +4,55 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingHUD
     {
+        private int _shopCategory;
+        public int ShopCategory { get=>_shopCategory; set=>_shopCategory=Mathf.Clamp(value,0,5); }
+        public void BuyShopSlot(int slot)
+        {
+            if(_shopCategory==5){if(slot==0)Controller.TackleShop.BuyRifle();return;}
+            if(slot<0 || slot>=(_shopCategory>=2?6:3))return;
+            if(_shopCategory>=2)Controller.TackleShop.BuySupply((_shopCategory-2)*6+slot);
+            else Controller.TackleShop.Buy((UpgradeTrack)((_shopCategory==1?3:0)+slot));
+        }
         private void DrawTackleShop()
         {
-            var c = Controller;
-            var r = new Rect(360, Mathf.Max(20, (_height - 784) * .5f), 880, 784);
-            Dim(); Card(r, Mint);
-            Label(r.x + 30, r.y + 22, 530, 42, "潮汐钓具店", 32, Color.white, true);
-            Label(r.x + 30, r.y + 67, 710, 28, "捕鱼收入通用 · 返港售鱼 / 交付委托赚取金币", 16, Mint);
-            Label(new Rect(r.xMax - 245, r.y + 28, 210, 35), c.Career.Coins + " 金币", 23, Gold, true, TextAnchor.MiddleRight);
-            for (int i = 0; i < 3; i++)
+            var c=Controller;var r=new Rect(270,Mathf.Max(20,(_height-680)*.5f),1060,680);
+            Dim();Card(r,Gold);Label(r.x+30,r.y+20,680,44,"潮汐钓具店",32,Color.white,true);
+            Label(r.x+255,r.y+33,390,22,"TIDE & TACKLE  /  远航的准备",14,Muted);
+            Label(new Rect(r.xMax-250,r.y+28,220,35),c.Career.Coins+" 金币",23,Gold,true,TextAnchor.MiddleRight);
+            string[] tabs={"钓具升级","船舶升级","探索工具","制作补给","远航物资","狩猎装备"};
+            for(int i=0;i<6;i++)if(Tab(new Rect(r.x+30+i*166,r.y+78,160,40),tabs[i],_shopCategory==i))_shopCategory=i;
+            bool rifle=_shopCategory==5,supplies=_shopCategory>=2 && !rifle;
+            int count=rifle?1:supplies?6:3;
+            for(int i=0;i<count;i++)
             {
-                var track = (UpgradeTrack)i;
-                int level = c.Career.Level(track), cost = c.Career.NextUpgradeCost(track);
-                float y = r.y + 116 + i * 132;
-                Rounded(new Rect(r.x + 24, y, r.width - 48, 118), InkRaised, 10);
-                Label(r.x + 42, y + 12, 540, 28, FishingText.ShopProductName(track) + " · Lv." + level, 21, Color.white, true);
-                Label(r.x + 42, y + 47, 540, 23, FishingText.ShopProductDescription(track), 14, Muted);
-                Label(r.x + 42, y + 78, 560, 23, cost > 0 ? FishingText.UpgradeEffect(track, level) + " → " + FishingText.UpgradeEffect(track, level + 1) : "已购齐全部等级 · " + FishingText.UpgradeEffect(track, level), 14, Mint);
-                bool affordable = cost > 0 && c.Career.Coins >= cost;
-                string label = cost <= 0 ? "已满级" : "[" + (i + 1) + "] 购买 " + cost + " 金币";
-                if (Button(new Rect(r.xMax - 228, y + 28, 180, 44), label, affordable, affordable, 16)) c.TackleShop.Buy(track);
-                string balance = cost <= 0 ? "无需重复购买" : affordable ? "购买后余额 " + (c.Career.Coins - cost) : "还差 " + (cost - c.Career.Coins) + " 金币";
-                Label(new Rect(r.xMax - 228, y + 79, 180, 21), balance, 12, affordable ? Mint : Faint, false, TextAnchor.MiddleCenter);
+                int product=(_shopCategory-2)*6+i;
+                var track=(UpgradeTrack)((_shopCategory==1?3:0)+i);
+                int level=rifle||supplies?0:c.Career.Level(track),cost=rifle?FishingCareer.HuntingRiflePrice:supplies?FishingSupplies.Price(product):c.Career.NextUpgradeCost(track);
+                float x=r.x+24+(supplies?i%2*506:0),y=r.y+140+(supplies?i/2:i)*132,w=supplies?494:r.width-48;
+                Rounded(new Rect(x,y,w,118),InkRaised,10);
+                Outline(new Rect(x,y,w,118),Hairline,10);
+                var icon=new Rect(x+14,y+18,78,78);Rounded(icon,new Color(.025f,.055f,.085f),8);
+                if(rifle)FieldIcon(icon,FieldItem.HuntingRifle);
+                else if(supplies)ItemIllustration(icon,FishingSupplies.Items[product]);
+                else ArtIllustration(icon,track==UpgradeTrack.Rudder?"Compass":track==UpgradeTrack.Cabin?"Lantern":track==UpgradeTrack.Hold?"chest":track==UpgradeTrack.Line?"RopeCoil":track==UpgradeTrack.Reel?"WindBell":"Telescope");
+                string name=rifle?"猎枪 · 岸上狩猎":supplies?FishingBackpack.Name(FishingSupplies.Items[product])+" ×"+FishingSupplies.Quantity(product):FishingText.ShopProductName(track)+" · Lv."+level;
+                Label(x+108,y+12,supplies?350:710,28,name,20,Color.white,true);
+                string description=rifle?"左键 / F 单发 · 动物掉落分类肉类、皮毛、龟壳或羽毛":supplies?(FishingSupplies.Items[product]==FieldItem.CookedMeat?"F食用恢复50%体力 · 体力充足时不消耗":"放入背包 · I装备到快捷栏 / 用于制作"):FishingText.ShopProductDescription(track);
+                Label(x+108,y+46,w-126,24,description,13,Muted);
+                if(rifle)Label(x+108,y+80,650,22,"基础钓竿升级价 ×3 · 购买自动装备 · [1] 购买",14,Mint);
+                else if(!supplies)Label(x+108,y+80,650,22,cost>0?FishingText.UpgradeEffect(track,level)+" → "+FishingText.UpgradeEffect(track,level+1):FishingText.UpgradeEffect(track,level),14,Mint);
+                bool owned=rifle && c.Career.Backpack.Count(FieldItem.HuntingRifle)>0;
+                bool affordable=!owned && cost>0 && c.Career.Coins>=cost;
+                var buy=new Rect(x+w-180,y+(supplies?76:15),164,32);
+                if(Button(buy,owned?"已持有":cost<=0?"已满级":"购买 "+cost+" 金币",affordable,affordable,15))
+                {if(rifle)c.TackleShop.BuyRifle();else if(supplies)c.TackleShop.BuySupply(product);else c.TackleShop.Buy(track);}
+                if(supplies)Label(x+108,y+83,190,22,"已有 "+c.Career.Backpack.Count(FishingSupplies.Items[product]),14,Mint);
             }
-            float gunY=r.y+512;int price=FishingCareer.HuntingRiflePrice;
-            bool owned=c.Career.Backpack.Count(FieldItem.HuntingRifle)>0;
-            Rounded(new Rect(r.x+24,gunY,r.width-48,118),InkRaised,10);
-            Label(r.x+42,gunY+12,540,28,"猎枪 · 岸上狩猎",21,Color.white,true);
-            Label(r.x+42,gunY+47,540,23,"左键 / F 单发 · 一枪击倒动物 · E 收取兽肉和毛皮",14,Muted);
-            Label(r.x+42,gunY+78,540,23,"价格为基础钓竿升级（"+FishingCareer.UpgradeCost(UpgradeTrack.Line,0)+" 金币）的三倍",14,Mint);
-            if(Button(new Rect(r.xMax-228,gunY+28,180,44),owned?"已持有":"[4] 购买 "+price+" 金币",!owned && c.Career.Coins>=price,!owned && c.Career.Coins>=price,16))c.TackleShop.BuyRifle();
-            Label(new Rect(r.xMax-228,gunY+79,180,21),owned?"背包 / 快捷栏装备":"购买后自动装备",12,Mint,false,TextAnchor.MiddleCenter);
-            Label(r.x+30,r.y+650,r.width-60,48,c.VisibleMessage,14,Gold);
-            Label(r.x + 30, r.y + 723, 590, 25, "1 / 2 / 3 / 4 购买 · E / Tab / Esc 关闭 · 自动保存", 15, Muted);
-            if (Button(new Rect(r.xMax - 196, r.yMax - 69, 166, 42), "关闭商店", true, false, 16)) c.ToggleShop();
+            Fill(r.x+30,r.y+548,r.width-60,1,Hairline);
+            Label(r.x+30,r.y+565,r.width-60,30,c.VisibleMessage,14,Gold);
+            if(Button(new Rect(r.x+30,r.y+618,196,38),"与汐禾交谈",true,false,15))c.Residents.Talk(4);
+            Label(r.x+248,r.y+626,570,23,"升级立即装备 · 用品进入背包 · 自动保存",14,Muted);
+            if(Button(new Rect(r.xMax-196,r.yMax-62,166,38),"E / Esc 关闭",true,false,15))c.ToggleShop();
         }
     }
 }

@@ -8,6 +8,7 @@ namespace BoatAttack.Fishing
         private void DrawChart()
         {
             var c = Controller;
+            if(c.Realms!=null && c.Realms.Inside){DrawRealmChart();return;}
             if (!c.ChartExpanded)
             {
                 if (Button(Layout.ChartTab, "M 航海图  ·  " + FishingPrototype.FlatDistance(c.ExplorerPosition, c.NavigationPosition).ToString("0") + " m", true, false, 14)) c.ToggleChart();
@@ -42,6 +43,8 @@ namespace BoatAttack.Fishing
                         c.fishingSpots.Length+1+i,MapShoreColor);
             if(c.TackleShop!=null && c.TackleShop.Available)
                 ChartMarker(c.Ashore?c.TackleShop.Position:c.TackleShop.mooringPoint.position,center,"店",c.ShopNavigationIndex,MapShoreColor);
+            for(int i=0;i<FishingAdventure.Count;i++)
+                ChartMarker(c.Ashore?FishingIslandWorld.Center(i):FishingIslandWorld.Berth(i),center,((char)('E'+i)).ToString(),c.IslandNavigationIndex(i),c.Career.Adventure.Restored(i)?Gold:MapShoreColor);
             if(c.Ashore)
             {
                 var boat=ChartPoint(c.Player.transform.position,center);Disc(boat,7,MapSurface);Disc(boat,5,MapPortColor);

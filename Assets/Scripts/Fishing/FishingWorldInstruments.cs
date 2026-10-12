@@ -35,7 +35,7 @@ namespace BoatAttack.Fishing
         {
             var go = new GameObject("Instrument label", typeof(RectTransform), typeof(Text)); go.transform.SetParent(parent, false);
             var rect = go.GetComponent<RectTransform>(); rect.anchorMin = rect.anchorMax = new Vector2(0, 1); rect.pivot = new Vector2(0, 1); rect.anchoredPosition = position; rect.sizeDelta = size;
-            var text = go.GetComponent<Text>(); text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); text.fontSize = fontSize; text.text = value; text.color = new Color(0.9f, 0.96f, 0.93f); text.raycastTarget = false; return text;
+            var text = go.GetComponent<Text>(); text.font = FishingUIFont.Font; text.fontSize = fontSize; text.text = value; text.color = new Color(0.9f, 0.96f, 0.93f); text.raycastTarget = false; return text;
         }
         private void LateUpdate()
         {

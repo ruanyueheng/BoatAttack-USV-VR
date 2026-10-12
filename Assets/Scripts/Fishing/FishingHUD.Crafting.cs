@@ -18,7 +18,8 @@ namespace BoatAttack.Fishing
             for(int i=0;i<FishingRecipes.All.Length;i++)
             {
                 var recipe=FishingRecipes.All[i];
-                if(Button(new Rect(3,i*45,350,39),FishingBackpack.Name(recipe.Output)+" ×"+recipe.Count+"   ·   "+FishingRecipes.StationName(recipe.Station),true,_recipeIndex==i,15))_recipeIndex=i;
+                string ingredient=recipe.Output==FieldItem.CookedMeat?"（"+FishingBackpack.Name(recipe.Costs[0].item)+"）":"";
+                if(Button(new Rect(3,i*45,350,39),FishingBackpack.Name(recipe.Output)+ingredient+" ×"+recipe.Count+"   ·   "+FishingRecipes.StationName(recipe.Station),true,_recipeIndex==i,15))_recipeIndex=i;
             }
             GUI.EndScrollView();
             var r=FishingRecipes.All[_recipeIndex];bool smelt=r.Station==CraftStation.Furnace;

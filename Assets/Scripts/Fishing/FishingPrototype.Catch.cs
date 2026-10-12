@@ -13,9 +13,9 @@ namespace BoatAttack.Fishing
         public Transform FishBox=>_box.transform;
         public Vector3 BoatPoint(Vector3 point)=>Player.transform.position+Quaternion.Euler(0,Player.transform.eulerAngles.y,0)*point;
         public Vector3 LandingTarget=>LandingTargetForMode(UnityEngine.XR.XRSettings.isDeviceActive);
-        public Vector3 LandingTargetForMode(bool xr)=>BoatPoint(new Vector3(xr?-1.65f:1.8f,1.05f,.5f));
-        public Vector3 NetTray=>BoatPoint(new Vector3(.65f,1.15f,.45f));
-        internal Vector3 StowedNetPosition=>Vector3.Lerp(new Vector3(1.15f,.65f,-.7f),new Vector3(1.15f,.9f,-.4f),_netDeployment);
+        public Vector3 LandingTargetForMode(bool xr)=>BoatPoint(new Vector3(xr?-1.15f:1.5f,.93f,.55f));
+        public Vector3 NetTray=>BoatPoint(new Vector3(.55f,.99f,-.28f));
+        internal Vector3 StowedNetPosition=>new Vector3(-.8f,.70f,-.55f);
         internal Quaternion StowedNetRotation=>Quaternion.Euler(0,Mathf.Lerp(85f,0f,_netDeployment),-Mathf.Sin(_netMotion*Mathf.PI)*35f);
         public bool BeginNetCatch()
         {
@@ -41,7 +41,7 @@ namespace BoatAttack.Fishing
             if(!store)StartCoroutine(ReleaseFishVisual(record,_catchStart,_fish.transform.rotation,_fish.transform.localScale));
             LastCatch=new CatchCard{Fish=record.Copy(),ShownAt=Time.unscaledTime,Discovery=discovery,PersonalBest=best>0 && record.grams>best,Bounty=bounty};
             if(legend && _trophy==null)BuildTrophy();
-            RefreshHold();Save();_feedback.PlayOneShot(legend?_legendTone:_successTone);
+            Effects?.Burst(_catchStart,new Color(.46f,.82f,.80f));RefreshHold();Save();_feedback.PlayOneShot(legend?_legendTone:_successTone);
             if(!hadEvidence && Career.Expedition.Has(FishingExpedition.TargetCaught))Notice("北岛捕获记录已收录！鱼货与主线凭证独立，返港可提交捕获记录。",9,false);
             else Notice(FishingSpecies.Name(record.kind)+" "+FishingText.Weight(record.grams)+(legend?" 已测量放生，赏金 +"+bounty:store?" 已放入鱼箱。":" 已放生；保留图鉴与体型记录，不获得售鱼金币。"),7,true);
             CatchRig.Recover();return true;
@@ -77,8 +77,7 @@ namespace BoatAttack.Fishing
         {
             var pending=Career.PendingCatch;if(pending==null)return;
             _fish.SetActive(false);Destroy(_fish);_fish=MakeFish(transform,pending.fish.kind,pending.fish.rare);
-            float size=Mathf.Clamp(Mathf.Pow(pending.fish.grams/1000f,.33f),.75f,1.8f);
-            _fish.transform.localScale=Vector3.one*(pending.fish.kind==FishKind.Sailfish?.65f:size);
+            _fish.transform.localScale=Vector3.one*FishingSpecies.SizeScale(pending.fish.kind,pending.fish.grams);
             var body=_fish.AddComponent<Rigidbody>();body.isKinematic=true;body.useGravity=false;
             var collider=_fish.AddComponent<SphereCollider>();collider.radius=.18f;collider.isTrigger=true;
         }

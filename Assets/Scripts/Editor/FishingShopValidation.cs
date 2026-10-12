@@ -28,7 +28,7 @@ namespace BoatAttack.EditorTools
                 SessionState.SetBool(Key + "active", false);
                 string error = SessionState.GetString(Key + "error", "");
                 if (!SessionState.GetBool(Key + "finished", false) && error == "") error = "Incomplete shop checks";
-                if (error == "") Debug.Log("[BEACH-SHOP] PASS: real shop route, counter-only upgrades, input modal isolation, ten waypoints and v8/workshop save regression; simulated desktop input, no NPC AI or PICO hardware claim.");
+                if (error == "") Debug.Log("[BEACH-SHOP] PASS: real shop route, counter-only upgrades, input modal isolation, fourteen waypoints and v10/workshop save regression; simulated desktop input, no NPC AI or PICO hardware claim.");
                 else Debug.LogError("[BEACH-SHOP] FAIL: " + error);
                 EditorApplication.Exit(error == "" ? 0 : 1);
             };

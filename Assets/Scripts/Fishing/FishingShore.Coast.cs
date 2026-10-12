@@ -28,6 +28,13 @@ namespace BoatAttack.Fishing
                 {namedSite=true;surveySite=NearestSite;return true;}
             }
             var boat=Controller.Player.transform.position;
+            for(int i=0;i<FishingAdventure.Count;i++)
+            {
+                if(FishingPrototype.FlatDistance(boat,FishingIslandWorld.Berth(i))>9f)continue;
+                var landing=FishingIslandWorld.Landing(i);
+                if(Ground(landing,out feet) && Mathf.Abs(feet.y-landing.y)<.5f && Clearance(feet)
+                    && SafeCoastalFooting(feet) && ClearTransfer(feet)){namedSite=true;return true;}
+            }
             float best=float.MaxValue;bool found=false;
             for(float radius=2;radius<=10;radius+=.75f)
                 for(int i=0;i<48;i++)

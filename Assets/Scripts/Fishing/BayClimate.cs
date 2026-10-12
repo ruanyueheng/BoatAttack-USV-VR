@@ -15,11 +15,13 @@ namespace BoatAttack.Fishing
         public float Age { get; private set; } = TransitionSeconds;
         public float Blend => Math.Min(1f, Age / TransitionSeconds);
         public float Remaining => Math.Max(0f, Duration(Current) - Age);
-        public void Tick(float dt, bool paused)
+        public void Tick(float dt, bool paused, BayWeather? scheduled = null)
         {
             if (paused || float.IsNaN(dt) || float.IsInfinity(dt) || dt <= 0) return;
             Age = Math.Min(Duration(Current), Age + Math.Min(dt, 0.25f));
-            if (Automatic && Age >= Duration(Current)) Select(Forecast, true);
+            if (Automatic && scheduled.HasValue)
+            { if (scheduled.Value != Current && Blend >= 1) Select(scheduled.Value, true); }
+            else if (Automatic && Age >= Duration(Current)) Select(Forecast, true);
         }
         public bool Select(BayWeather weather, bool automatic = false)
         {

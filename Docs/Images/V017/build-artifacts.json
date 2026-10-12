@@ -1,0 +1,25 @@
+{
+  "version": "0.17.0",
+  "artifacts": [
+    {
+      "file": "FishingPrototype.exe",
+      "bytes": 666624,
+      "sha256": "3aa99a12ceadfa13da1ff1262e0f076bdec1c93319989ed000e708d7596550df"
+    },
+    {
+      "file": "FishingPrototype_Data/Managed/Assembly-CSharp.dll",
+      "bytes": 503296,
+      "sha256": "fc0d5455dfe6f72157329be75803d9e3b671e573c282e136280df6595f532f9a"
+    },
+    {
+      "file": "FishingPrototype_Data/globalgamemanagers",
+      "bytes": 282780,
+      "sha256": "d1d94753dfb5d3a086e5dde0d6c9535bc9a8923baa240ec9e446b46db9e58813"
+    },
+    {
+      "file": "FishingPrototype_Data/resources.assets",
+      "bytes": 11674568,
+      "sha256": "c58651c6d9c79cbbcc6a0d67ace6e1b8add4915d0a7499bb256a04cebbacc3bf"
+    }
+  ]
+}

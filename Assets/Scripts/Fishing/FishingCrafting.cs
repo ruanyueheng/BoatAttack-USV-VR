@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 namespace BoatAttack.Fishing
 {
@@ -20,6 +20,8 @@ namespace BoatAttack.Fishing
         private static CraftRecipe R(string id,CraftStation station,FieldItem output,int count,params FieldStack[] costs)=>new CraftRecipe(id,station,output,count,station==CraftStation.Furnace?8:0,costs);
         // Append-only identifiers are persisted in active furnace jobs. UI always derives from these rules.
         public static readonly CraftRecipe[] All={
+            R("hunting-spear",CraftStation.Workbench,FieldItem.HuntingSpear,1,Stack(FieldItem.Stick,3),Stack(FieldItem.Stone,2),Stack(FieldItem.Rope,1)),
+            R("roast-meat",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.RawMeat,1)),
             R("planks",CraftStation.Hand,FieldItem.Plank,4,Stack(FieldItem.Driftwood,1)),
             R("sticks",CraftStation.Hand,FieldItem.Stick,4,Stack(FieldItem.Plank,2)),
             R("rope",CraftStation.Hand,FieldItem.Rope,1,Stack(FieldItem.Fiber,3)),
@@ -34,7 +36,12 @@ namespace BoatAttack.Fishing
             R("brick",CraftStation.Furnace,FieldItem.Brick,1,Stack(FieldItem.Clay,1)),
             R("glass",CraftStation.Furnace,FieldItem.Glass,1,Stack(FieldItem.Sand,1)),
             R("brick-furnace",CraftStation.Workbench,FieldItem.Furnace,1,Stack(FieldItem.Brick,6),Stack(FieldItem.Stone,2)),
-            R("shell-lantern",CraftStation.Workbench,FieldItem.Lantern,1,Stack(FieldItem.Shell,6),Stack(FieldItem.Glass,2),Stack(FieldItem.Charcoal,1))
+            R("shell-lantern",CraftStation.Workbench,FieldItem.Lantern,1,Stack(FieldItem.Shell,6),Stack(FieldItem.Glass,2),Stack(FieldItem.Charcoal,1)),
+            R("roast-rabbit",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.RabbitMeat,1)),
+            R("roast-fox",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.FoxMeat,1)),
+            R("roast-turtle",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.TurtleMeat,1)),
+            R("roast-gull",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.GullMeat,1)),
+            R("roast-legacy-meat",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.Meat,1))
         };
         public static CraftRecipe Find(string id){foreach(var r in All)if(r.Id==id)return r;return null;}
         public static string StationName(CraftStation s)=>s==CraftStation.Hand?"徒手":s==CraftStation.Workbench?"工作台":"熔炉";

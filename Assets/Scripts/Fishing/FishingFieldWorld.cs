@@ -10,8 +10,8 @@ namespace BoatAttack.Fishing
         }
         public sealed class Animal
         {
-            public int Id;public bool Dead;public Collider Hitbox;
-            public LandAnimalKind Kind;public Transform Root;public Vector3 Home,Feet,Target;public bool Fleeing;public float Rest;
+            public bool Dead;public Collider Hitbox;
+            public int Id;public LandAnimalKind Kind;public Transform Root;public Vector3 Home,Feet,Target;public bool Fleeing;public float Rest;
         }
         private FishingPrototype _c;
         private readonly List<Pickup> _pickups=new List<Pickup>();
@@ -22,7 +22,7 @@ namespace BoatAttack.Fishing
         private Pickup _nearby;private Animal _candidate;private float _senseAt,_aiAt;private int _wander;
         public IReadOnlyList<Pickup> Pickups=>_pickups;
         public IReadOnlyList<Animal> Animals=>_animals;
-        public string ActionTitle=>_nearby!=null?"E 拾取 "+FishingBackpack.Name(_nearby.Item)+" ×"+_nearby.Count:_candidate!=null?"T 观察 "+FishingBackpack.AnimalName(_candidate.Kind):null;
+        public string ActionTitle=>_nearby!=null?"E 拾取 "+FishingBackpack.Name(_nearby.Item)+" ×"+_nearby.Count:_candidate!=null?(_c.Career.Backpack.Equipped==FieldItem.HuntingSpear && FishingHunting.Huntable(_candidate.Kind)?"F 刺击 · 蹲下接近 ":"T 观察 ")+FishingBackpack.AnimalName(_candidate.Kind):null;
         public void Build(FishingPrototype c)
         {
             _c=c;_palette=new Material(c.PaletteShader){name="Field exploration vertex palette",enableInstancing=true};_owned.Add(_palette);
@@ -70,14 +70,28 @@ namespace BoatAttack.Fishing
             }
             return false;
         }
-        public void RefreshPickups(){foreach(var p in _pickups)if(p.Root!=null)p.Root.gameObject.SetActive(!_c.Career.Backpack.Collected(p.Id));_nearby=null;_c.Hunting?.RefreshAnimals();}
+        public void RefreshPickups(){foreach(var p in _pickups)if(p.Root!=null)p.Root.gameObject.SetActive(!_c.Career.Backpack.Collected(p.Id));_nearby=null;_c.RifleHunting?.RefreshAnimals();}
         private void Update()
         {
-            if(_c==null || _c.Paused)return;
+            if(_c==null)return;
+            _c.RifleHunting?.RefreshAnimals();
+            foreach(var animal in _animals)
+            {
+                if(animal.Dead)continue;
+                bool available=_c.Career.Hunting.Available(animal.Id,_c.Career.Calendar.TotalMinutes);
+                if(available && !animal.Root.gameObject.activeSelf)
+                {
+                    animal.Feet=animal.Target=animal.Home;animal.Fleeing=false;animal.Rest=2;
+                    animal.Root.position=animal.Home;
+                }
+                animal.Root.gameObject.SetActive(available);
+            }
+            if(_c.Paused || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen)){CancelHunt();return;}
+            TickHunt(Time.deltaTime);
             if(Time.time>=_aiAt){TickAnimals(.1f);_aiAt=Time.time+.1f;}
             foreach(var a in _animals)
             {
-                if(a.Dead)continue;
+                if(a.Dead || !a.Root.gameObject.activeSelf)continue;
                 float moving=Vector3.Distance(a.Feet,a.Target)>.12f?1:0;
                 float hop=a.Kind==LandAnimalKind.Rabbit?Mathf.Abs(Mathf.Sin(Time.time*8))*moving*.085f:Mathf.Sin(Time.time*5)*moving*.014f;
                 a.Root.position=Vector3.Lerp(a.Root.position,a.Feet+Vector3.up*hop,Mathf.Min(1,Time.deltaTime*16));
@@ -91,9 +105,10 @@ namespace BoatAttack.Fishing
             if(_c.Paused || dt<=0 || float.IsNaN(dt) || float.IsInfinity(dt))return;dt=Mathf.Min(dt,.1f);
             foreach(var a in _animals)
             {
-                if(a.Dead)continue;
+                if(a.Dead || !a.Root.gameObject.activeSelf)continue;
                 var away=Vector3.ProjectOnPlane(a.Feet-_c.ExplorerPosition,Vector3.up);
-                a.Fleeing=_c.Ashore && away.magnitude<AlertRadius(_c.Shore.Crouched,_c.Shore.WalkSpeed>3);
+                float alert=_c.Shore.Crouched && _c.Career.Backpack.Equipped==FieldItem.HuntingSpear?.85f:AlertRadius(_c.Shore.Crouched,_c.Shore.WalkSpeed>3);
+                a.Fleeing=_c.Ashore && away.magnitude<alert;
                 a.Rest-=dt;
                 if(a.Fleeing && away.sqrMagnitude>.01f)
                 {
@@ -145,7 +160,7 @@ namespace BoatAttack.Fishing
             nearest=float.MaxValue;float range=_c.BinocularsRaised?22:8;
             foreach(var a in _animals)
             {
-                if(a.Dead)continue;
+                if(a.Dead || !a.Root.gameObject.activeSelf)continue;
                 var target=a.Root.position+Vector3.up*.4f;float d=Vector3.Distance(target,_c.viewCamera.transform.position);
                 if(d<nearest && Visible(target,range,.92f)){_candidate=a;nearest=d;}
             }

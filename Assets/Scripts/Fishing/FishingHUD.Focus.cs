@@ -5,7 +5,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingHUD
     {
-        private void Glass(Rect r) => Rounded(r, new Color(.018f, .052f, .073f, .78f), 12);
+        private void Glass(Rect r) { Rounded(r,new Color(.022f,.046f,.08f,.84f),7);Outline(r,Gold*new Color(1,1,1,.22f),7); }
 
         private void DrawCompactHeading()
         {
@@ -15,8 +15,7 @@ namespace BoatAttack.Fishing
             WeatherIcon(new Rect(r.x + 12, r.y + 15, 32, 32), c.Weather.Climate.Current);
             string title = c.Ashore ? c.Shore.LocationName : c.Anchored ? FishingGrounds.Name(c.Spot) : c.NavigationName + "  " + FishingPrototype.FlatDistance(c.ExplorerPosition, c.NavigationPosition).ToString("0") + " m";
             Label(r.x + 56, r.y + 9, 262, 27, title, 19, Color.white, true);
-            string motion = c.Ashore ? (c.Shore.Crouched?"蹲行 · 调查 ":"步行 · 调查 ")+FishingExploration.CompletedTasks(c.Career.ShoreTaskMask)+"/8" : c.Anchored ? "已停船 · " + FishingVoyage.BaitName(c.Bait) : (c.Speed * 3.6f).ToString("0.0") + " km/h · N 切换航点";
-            Label(r.x + 56, r.y + 36, 262, 20, BayClimate.Name(c.Weather.Climate.Current) + " · " + motion, 13, Muted);
+            Label(r.x + 56, r.y + 36, 262, 20, c.Career.Calendar.SeasonName+" "+c.Career.Calendar.Date+"日  "+c.Career.Calendar.TimeLabel+" · "+BayClimate.Name(c.Weather.Climate.Current), 13, Muted);
             if (c.Ecology.Candidate.HasValue && !CatchVisible && Button(Layout.Observe, "T 观察 · " + BayClimate.MarineName(c.Ecology.Candidate.Value), true, false, 14)) c.Ecology.Observe();
         }
 
@@ -33,10 +32,16 @@ namespace BoatAttack.Fishing
         private void DrawCompactToolbar()
         {
             var r = Layout.Toolbar;
-            if (Button(new Rect(r.x, r.y, 76, r.height), "J 日志", true, false, 14)) Controller.ToggleJournal();
-            if (Button(new Rect(r.x + 86, r.y, 76, r.height), "C 视角", true, false, 14)) Controller.ToggleView();
-            if (Button(new Rect(r.x + 172, r.y, 76, r.height), Controller.ShowDetails ? "H 收起" : "H 详情", true, Controller.ShowDetails, 14)) Controller.ToggleDetails();
-            if (Button(new Rect(r.x + 258, r.y, 78, r.height), "Esc 设置", true, false, 14)) Controller.TogglePause();
+            Glass(r);
+            if (TextButton(new Rect(r.x, r.y, 76, r.height), "J 日志")) Controller.ToggleJournal();
+            if (TextButton(new Rect(r.x + 86, r.y, 76, r.height), "C 视角")) Controller.ToggleView();
+            if (TextButton(new Rect(r.x + 172, r.y, 76, r.height), Controller.ShowDetails ? "H 收起" : "H 详情")) Controller.ToggleDetails();
+            if (TextButton(new Rect(r.x + 258, r.y, 78, r.height), "Esc 设置")) Controller.TogglePause();
+        }
+        private bool TextButton(Rect r,string text)
+        {
+            Label(r,text,14,r.Contains(Event.current.mousePosition)?Mint:Muted,false,TextAnchor.MiddleCenter);
+            return GUI.Button(r,GUIContent.none,GUIStyle.none);
         }
 
         private void DrawFocusedAction()
@@ -55,7 +60,7 @@ namespace BoatAttack.Fishing
             else if(c.Ashore)
             {
                 title=(c.Expedition.Aligning?c.Expedition.ActionTitle:c.WorldInteractionTitle) ?? c.Shore.ActionTitle;
-                help=c.Expedition.Aligning?c.Expedition.AlignmentHint:"空格跳跃 · Ctrl 蹲下 · E 采集 / 制作 · T 观察 · I 背包 · R 救援";
+                help=c.Shore.Swimming?"Shift加速 · 停步恢复体力 · 空格上低岸 · R救援":c.Shore.Climbing?"W / S上下攀登 · 空格离开 · 停步恢复体力":c.Realms.Inside?"E操作机关 / 回响台 · 入口E返回岛屿 · J世界航记":c.Expedition.Aligning?c.Expedition.AlignmentHint:c.Islands.NearbyHint!=null?"E 读信 / 开箱 / 转盘 · F 点灯 · J 群岛航记 · G 上船":"空格跳跃 · Ctrl蹲下 · E交谈 / 采集 · T观察 · I背包 · R救援";
             }
             else if (!c.Anchored)
             {
@@ -77,17 +82,20 @@ namespace BoatAttack.Fishing
             {
                 switch (s.Phase)
                 {
-                    case CatchPhase.Waiting: title = "等待咬钩…"; help = "留意浮标与声音，出现咬钩提示再点击左键"; break;
+                    case CatchPhase.Waiting: title = c.CastMotion.Casting?"浮标飞向海面":"等待咬钩…"; help = c.CastMotion.Casting?"鱼线正在放出 · 落水后开始等待":"留意浮标与声音，出现咬钩提示再点击左键"; break;
                     case CatchPhase.Bite: title = (s.Species.Legendary ? "金帆旗鱼！" : "咬钩了！") + "点击左键提竿"; help = "剩余 " + s.Remaining.ToString("0.0") + " 秒"; accent = Gold; break;
                     case CatchPhase.Fighting: title = FightTitle(s); help = ""; accent = s.Beat == FishBeat.Leap || s.Tension > .78f ? Danger : Mint; break;
                     case CatchPhase.Landing: title = "E 辅助抄网 · 套住鱼后轻抬"; help = "XR：左握键拿网；网口覆盖鱼体，保持片刻再轻抬"; break;
                     case CatchPhase.Caught: title = "捕获成功 · 点击左键再抛一竿"; help = "B 换饵 · Q 起航 · J 查看图鉴与纪录"; break;
                     case CatchPhase.Escaped: title = "鱼逃走了 · 点击左键重试"; help = "B 换饵 · Q 起航"; break;
-                    default: title = "点击左键抛竿"; help = "B 换饵 · 咬钩时再点击提竿 · Q 起航"; break;
+                    default: title = c.CastMotion.Preparing?"松开左键甩竿 · 蓄力 "+(c.CastMotion.Charge*100).ToString("0")+"%":"按住左键后摆，松开甩竿"; help = "轻点近抛 · 按住远抛 · B 换饵 · Q 起航"; break;
                 }
             }
+            if(c.CastMotion.Preparing)
+            {title="松开左键甩竿 · 蓄力 "+(c.CastMotion.Charge*100).ToString("0")+"%";help="轻点近抛 · 按住远抛 · B 换饵 · Q 起航";}
             Rounded(new Rect(r.x + 8, r.y + 15, 3, r.height - 30), accent, 1.5f);
             Label(r.x + 20, r.y + 12, r.width - 40, 28, title, 20, accent, true);
+            if(c.CastMotion.Preparing)Bar(new Rect(r.x+20,r.yMax-5,r.width-40,2),c.CastMotion.Charge,Mint);
             if (c.Anchored && s.Phase == CatchPhase.Fighting) DrawCompactFight(r, s, accent);
             else if (c.Anchored && s.Phase == CatchPhase.Landing)
             {
@@ -139,6 +147,7 @@ namespace BoatAttack.Fishing
             string text = NoticeText;
             if (text.Length == 0) return;
             var r = Layout.Notice;
+            if(c.Acceptance!=null)r.y=102;
             Glass(r);
             Label(new Rect(r.x + 14, r.y + 3, r.width - 28, r.height - 6), text, 14, warning ? Danger : Muted, false, TextAnchor.MiddleCenter);
         }

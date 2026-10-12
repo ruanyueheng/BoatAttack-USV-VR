@@ -46,7 +46,7 @@ internal static class ProgressionTests
         check(complete, "V4 species entries are complete and ordered");
         check(FishingSpecies.Of(FishKind.Sailfish).Legendary && !FishingSpecies.Of(FishKind.Puffer).Legendary, "V4 only the golden sail is legendary");
         check(FishingSpecies.AreaSpecies(0) == FishKind.Coral && FishingSpecies.AreaSpecies(2) == FishKind.Puffer && FishingSpecies.AreaSpecies(9) == FishKind.Puffer, "V4 fishing areas map to common species");
-        check(!FishingSpecies.IsDefined((FishKind)4) && FishingSpecies.Name((FishKind)9) == "未知鱼种", "V4 unknown species rejected");
+        check(!FishingSpecies.IsDefined((FishKind)FishingSpecies.Count) && FishingSpecies.Name((FishKind)999) == "未知鱼种", "V4 unknown species rejected");
         check(FishingSpecies.DiscoveryBit(FishKind.Coral, false) == 0 && FishingSpecies.DiscoveryBit(FishKind.Puffer, true) == 5 && FishingSpecies.DiscoveryBit(FishKind.Sailfish, false) == 6, "V4 discovery bits keep the v2 layout");
         check(FishingSpecies.Grams(FishKind.Coral, 0f) == 600 && FishingSpecies.Grams(FishKind.Coral, 1f) == 1400 && FishingSpecies.Grams(FishKind.Coral, float.NaN) == 1000, "V4 size roll maps to whole grams");
         check(FishingSpecies.ValidGrams(FishKind.Dart, 0) && !FishingSpecies.ValidGrams(FishKind.Sailfish, 0) && !FishingSpecies.ValidGrams(FishKind.Dart, 899) && FishingSpecies.ValidGrams(FishKind.Dart, 2200), "V4 weight bounds per species");
@@ -252,7 +252,7 @@ internal static class ProgressionTests
         full.RecordLegend(Sized("full-legend", FishKind.Sailfish, 25000));
         full.Observe(MarineKind.Ray);
         var snap = full.Snapshot();
-        check(snap.version == 8 && snap.holdLevel == 2 && snap.reelLevel == 1 && snap.rodLevel == 1 && snap.legendCatches == 1
+        check(snap.version == 11 && snap.holdLevel == 2 && snap.reelLevel == 1 && snap.rodLevel == 1 && snap.legendCatches == 1
             && snap.bestGrams.Count == FishingSpecies.Count && snap.inventory[0].grams == 1500, "V4 snapshot carries upgrades, sizes and legends");
         check(FishingCareer.TryRestore(snap, out var back) && back.Count == 10 && back.Capacity == 10 && back.LegendCatches == 1
             && back.BestGrams(FishKind.Sailfish) == 25000 && back.BestGrams(FishKind.Puffer) == snap.bestGrams[2] && back.Coins == full.Coins && back.Seen(MarineKind.Ray), "V4 v3 round trip");

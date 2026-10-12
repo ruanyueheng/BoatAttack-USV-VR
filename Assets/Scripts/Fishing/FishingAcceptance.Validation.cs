@@ -11,7 +11,7 @@ namespace BoatAttack.Fishing
         {
             yield return new WaitForSecondsRealtime(1f);
             string baseline = null;
-            string normalPath = Path.Combine(Application.persistentDataPath, "boatattack-fishing-v1.json");
+            string normalPath = Path.Combine(Application.persistentDataPath, "boatattack-fishing-v11.json");
             string normalStamp = SaveStamp(normalPath), backupStamp = SaveStamp(normalPath + ".bak");
             int comfort = PlayerPrefs.GetInt("Fishing.V3.Comfort", int.MinValue), quiet = PlayerPrefs.GetInt("Fishing.V3.Quiet", int.MinValue);
             if (!Check(() =>
@@ -23,6 +23,7 @@ namespace BoatAttack.Fishing
             foreach (FishingAcceptanceCase selected in Enum.GetValues(typeof(FishingAcceptanceCase)))
             {
                 if (!Check(() => SelectCase(selected))) yield break;
+                while(Controller.Realms.Transitioning)yield return null;
                 float remaining = Controller.Session.Remaining, tension = Controller.Session.Tension;
                 yield return new WaitForSecondsRealtime(capture ? 1f : .45f);
                 if (!Check(() =>
@@ -78,12 +79,20 @@ namespace BoatAttack.Fishing
         private void ValidateCase()
         {
             var c = Controller;
+            if(CurrentCase>=FishingAcceptanceCase.WindSanctuary && CurrentCase<=FishingAcceptanceCase.StarSanctuary
+                && (!c.Realms.Inside || c.Realms.Island!=(int)CurrentCase-(int)FishingAcceptanceCase.WindSanctuary))throw new InvalidOperationException("V19 sanctuary capture state failed");
+            if(CurrentCase==FishingAcceptanceCase.ResidentDialogue && (!c.DialogueOpen || c.Residents.ActiveId!=0))throw new InvalidOperationException("V19 dialogue capture state failed");
+            if(CurrentCase==FishingAcceptanceCase.SwimmingView && !c.Shore.Swimming)throw new InvalidOperationException("V19 swimming capture state failed");
+            if(CurrentCase==FishingAcceptanceCase.ClimbingView && !c.Shore.Climbing)throw new InvalidOperationException("V19 climbing capture state failed");
+            if(CurrentCase==FishingAcceptanceCase.LoreJournal && (!c.JournalOpen || c.GetComponent<FishingHUD>().JournalPage!=6))throw new InvalidOperationException("V19 lore journal failed");
             string expected = Options.ProfilePath(Application.temporaryCachePath, CurrentCase != FishingAcceptanceCase.FreePlay);
             if (!c.HasIsolatedProfile || c.SavePath != expected || !File.Exists(expected) || c.GetComponent<FishingAutoplay>() != null)
                 throw new InvalidOperationException("Acceptance profile/driver isolation failed.");
             if (CurrentCase == FishingAcceptanceCase.Bite && c.Session.Phase != CatchPhase.Bite) throw new InvalidOperationException("Bite fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.Fighting && (c.Session.Phase != CatchPhase.Fighting || c.Session.Tension < .78f)) throw new InvalidOperationException("Fight fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.Landing && (!c.Session.CanLand || !c.NetDeployed)) throw new InvalidOperationException("Landing/net fixture failed.");
+            if(CurrentCase==FishingAcceptanceCase.NightBoat && (!c.Career.Calendar.Night || c.FirstPerson || c.Weather.DeckLight==null || !c.Weather.DeckLight.enabled))
+                throw new InvalidOperationException("Night boat fixture did not enable local deck illumination.");
             if (CurrentCase == FishingAcceptanceCase.Catch && (c.Session.Phase != CatchPhase.Caught || c.LastCatch.Fish == null || c.Career.Count != 1)) throw new InvalidOperationException("Catch/store fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.LegendLeap && (c.Session.Kind != FishKind.Sailfish || c.Session.Beat != FishBeat.Leap)) throw new InvalidOperationException("Legend fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.FullHold && (c.Career.Count != c.Career.Capacity || c.Cast())) throw new InvalidOperationException("Full-hold cast guard failed.");
@@ -92,7 +101,10 @@ namespace BoatAttack.Fishing
                 throw new InvalidOperationException("Harbor fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.MaxUpgrades && (c.Career.LineLevel != 2 || c.Career.ReelLevel != 2 || c.Career.HoldLevel != 2)) throw new InvalidOperationException("Upgrade fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.Details && (!c.ShowDetails || c.HarborDeskOpen)) throw new InvalidOperationException("Details fixture failed.");
-            if (CurrentCase == FishingAcceptanceCase.Journal && (!c.JournalOpen || !c.Paused)) throw new InvalidOperationException("Journal fixture failed.");
+            if ((CurrentCase == FishingAcceptanceCase.Journal || CurrentCase==FishingAcceptanceCase.HunyuanCatalog || CurrentCase==FishingAcceptanceCase.HunyuanNightCatalog)
+                && (!c.JournalOpen || !c.Paused)) throw new InvalidOperationException("Journal fixture failed.");
+            if(CurrentCase==FishingAcceptanceCase.CastFlight && (!c.CastMotion.Casting || c.CastMotion.FlightProgress<=0 || c.CastMotion.FlightProgress>=1))
+                throw new InvalidOperationException("Cast flight fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.Settings && (c.JournalOpen || !c.Paused)) throw new InvalidOperationException("Settings fixture failed.");
             if(FishingAcceptanceCases.IsShoreCase(CurrentCase) && !FishingAcceptanceCases.IsShopCase(CurrentCase))
             {
@@ -110,6 +122,11 @@ namespace BoatAttack.Fishing
             }
             if(CurrentCase==FishingAcceptanceCase.ShopCounter && (!c.Ashore || !c.ShopOpen || !c.TackleShop.NearCounter))
                 throw new InvalidOperationException("Real shop counter capture fixture failed.");
+            if(CurrentCase==FishingAcceptanceCase.ShopSupplies && (!c.Ashore || !c.ShopOpen || c.GetComponent<FishingHUD>().ShopCategory!=2))throw new InvalidOperationException("Supply fixture failed.");
+            if(CurrentCase==FishingAcceptanceCase.ShopRations && (!c.Ashore || !c.ShopOpen || c.GetComponent<FishingHUD>().ShopCategory!=4))throw new InvalidOperationException("V19 ration shop fixture failed.");
+            if(CurrentCase==FishingAcceptanceCase.LuxuryBoat && (c.Career.CabinLevel!=2 || c.FirstPerson || c.Player.engine.horsePower!=FishingFleet.Power(2)))throw new InvalidOperationException("Fleet fixture failed.");
+            if(CurrentCase==FishingAcceptanceCase.IslandLanding && (!c.Ashore || c.Shore.LocationName!=FishingAdventure.Name(0)))throw new InvalidOperationException("Island fixture failed.");
+            if(CurrentCase==FishingAcceptanceCase.IslandJournal && (!c.JournalOpen || c.GetComponent<FishingHUD>().JournalPage!=5))throw new InvalidOperationException("Island journal fixture failed.");
             if(CurrentCase==FishingAcceptanceCase.ShopAttendant)
             {
                 if(!c.Ashore || c.ShopOpen || c.TackleShop.Cashier==null)throw new InvalidOperationException("店员夹具缺少实际角色，或被商店菜单替代。");

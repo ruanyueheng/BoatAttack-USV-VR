@@ -8,20 +8,24 @@ namespace BoatAttack.Fishing
         HarborOrders, FullHold, MaxUpgrades, Details, Journal, Settings,
         ShoreFirstPerson, ShoreThirdPerson, ShopCounter,
         StonePickaxe, IronPickaxe, BinocularCarry, BinocularObserve,
-        LookDownStanding, LookDownCrouched, ShopAttendant, BinocularThirdPerson
+        LookDownStanding, LookDownCrouched, ShopAttendant, BinocularThirdPerson, Calendar, NightCoast, LanternCoast, HuntingSpear,
+        HunyuanCatalog, HunyuanNightCatalog, CastFlight, NightBoat, LuxuryBoat, IslandLanding, ShopSupplies, IslandJournal,
+        ResidentDialogue, WindSanctuary, ForestSanctuary, WreckSanctuary, StarSanctuary, LoreJournal, ShopRations, RegionArrival, SwimmingView, ClimbingView
     }
 
     /// <summary>Deterministic fixtures built through the production rules, not unchecked save JSON.</summary>
     public static class FishingAcceptanceCases
     {
-        public const int Count = 23;
+        public const int Count = 45;
         private static readonly string[] Titles =
         {
             "自由实玩 / 继续验收进度", "咬钩提示", "高张力收线", "抄网时机", "捕获与后续反馈", "传说跃水",
             "三行委托与交易", "鱼箱已满", "三路线满级", "委托与传说详情", "图鉴日志", "暂停设置",
             "岸上第一人称同源手臂", "岸上第三人称人物", "实体钓具店柜台",
             "石镐实际握持", "铁镐实际握持", "望远镜双手携带", "望远镜光学观察",
-            "站立低头视野", "蹲下低头视野", "成年女性店员", "第三人称举镜"
+            "站立低头视野", "蹲下低头视野", "成年女性店员", "第三人称举镜", "季节日历与天气预报", "海岸夜景", "夜间提灯照明", "猎矛握持",
+            "混元鱼种图鉴", "夜鱼与礁区图鉴", "甩竿与浮标飞行", "船上夜灯与厚壁船壳", "豪华钓艇与动力升级", "风铃岛实际登陆", "探索用品商店", "自由探索群岛航记",
+            "居民剧情对话", "风之回廊", "森光庭院", "沉潮机库", "星轨圣所", "世界与秘境航记", "远航口粮与物资", "地区名称渐显", "海岸游泳与体力", "绳梯攀登与瞭望台"
         };
 
         public static string Title(FishingAcceptanceCase value)
@@ -36,11 +40,13 @@ namespace BoatAttack.Fishing
             return (FishingAcceptanceCase)(((int)value + direction % Count + Count) % Count);
         }
 
-        public static bool IsShoreCase(FishingAcceptanceCase value)=>value>=FishingAcceptanceCase.ShoreFirstPerson && (int)value<Count;
-        public static bool IsShopCase(FishingAcceptanceCase value)=>value==FishingAcceptanceCase.ShopCounter || value==FishingAcceptanceCase.ShopAttendant;
+        public static bool IsShoreCase(FishingAcceptanceCase value)=>value>=FishingAcceptanceCase.ShoreFirstPerson && value<=FishingAcceptanceCase.HuntingSpear && value!=FishingAcceptanceCase.Calendar;
+        public static bool IsShopCase(FishingAcceptanceCase value)=>value==FishingAcceptanceCase.ShopCounter || value==FishingAcceptanceCase.ShopAttendant || value==FishingAcceptanceCase.ShopSupplies || value==FishingAcceptanceCase.ShopRations;
         public static FieldItem ViewItem(FishingAcceptanceCase value)
         {
             if(value==FishingAcceptanceCase.StonePickaxe || value==FishingAcceptanceCase.LookDownStanding || value==FishingAcceptanceCase.LookDownCrouched)return FieldItem.StonePickaxe;
+            if(value==FishingAcceptanceCase.NightCoast || value==FishingAcceptanceCase.LanternCoast)return FieldItem.Lantern;
+            if(value==FishingAcceptanceCase.HuntingSpear)return FieldItem.HuntingSpear;
             if(value==FishingAcceptanceCase.IronPickaxe)return FieldItem.IronPickaxe;
             if(value==FishingAcceptanceCase.BinocularCarry || value==FishingAcceptanceCase.BinocularObserve || value==FishingAcceptanceCase.BinocularThirdPerson)return FieldItem.Binoculars;
             return FieldItem.FieldGuide;
@@ -54,9 +60,11 @@ namespace BoatAttack.Fishing
             if (value == FishingAcceptanceCase.FreePlay)
                 throw new ArgumentException("Free play must load its own saved progress, never a fixture.");
             bool max = value == FishingAcceptanceCase.MaxUpgrades || value == FishingAcceptanceCase.LegendLeap;
-            var data = new FishingSaveData { backpack = new FishingBackpack().Snapshot(),  coins = 200, ordersCompleted = 2, rodLevel = max ? 2 : 1,
+            var data = new FishingSaveData { calendar=new CalendarData{day=value==FishingAcceptanceCase.Calendar?34:0,minute=value==FishingAcceptanceCase.NightCoast || value==FishingAcceptanceCase.LanternCoast || value==FishingAcceptanceCase.NightBoat?1380:480}, backpack = new FishingBackpack().Snapshot(),  coins = 200, ordersCompleted = 2, rodLevel = max ? 2 : 1,
                 reelLevel = max ? 2 : 1, holdLevel = value == FishingAcceptanceCase.MaxUpgrades ? 2 : 0 };
             if (!FishingCareer.TryRestore(data, out var career)) throw new InvalidOperationException("Invalid acceptance seed.");
+            if(value==FishingAcceptanceCase.LuxuryBoat){data.engineLevel=data.rudderLevel=data.cabinLevel=2;if(!FishingCareer.TryRestore(data,out career))throw new InvalidOperationException("Invalid fleet fixture.");}
+            if(value==FishingAcceptanceCase.IslandJournal)career.DiscoverIsland(0);
             int cargo = value == FishingAcceptanceCase.FullHold ? career.Capacity : IsCatchCase(value) ? 0 : 3;
             for (int i = 0; i < cargo; i++)
             {

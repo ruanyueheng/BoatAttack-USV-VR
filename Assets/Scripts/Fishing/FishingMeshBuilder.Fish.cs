@@ -7,7 +7,7 @@ namespace BoatAttack.Fishing
     /// <summary>Single-mesh, vertex-coloured fish and navigation buoys: one renderer each, no primitives.</summary>
     public sealed partial class FishingMeshBuilder
     {
-        public const string FishMeshPrefix = "Fishing v0.4 fish ";
+        public const string FishMeshPrefix = "Fishing v0.14 fish ";
         private static readonly Color EyeWhite = new Color(.95f, .93f, .86f);
         private static readonly Color Pupil = new Color(.03f, .05f, .07f);
         private static readonly Color Pearl = new Color(1f, .88f, .62f);
@@ -47,11 +47,16 @@ namespace BoatAttack.Fishing
                 case FishKind.Dart: b.Dart(); break;
                 case FishKind.Puffer: b.Puffer(); break;
                 case FishKind.Sailfish: b.Sailfish(); break;
-                default: b.Coral(); break;
+                case FishKind.Coral: b.Coral(); break;
+                default: b.CoastalSpecies(kind); break;
             }
             // Pearl variants keep their pattern but shift towards a nacreous gold; dark eyes stay dark.
             if (rare) b.Tint(Pearl, .45f, .12f);
-            return b.Finish(FishMeshName(kind, rare));
+            var mesh = b.Finish(FishMeshName(kind, rare));
+            var bounds = mesh.bounds; var vertices = mesh.vertices;
+            float scale = FishingSpecies.LengthMeters(kind) / bounds.size.z;
+            for (int i = 0; i < vertices.Length; i++) vertices[i] = (vertices[i] - bounds.center) * scale;
+            mesh.vertices = vertices; mesh.RecalculateBounds(); return mesh;
         }
 
         public static Mesh Buoy()

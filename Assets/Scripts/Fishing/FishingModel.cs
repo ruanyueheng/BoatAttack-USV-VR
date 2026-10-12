@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace BoatAttack.Fishing
 {
     public enum CatchPhase { Idle, Waiting, Bite, Fighting, Landing, Caught, Escaped }
-    public enum FishKind { Coral, Dart, Puffer, Sailfish }
+    public enum FishKind { Coral, Dart, Puffer, Sailfish, Mackerel, SeaBream, Sardine, Grouper, Butterfly, Tuna, Lanternfish, Lionfish }
 
     [Serializable]
     public sealed class CatchRecord
@@ -160,8 +160,13 @@ namespace BoatAttack.Fishing
     [Serializable]
     public sealed class FishingSaveData
     {
-        public List<HuntedAnimalData> huntedAnimals = new List<HuntedAnimalData>();
-        public int version = 8;
+        public List<HuntedAnimalData> huntedAnimals=new List<HuntedAnimalData>();
+        public int version = 11;
+        public LoreData lore = new LoreData();
+        public int engineLevel, rudderLevel, cabinLevel;
+        public AdventureData adventure = new AdventureData();
+        public CalendarData calendar = new CalendarData();
+        public HuntingData hunting = new HuntingData();
         public WorkshopData workshop = new FishingWorkshop().Snapshot();
         public PendingCatchData pendingCatch;
         public bool hasPendingCatch;
@@ -187,58 +192,17 @@ namespace BoatAttack.Fishing
         public List<string> recordedIds = new List<string>();
     }
 
-    [Serializable]
-    public sealed class HuntedAnimalData
-    {
-        public int id;
-        public LandAnimalKind kind;
-        public float x,y,z,yaw;
-        public bool collected;
-        public HuntedAnimalData Copy() => (HuntedAnimalData)MemberwiseClone();
-    }
-
     public sealed partial class FishingCareer
     {
-        private readonly List<HuntedAnimalData> _huntedAnimals = new List<HuntedAnimalData>();
-        public static int HuntingRiflePrice => 3 * UpgradeCost(UpgradeTrack.Line, 0);
-        public bool BuyHuntingRifle()
-        {
-            if(Coins<HuntingRiflePrice || Backpack.Count(FieldItem.HuntingRifle)>0 || !Backpack.TryAdd(FieldItem.HuntingRifle,1))return false;
-            Coins-=HuntingRiflePrice;return true;
-        }
-        public HuntedAnimalData HuntedAnimal(int id)
-        {
-            foreach(var entry in _huntedAnimals)if(entry.id==id)return entry.Copy();
-            return null;
-        }
-        public bool KillLandAnimal(int id,LandAnimalKind kind,float x,float y,float z,float yaw)
-        {
-            var entry=new HuntedAnimalData{id=id,kind=kind,x=x,y=y,z=z,yaw=yaw};
-            if(Backpack.Equipped!=FieldItem.HuntingRifle || !ValidHuntedAnimal(entry) || HuntedAnimal(id)!=null)return false;
-            _huntedAnimals.Add(entry);return true;
-        }
-        public bool CollectHuntedAnimal(int id)
-        {
-            var entry=_huntedAnimals.Find(a=>a.id==id);
-            if(entry==null || entry.collected)return false;
-            var meat=new FieldStack{item=FieldItem.Meat,count=entry.kind==LandAnimalKind.Rabbit?1:2};
-            bool ok=entry.kind==LandAnimalKind.Tortoise?Backpack.TryAddBundle(meat):Backpack.TryAddBundle(meat,new FieldStack{item=FieldItem.Fur,count=1});
-            if(!ok)return false;
-            entry.collected=true;return true;
-        }
-        private static bool ValidHuntedAnimal(HuntedAnimalData a)
-        {
-            return a!=null && a.id>=0 && a.id<FishingBackpack.PickupCount && (int)a.kind==a.id%3
-                && FiniteHunt(a.x) && FiniteHunt(a.y) && FiniteHunt(a.z) && FiniteHunt(a.yaw);
-        }
-        private static bool FiniteHunt(float value)=>!float.IsNaN(value) && !float.IsInfinity(value) && Math.Abs(value)<=10000;
+        public FishingCalendar Calendar { get; private set; } = new FishingCalendar();
+        public FishingHunting Hunting { get; private set; } = new FishingHunting();
         public FishingWorkshop Workshop { get; private set; } = new FishingWorkshop();
         public FishingBackpack Backpack { get; private set; } = new FishingBackpack();
         public const int BaseCapacity = 6;
         public const int MaxLevel = 2;
         // Enough history to reject any replayed catch while keeping the save file bounded.
         public const int RecentIdLimit = 256;
-        private static readonly int[,] UpgradeCosts = { { 30, 90 }, { 40, 100 }, { 50, 120 } };
+        private static readonly int[,] UpgradeCosts = { { 30, 90 }, { 40, 100 }, { 50, 120 }, { 80, 180 }, { 65, 150 }, { 90, 220 } };
 
         public int Coins { get; private set; }
         public FishingExpedition Expedition { get; private set; } = new FishingExpedition();
@@ -327,7 +291,12 @@ namespace BoatAttack.Fishing
             return count;
         }
 
-        public int Level(UpgradeTrack track) => track == UpgradeTrack.Line ? LineLevel : track == UpgradeTrack.Reel ? ReelLevel : HoldLevel;
+        public int Level(UpgradeTrack track)
+        {
+            switch (track) { case UpgradeTrack.Line: return LineLevel; case UpgradeTrack.Reel: return ReelLevel;
+                case UpgradeTrack.Hold: return HoldLevel; case UpgradeTrack.Engine: return EngineLevel;
+                case UpgradeTrack.Rudder: return RudderLevel; case UpgradeTrack.Cabin: return CabinLevel; default: return -1; }
+        }
 
         /// <summary>Price of the next level, or 0 when the track is complete.</summary>
         public static int UpgradeCost(UpgradeTrack track, int level)
@@ -342,7 +311,10 @@ namespace BoatAttack.Fishing
             Coins -= cost;
             if (track == UpgradeTrack.Line) LineLevel++;
             else if (track == UpgradeTrack.Reel) ReelLevel++;
-            else HoldLevel++;
+            else if (track == UpgradeTrack.Hold) HoldLevel++;
+            else if (track == UpgradeTrack.Engine) EngineLevel++;
+            else if (track == UpgradeTrack.Rudder) RudderLevel++;
+            else CabinLevel++;
             return true;
         }
 
@@ -428,6 +400,8 @@ namespace BoatAttack.Fishing
         {
             var result = new FishingSaveData
             {
+                calendar = Calendar.Snapshot(), hunting = Hunting.Snapshot(), lore = Lore.Snapshot(),
+                engineLevel = EngineLevel, rudderLevel = RudderLevel, cabinLevel = CabinLevel, adventure = Adventure.Snapshot(),
                 hasPendingCatch = HasPendingCatch, pendingCatch = _pending?.Copy(), releasedCatches = ReleasedCatches, orderMarked = OrderMarked,
                 workshop = Workshop.Snapshot(), backpack = Backpack.Snapshot(), selectedSlot = Backpack.Selected, collectedPickupMask = Backpack.CollectedMask, landAnimalMask = Backpack.AnimalMask,
                 expeditionFacts = Expedition.Facts,
@@ -438,14 +412,19 @@ namespace BoatAttack.Fishing
                 bestGrams = new List<int>(_bestGrams), recordedIds = new List<string>(_recentIds)
             };
             foreach (var item in _inventory) result.inventory.Add(item.Copy());
-            foreach (var animal in _huntedAnimals) result.huntedAnimals.Add(animal.Copy());
+            foreach(var animal in _huntedAnimals)result.huntedAnimals.Add(animal.Copy());
             return result;
         }
 
         public static bool TryRestore(FishingSaveData data, out FishingCareer career)
         {
             career = null;
-            if (data == null || data.version < 1 || data.version > 8) return false;
+            if (data == null || data.version < 1 || data.version > 11) return false;
+            if (data.version < 11 && data.lore != null && (data.lore.residents != 0 || data.lore.shrines != 0 || data.lore.finale)) return false;
+            if (data.engineLevel < 0 || data.engineLevel > MaxLevel || data.rudderLevel < 0 || data.rudderLevel > MaxLevel
+                || data.cabinLevel < 0 || data.cabinLevel > MaxLevel
+                || (data.version < 10 && (data.engineLevel != 0 || data.rudderLevel != 0 || data.cabinLevel != 0))) return false;
+            if(data.version<10 && data.adventure!=null && (data.adventure.visited!=0 || data.adventure.treasures!=0 || data.adventure.beacons!=0 || data.adventure.finale))return false;
             if (!FishingExpedition.TryRestore(data.expeditionFacts, out var expedition)
                 || (data.version < 5 && data.expeditionFacts != 0)) return false;
             bool v3 = data.version >= 3;
@@ -488,7 +467,7 @@ namespace BoatAttack.Fishing
             }
             if(data.version>=6)
             {
-                if(!FishingBackpack.TryRestore(data.backpack,data.selectedSlot,data.collectedPickupMask,data.landAnimalMask,out var bag))return false;
+                if(!FishingBackpack.TryRestore(FishingBackpack.MigrateLocalV8(data.backpack,data.version),data.selectedSlot,data.collectedPickupMask,data.landAnimalMask,out var bag))return false;
                 result.Backpack=bag;
             }
             else if((data.backpack!=null && data.backpack.Count!=0) || data.selectedSlot!=0 || data.collectedPickupMask!=0 || data.landAnimalMask!=0)return false;
@@ -515,14 +494,29 @@ namespace BoatAttack.Fishing
                 if(!FishingWorkshop.TryRestore(data.workshop,out var workshop))return false;
                 result.Workshop=workshop;
             }
+            if (data.version >= 9)
+            {
+                if (!FishingCalendar.TryRestore(data.calendar, out var calendar) || !FishingHunting.TryRestore(data.hunting, out var hunting, calendar.TotalMinutes)) return false;
+                foreach (int day in data.hunting.availableDays) if (day > calendar.Day + 1) return false;
+                result.Calendar = calendar; result.Hunting = hunting;
+            }
+            if (data.version >= 10)
+            {
+                if (!FishingAdventure.TryRestore(data.adventure, out var adventure)) return false;
+                result.Adventure = adventure; result.EngineLevel = data.engineLevel;
+                result.RudderLevel = data.rudderLevel; result.CabinLevel = data.cabinLevel;
+            }
+            if (data.version >= 11)
+            {
+                if (!FishingLore.TryRestore(data.lore, out var lore)) return false;
+                result.Lore = lore;
+            }
             if(data.huntedAnimals!=null)
             {
-                if(data.huntedAnimals.Count>FishingBackpack.PickupCount || (data.version<8 && data.huntedAnimals.Count>0))return false;
+                if(data.huntedAnimals.Count>FishingAnimalLoot.TargetCount || (data.version<8 && data.huntedAnimals.Count>0))return false;
+                var ids=new HashSet<int>();
                 foreach(var animal in data.huntedAnimals)
-                {
-                    if(!ValidHuntedAnimal(animal) || result.HuntedAnimal(animal.id)!=null)return false;
-                    result._huntedAnimals.Add(animal.Copy());
-                }
+                {if(!ValidHuntedAnimal(animal) || !ids.Add(animal.id))return false;result._huntedAnimals.Add(animal.Copy());}
             }
             career = result;
             return true;

@@ -1,6 +1,6 @@
-﻿param(
+param(
     [string]$EditorRoot,
-    [ValidateSet("Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild", "FishingWorkshop", "FishingTerrain", "FishingShopInstall", "FishingShop", "FishingMap", "FishingCharacter", "FishingInteraction", "FishingPlayer", "FishingPlayerBoundary", "FishingFirstPerson", "FishingCashierBuild", "FishingCashier", "FishingHunting")]
+    [ValidateSet("FishingV019Install", "FishingV019", "FishingV018Install", "FishingV018", "FishingSkiffBuild", "FishingV017", "FishingV016", "FishingLivingCoast", "Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild", "FishingWorkshop", "FishingTerrain", "FishingShopInstall", "FishingShop", "FishingMap", "FishingCharacter", "FishingInteraction", "FishingPlayer", "FishingPlayerBoundary", "FishingFirstPerson", "FishingCashierBuild", "FishingCashier", "FishingHunting")]
     [string]$Suite = "Structure",
     [ValidateRange(60, 7200)]
     [int]$TimeoutSeconds = 1200,
@@ -34,6 +34,14 @@ $logDirectory = Join-Path $repo 'Logs'
 $log = Join-Path $logDirectory ("usv-validation-" + [Guid]::NewGuid().ToString('N') + '.log')
 $method = switch ($Suite) {
     'FishingHunting' { 'BoatAttack.EditorTools.FishingHuntingValidation.Run' }
+    'FishingV019Install' { 'BoatAttack.EditorTools.FishingV019WorldBuilder.Install' }
+    'FishingV019' { 'BoatAttack.EditorTools.FishingV019Validation.Run' }
+    'FishingV018Install' { 'BoatAttack.EditorTools.FishingV018WorldBuilder.Install' }
+    'FishingV018' { 'BoatAttack.EditorTools.FishingV018Validation.Run' }
+    'FishingSkiffBuild' { 'BoatAttack.EditorTools.FishingSkiffBuilder.Build' }
+    'FishingV017' { 'BoatAttack.EditorTools.FishingV017Validation.Run' }
+    'FishingV016' { 'BoatAttack.EditorTools.FishingV016Validation.Run' }
+    'FishingLivingCoast' { 'BoatAttack.EditorTools.FishingLivingCoastValidation.Run' }
     'FishingCashierBuild' { 'BoatAttack.EditorTools.FishingCashierValidation.BuildAndValidate' }
     'FishingCashier' { 'BoatAttack.EditorTools.FishingCashierValidation.Run' }
     'FishingFirstPerson' { 'BoatAttack.EditorTools.FishingFirstPersonValidation.Run' }
@@ -64,6 +72,14 @@ $method = switch ($Suite) {
 }
 $marker = switch ($Suite) {
     'FishingHunting' { '[HUNTING]' }
+    'FishingV019Install' { '[V019-WORLD]' }
+    'FishingV019' { '[V019]' }
+    'FishingV018Install' { '[V018-WORLD]' }
+    'FishingV018' { '[V018]' }
+    'FishingSkiffBuild' { '[SKIFF]' }
+    'FishingV017' { '[V017]' }
+    'FishingV016' { '[V016]' }
+    'FishingLivingCoast' { '[LIVING-COAST]' }
     'FishingCashierBuild' { '[CASHIER]' }
     'FishingCashier' { '[CASHIER]' }
     'FishingFirstPerson' { '[FIRST-PERSON]' }
@@ -93,7 +109,7 @@ $marker = switch ($Suite) {
     'FishingExpeditionCapture' { '[EXPEDITION]' }
 }
 $arguments = '-batchmode -nographics -buildTarget StandaloneWindows64 -projectPath "' + $repo.Replace('\', '/') + '" -executeMethod ' + $method + ' -logFile "' + $log + '"'
-if ($Suite -in @('FishingHunting', 'FishingFirstPerson', 'FishingPlayerBoundary', 'FishingPlayer', 'FishingMap', 'FishingCharacter', 'FishingInteraction', 'FishingShop', 'FishingShore', 'FishingField', 'FishingExpedition', 'FishingSmoke', 'FishingWorkshop', 'FishingExpeditionCapture', 'FishingFieldCapture', 'FishingCatchCapture')) { $arguments = $arguments.Replace(' -nographics', '') }
+if ($Suite -in @('FishingHunting', 'FishingV019Install', 'FishingV019', 'FishingV018', 'FishingV017', 'FishingV016', 'FishingCatch', 'FishingLivingCoast', 'FishingFirstPerson', 'FishingPlayerBoundary', 'FishingPlayer', 'FishingMap', 'FishingCharacter', 'FishingInteraction', 'FishingShop', 'FishingShore', 'FishingField', 'FishingExpedition', 'FishingSmoke', 'FishingWorkshop', 'FishingExpeditionCapture', 'FishingFieldCapture', 'FishingCatchCapture')) { $arguments = $arguments.Replace(' -nographics', '') }
 if ($DisableBurst) { $arguments += ' --burst-disable-compilation' }
 if ($Suite -eq 'FishingAndroidBuild') { $arguments = $arguments.Replace('StandaloneWindows64', 'Android') }
 if ($Suite -eq 'FishingSmoke') { $arguments += ' -fishing-autoplay' }

@@ -19,7 +19,7 @@ namespace BoatAttack.Fishing
             _controller = c;
             Material stone = new Material(c.PaletteShader) { name="Stratified reef palette", enableInstancing=true }; owned.Add(stone);
             Material coral = Palette("Terracotta coral", new Color(0.83f, 0.31f, 0.22f), owned);
-            Material blue = Palette("Deep sea enamel", new Color(0.10f, 0.32f, 0.45f), owned);
+            Material kelp = Palette("Shallow eelgrass", new Color(.19f,.38f,.27f), owned);
             Mesh rock = RockMesh(); owned.Add(rock);
             Transform port = Root("V03 harbor lighthouse", c.harbor + new Vector3(5.4f, 0, 2.5f));
             Rock(port, rock, stone, Vector3.zero, new Vector3(2.6f, 1.1f, 2.4f));
@@ -57,27 +57,20 @@ namespace BoatAttack.Fishing
             }
             for (int zone = 0; zone < 3; zone++)
             {
-                // Small ornaments stay outside the 9 m station ring and have no boat colliders.
+                // Emergent reefs are physical hazards; the station's 9 m approach remains clear.
                 Transform root = Root("V03 habitat " + zone, c.fishingSpots[zone]); _zones.Add(root);
-                Material color = zone == 0 ? coral : zone == 1 ? blue : c.orange;
                 for (int i = 0; i < 3; i++)
                 {
                     Vector3 p = Quaternion.Euler(0, 35 + i * 120, 0) * new Vector3(13.5f, 0, 0);
-                    Rock(root, rock, stone, p + Vector3.down * 0.4f, new Vector3(2.7f, 1.2f + i * 0.12f, 2));
+                    Rock(root, rock, stone, p + Vector3.down * .75f, new Vector3(2.7f, 1.2f + i * .12f, 2),true);
                     for (int j = 0; j < 4; j++)
                     {
-                        Vector3 stem = p + new Vector3((j - 1.5f) * 0.3f, 0.18f, 0);
-                        Vector3 tip = stem + new Vector3(0.12f * (j % 2 == 0 ? 1 : -1), 0.5f + j * 0.13f, 0.14f);
-                        FishingArt.Pole(zone == 0 ? "Branching coral" : "Sea-worn marker", root, stem, tip, 0.055f, color);
-                        if (zone == 0) FishingArt.Pole("Coral branch", root, Vector3.Lerp(stem, tip, 0.6f), tip + new Vector3(0.18f, -0.14f, 0), 0.035f, coral);
+                        Vector3 stem = p + new Vector3((j - 1.5f) * .35f,-.9f,.8f);
+                        Vector3 tip = stem + new Vector3(.18f * (j % 2 == 0 ? 1 : -1), .4f + j * .1f, .14f);
+                        FishingArt.Pole(zone == 0 ? "Submerged coral" : "Eelgrass blade", root, stem, tip,zone==0?.025f:.014f,zone==0?coral:kelp);
+                        if (zone == 0) FishingArt.Pole("Coral branch", root, Vector3.Lerp(stem, tip, .6f), tip + new Vector3(.18f,-.14f,0),.018f,coral);
                     }
                 }
-                Vector3 sign = new Vector3(0, 0, 11.4f);
-                Cylinder(root, "Enamel navigation buoy", sign + Vector3.up * 0.35f, new Vector3(1.0f, 0.3f, 1.0f), color);
-                FishingArt.Pole("Buoy staff", root, sign + Vector3.up * 0.5f, sign + Vector3.up * 3.0f, 0.07f, c.cream);
-                // One / two / three bars also distinguish habitats without relying on color.
-                for (int bar = 0; bar <= zone; bar++)
-                    FishingArt.Shape("Habitat tally", PrimitiveType.Cube, root, sign + new Vector3(0, 2.7f - bar * 0.28f, 0), new Vector3(1.5f, 0.16f, 0.2f), color);
                 Combine(root, owned);
             }
             Debug.Log("[FISHING] V03 scenery combined: " + CombinedRenderers + " renderers, " + CombinedVertices + " vertices (market included).");
@@ -102,10 +95,11 @@ namespace BoatAttack.Fishing
         }
         private static void Cylinder(Transform root, string name, Vector3 position, Vector3 scale, Material material)
             => FishingArt.Shape(name, PrimitiveType.Cylinder, root, position, scale, material);
-        private static void Rock(Transform root, Mesh mesh, Material material, Vector3 position, Vector3 scale)
+        private static void Rock(Transform root, Mesh mesh, Material material, Vector3 position, Vector3 scale,bool solid=false)
         {
             var go = new GameObject("Faceted limestone", typeof(MeshFilter), typeof(MeshRenderer)); go.transform.SetParent(root, false); go.transform.localPosition = position; go.transform.localScale = scale;
             go.GetComponent<MeshFilter>().sharedMesh = mesh; go.GetComponent<MeshRenderer>().sharedMaterial = material;
+            if(solid){var collider=go.AddComponent<MeshCollider>();collider.sharedMesh=mesh;collider.convex=true;}
         }
         private static Mesh RockMesh() => FishingMeshBuilder.ReefRock();
         private void Combine(Transform root, List<Object> owned)

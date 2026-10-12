@@ -11,7 +11,7 @@ namespace BoatAttack.Fishing
         internal void NotifyWorkshopTransaction(){_workshopReceipt=true;}
         public FishingWorkshopWorld WorkshopWorld { get; private set; }
         public FishingFieldWorld FieldWorld { get; private set; }
-        public FishingHunting Hunting { get; private set; }
+        public FishingRifleHunting RifleHunting { get; private set; }
         public void LowerFieldTools(){BinocularsRaised=false;LanternOn=false;}
         public void ToggleInventory()
         {
@@ -27,6 +27,7 @@ namespace BoatAttack.Fishing
         }
         public void OpenCrafting()
         {
+            if(UnityEngine.XR.XRSettings.isDeviceActive){XRNotebook.Open(2);return;}
             if(!InventoryOpen)ToggleInventory();
             if(InventoryOpen && _hud!=null)_hud.OpenCraftingPage();
         }
@@ -51,15 +52,18 @@ namespace BoatAttack.Fishing
         }
         public void UseFieldItem()
         {
-            if(Paused || ShopBlocksGameplay || WorldActionBlocksGameplay || !Ashore || Expedition.Aligning)return;
+            if(Paused || ShopBlocksGameplay || StoryBlocksGameplay || WorldActionBlocksGameplay || !Ashore || Expedition.Aligning)return;
+            if((Shore.Swimming || Shore.Climbing) && Career.Backpack.Equipped!=FieldItem.CookedMeat){Notice("游泳或攀登时先收起工具；可选择口粮恢复体力。",3);return;}
             switch(Career.Backpack.Equipped)
             {
-                case FieldItem.HuntingRifle:Hunting.TryFire();break;
+                case FieldItem.HuntingRifle:RifleHunting.TryFire();break;
+                case FieldItem.CookedMeat:if(!Shore.EatRation())Notice("体力充足时不消耗口粮；快跑、游泳或攀登后可食用。",3);break;
+                case FieldItem.HuntingSpear:FieldWorld.BeginHunt();break;
                 case FieldItem.Workbench:case FieldItem.Furnace:RequestPlaceEquipped();break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:RequestHarvest();break;
                 case FieldItem.FieldGuide: FieldWorld.Observe();break;
                 case FieldItem.Binoculars:
-                    BinocularsRaised=!BinocularsRaised;Notice(BinocularsRaised?"望远镜 · T 记录动物 / F 放下":"已放下望远镜",3);break;
+                    BinocularsRaised=!BinocularsRaised;Notice(BinocularsRaised?(_xrActive?"望远镜 · A 记录动物 / 扳机放下":"望远镜 · T 记录动物 / F 放下"):"已放下望远镜",3);break;
                 case FieldItem.Lantern:LanternOn=!LanternOn;Notice(LanternOn?"提灯已点亮":"提灯已熄灭",3);break;
                 default:Notice("1–9 选择自然手册、望远镜或提灯，再按 F 使用。I → 制作查看配方；工作台 / 熔炉放入快捷栏后 F 放置。",4);break;
             }

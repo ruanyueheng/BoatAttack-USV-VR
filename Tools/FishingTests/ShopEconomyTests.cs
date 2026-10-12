@@ -8,7 +8,7 @@ internal static class ShopEconomyTests
         var career = new FishingCareer();
         check(!career.Upgrade(UpgradeTrack.Line) && career.Coins == 0, "Shop: empty wallet cannot buy equipment");
         int earned = 0;
-        for (int i = 0; i < 30; i++)
+        for (int i = 0; i < 80; i++)
         {
             var fish = new CatchRecord { id = "shop-sale-" + i, kind = FishKind.Puffer, grams = 2000,
                 value = FishingSpecies.Value(FishKind.Puffer, false, 2000) };

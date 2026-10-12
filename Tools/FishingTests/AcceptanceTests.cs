@@ -29,8 +29,9 @@ internal static class AcceptanceTests
         check(Rejects(() => FishingAcceptanceOptions.Parse(new[] { "-fishing-acceptance", "-fishing-acceptance-output", "relative" })), "Acceptance output must be explicit and rooted");
         check(Rejects(() => FishingAcceptanceOptions.Parse(new[] { "-fishing-acceptance", "-fishing-acceptance-smoke", "-fishing-acceptance-capture" })), "Acceptance smoke and screenshot runs are mutually exclusive");
         check(FishingAcceptanceCases.Count == Enum.GetValues(typeof(FishingAcceptanceCase)).Length, "Acceptance catalog covers every case");
-        check(FishingAcceptanceCases.Cycle(FishingAcceptanceCase.FreePlay, -1) == FishingAcceptanceCase.BinocularThirdPerson
-            && FishingAcceptanceCases.Cycle(FishingAcceptanceCase.BinocularThirdPerson, 1) == FishingAcceptanceCase.FreePlay, "Acceptance case cycling wraps safely");
+        var last=(FishingAcceptanceCase)(FishingAcceptanceCases.Count-1);
+        check(FishingAcceptanceCases.Cycle(FishingAcceptanceCase.FreePlay, -1) == last
+            && FishingAcceptanceCases.Cycle(last, 1) == FishingAcceptanceCase.FreePlay, "Acceptance case cycling wraps safely");
         check(FishingAcceptanceCases.Cycle(FishingAcceptanceCase.Settings, 1) == FishingAcceptanceCase.ShoreFirstPerson, "Acceptance includes actual v11 shore and shop views");
         check(Rejects(() => FishingAcceptanceCases.CreateCareer(FishingAcceptanceCase.FreePlay)), "Free play can never be replaced by a synthetic fixture");
         foreach (FishingAcceptanceCase value in Enum.GetValues(typeof(FishingAcceptanceCase)))

@@ -5,21 +5,21 @@ namespace BoatAttack.Fishing
     /// <summary>Drawing primitives for the desktop HUD: one palette, rounded cards and custom buttons.</summary>
     public sealed partial class FishingHUD
     {
-        private static readonly Color Ink = new Color(0.028f, 0.072f, 0.098f, 0.93f);
-        private static readonly Color InkRaised = new Color(0.06f, 0.15f, 0.18f, 0.96f);
-        private static readonly Color Hairline = new Color(1f, 1f, 1f, 0.09f);
-        private static readonly Color CardShadow = new Color(0f, 0f, 0f, 0.32f);
-        private static readonly Color Muted = new Color(0.70f, 0.81f, 0.82f);
-        private static readonly Color Faint = new Color(0.46f, 0.58f, 0.6f);
-        private static readonly Color Mint = new Color(0.37f, 0.93f, 0.77f);
-        private static readonly Color Gold = new Color(1f, 0.76f, 0.42f);
-        private static readonly Color Danger = new Color(1f, 0.46f, 0.35f);
-        private static readonly Color Sky = new Color(0.47f, 0.78f, 1f);
-        private static readonly Color Track = new Color(0.13f, 0.24f, 0.28f);
-        private static readonly Color ButtonFill = new Color(0.075f, 0.23f, 0.28f);
-        private static readonly Color ButtonHover = new Color(0.12f, 0.35f, 0.41f);
-        private static readonly Color ButtonOff = new Color(0.09f, 0.16f, 0.19f, 0.8f);
-        private static readonly Color InkText = new Color(0.06f, 0.09f, 0.11f);
+        private static readonly Color Ink = new Color(.025f, .048f, .082f, .96f);
+        private static readonly Color InkRaised = new Color(.055f, .10f, .15f, .82f);
+        private static readonly Color Hairline = new Color(.64f, .77f, .75f, .16f);
+        private static readonly Color CardShadow = new Color(.08f, .18f, .19f, .16f);
+        private static readonly Color Muted = new Color(.70f, .80f, .79f);
+        private static readonly Color Faint = new Color(.56f, .68f, .68f);
+        private static readonly Color Mint = new Color(.38f, .84f, .71f);
+        private static readonly Color Gold = new Color(.96f, .72f, .35f);
+        private static readonly Color Danger = new Color(1f, .46f, .37f);
+        private static readonly Color Sky = new Color(.47f, .76f, .96f);
+        private static readonly Color Track = new Color(.15f, .24f, .25f);
+        private static readonly Color ButtonFill = new Color(.09f, .17f, .18f, .85f);
+        private static readonly Color ButtonHover = new Color(.13f, .28f, .27f);
+        private static readonly Color ButtonOff = new Color(.09f, .13f, .14f, .8f);
+        private static readonly Color InkText = new Color(.92f, .96f, .93f);
 
         // Opacity multiplier for everything drawn through this kit (used by fading cards).
         private float _fade = 1f;
@@ -48,20 +48,22 @@ namespace BoatAttack.Fishing
             GUIUtility.RotateAroundPivot(degrees, new Vector2(screen.x, screen.y));
         }
 
-        /// <summary>Raised card: soft drop shadow, translucent ink body, hairline edge and an accent tick.</summary>
+        /// <summary>Raised card: soft drop shadow, warm ivory body, hairline edge and an accent tick.</summary>
         private void Card(Rect r, Color accent)
         {
-            Rounded(new Rect(r.x, r.y + 4, r.width, r.height), CardShadow, 14);
-            Rounded(r, Ink, 14);
-            Outline(r, Hairline, 14);
-            Rounded(new Rect(r.x + 18, r.y + 9, 30, 3), accent, 1.5f);
+            Rounded(new Rect(r.x-3, r.y+5, r.width+6, r.height), new Color(0,0,0,.3f), 10);
+            Rounded(r, Ink, 10);
+            Outline(r, accent*new Color(1,1,1,.35f), 10);
+            Fill(r.x+24,r.y,Mathf.Min(84,r.width-48),2,accent);
+            foreach(float x in new[]{r.x+9,r.xMax-9})Disc(new Vector2(x,r.y+9),1.5f,accent*new Color(1,1,1,.5f));
         }
 
         private void Label(Rect r, string text, int size, Color color, bool bold = false, TextAnchor align = TextAnchor.UpperLeft)
         {
             _label.fontSize = size;
-            _label.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
-            _label.normal.textColor = Faded(color);
+            // The bundled face is Medium; synthetic bold distorts small Chinese counters.
+            _label.fontStyle = FontStyle.Normal;
+            _label.normal.textColor = Faded(color == Color.white ? InkText : color);
             _label.alignment = align;
             GUI.Label(r, text, _label);
         }
@@ -76,10 +78,10 @@ namespace BoatAttack.Fishing
         private bool Button(Rect r, string text, bool enabled = true, bool primary = false, int size = 17)
         {
             bool hover = enabled && r.Contains(Event.current.mousePosition);
-            Color fill = !enabled ? ButtonOff : primary ? (hover ? new Color(1f, 0.84f, 0.55f) : Gold) : hover ? ButtonHover : ButtonFill;
-            Rounded(r, fill, 10);
-            if (enabled && !primary) Outline(r, hover ? Mint : new Color(0.37f, 0.93f, 0.77f, 0.3f), 10);
-            Color ink = !enabled ? new Color(1f, 1f, 1f, 0.38f) : primary ? InkText : Color.white;
+            Color fill = !enabled ? ButtonOff : primary ? (hover ? new Color(.20f, .48f, .40f) : new Color(.12f, .34f, .29f)) : hover ? ButtonHover : ButtonFill;
+            Rounded(r, fill, 6);
+            Outline(r,!enabled?Hairline:primary?Mint*new Color(1,1,1,.55f):hover?Gold*new Color(1,1,1,.55f):Hairline,6);
+            Color ink = !enabled ? Faint : primary ? Mint : Color.white;
             Label(r, text, size, ink, true, TextAnchor.MiddleCenter);
             return GUI.Button(r, GUIContent.none, GUIStyle.none) && enabled;
         }
@@ -87,13 +89,12 @@ namespace BoatAttack.Fishing
         private bool Tab(Rect r, string text, bool selected)
         {
             bool hover = r.Contains(Event.current.mousePosition);
-            if (selected) Rounded(r, Mint, 10);
+            if (selected) Fill(r.x+12,r.yMax-3,r.width-24,2,Mint);
             else
             {
-                Rounded(r, hover ? ButtonHover : ButtonFill, 10);
-                Outline(r, new Color(0.37f, 0.93f, 0.77f, 0.3f), 10);
+                if(hover)Rounded(r,ButtonHover,6);
             }
-            Label(r, text, 17, selected ? InkText : Color.white, true, TextAnchor.MiddleCenter);
+            Label(r, text, 17, selected ? Mint : Muted, true, TextAnchor.MiddleCenter);
             return GUI.Button(r, GUIContent.none, GUIStyle.none);
         }
 
@@ -101,7 +102,7 @@ namespace BoatAttack.Fishing
         private float Chip(float x, float y, string text, Color color, bool filled = false, int size = 13)
         {
             _label.fontSize = size;
-            _label.fontStyle = FontStyle.Bold;
+            _label.fontStyle = FontStyle.Normal;
             float width = _label.CalcSize(new GUIContent(text)).x + 18;
             var r = new Rect(x, y, width, size + 11);
             if (filled) Rounded(r, color, r.height * 0.5f);
@@ -110,7 +111,7 @@ namespace BoatAttack.Fishing
                 Rounded(r, color * new Color(1, 1, 1, 0.16f), r.height * 0.5f);
                 Outline(r, color * new Color(1, 1, 1, 0.55f), r.height * 0.5f);
             }
-            Label(r, text, size, filled ? InkText : color, true, TextAnchor.MiddleCenter);
+            Label(r, text, size, filled ? Ink : color, true, TextAnchor.MiddleCenter);
             return width;
         }
 
@@ -175,6 +176,16 @@ namespace BoatAttack.Fishing
         /// <summary>A fish silhouette from rounded shapes, tinted per species, for cards and journal rows.</summary>
         private void FishGlyph(Rect r, FishKind kind, bool rare)
         {
+            if((int)kind>=4)
+            {
+                if(!_fishThumbnails.TryGetValue(kind,out var thumbnail))
+                {_fishThumbnails[kind]=thumbnail=Resources.Load<Texture2D>("FishingFish/"+kind+"Thumbnail");}
+                if(thumbnail!=null)
+                {
+                    var color=GUI.color;GUI.color=Faded(rare?new Color(1,.88f,.65f):Color.white);
+                    GUI.DrawTexture(r,thumbnail,ScaleMode.ScaleToFit,true);GUI.color=color;return;
+                }
+            }
             Color body = SpeciesColor(kind, rare);
             Color fin = new Color(body.r * 0.8f, body.g * 0.8f, body.b * 0.8f, 1f);
             float h = kind == FishKind.Puffer ? r.height * 0.74f : kind == FishKind.Sailfish ? r.height * 0.34f : r.height * 0.5f;
@@ -203,5 +214,6 @@ namespace BoatAttack.Fishing
                 for (int i = 0; i < 4; i++) Disc(new Vector2(bodyRect.x + bodyRect.width * (0.28f + i * 0.14f), r.center.y + (i % 2 == 0 ? -h * 0.18f : h * 0.14f)), Mathf.Max(1.5f, h * 0.06f), new Color(0.35f, 0.24f, 0.08f));
             Disc(new Vector2(bodyRect.xMax - h * 0.3f, r.center.y - h * 0.12f), Mathf.Max(2.5f, h * 0.1f), new Color(0.05f, 0.08f, 0.1f));
         }
+        private readonly System.Collections.Generic.Dictionary<FishKind,Texture2D> _fishThumbnails=new System.Collections.Generic.Dictionary<FishKind,Texture2D>();
     }
 }

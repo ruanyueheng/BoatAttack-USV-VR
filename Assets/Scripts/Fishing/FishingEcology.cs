@@ -17,6 +17,9 @@ namespace BoatAttack.Fishing
             public Transform transform; public MarineKind kind; public Vector3 home; public float phase, radius;
         }
         private readonly List<Creature> _creatures=new List<Creature>();
+        private sealed class ShoalFish { public Transform root; public FishKind kind; public int zone; public float phase; }
+        private readonly List<ShoalFish> _shoal=new List<ShoalFish>();
+        public int ShoalFishCount=>_shoal.Count;
         private readonly List<Object> _owned=new List<Object>();
         private readonly List<GameObject> _reefs=new List<GameObject>();
         private readonly RaycastHit[] _hits=new RaycastHit[24];
@@ -44,9 +47,21 @@ namespace BoatAttack.Fishing
                     // Surface swimmers circle between the 9 m station ring and the reef rocks (~10.8 m inner edge),
                     // inside the 15 m radius the scene generator verified as open water. Schools stay underwater.
                     _creatures.Add(new Creature{transform=go.transform,kind=(MarineKind)kind,home=home,radius=kind==4?10:kind==2?10.5f:kind==3?7.5f:10f,phase=i*2.1f+kind*.65f});
+                    go.transform.position=home+Vector3.up*(kind==4?6:0);
+                    Controller.RifleHunting?.RegisterMarine((MarineKind)kind,i,go.transform);
                 }
             }
             for(int i=0;i<3;i++)BuildReef(i);
+            for(int kind=4;kind<FishingSpecies.Count;kind++)
+            {
+                var species=(FishKind)kind;
+                for(int i=0;i<3;i++)
+                {
+                    int zone=species==FishKind.Mackerel || species==FishKind.Tuna?1:species==FishKind.Grouper || species==FishKind.Lionfish?2:species==FishKind.Sardine || species==FishKind.Lanternfish?i:0;
+                    var fish=FishingArt.Fish(transform,_owned,Controller.PaletteShader,species);
+                    _shoal.Add(new ShoalFish{root=fish.transform,kind=species,zone=zone,phase=kind*.7f+i*.4f});
+                }
+            }
             Debug.Log("[FISHING] Living bay: "+CreatureCount+" wildlife renderers, 3 habitat meshes; "+MeshVertices+" unique vertices.");
         }
         private GameObject MeshObject(string name,Mesh mesh)
@@ -105,6 +120,7 @@ namespace BoatAttack.Fishing
             var climate=Controller.Weather.Climate;
             foreach(var c in _creatures)
             {
+                if(Controller.RifleHunting!=null && Controller.RifleHunting.DeadWildlife(c.transform))continue;
                 // Integrate speed rather than multiplying absolute time: weather changes cannot teleport animals.
                 float activity=Mathf.Lerp(BayClimate.Activity(c.kind,climate.Previous),BayClimate.Activity(c.kind,climate.Current),climate.Blend);
                 float speed=c.kind==MarineKind.Dolphin?.34f:c.kind==MarineKind.Gull?.22f:c.kind==MarineKind.School?.25f:.11f;
@@ -120,6 +136,16 @@ namespace BoatAttack.Fishing
                 else {pos.y=c.kind==MarineKind.School?-.06f:c.kind==MarineKind.Turtle?-.04f:.04f;roll=Mathf.Sin(a*4)*(c.kind==MarineKind.Ray?9:4);}
                 c.transform.SetPositionAndRotation(pos,Quaternion.Euler(pitch,-a*Mathf.Rad2Deg,roll));
             }
+            foreach(var fish in _shoal)
+            {
+                bool visible=FishingSpecies.InHabitat(fish.kind,fish.zone,Controller.Career.Calendar,climate.Current)
+                    && (Controller.ExplorerPosition-Controller.fishingSpots[fish.zone]).sqrMagnitude<65*65;
+                fish.root.gameObject.SetActive(visible);if(!visible)continue;
+                fish.phase=Mathf.Repeat(fish.phase+Time.deltaTime*(fish.kind==FishKind.Tuna?.32f:.17f),Mathf.PI*2);
+                float a=fish.phase,r=6+(int)fish.kind*.18f;
+                var point=Controller.fishingSpots[fish.zone]+new Vector3(Mathf.Cos(a)*r,-.09f+Mathf.Sin(a*3)*.02f,Mathf.Sin(a)*r);
+                fish.root.SetPositionAndRotation(point,Quaternion.LookRotation(new Vector3(-Mathf.Sin(a),0,Mathf.Cos(a))));
+            }
             if(Time.time<_nextSense)return;_nextSense=Time.time+.25f;Sense();
         }
         private void Sense()
@@ -127,6 +153,7 @@ namespace BoatAttack.Fishing
             VisibleCount=0;Candidate=null;_candidate=null;float nearest=28;
             foreach(var c in _creatures)
             {
+                if(Controller.RifleHunting!=null && Controller.RifleHunting.DeadWildlife(c.transform))continue;
                 bool visible=(Controller.ExplorerPosition-c.home).sqrMagnitude<160*160;
                 c.transform.gameObject.SetActive(visible);if(!visible)continue;VisibleCount++;
                 if(Controller.Career.Seen(c.kind))continue;

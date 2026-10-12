@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 namespace BoatAttack.Fishing
 {
-    /// <summary>Original procedural meshes. No commercial-game assets are used.</summary>
+    /// <summary>Shared procedural art and the supplied Hunyuan fish assets.</summary>
     public static class FishingArt
     {
         public static GameObject Shape(string name, PrimitiveType type, Transform parent, Vector3 position, Vector3 scale, Material material, bool solid = false)
@@ -23,9 +23,21 @@ namespace BoatAttack.Fishing
         {
             var go = new GameObject("Original " + kind + (rare ? " pearl variant" : " fish"), typeof(MeshFilter), typeof(MeshRenderer));
             go.transform.SetParent(parent, false);
-            go.GetComponent<MeshFilter>().sharedMesh = Cached(owned, FishingMeshBuilder.FishMeshName(kind, rare), () => FishingMeshBuilder.Fish(kind, rare));
+            var source=(int)kind>=4?Resources.Load<GameObject>("FishingFish/"+kind):null;
+            var imported=source!=null?source.GetComponentInChildren<MeshFilter>():null;
+            go.GetComponent<MeshFilter>().sharedMesh = imported!=null?imported.sharedMesh:Cached(owned, FishingMeshBuilder.FishMeshName(kind, rare), () => FishingMeshBuilder.Fish(kind, rare));
             var renderer = go.GetComponent<MeshRenderer>();
             renderer.sharedMaterial = Palette(owned, palette, "Fishing v0.4 fish gloss", .55f, .3f);
+            if(imported!=null)
+            {
+                go.name="Hunyuan / "+kind+(rare?" pearl":"");
+                var material=Palette(owned,palette,"Hunyuan fish / "+kind+(rare?" pearl":""),.22f,.12f);
+                material.SetTexture("_BaseMap",Resources.Load<Texture2D>("FishingFish/"+kind+"Albedo"));
+                material.SetFloat("_Textured",1);
+                material.SetVector("_TailMotion",new Vector4(.28f,4,FishingSpecies.LengthMeters(kind)*.15f,0));
+                material.SetColor("_BaseColor",rare?new Color(1,.86f,.62f):Color.white);
+                renderer.sharedMaterial=material;
+            }
             renderer.shadowCastingMode = ShadowCastingMode.Off;
             return go;
         }
@@ -37,6 +49,9 @@ namespace BoatAttack.Fishing
             go.transform.position = position;
             go.transform.localScale = Vector3.one * scale;
             go.GetComponent<MeshFilter>().sharedMesh = Cached(owned, "Fishing v0.4 navigation buoy", FishingMeshBuilder.Buoy);
+            var collider=go.AddComponent<CapsuleCollider>();
+            var bounds=go.GetComponent<MeshFilter>().sharedMesh.bounds;
+            collider.center=bounds.center;collider.radius=Mathf.Max(bounds.extents.x,bounds.extents.z);collider.height=bounds.size.y;
             var renderer = go.GetComponent<MeshRenderer>();
             renderer.sharedMaterial = Palette(owned, palette, "Fishing v0.4 buoy paint", .3f, .12f);
             renderer.shadowCastingMode = ShadowCastingMode.Off;

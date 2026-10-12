@@ -80,6 +80,8 @@ namespace BoatAttack.Fishing
                 // Leave a clear interaction apron around benches/furnaces. A resource must
                 // not steal E while the player is standing at the furnace door.
                 foreach(var station in _stations.Values)if(Vector3.Distance(feet,station.position)<3f){apart=false;break;}
+                foreach(var pickup in _c.FieldWorld.Pickups)if(Vector3.Distance(feet,pickup.Feet)<1.2f){apart=false;break;}
+                foreach(var site in _c.Shore.Sites)foreach(var task in site.Tasks)if(Vector3.Distance(feet,task)<1.1f){apart=false;break;}
                 if(apart && _c.Shore.SafeCoastalFooting(feet))return true;
             }
             return false;
@@ -125,7 +127,7 @@ namespace BoatAttack.Fishing
         }
         private void Update()
         {
-            if(_c==null || _c.Paused)return;
+            if(_c==null || _c.Paused || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen))return;
             bool done=State.Tick(Time.deltaTime);
             if(Time.time>=_senseAt)
             {
@@ -164,7 +166,7 @@ namespace BoatAttack.Fishing
             if(NeedsPick(node.Item) && !pick){_c.Notice("矿石需要手持石镐或铁镐：I 查看配方，1–9 装备。",4);return false;}
             int amount=expectedTool==FieldItem.IronPickaxe && (node.Item==FieldItem.Stone || NeedsPick(node.Item))?4:3;
             if(!State.Harvest(_c.Career.Backpack,node.Id,node.Item,amount)){_c.Notice(State.ResourceReady(node.Id)?"背包已满，资源没有消耗。":"这处资源正在恢复，换一处采集。",3);return false;}
-            _c.Save();_c.Notice("采集 "+FishingBackpack.Name(node.Item)+" ×"+amount+" · I → 制作",4);return true;
+            _c.Effects?.Burst(node.Root.position+Vector3.up*.3f,new Color(.8f,.75f,.5f));_c.Save();_c.Notice("采集 "+FishingBackpack.Name(node.Item)+" ×"+amount+" · I → 制作",4);return true;
         }
         public bool HarvestNearest()
         {
@@ -190,20 +192,20 @@ namespace BoatAttack.Fishing
             }
             return false;
         }
-        private bool FitStationFoot(Vector3 seed,out Vector3 feet)
+        private bool FitStationFoot(Vector3 seed,out Vector3 feet,float yaw=0)
         {
             feet=seed;float low=seed.y,high=seed.y;
             foreach(var offset in new[]{new Vector3(-.7f,0,-.55f),new Vector3(.7f,0,-.55f),new Vector3(-.7f,0,.55f),new Vector3(.7f,0,.55f)})
             {
-                if(!_c.Shore.Ground(seed+offset,out var floor))return false;
+                if(!_c.Shore.Ground(seed+Quaternion.Euler(0,yaw,0)*offset,out var floor))return false;
                 low=Mathf.Min(low,floor.y);high=Mathf.Max(high,floor.y);
             }
-            if(high-low>.45f)return false;
+            if(high-low>.3f)return false;
             feet.y=high;return true;
         }
-        private static bool StationSpaceClear(Vector3 feet)
+        private static bool StationSpaceClear(Vector3 feet,float yaw=0)
         {
-            foreach(var collider in Physics.OverlapBox(feet+Vector3.up*.75f,new Vector3(.75f,.65f,.65f),Quaternion.identity,~(1<<4),QueryTriggerInteraction.Ignore))
+            foreach(var collider in Physics.OverlapBox(feet+Vector3.up*.75f,new Vector3(.72f,.65f,.57f),Quaternion.Euler(0,yaw,0),~(1<<4),QueryTriggerInteraction.Ignore))
                 if(!FishingShore.NonSolidSurface(collider))return false;
             return true;
         }
@@ -227,45 +229,45 @@ namespace BoatAttack.Fishing
             var forward=Vector3.ProjectOnPlane(_c.viewCamera.transform.forward,Vector3.up).normalized;
             yaw=Mathf.Atan2(forward.x,forward.z)*Mathf.Rad2Deg;
             var seed=_c.Shore.Actor.position+forward*forwardDistance;
-            if(!_c.Shore.Ground(seed,out feet) || !ValidPlacement(feet,out feet))return false;
+            if(!_c.Shore.Ground(seed,out feet) || !ValidPlacement(feet,yaw,out feet))return false;
             return true;
         }
-        private bool ValidPlacement(Vector3 seed,out Vector3 feet)
+        private bool ValidPlacement(Vector3 seed,float yaw,out Vector3 feet)
         {
             feet=seed;
-            if(!FitStationFoot(seed,out feet) || Mathf.Abs(feet.y-_c.Shore.Actor.position.y)>.45f || !_c.Shore.SafeCoastalFooting(feet) || !_c.Shore.CanSeeTask(feet))
+            if(!FitStationFoot(seed,out feet,yaw) || Mathf.Abs(feet.y-_c.Shore.Actor.position.y)>.45f || !_c.Shore.SafeCoastalFooting(feet) || !_c.Shore.CanSeeTask(feet))
             {_c.Notice("前方需要平整、可见、干燥的岸面。",3);return false;}
-            if(!StationSpaceClear(feet)){_c.Notice("放置空间被占用，请转向空地。",3);return false;}
+            if(!StationSpaceClear(feet,yaw)){_c.Notice("放置空间被占用，请转向空地。",3);return false;}
             if(BlocksAccess(feet)){_c.Notice("请避开登岸通道、商店与勘测台。",3);return false;}
             return true;
         }
         public bool PlaceAt(Vector3 feet,float yaw,FieldItem expectedItem)
         {
             if(_c.Paused || !_c.Ashore || _c.Career.Backpack.Equipped!=expectedItem || (expectedItem!=FieldItem.Workbench && expectedItem!=FieldItem.Furnace))return false;
-            if(!_c.Shore.Ground(feet,out var ground) || !ValidPlacement(ground,out var checkedFeet) || Vector3.Distance(checkedFeet,feet)>.1f)return false;
+            if(!_c.Shore.Ground(feet,out var ground) || !ValidPlacement(ground,yaw,out var checkedFeet) || Vector3.Distance(checkedFeet,feet)>.1f)return false;
             int id=State.Place(_c.Career.Backpack,expectedItem==FieldItem.Workbench?CraftStation.Workbench:CraftStation.Furnace,feet.x,feet.y+.02f,feet.z,yaw);
             if(id<0){_c.Notice("无法放置：设施已达 32 个上限或物品不足。",3);return false;}
             Spawn(State.Station(id));Physics.SyncTransforms();_c.Save();_c.Notice("已放置"+FishingBackpack.Name(expectedItem)+" · 靠近按 E 使用",4);return true;
         }
-        public bool PlaceEquipped()=>TryPlacement(2,out var feet,out var yaw) && PlaceAt(feet,yaw,_c.Career.Backpack.Equipped);
+        public bool PlaceEquipped()=>TryPlacement(1.02f,out var feet,out var yaw) && PlaceAt(feet,yaw,_c.Career.Backpack.Equipped);
         public bool Craft(string recipe)
         {
-            if(!_c.InventoryOpen)return false;
+            if(!(_c.InventoryOpen || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen)))return false;
             bool ok=FishingRecipes.Craft(_c.Career.Backpack,recipe,Context);if(ok){_c.Save();_c.NotifyWorkshopTransaction();}else _c.Notice("材料不足、背包已满，或需要靠近工作台。",4);return ok;
         }
         public bool Smelt(string recipe,int count,FieldItem fuel)
         {
-            if(!_c.InventoryOpen || Context!=CraftStation.Furnace)return false;
+            if(!(_c.InventoryOpen || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen)) || Context!=CraftStation.Furnace)return false;
             bool ok=State.Start(_c.Career.Backpack,SelectedStation,recipe,count,fuel);if(ok){_c.Save();_c.NotifyWorkshopTransaction();}else _c.Notice("检查材料、燃料，并先领取炉内成品。",4);return ok;
         }
         public bool Collect()
         {
-            if(!_c.InventoryOpen || Context!=CraftStation.Furnace)return false;
+            if(!(_c.InventoryOpen || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen)) || Context!=CraftStation.Furnace)return false;
             bool ok=State.Collect(_c.Career.Backpack,SelectedStation);if(ok){_c.Save();_c.NotifyWorkshopTransaction();}else _c.Notice("没有成品或背包已满；成品会留在炉内。",4);return ok;
         }
         public bool Remove()
         {
-            if(!_c.InventoryOpen || !ReachStation(SelectedStation))return false;
+            if(!(_c.InventoryOpen || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen)) || !ReachStation(SelectedStation))return false;
             if(!State.Remove(_c.Career.Backpack,SelectedStation)){_c.Notice("公共设施不可拆；先领取成品并清空熔炉，背包需留空格。",4);return false;}
             var root=_stations[SelectedStation];root.gameObject.SetActive(false);Destroy(root.gameObject);_stations.Remove(SelectedStation);_fires.Remove(SelectedStation);SelectedStation=-1;_c.Save();return true;
         }

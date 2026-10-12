@@ -22,7 +22,7 @@ namespace BoatAttack.Fishing
             var surface=_receivingRim.transform;var bounds=_receivingRim.sharedMesh.bounds;
             var local=surface.InverseTransformPoint(from);
             local.x=Mathf.Clamp(local.x,bounds.min.x,bounds.max.x);local.y=bounds.max.y;
-            local.z=Mathf.Clamp(local.z,bounds.min.z,bounds.max.z);
+            local.z=Mathf.Clamp(local.z,bounds.min.z+.05f,bounds.max.z-.05f);
             return surface.TransformPoint(local);
         }
         public void Build(FishingPrototype c)
@@ -31,16 +31,15 @@ namespace BoatAttack.Fishing
             foreach(var filter in c.FishBox.GetComponentsInChildren<MeshFilter>())
                 if(filter.name=="Top rim" && filter.transform.localPosition.x>0){_receivingRim=filter;break;}
             if(_receivingRim==null)throw new System.InvalidOperationException("捕鱼箱缺少右侧接收上沿");
-            _tray=FishingArt.Shape("Safe catch inspection tray",PrimitiveType.Cylinder,c.Player.transform,new Vector3(.65f,1.04f,.45f),new Vector3(.8f,.025f,.8f),c.teal).transform;
+            _tray=FishingArt.Shape("Safe catch inspection tray",PrimitiveType.Cylinder,c.Player.transform,new Vector3(.55f,.97f,-.28f),new Vector3(.43f,.015f,.35f),c.teal).transform;
             _tray.gameObject.SetActive(false);
             var ring=FishingArt.Line("Fish box receiving rim",c.FishBox,c.teal,.022f,false);ring.positionCount=33;
             for(int i=0;i<33;i++){float a=i*Mathf.PI*2/32;ring.SetPosition(i,new Vector3(Mathf.Cos(a)*.36f,.4f,Mathf.Sin(a)*.36f));}
         }
         public void ConfigureLayout(bool xr)
         {
-            // 桌面收鱼箱靠近角色右手可达侧；保留 XR 布局，并等收手后再移回航行位置。
-            bool receiving=_c.Anchored || _c.HasPendingCatch || (_c.WorldActionBusy && (_c.Actions.Kind==FishingActionKind.Store || _c.Actions.Kind==FishingActionKind.Release));
-            _c.FishBox.localPosition=xr?new Vector3(-.5f,.85f,.8f):receiving?new Vector3(-.5f,.85f,.25f):_boxLocal;
+            // 鱼箱固定在座板上；XR 左舷抄鱼采用镜像布局。
+            _c.FishBox.localPosition=xr?new Vector3(-.45f,.72f,.55f):_boxLocal;
             if(xr && !_netHeld && (!_c.HasPendingCatch || Location!=Place.Net))
                 _c.LandingNet.SetPositionAndRotation(_c.BoatPoint(new Vector3(-.32f,1.15f,.25f)),Quaternion.Euler(0,_c.Player.transform.eulerAngles.y,0));
         }
@@ -50,12 +49,13 @@ namespace BoatAttack.Fishing
             if(!_assist){_c.Session.HoldForNet();_assist=true;_assistTime=0;_gate.Reset();_hadSample=false;}
             return true;
         }
-        public void ToggleInspect(){if(_c.HasPendingCatch && !_c.Paused){Location=Location==Place.Hand?Place.Tray:Place.Hand;if(Location==Place.Hand)_c.MeasureCatch();}}
+        public void ToggleInspect(){if(_c.HasPendingCatch && !_c.Paused){if(FishingSpecies.Of(_c.Career.PendingCatch.fish.kind).Legendary){Location=Place.Tray;_c.MeasureCatch();return;}Location=Location==Place.Hand?Place.Tray:Place.Hand;if(Location==Place.Hand)_c.MeasureCatch();}}
         public void ApplyActionContactPose(Vector3 position,Quaternion frame)
         {
             if(_c.HasPendingCatch)_c.ActiveFish.SetPositionAndRotation(position,frame*Quaternion.Euler(0,-90,0));
         }
-        public void PrepareHandAction(){if(_c.HasPendingCatch && !_c.Paused)Location=Place.Hand;}
+        public void PrepareHandAction(){if(_c.HasPendingCatch && !_c.Paused)Location=FishingSpecies.Of(_c.Career.PendingCatch.fish.kind).Legendary?Place.Tray:Place.Hand;}
+        public Vector3 InspectionCenter(Quaternion frame)=>_c.Shore.Character.EyePosition+frame*new Vector3(.10f,-.12f,.40f);
         public void RequestRelease(bool animate=false)
         {
             if(!_c.HasPendingCatch || _c.Paused)return;
@@ -163,11 +163,15 @@ namespace BoatAttack.Fishing
             Vector3 pos;Quaternion rot;
             if(Location==Place.Hand)
             {
-                if(xr && FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out pos,out rot)){}
+                if(xr && _c.Hands.TryControllerPalm(false,out pos,out rot))
+                {
+                    var mounted=rot*Quaternion.Inverse(Quaternion.LookRotation(Vector3.right,Vector3.down));
+                    pos-=mounted*Vector3.Scale(FishPalmLocal(false),fish.lossyScale);rot=mounted*Quaternion.Euler(0,90,0);
+                }
                 else if(!xr)
                 {
                     _c.Hands.GetToolFrame(out var origin,out rot);
-                    pos=_c.ActionMovesFish?_c.ActionFishPosition:origin+rot*new Vector3(.04f,-.18f,.28f);
+                    pos=_c.ActionMovesFish?_c.ActionFishPosition:InspectionCenter(rot);
                     if(_c.ActionMovesFish)rot=_c.ActionToolRotation;
                 }
                 else{Recover();pos=_c.NetTray;rot=_c.Player.transform.rotation;}
@@ -181,7 +185,7 @@ namespace BoatAttack.Fishing
                 var left=FishPalmLocal(true);var right=FishPalmLocal(false);
                 if(!xr && !_c.ActionMovesFish)_c.Hands.FitToolPose(fish,left,right,!_netHeld,true);
                 var palmRotation=Quaternion.LookRotation(Vector3.right,Vector3.down);
-                if(!_netHeld && (xr || _c.Hands.CanReach(true,fish.TransformPoint(left),0)))_c.Hands.SetToolTarget(true,fish,left,palmRotation,.5f);
+                if(!_netHeld && (xr?(_c.Hands.Left.Visible && Vector3.Distance(_c.Hands.Left.Palm.position,fish.TransformPoint(left))<.16f):_c.Hands.CanReach(true,fish.TransformPoint(left),0)))_c.Hands.SetToolTarget(true,fish,left,palmRotation,.5f);
                 else if(!xr)_c.Hands.RestHand(true);
                 _c.Hands.SetToolTarget(false,fish,right,palmRotation,.55f);
             }
@@ -193,7 +197,7 @@ namespace BoatAttack.Fishing
             var yaw=Quaternion.Euler(0,_c.Player.transform.eulerAngles.y,0);
             var local=Quaternion.Inverse(yaw)*(center-_c.Player.transform.position);
             float speed=_tipSample?Vector3.Distance(local,_lastTip)/dt:0;_lastTip=local;_tipSample=true;
-            var delta=center-(_c.FishBox.position+Vector3.up*.4f);
+            var delta=center-_c.FishBox.TransformPoint(new Vector3(0,.51f,0));
             bool ordinary=_c.HasPendingCatch && !FishingSpecies.Of(_c.Career.PendingCatch.fish.kind).Legendary && Location==Place.Net && !_c.Paused;
             bool tip=_transfer.Step(ordinary,new Vector2(delta.x,delta.z).magnitude,delta.y,Vector3.Dot(rotation*Vector3.up,Vector3.up),speed,dt);
             return tip && _c.ResolveCatch(true);
@@ -219,10 +223,10 @@ namespace BoatAttack.Fishing
                 TryTipIntoBox(center,rotation,dt);
             }
             FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out var rp,out var rq);
-            if(_c.HasPendingCatch && grabFish && Vector3.Distance(rp,_c.ActiveFish.position)<.35f){Location=Place.Hand;_c.MeasureCatch();}
+            if(_c.HasPendingCatch && grabFish && Vector3.Distance(rp,_c.ActiveFish.position)<.35f){PrepareHandAction();_c.MeasureCatch();}
             if(Location==Place.Hand && !rg)
             {
-                if(Vector3.Distance(rp,_c.FishBox.position+Vector3.up*.4f)<.42f){if(!_c.ResolveCatch(true))Location=Place.Tray;}
+                if(Vector3.Distance(rp,_c.FishBox.TransformPoint(new Vector3(0,.51f,0)))<.3f){if(!_c.ResolveCatch(true))Location=Place.Tray;}
                 else Location=Place.Tray; // Never auto-release a fish because tracking or grip was lost.
             }
         }

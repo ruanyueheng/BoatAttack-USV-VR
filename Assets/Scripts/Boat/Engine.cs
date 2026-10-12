@@ -17,6 +17,9 @@ namespace BoatAttack
         //engine stats
         public float steeringTorque = 5f;
         public float horsePower = 18f;
+        public bool stableHull;
+        public float forwardSpeedLimit = 7f;
+        public float rudderResponse = 1f;
         private NativeArray<float3> _point; // engine submerged check
         private float3[] _heights = new float3[1]; // engine submerged check
         private float3[] _normals = new float3[1]; // engine submerged check
@@ -27,6 +30,10 @@ namespace BoatAttack
         private Vector3 _engineDir;
         private float _turnVel;
         private float _currentAngle;
+        private bool _wet;
+        private float _dryTime;
+        private BuoyantObject _buoyancy;
+        public bool InWater => stableHull ? _wet : _yHeight > -0.1f;
 
         private void Awake()
         {
@@ -34,6 +41,7 @@ namespace BoatAttack
             RandomizeAudioStart(waterSound);
             _guid = GetInstanceID();
             if (RB == null) RB = GetComponentInParent<Rigidbody>();
+            if (RB != null) _buoyancy = RB.GetComponent<BuoyantObject>();
         }
 
         private static void RandomizeAudioStart(AudioSource source)
@@ -47,6 +55,16 @@ namespace BoatAttack
             // OnDisable releases this buffer; pooled/re-enabled boats need a fresh one.
             if (!_point.IsCreated) _point = new NativeArray<float3>(1, Allocator.Persistent);
             _yHeight = float.NegativeInfinity;
+            _wet = false;
+            _dryTime = 0;
+        }
+
+        private void Start()
+        {
+            if (!stableHull || RB == null) return;
+            // Rotation constraints use inertia axes; the asymmetric hull otherwise couples yaw into roll.
+            RB.inertiaTensorRotation = Quaternion.identity;
+            RB.maxAngularVelocity = 1.8f;
         }
 
         private void FixedUpdate()
@@ -57,6 +75,7 @@ namespace BoatAttack
             if (!_point.IsCreated || !GerstnerWavesJobs.Initialized)
             {
                 _yHeight = float.NegativeInfinity;
+                _wet = false;
                 return;
             }
 
@@ -65,12 +84,22 @@ namespace BoatAttack
             GerstnerWavesJobs.UpdateSamplePoints(ref _point, _guid);
             GerstnerWavesJobs.GetData(_guid, ref _heights, ref _normals);
             _yHeight = _heights[0].y - _point[0].y;
+            bool immersed = _yHeight > (_wet ? -0.3f : -0.15f);
+            _dryTime = immersed ? 0 : _dryTime + Time.fixedDeltaTime;
+            // A short wave trough must not kill thrust while the hull is still afloat.
+            _wet = immersed || (stableHull && _wet && _dryTime < .6f && _buoyancy != null && _buoyancy.PercentSubmerged > .01f);
+            if (stableHull && _wet)
+            {
+                var sideways = Vector3.ProjectOnPlane(RB.transform.right, Vector3.up).normalized;
+                RB.AddForce(-sideways * Vector3.Dot(RB.velocity, sideways) * 1.8f, ForceMode.Acceleration);
+            }
         }
 
         private void OnDisable()
         {
             if (_point.IsCreated) _point.Dispose();
             _yHeight = float.NegativeInfinity;
+            _wet = false;
         }
         
         /// <summary>
@@ -79,14 +108,16 @@ namespace BoatAttack
         /// <param name="modifier">Signed throttle: forward 0..1, reverse -1..0</param>
         public void Accelerate(float modifier)
         {
-            if (RB != null && _yHeight > -0.1f) // if the engine is deeper than 0.1
+            if (RB != null && InWater)
             {
                 modifier = BoatAttack.VR.USVPropulsion.Thrust(modifier, Vector3.Dot(RB.velocity, Vector3.ProjectOnPlane(RB.transform.forward, Vector3.up).normalized));
                 var forward = RB.transform.forward;
                 forward.y = 0f;
                 forward.Normalize();
+                if (stableHull && modifier > 0f)
+                    modifier *= Mathf.Clamp01(1f - Vector3.Dot(RB.velocity, forward) / Mathf.Max(1f, forwardSpeedLimit));
                 RB.AddForce(horsePower * modifier * forward, ForceMode.Acceleration); // add force forward based on input and horsepower
-                RB.AddRelativeTorque(-Vector3.right * modifier, ForceMode.Acceleration);
+                if (!stableHull) RB.AddRelativeTorque(-Vector3.right * modifier, ForceMode.Acceleration);
             }
         }
 
@@ -96,10 +127,15 @@ namespace BoatAttack
         /// <param name="modifier">Steering modifier, positive for right, negative for negative</param>
         public void Turn(float modifier)
         {
-            if (RB != null && _yHeight > -0.1f) // if the engine is deeper than 0.1
+            if (RB != null && InWater)
             {
                 modifier = Mathf.Clamp(modifier, -1f, 1f); // clamp for reasonable values
-                RB.AddRelativeTorque(new Vector3(0f, steeringTorque, -steeringTorque * 0.5f) * modifier, ForceMode.Acceleration); // add torque based on input and torque amount
+                if (stableHull)
+                {
+                    float rate = Mathf.Lerp(60f, 38f, Mathf.Clamp01(Mathf.Sqrt(VelocityMag) / forwardSpeedLimit)) * rudderResponse * Mathf.Deg2Rad;
+                    RB.AddTorque(Vector3.up * (modifier * rate - RB.angularVelocity.y) * 4.8f * rudderResponse, ForceMode.Acceleration);
+                }
+                else RB.AddRelativeTorque(new Vector3(0f, steeringTorque, -steeringTorque * 0.5f) * modifier, ForceMode.Acceleration);
             }
 
             _currentAngle = Mathf.SmoothDampAngle(_currentAngle, 

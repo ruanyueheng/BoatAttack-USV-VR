@@ -68,7 +68,7 @@ namespace BoatAttack.Fishing
             CurrentCase = selected;
             FreezeScenario = selected != FishingAcceptanceCase.FreePlay;
             Controller.ApplyAcceptanceCase(selected);
-            if(selected==FishingAcceptanceCase.ShopCounter)StartCoroutine(OpenCapturedShop());
+            if(selected==FishingAcceptanceCase.ShopCounter || selected==FishingAcceptanceCase.ShopSupplies || selected==FishingAcceptanceCase.ShopRations)StartCoroutine(OpenCapturedShop());
             Status = selected == FishingAcceptanceCase.FreePlay
                 ? "真实操作 · 验收进度可续玩；F5/F6 的预置场景使用另一份存档"
                 : "预置场景 · F7 解除阶段定格后可实玩；F9 返回自己的验收进度";
@@ -80,9 +80,9 @@ namespace BoatAttack.Fishing
         {
             int initialFrame=Time.frameCount;
             do {yield return null;} while(Time.frameCount==initialFrame);
-            for(int frame=0;CurrentCase==FishingAcceptanceCase.ShopCounter && !Controller.Shore.Character.IsStanceSettled(true,false) && frame<120;frame++)
+            for(int frame=0;(CurrentCase==FishingAcceptanceCase.ShopCounter || CurrentCase==FishingAcceptanceCase.ShopSupplies || CurrentCase==FishingAcceptanceCase.ShopRations) && !Controller.Shore.Character.IsStanceSettled(true,false) && frame<120;frame++)
                 yield return null;
-            if(CurrentCase!=FishingAcceptanceCase.ShopCounter)yield break;
+            if(CurrentCase!=FishingAcceptanceCase.ShopCounter && CurrentCase!=FishingAcceptanceCase.ShopSupplies && CurrentCase!=FishingAcceptanceCase.ShopRations)yield break;
             Check(()=>
             {
                 Controller.PresentCharacterFrame();
