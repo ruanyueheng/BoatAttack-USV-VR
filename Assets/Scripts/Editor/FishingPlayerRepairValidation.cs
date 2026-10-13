@@ -51,7 +51,7 @@ namespace BoatAttack.EditorTools
             c.Hands.GetToolFrame(out var origin,out var frame);var hold=Quaternion.Euler(0,frame.eulerAngles.y,0);var rod=c.Hands.Rod;
             rod.SetPositionAndRotation(origin+hold*new Vector3(.05f,.15f,.34f),hold*Quaternion.Euler(-32, -12,0));
             var reel=rod.InverseTransformPoint(c.Hands.Knob.position+rod.TransformVector(new Vector3(-.024f,.012f,-.035f)));
-            var palm=new Vector3(.058f,.012f,-.045f);c.Hands.FitToolPose(rod,reel,palm);
+            var palm=new Vector3(.058f,.012f,-.045f);c.Hands.FitToolPose(rod,reel,palm,Quaternion.identity,Quaternion.LookRotation(Vector3.up,Vector3.right));
             c.Hands.Right.SetFromGrip(rod,palm,Quaternion.LookRotation(Vector3.up,Vector3.right),.86f);
             c.Hands.Left.SetFromGrip(rod,reel,Quaternion.identity,.85f);
             c.Shore.Character.ApplyHandTargets(c.Hands.Left,c.Hands.Right);
@@ -91,7 +91,7 @@ namespace BoatAttack.EditorTools
                 Check(c.Shore.Position.z<5002.3f,"seam recovery cannot pass through a full-height wall");
                 wall.SetActive(false);Physics.SyncTransforms();
                 for(int i=0;i<60;i++){c.Shore.Walk(Vector2.up,false,.05f);yield return null;}
-                Check(c.Shore.Position.z<5004.4f && c.Shore.Position.y>.6f,"seam recovery cannot bridge open water beyond the floor edge");
+                Check((c.Shore.Position.z<5004.4f && c.Shore.Position.y>.6f) || (c.Shore.Swimming && c.Shore.Position.z>=5004.4f && !c.Shore.Ground(c.Shore.Position,out _)),"floor seam recovery does not invent land beyond the edge; unsupported water uses the swimming mode");
             }
             finally{a.SetActive(false);b.SetActive(false);wall.SetActive(false);UnityEngine.Object.Destroy(a);UnityEngine.Object.Destroy(b);UnityEngine.Object.Destroy(wall);}
         }

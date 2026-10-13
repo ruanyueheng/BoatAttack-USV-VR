@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace BoatAttack.Fishing
 {
     public enum CatchPhase { Idle, Waiting, Bite, Fighting, Landing, Caught, Escaped }
-    public enum FishKind { Coral, Dart, Puffer, Sailfish, Mackerel, SeaBream, Sardine, Grouper, Butterfly, Tuna, Lanternfish, Lionfish }
+    public enum FishKind { Coral, Dart, Puffer, Sailfish, Mackerel, SeaBream, Sardine, Grouper, Butterfly, Tuna, Lanternfish, Lionfish, SeaTurtle, Octopus, Crab, Lobster, Seahorse, Stingray, Jellyfish, Cuttlefish }
 
     [Serializable]
     public sealed class CatchRecord
@@ -186,7 +186,8 @@ namespace BoatAttack.Fishing
     [Serializable]
     public sealed class FishingSaveData
     {
-        public int version = 11;
+        public int version = 12;
+        public bool prologueSeen;
         public LoreData lore = new LoreData();
         public int engineLevel, rudderLevel, cabinLevel;
         public AdventureData adventure = new AdventureData();
@@ -202,7 +203,7 @@ namespace BoatAttack.Fishing
         public int expeditionFacts;
         public int shoreTaskMask;
         public int shoreRewardMask;
-        public int discoveryMask;
+        public long discoveryMask;
         public int wildlifeMask;
         public int catches;
         public int ordersCompleted;
@@ -233,7 +234,9 @@ namespace BoatAttack.Fishing
         public FishingExpedition Expedition { get; private set; } = new FishingExpedition();
         public int ShoreTaskMask { get; private set; }
         public int ShoreRewardMask { get; private set; }
-        public int DiscoveryMask { get; private set; }
+        public long DiscoveryMask { get; private set; }
+        public bool PrologueSeen { get; private set; }
+        public void FinishPrologue() => PrologueSeen = true;
         public int WildlifeMask { get; private set; }
         public int Catches { get; private set; }
         public int OrdersCompleted { get; private set; }
@@ -305,7 +308,7 @@ namespace BoatAttack.Fishing
         }
 
         public bool Discovered(FishKind kind, bool rare = false)
-            => FishingSpecies.IsDefined(kind) && (DiscoveryMask & (1 << FishingSpecies.DiscoveryBit(kind, rare))) != 0;
+            => FishingSpecies.IsDefined(kind) && (DiscoveryMask & (1L << FishingSpecies.DiscoveryBit(kind, rare))) != 0;
 
         public int BestGrams(FishKind kind) => FishingSpecies.IsDefined(kind) ? _bestGrams[(int)kind] : 0;
 
@@ -430,6 +433,7 @@ namespace BoatAttack.Fishing
         {
             var result = new FishingSaveData
             {
+                prologueSeen = PrologueSeen,
                 calendar = Calendar.Snapshot(), hunting = Hunting.Snapshot(), lore = Lore.Snapshot(),
                 engineLevel = EngineLevel, rudderLevel = RudderLevel, cabinLevel = CabinLevel, adventure = Adventure.Snapshot(),
                 hasPendingCatch = HasPendingCatch, pendingCatch = _pending?.Copy(), releasedCatches = ReleasedCatches, orderMarked = OrderMarked,
@@ -448,7 +452,7 @@ namespace BoatAttack.Fishing
         public static bool TryRestore(FishingSaveData data, out FishingCareer career)
         {
             career = null;
-            if (data == null || data.version < 1 || data.version > 11) return false;
+            if (data == null || data.version < 1 || data.version > 12 || (data.version < 12 && data.prologueSeen)) return false;
             if (data.version < 11 && data.lore != null && (data.lore.residents != 0 || data.lore.shrines != 0 || data.lore.finale)) return false;
             if (data.engineLevel < 0 || data.engineLevel > MaxLevel || data.rudderLevel < 0 || data.rudderLevel > MaxLevel
                 || data.cabinLevel < 0 || data.cabinLevel > MaxLevel
@@ -462,14 +466,14 @@ namespace BoatAttack.Fishing
             if (data.coins < 0 || data.coins > 100000000 || data.rodLevel < 0 || data.rodLevel > (v3 ? MaxLevel : 1)
                 || data.reelLevel < 0 || data.reelLevel > (v3 ? MaxLevel : 0) || data.holdLevel < 0 || data.holdLevel > (v3 ? MaxLevel : 0)
                 || data.wildlifeMask < 0 || data.wildlifeMask > 31
-                || data.discoveryMask < 0 || data.discoveryMask > (v3 ? FishingSpecies.DiscoveryMaskLimit : 63)
+                || data.discoveryMask < 0 || data.discoveryMask > (data.version >= 12 ? FishingSpecies.DiscoveryMaskLimit : v3 ? (1L << 23) - 1 : 63)
                 || data.catches < 0 || data.catches > 100000000 || data.ordersCompleted < 0 || data.ordersCompleted > 1000000
                 || data.legendCatches < 0 || data.legendCatches > 1000000 || (!v3 && data.legendCatches != 0)
                 || data.inventory == null || data.recordedIds == null
                 || (data.bestGrams != null && data.bestGrams.Count > FishingSpecies.Count)) return false;
             var result = new FishingCareer { HoldLevel = data.holdLevel };
             if (data.inventory.Count > result.Capacity) return false;
-            foreach (var item in data.inventory) if (!result.Store(item)) return false;
+            foreach (var item in data.inventory) if (item == null || (data.version < 12 && (int)item.kind >= 12) || !result.Store(item)) return false;
             foreach (var id in data.recordedIds)
             {
                 if (string.IsNullOrWhiteSpace(id) || id.Length > 64) return false;
@@ -479,6 +483,7 @@ namespace BoatAttack.Fishing
                 for (int i = 0; i < data.bestGrams.Count; i++)
                 {
                     int grams = data.bestGrams[i];
+                    if (data.version < 12 && i >= 12 && grams != 0) return false;
                     if (grams != 0 && !FishingSpecies.ValidGrams((FishKind)i, grams)) return false;
                     result._bestGrams[i] = Math.Max(result._bestGrams[i], grams);
                 }
@@ -511,7 +516,7 @@ namespace BoatAttack.Fishing
                 if(data.releasedCatches<0 || data.releasedCatches>data.catches-data.legendCatches)return false;
                 if(data.hasPendingCatch)
                 {
-                    if(!ValidPending(data.pendingCatch) || result._recorded.Contains(data.pendingCatch.fish.id))return false;
+                    if(!ValidPending(data.pendingCatch) || (data.version < 12 && (int)data.pendingCatch.fish.kind >= 12) || result._recorded.Contains(data.pendingCatch.fish.id))return false;
                     result._pending=data.pendingCatch.Copy();
                 }
                 else if(!EmptyPending(data.pendingCatch))return false;
@@ -540,13 +545,14 @@ namespace BoatAttack.Fishing
                 if (!FishingLore.TryRestore(data.lore, out var lore)) return false;
                 result.Lore = lore;
             }
+            result.PrologueSeen = data.prologueSeen;
             career = result;
             return true;
         }
 
         private void Record(CatchRecord fish)
         {
-            DiscoveryMask |= 1 << FishingSpecies.DiscoveryBit(fish.kind, fish.rare);
+            DiscoveryMask |= 1L << FishingSpecies.DiscoveryBit(fish.kind, fish.rare);
             _bestGrams[(int)fish.kind] = Math.Max(_bestGrams[(int)fish.kind], fish.grams);
             Catches++;
         }

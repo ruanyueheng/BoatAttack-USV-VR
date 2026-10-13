@@ -57,7 +57,7 @@ internal static class CraftingTests
         malformed=state.Snapshot();malformed.stations[1].recipe="unknown";check(!FishingWorkshop.TryRestore(malformed,out _),"Save rejects unknown active smelting recipe");
         malformed=state.Snapshot();malformed.stations[0].remaining=1;malformed.stations[0].recipe="iron";check(!FishingWorkshop.TryRestore(malformed,out _),"Save rejects workbench pretending to be furnace");
         var career=new FishingCareer();var legacy=career.Snapshot();legacy.version=7;legacy.workshop=null;
-        check(FishingCareer.TryRestore(legacy,out var migrated) && migrated.Workshop!=null && migrated.Snapshot().version == 11,"v7 progress migrates to independent v8 workshop state");
+        check(FishingCareer.TryRestore(legacy,out var migrated) && migrated.Workshop!=null && migrated.Snapshot().version == 12,"v7 progress migrates to current workshop state");
         var v8=career.Snapshot();v8.workshop=null;check(!FishingCareer.TryRestore(v8,out _),"Current save requires workshop payload");
         check(FishingRecipes.All.Select(r=>r.Id).Distinct().Count()==FishingRecipes.All.Length,"Stable recipe IDs are unique");
         foreach(var recipe in FishingRecipes.All)

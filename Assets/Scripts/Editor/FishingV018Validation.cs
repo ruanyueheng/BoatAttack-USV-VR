@@ -14,7 +14,7 @@ namespace BoatAttack.EditorTools
         public static IEnumerator Checks(FishingPrototype c)
         {
             string evidence=Path.GetFullPath("Logs/v018-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(evidence);
-            Check(c.Islands.WorldRoot.childCount==4 && c.NavigationCount==14,"Four islands integrated into navigation");
+            Check(c.Islands.WorldRoot.childCount==4 && c.NavigationCount==15 && c.HomeNavigationIndex==14,"Four islands and the home integrated into navigation");
             c.ReturnToHarbor();c.Weather.Climate.Select(BayWeather.Clear,true);
             for(int i=0;i<4;i++)
             {

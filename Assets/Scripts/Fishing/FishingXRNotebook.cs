@@ -13,6 +13,7 @@ namespace BoatAttack.Fishing
         private Text _status;
         private readonly Text[] _labels=new Text[9];
         private readonly Image[] _plates=new Image[9];
+        private readonly RawImage[] _icons=new RawImage[9];
         private readonly Action[] _actions=new Action[9];
         private readonly FishingPressEdge _menu=new FishingPressEdge(),_primary=new FishingPressEdge(),_board=new FishingPressEdge(),_slot=new FishingPressEdge(),_trigger=new FishingPressEdge();
         private LineRenderer _ray;
@@ -38,6 +39,10 @@ namespace BoatAttack.Fishing
                 rect.anchoredPosition=new Vector2(24+(i%3)*181,-258-(i/3)*128);rect.sizeDelta=new Vector2(170,114);
                 _plates[i]=go.GetComponent<Image>();_plates[i].raycastTarget=false;
                 _labels[i]=Label(go.transform,new Vector2(10,-10),new Vector2(150,94),21);
+                var icon=new GameObject("Object photo",typeof(RectTransform),typeof(RawImage));icon.transform.SetParent(go.transform,false);
+                var imageRect=icon.GetComponent<RectTransform>();imageRect.anchorMin=imageRect.anchorMax=imageRect.pivot=new Vector2(0,1);
+                imageRect.anchoredPosition=new Vector2(7,-16);imageRect.sizeDelta=new Vector2(56,56);
+                _icons[i]=icon.GetComponent<RawImage>();_icons[i].raycastTarget=false;icon.SetActive(false);
                 var collider=go.AddComponent<BoxCollider>();collider.isTrigger=true;collider.size=new Vector3(170,114,3);collider.center=new Vector3(85,-57,0);
                 var button=go.AddComponent<FishingNotebookButton>();button.Owner=this;button.Index=i;
             }
@@ -63,7 +68,16 @@ namespace BoatAttack.Fishing
         }
         public void Close(){IsOpen=false;if(_canvas!=null)_canvas.gameObject.SetActive(false);if(_ray!=null)_ray.enabled=false;_trigger.Reset();_tipSample=false;}
         public void ResetInput(){_menu.Reset();_primary.Reset();_board.Reset();_slot.Reset();_trigger.Reset();_turnReady=false;_tipSample=false;}
-        private void Set(int index,string label,Action action){_labels[index].text=label;_actions[index]=action;_plates[index].color=action==null?new Color(.09f,.13f,.14f):new Color(.12f,.27f,.25f);}
+        private void Set(int index,string label,Action action)
+        {
+            _icons[index].gameObject.SetActive(false);_labels[index].rectTransform.anchoredPosition=new Vector2(10,-10);_labels[index].rectTransform.sizeDelta=new Vector2(150,94);_labels[index].fontSize=21;
+            _labels[index].text=label;_actions[index]=action;_plates[index].color=action==null?new Color(.09f,.13f,.14f):new Color(.12f,.27f,.25f);
+        }
+        private void Photo(int index,Texture2D texture)
+        {
+            if(texture==null)return;_icons[index].texture=texture;_icons[index].gameObject.SetActive(true);
+            _labels[index].rectTransform.anchoredPosition=new Vector2(67,-10);_labels[index].rectTransform.sizeDelta=new Vector2(98,94);_labels[index].fontSize=17;
+        }
         private void Refresh()
         {
             _status.fontSize=23;
@@ -86,6 +100,7 @@ namespace BoatAttack.Fishing
                 {
                     int slot=_offset+i;if(slot>=FishingBackpack.SlotCount)break;var item=bag.At(slot);
                     Set(i,(slot+1)+"  "+FishingBackpack.Name(item.item)+"\n×"+item.count,item.count==0?(Action)null:()=>EquipSlot(slot));
+                    Photo(i,FishingV023Art.Icon(item.item));
                 }
                 Pager(FishingBackpack.SlotCount);
             }
@@ -97,6 +112,7 @@ namespace BoatAttack.Fishing
                     int recipe=_offset+i;if(recipe>=FishingRecipes.All.Length)break;var r=FishingRecipes.All[recipe];string costs="";
                     foreach(var cost in r.Costs)costs+=FishingBackpack.Name(cost.item)+" "+bag.Count(cost.item)+"/"+cost.count+" ";
                     Set(i,FishingBackpack.Name(r.Output)+" ×"+r.Count+"\n"+costs,()=>Craft(r));
+                    Photo(i,FishingV023Art.Icon(r.Output));
                 }
                 Pager(FishingRecipes.All.Length);
             }
@@ -106,10 +122,23 @@ namespace BoatAttack.Fishing
                     "\n明日："+BayClimate.Name(FishingCalendar.Forecast(day.Day+1))+"\n夜间提灯照路 · 星灯鱼仅在夜间出现\n打开手册时日历和熔炉暂停";
                 Set(0,"休息至清晨",_c.CanRest?(Action)(()=>{Close();_c.RestUntilMorning();}):null);
                 Set(1,"观察附近动物",()=>{Close();if(_c.Ashore)_c.FieldWorld.Observe();else _c.Ecology.Observe();});
-                Set(2,"图鉴：12 种鱼\n按季节、海域、昼夜寻找",null);Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
+                Set(2,"图鉴："+FishingSpecies.Count+" 种生物\n实物照片 / 栖息条件",()=>Open(10));Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
+                Set(6,"重看序章",_c.Prologue.CanBegin?(Action)(()=>{Close();_c.Prologue.Begin();}):null);
                 Set(3,"推进至白昼\n08:00",_c.CanSetTime?(Action)(()=>_c.SetDayNight(false)):null);
                 Set(4,"推进至夜晚\n21:00",_c.CanSetTime?(Action)(()=>_c.SetDayNight(true)):null);
                 Set(5,day.Automatic?"自动流逝\n点击固定":"时间固定\n点击自动",_c.CanSetTime?(Action)_c.ToggleClock:null);
+            }
+            else if(_page==10)
+            {
+                _status.text="海湾生物图鉴 · "+FishingSpecies.Count+" 种\n点选实物照片查看栖息条件与纪录\n普通与珍珠发现、体重纪录继续保存";
+                for(int i=0;i<6;i++)
+                {
+                    int kind=_offset+i;if(kind>=FishingSpecies.Count)break;var species=(FishKind)kind;
+                    Set(i,FishingSpecies.Name(species)+"\n"+(_c.Career.Discovered(species)?"已记录":"未发现"),()=>
+                    {_status.text=FishingSpecies.Name(species)+"\n"+FishingSpecies.Of(species).Habitat+"\n纪录："+FishingText.Weight(_c.Career.BestGrams(species));_nextText=Time.unscaledTime+6;});
+                    Photo(i,Resources.Load<Texture2D>("FishingFish/"+species+"Thumbnail"));
+                }
+                Pager(FishingSpecies.Count);
             }
             else if(_page==8 && _c.DialogueOpen)
             {
@@ -136,6 +165,7 @@ namespace BoatAttack.Fishing
                 {
                     int product=_offset+i;if(product>=FishingSupplies.Items.Length)break;
                     Set(i,FishingBackpack.Name(FishingSupplies.Items[product])+" ×"+FishingSupplies.Quantity(product)+"\n"+FishingSupplies.Price(product)+" 金币",()=>{_c.BuySupply(product);Refresh();});
+                    Photo(i,FishingV023Art.Icon(FishingSupplies.Items[product]));
                 }
                 Set(6,_offset==0?"下一页":"上一页",()=>{_offset=_offset==0?6:0;Refresh();});Set(7,"船舶 / 钓具升级",()=>Open(4));Set(8,"关闭",Close);
             }

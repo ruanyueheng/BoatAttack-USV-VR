@@ -130,7 +130,7 @@ namespace BoatAttack.Fishing
             return character!=null && character.HandRigReady && Vector3.Distance(character.ShoulderPosition(left),point)<=Mathf.Max(.01f,character.ArmReach(left)-reserve);
         }
         /// <summary>只平移独立物体来满足双手可达域，不读取解算后的腕骨反推工具。</summary>
-        public bool FitToolPose(Transform tool,Vector3 leftPalm,Vector3 rightPalm,bool useLeft=true,bool useRight=true)
+        public bool FitToolPose(Transform tool,Vector3 leftPalm,Vector3 rightPalm,Quaternion leftRotation,Quaternion rightRotation,bool useLeft=true,bool useRight=true)
         {
             if(XRSettings.isDeviceActive)return true;
             var character=_c.Shore.Character;if(character==null || !character.HandRigReady)return false;
@@ -138,10 +138,12 @@ namespace BoatAttack.Fishing
             {
                 if(useLeft)FitOne(true,leftPalm);if(useRight)FitOne(false,rightPalm);
             }
-            return (!useLeft || CanReach(true,tool.TransformPoint(leftPalm),.005f)) && (!useRight || CanReach(false,tool.TransformPoint(rightPalm),.005f));
+            return (!useLeft || WristReach(true,leftPalm,leftRotation)) && (!useRight || WristReach(false,rightPalm,rightRotation));
+            bool WristReach(bool left,Vector3 local,Quaternion rotation)=>Vector3.Distance(character.ShoulderPosition(left),character.WristForPalm(left,tool.TransformPoint(local),tool.rotation*rotation))<=character.ArmReach(left)-.005f;
             void FitOne(bool left,Vector3 local)
             {
-                var shoulder=character.ShoulderPosition(left);var delta=tool.TransformPoint(local)-shoulder;
+                var shoulder=character.ShoulderPosition(left);var rotation=left?leftRotation:rightRotation;
+                var delta=character.WristForPalm(left,tool.TransformPoint(local),tool.rotation*rotation)-shoulder;
                 tool.position+=Vector3.ClampMagnitude(delta,Mathf.Max(.01f,character.ArmReach(left)-.025f))-delta;
             }
         }
@@ -193,7 +195,7 @@ namespace BoatAttack.Fishing
                 // The knob spins freely on its axle: fingers wrap across it, without rolling the wrist with the crank.
                 var reelPalm=_rod.InverseTransformPoint(_knob.position)+new Vector3(-.012f,.022f,-.018f);
                 bool landing=_c.Session.Phase==CatchPhase.Landing;
-                FitToolPose(_rod,reelPalm,RodPalm);
+                FitToolPose(_rod,reelPalm,RodPalm,Quaternion.LookRotation(Vector3.right,Vector3.up),RodPalmRotation);
                 _right.SetFromGrip(_rod,RodPalm,RodPalmRotation,.86f);
                 if(!landing)
                 {

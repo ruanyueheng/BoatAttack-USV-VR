@@ -13,6 +13,7 @@
 *.aiff filter=lfs diff=lfs merge=lfs -text
 *.tga filter=lfs diff=lfs merge=lfs -text
 ArtSource/V022/*.blend filter=lfs diff=lfs merge=lfs -text
+ArtSource/V023/*.blend filter=lfs diff=lfs merge=lfs -text
 
 # Unity serialized/source files should remain reviewable text
 *.meta text

@@ -252,7 +252,7 @@ internal static class ProgressionTests
         full.RecordLegend(Sized("full-legend", FishKind.Sailfish, 25000));
         full.Observe(MarineKind.Ray);
         var snap = full.Snapshot();
-        check(snap.version == 11 && snap.holdLevel == 2 && snap.reelLevel == 1 && snap.rodLevel == 1 && snap.legendCatches == 1
+        check(snap.version == 12 && snap.holdLevel == 2 && snap.reelLevel == 1 && snap.rodLevel == 1 && snap.legendCatches == 1
             && snap.bestGrams.Count == FishingSpecies.Count && snap.inventory[0].grams == 1500, "V4 snapshot carries upgrades, sizes and legends");
         check(FishingCareer.TryRestore(snap, out var back) && back.Count == 10 && back.Capacity == 10 && back.LegendCatches == 1
             && back.BestGrams(FishKind.Sailfish) == 25000 && back.BestGrams(FishKind.Puffer) == snap.bestGrams[2] && back.Coins == full.Coins && back.Seen(MarineKind.Ray), "V4 v3 round trip");

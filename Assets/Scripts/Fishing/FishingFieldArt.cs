@@ -7,6 +7,8 @@ namespace BoatAttack.Fishing
         private static readonly Color Ink=new Color(.08f,.14f,.15f), Brass=new Color(.85f,.57f,.22f), Paper=new Color(.88f,.85f,.67f);
         public static Mesh Tool(FieldItem item)
         {
+            var imported=FishingV023Art.ItemMesh(item);
+            if(imported!=null)return Object.Instantiate(imported);
             var b=new FishingMeshBuilder();
             if(item==FieldItem.Binoculars)
             {

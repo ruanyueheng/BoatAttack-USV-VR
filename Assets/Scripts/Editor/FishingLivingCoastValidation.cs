@@ -33,9 +33,10 @@ namespace BoatAttack.EditorTools
                 int triangles=mesh.triangles.Length/3;
                 Debug.Log("[LIVING-COAST] Mesh bounds "+kind+" "+mesh.bounds.size.ToString("F5"));
                 Check(triangles<=5000 && mesh.subMeshCount==1,"Single-mesh fish budget "+kind+" / "+triangles+" triangles");
-                Check(Mathf.Abs(mesh.bounds.size.z-FishingSpecies.LengthMeters(kind))<.001f,"Metre-scaled fish "+kind);
+                float span=i>=12?Mathf.Max(mesh.bounds.size.x,mesh.bounds.size.y,mesh.bounds.size.z):mesh.bounds.size.z;
+                Check(Mathf.Abs(span-FishingSpecies.LengthMeters(kind))<.001f,"Metre-scaled marine model "+kind);
                 foreach(var v in mesh.vertices)CheckFinite(v);
-                if(i>=4)Check(fish.name.StartsWith("Hunyuan") && fish.GetComponent<Renderer>().sharedMaterial.GetTexture("_BaseMap")!=null
+                if(i>=4)Check((i<12?fish.name.StartsWith("Hunyuan") && fish.GetComponent<Renderer>().sharedMaterial.GetTexture("_BaseMap")!=null:mesh.colors32.Length==mesh.vertexCount)
                     && Resources.Load<Texture2D>("FishingFish/"+kind+"Thumbnail")!=null,"Imported fish, texture and journal preview "+kind);
                 report.AppendLine(kind+","+triangles+","+mesh.vertexCount+","+mesh.bounds.size.z.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 Object.Destroy(fish);foreach(var item in owned)Object.Destroy(item);
@@ -59,7 +60,8 @@ namespace BoatAttack.EditorTools
                 Debug.Log("[LIVING-COAST] INSPECT "+kind+" viewport="+min+" / "+max+" near="+nearest);
                 Debug.Log("[LIVING-COAST] POSE eye="+c.viewCamera.transform.position+" fish="+c.ActiveFish.position+" size="+bounds.size+" scale="+c.ActiveFish.lossyScale+" shoulder="+c.Shore.Character.HandReferencePosition);
                 if(i==0)Capture(c.viewCamera,"inspect-debug");
-                if(!FishingSpecies.Of(kind).Legendary)Check(max.x-min.x<.85f && max.y-min.y<.55f && nearest>.15f,"Catch leaves sightline readable "+kind);
+                // Tall fauna need their full silhouette, while the upper quarter stays clear and the near plane remains protected.
+                if(!FishingSpecies.Of(kind).Legendary)Check(max.x-min.x<.85f && max.y-min.y<(i>=12?.75f:.55f) && (i<12 || max.y<.75f) && nearest>.15f,"Catch leaves sightline readable "+kind);
                 if(i==0 || i==4 || i==11)Capture(c.viewCamera,"held-"+kind);
                 Check(c.ResolveCatch(false),"Resolve isolated fish "+kind);
                 yield return null;

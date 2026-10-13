@@ -70,5 +70,41 @@
     "runtimeTriangles": 3500,
     "lengthMeters": 0.26,
     "texturePixels": 1024
+  },
+  {
+    "species": "Coral",
+    "source": "Originals/Coral.glb",
+    "sha256": "47ac92c45d4d0c7390a37276592d9c0341163b51e3e7e54e86360d7b21faf4c2",
+    "sourceTriangles": 50000,
+    "runtimeTriangles": 3500,
+    "lengthMeters": 0.24,
+    "texturePixels": 1024
+  },
+  {
+    "species": "Dart",
+    "source": "Originals/Dart.glb",
+    "sha256": "ea1fc9113777b4b20020da027fe7d7a825d9de1f4bcfc94afaa3eec3ec25b5e2",
+    "sourceTriangles": 50000,
+    "runtimeTriangles": 3500,
+    "lengthMeters": 0.32,
+    "texturePixels": 1024
+  },
+  {
+    "species": "Puffer",
+    "source": "Originals/Puffer.glb",
+    "sha256": "86bd800fe805e35b8d2d00f20bd748d15cc4942eea017c59d3f94487ce5c40fb",
+    "sourceTriangles": 50000,
+    "runtimeTriangles": 3500,
+    "lengthMeters": 0.21,
+    "texturePixels": 1024
+  },
+  {
+    "species": "Sailfish",
+    "source": "Originals/Sailfish.glb",
+    "sha256": "e0719c1fd8924389f2834f01bd48b6fc2381d47c67d8f241857dbb551d6275ac",
+    "sourceTriangles": 50008,
+    "runtimeTriangles": 3500,
+    "lengthMeters": 0.82,
+    "texturePixels": 1024
   }
 ]

@@ -8,6 +8,7 @@ import hashlib
 import json
 import math
 import sys
+import argparse
 
 import bpy
 import bmesh
@@ -17,16 +18,24 @@ ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "ArtSource/Hunyuan/Fish/Originals"
 OUT = ROOT / "Assets/Resources/FishingFish"
 PREVIEW = ROOT / "Logs/Hunyuan"
-INSPECT = "--inspect" in sys.argv
+parser = argparse.ArgumentParser()
+parser.add_argument("--inspect", action="store_true")
+parser.add_argument("--only", help="Comma-separated species; omitted imports every available original")
+options = parser.parse_args(sys.argv[sys.argv.index("--")+1:] if "--" in sys.argv else [])
+INSPECT = options.inspect
+ONLY = set(options.only.split(",")) if options.only else None
 LENGTHS = {"Mackerel": .29, "SeaBream": .27, "Sardine": .17, "Grouper": .35,
            "Butterfly": .20, "Tuna": .38, "Lanternfish": .18, "Lionfish": .26,
            "Coral": .24, "Dart": .32, "Puffer": .21, "Sailfish": .82}
+assert ONLY is None or ONLY <= set(LENGTHS), "Unknown --only species"
 # Source side previews determine which end is the head (positive X in the supplied GLB).
-REVERSE = {"Grouper", "Sardine", "Tuna"}
+REVERSE = {"Grouper", "Sardine", "Tuna", "Puffer"}
 OUT.mkdir(parents=True, exist_ok=True)
 PREVIEW.mkdir(parents=True, exist_ok=True)
 report = []
 for name, length in LENGTHS.items():
+    if ONLY is not None and name not in ONLY:
+        continue
     bpy.ops.wm.read_factory_settings(use_empty=True)
     source = SOURCE / (name + ".glb")
     if not source.exists() and name in {"Coral", "Dart", "Puffer", "Sailfish"}:
@@ -80,7 +89,10 @@ for name, length in LENGTHS.items():
         bsdf.inputs["Metallic"].default_value = 0
     # A consistent side view is also the exact thumbnail used by the journal.
     scene = bpy.context.scene
-    scene.render.engine = "BLENDER_EEVEE"
+    try:
+        scene.render.engine = "BLENDER_EEVEE_NEXT"
+    except TypeError:
+        scene.render.engine = "BLENDER_EEVEE"
     scene.render.resolution_x = 512 if INSPECT else 256
     scene.render.resolution_y = 288 if INSPECT else 144
     scene.render.resolution_percentage = 100
@@ -92,7 +104,10 @@ for name, length in LENGTHS.items():
     camera = bpy.context.object
     camera.rotation_euler = (-camera.location).to_track_quat("-Z", "Y").to_euler()
     camera.data.type = "ORTHO"
-    camera.data.ortho_scale = length*1.22
+    # Tall sails also need clearance in the landscape thumbnail.
+    points = [fish.matrix_world @ v.co for v in fish.data.vertices]
+    height = max(p.z for p in points) - min(p.z for p in points)
+    camera.data.ortho_scale = max(length*1.22, height*scene.render.resolution_x/scene.render.resolution_y*1.2)
     scene.camera = camera
     for position, energy in [((-.4, -1, 1), 55), ((.5, .5, .4), 25)]:
         bpy.ops.object.light_add(type="AREA", location=Vector(position)*length)
@@ -104,19 +119,22 @@ for name, length in LENGTHS.items():
     scene.render.filepath = str((PREVIEW if INSPECT else OUT) / (name + ("Source.png" if INSPECT else "Thumbnail.png")))
     bpy.ops.render.render(write_still=True)
     if not INSPECT:
-        # Blender -Y becomes Unity +Z; all fish use the established +Z-head convention.
-        fish.data.transform(Matrix.Rotation(-math.pi/2, 4, "Z"))
+        # With FBX space baking the mesh's +Y becomes Unity +Z, without a rotated object wrapper.
+        fish.data.transform(Matrix.Rotation(math.pi/2, 4, "Z"))
         bpy.ops.object.select_all(action="DESELECT")
         fish.select_set(True)
         bpy.context.view_layer.objects.active = fish
         fish.name = name
         bpy.ops.export_scene.fbx(filepath=str(OUT / (name + ".fbx")), use_selection=True,
             object_types={"MESH"}, bake_anim=False, add_leaf_bones=False,
-            axis_forward="-Z", axis_up="Y", path_mode="STRIP")
+            axis_forward="-Z", axis_up="Y", bake_space_transform=True, path_mode="STRIP")
     report.append({"species": name, "source": "Originals/"+source.name,
         "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
         "sourceTriangles": before, "runtimeTriangles": triangles,
         "lengthMeters": length, "texturePixels": 1024})
     print("[HUNYUAN]", name, before, "->", triangles, flush=True)
-(PREVIEW / "source-inspection.json" if INSPECT else ROOT / "ArtSource/Hunyuan/Fish/manifest.json").write_text(
+manifest = PREVIEW / "source-inspection.json" if INSPECT else ROOT / "ArtSource/Hunyuan/Fish/manifest.json"
+if ONLY and manifest.exists():
+    report = [row for row in json.loads(manifest.read_text(encoding="utf-8")) if row["species"] not in ONLY] + report
+manifest.write_text(
     json.dumps(report, indent=2), encoding="utf-8")

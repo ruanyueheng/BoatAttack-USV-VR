@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 namespace BoatAttack.Fishing
@@ -274,23 +275,30 @@ namespace BoatAttack.Fishing
             var sign=Controller.transform.Find("Tide and Fin floating fish market/Market name");
             if(sign==null || Quaternion.Angle(sign.localRotation,Quaternion.identity)>0.01f)throw new Exception("Market sign is facing backwards.");
             int fishMeshes=0;
-            foreach(var filter in Controller.GetComponentsInChildren<MeshFilter>())
+            foreach(var filter in Controller.transform.Find("Tide and Fin floating fish market").GetComponentsInChildren<MeshFilter>())
             {
                 var mesh=filter.sharedMesh;
-                if(mesh==null || !mesh.name.StartsWith(FishingMeshBuilder.FishMeshPrefix))continue;
+                if(mesh==null || !(filter.name.StartsWith("Hunyuan / ") || filter.name.StartsWith("Coastal fauna / ") || mesh.name.StartsWith(FishingMeshBuilder.FishMeshPrefix)))continue;
                 fishMeshes++;
                 if(filter.GetComponentsInChildren<Renderer>().Length!=1)throw new Exception("A fish must draw as a single renderer.");
                 ValidateFishMesh(mesh);
             }
             if(fishMeshes<3)throw new Exception("Three modeled species must be present in market display.");
-            // The legend and pearl variants are built on demand, so check their geometry directly.
+            // Validate the same imported geometry and material that the player sees.
+            var owned=new List<UnityEngine.Object>();
             foreach(FishKind kind in Enum.GetValues(typeof(FishKind)))
                 foreach(bool rare in new[]{false,true})
                 {
                     if(rare && FishingSpecies.Of(kind).Legendary)continue;
-                    var mesh=FishingMeshBuilder.Fish(kind,rare);
-                    try{ValidateFishMesh(mesh);}finally{Destroy(mesh);}
+                    var fish=FishingArt.Fish(Controller.transform,owned,Controller.PaletteShader,kind,rare);
+                    try
+                    {
+                        var mesh=fish.GetComponent<MeshFilter>().sharedMesh;ValidateFishMesh(mesh);
+                        if(Resources.Load<GameObject>("FishingFish/"+kind)==null || (mesh.colors32.Length!=mesh.vertexCount && fish.GetComponent<Renderer>().sharedMaterial.GetTexture("_BaseMap")==null))throw new Exception("Missing actual species geometry or colour: "+kind);
+                    }
+                    finally{Destroy(fish);}
                 }
+            foreach(var asset in owned)Destroy(asset);
             var scenery=Controller.GetComponent<FishingScenery>();
             if(scenery==null || scenery.CombinedRenderers>40 || scenery.CombinedVertices>60000)throw new Exception("V03 added scenery exceeded its static geometry budget.");
             if(Controller.GetComponent<FishingWorldInstruments>()==null || FishingWorldInstruments.ReferenceDistance<2f)throw new Exception("World instrument comfort setup missing.");
@@ -387,7 +395,7 @@ namespace BoatAttack.Fishing
 
         private static void ValidateFishMesh(Mesh mesh)
         {
-            if(mesh.vertexCount>4000)throw new Exception(mesh.name+" exceeds the 4000-vertex fish budget: "+mesh.vertexCount);
+            if(mesh.triangles.Length/3>5000 || mesh.vertexCount>15000)throw new Exception(mesh.name+" exceeds the 5000-triangle marine budget: "+mesh.vertexCount);
             foreach(var normal in mesh.normals)
                 if(float.IsNaN(normal.sqrMagnitude) || normal.sqrMagnitude<0.5f)throw new Exception(mesh.name+" contains invalid/cancelled surface normals.");
         }

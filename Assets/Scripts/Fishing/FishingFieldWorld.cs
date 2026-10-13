@@ -25,6 +25,7 @@ namespace BoatAttack.Fishing
         public void Build(FishingPrototype c)
         {
             _c=c;_palette=new Material(c.PaletteShader){name="Field exploration vertex palette",enableInstancing=true};_owned.Add(_palette);
+            _palette.SetFloat("_Gloss",.12f);_palette.SetFloat("_Rim",.06f);
             foreach(FieldItem item in new[]{FieldItem.FieldGuide,FieldItem.Binoculars,FieldItem.Lantern,FieldItem.Shell,FieldItem.Driftwood})
             {var mesh=FishingFieldArt.Tool(item);_tools.Add(item,mesh);_owned.Add(mesh);}
             foreach(var item in new[]{FieldItem.StonePickaxe,FieldItem.IronPickaxe}){var mesh=FishingWorkshopArt.Make(item);_tools.Add(item,mesh);_owned.Add(mesh);}

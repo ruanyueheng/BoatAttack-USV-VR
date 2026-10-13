@@ -1,0 +1,22 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace BoatAttack.Fishing
+{
+    /// <summary>The mesh photographed for each icon is also the mesh held and placed in the world.</summary>
+    public static class FishingV023Art
+    {
+        private static readonly Dictionary<FieldItem,Texture2D> Icons=new Dictionary<FieldItem,Texture2D>();
+        public static Mesh ItemMesh(FieldItem item)
+        {
+            var source=Resources.Load<GameObject>("FishingV023/Items/"+item);
+            return source==null?null:source.GetComponentInChildren<MeshFilter>().sharedMesh;
+        }
+        public static Texture2D Icon(FieldItem item)
+        {
+            if(!Icons.TryGetValue(item,out var texture))
+            {texture=Resources.Load<Texture2D>("FishingV023/Items/"+item+"Thumbnail");Icons.Add(item,texture);}
+            return texture;
+        }
+    }
+}
