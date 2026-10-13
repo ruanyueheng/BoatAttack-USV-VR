@@ -136,7 +136,7 @@ def cc0(name,pack,alias,folder,span=None):
         obj=objs[0]; obj.data.materials.clear(); obj.data.materials.append(mat)
         for face in obj.data.polygons: face.material_index=0
         GALLERY.append(obj); obj.hide_render=True; obj.location=(len(GALLERY)%8*16,len(GALLERY)//8*16,0)
-        REPORT.append(dict(name=alias,source=str(original.relative_to(ROOT)),triangles=sum(len(p.vertices)-2 for p in obj.data.polygons),dimensions=list(obj.dimensions),sha256=hashlib.sha256(cached.read_bytes()).hexdigest()))
+        REPORT.append(dict(name=alias,source=original.relative_to(ROOT).as_posix(),triangles=sum(len(p.vertices)-2 for p in obj.data.polygons),dimensions=list(obj.dimensions),sha256=hashlib.sha256(cached.read_bytes()).hexdigest()))
         return
     before=set(scene.objects); bpy.ops.import_scene.gltf(filepath=str(original))
     imported=[o for o in scene.objects if o not in before]; meshes=[o for o in imported if o.type=='MESH']
@@ -183,7 +183,7 @@ def cc0(name,pack,alias,folder,span=None):
         mesh=bmesh.new();mesh.from_mesh(obj.data);bmesh.ops.reverse_faces(mesh,faces=list(mesh.faces));mesh.to_mesh(obj.data);mesh.free()
         obj.data.color_attributes.active_color=obj.data.color_attributes['Color']
     imported_names=[obj.name for obj in imported]
-    export(alias,folder,str(original.relative_to(ROOT)))
+    export(alias,folder,original.relative_to(ROOT).as_posix())
     for name in imported_names:
         obj=bpy.data.objects.get(name)
         if obj is not None and obj not in GALLERY: bpy.data.objects.remove(obj,do_unlink=True)

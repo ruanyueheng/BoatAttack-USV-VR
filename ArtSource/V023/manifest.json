@@ -1,7 +1,7 @@
 [
   {
     "name": "bedDouble",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-bedDouble.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-bedDouble.glb",
     "triangles": 264,
     "dimensions": [
       0.9559999704360962,
@@ -12,7 +12,7 @@
   },
   {
     "name": "cabinetBedDrawer",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-cabinetBedDrawer.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-cabinetBedDrawer.glb",
     "triangles": 182,
     "dimensions": [
       0.265999972820282,
@@ -23,7 +23,7 @@
   },
   {
     "name": "loungeSofa",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-loungeSofa.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-loungeSofa.glb",
     "triangles": 128,
     "dimensions": [
       0.9799999594688416,
@@ -34,7 +34,7 @@
   },
   {
     "name": "loungeChair",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-loungeChair.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-loungeChair.glb",
     "triangles": 128,
     "dimensions": [
       0.4899999797344208,
@@ -45,7 +45,7 @@
   },
   {
     "name": "tableCoffee",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-tableCoffee.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-tableCoffee.glb",
     "triangles": 124,
     "dimensions": [
       0.6609960794448853,
@@ -56,7 +56,7 @@
   },
   {
     "name": "rugRectangle",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-rugRectangle.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-rugRectangle.glb",
     "triangles": 28,
     "dimensions": [
       1.5699999332427979,
@@ -67,7 +67,7 @@
   },
   {
     "name": "bookcaseOpen",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-bookcaseOpen.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-bookcaseOpen.glb",
     "triangles": 320,
     "dimensions": [
       0.4000000059604645,
@@ -78,7 +78,7 @@
   },
   {
     "name": "books",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-books.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-books.glb",
     "triangles": 62,
     "dimensions": [
       0.15044759213924408,
@@ -89,7 +89,7 @@
   },
   {
     "name": "desk",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-desk.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-desk.glb",
     "triangles": 198,
     "dimensions": [
       0.7344754338264465,
@@ -100,7 +100,7 @@
   },
   {
     "name": "chairDesk",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-chairDesk.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-chairDesk.glb",
     "triangles": 588,
     "dimensions": [
       0.3349500000476837,
@@ -111,7 +111,7 @@
   },
   {
     "name": "kitchenCabinetDrawer",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-kitchenCabinetDrawer.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-kitchenCabinetDrawer.glb",
     "triangles": 174,
     "dimensions": [
       0.4300000071525574,
@@ -122,7 +122,7 @@
   },
   {
     "name": "kitchenSink",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-kitchenSink.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-kitchenSink.glb",
     "triangles": 318,
     "dimensions": [
       0.4300000071525574,
@@ -133,7 +133,7 @@
   },
   {
     "name": "kitchenStove",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-kitchenStove.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-kitchenStove.glb",
     "triangles": 830,
     "dimensions": [
       0.4300000071525574,
@@ -144,7 +144,7 @@
   },
   {
     "name": "kitchenFridgeSmall",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-kitchenFridgeSmall.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-kitchenFridgeSmall.glb",
     "triangles": 152,
     "dimensions": [
       0.4300000071525574,
@@ -155,7 +155,7 @@
   },
   {
     "name": "tableRound",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-tableRound.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-tableRound.glb",
     "triangles": 80,
     "dimensions": [
       0.6928203105926514,
@@ -166,7 +166,7 @@
   },
   {
     "name": "chair",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-chair.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-chair.glb",
     "triangles": 170,
     "dimensions": [
       0.20000000298023224,
@@ -177,7 +177,7 @@
   },
   {
     "name": "pottedPlant",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-pottedPlant.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-pottedPlant.glb",
     "triangles": 60,
     "dimensions": [
       0.21205927431583405,
@@ -188,7 +188,7 @@
   },
   {
     "name": "lampRoundFloor",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-lampRoundFloor.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-lampRoundFloor.glb",
     "triangles": 76,
     "dimensions": [
       0.15203940868377686,
@@ -199,7 +199,7 @@
   },
   {
     "name": "lampRoundTable",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-lampRoundTable.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-lampRoundTable.glb",
     "triangles": 76,
     "dimensions": [
       0.15203940868377686,
@@ -210,7 +210,7 @@
   },
   {
     "name": "coatRackStanding",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-coatRackStanding.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-coatRackStanding.glb",
     "triangles": 190,
     "dimensions": [
       0.2727999985218048,
@@ -221,7 +221,7 @@
   },
   {
     "name": "radio",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-radio.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-radio.glb",
     "triangles": 432,
     "dimensions": [
       0.3149999976158142,
@@ -232,7 +232,7 @@
   },
   {
     "name": "bathroomSink",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-bathroomSink.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-bathroomSink.glb",
     "triangles": 316,
     "dimensions": [
       0.3400000035762787,
@@ -243,7 +243,7 @@
   },
   {
     "name": "toilet",
-    "source": "ArtSource\\V023\\Originals\\furniture-kit-toilet.glb",
+    "source": "ArtSource/V023/Originals/furniture-kit-toilet.glb",
     "triangles": 230,
     "dimensions": [
       0.3125499486923218,
@@ -254,7 +254,7 @@
   },
   {
     "name": "Plank",
-    "source": "ArtSource\\V023\\Originals\\survival-kit-resource-planks.glb",
+    "source": "ArtSource/V023/Originals/survival-kit-resource-planks.glb",
     "triangles": 72,
     "dimensions": [
       0.34556177258491516,
@@ -265,7 +265,7 @@
   },
   {
     "name": "Driftwood",
-    "source": "ArtSource\\V023\\Originals\\survival-kit-resource-wood.glb",
+    "source": "ArtSource/V023/Originals/survival-kit-resource-wood.glb",
     "triangles": 64,
     "dimensions": [
       0.5999999642372131,
@@ -276,7 +276,7 @@
   },
   {
     "name": "Stone",
-    "source": "ArtSource\\V023\\Originals\\survival-kit-resource-stone.glb",
+    "source": "ArtSource/V023/Originals/survival-kit-resource-stone.glb",
     "triangles": 44,
     "dimensions": [
       0.5,
