@@ -8,7 +8,9 @@
 3. complete — 接入住宅、睡眠、36秒六镜头序章及共享输入守卫。
 4. complete — 实物图标、腕部修正、五指/穿模、宽体和竖直鱼获观察验收通过。
 5. complete — 3484规则、70输入、860项专项/回归、57资产自检、Windows包及48打包场景通过。
-6. in_progress — 自审完成；准备白名单提交、PR与审查请求。
+6. complete — 白名单提交及LFS上传完成；PR #33已创建、附加到本聊天并请求Codex审查。
+
+PR：https://github.com/ruanyueheng/BoatAttack-USV-VR/pull/33 。未合并，等待独立审查。
 
 ## 约束
 - 保留开发前所有本地修改；只提交本版白名单文件。用户四条原件纳入本版。
