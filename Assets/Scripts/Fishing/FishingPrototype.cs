@@ -25,7 +25,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.22.0";
+        public const string Version = "0.23.0";
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
@@ -54,7 +54,8 @@ namespace BoatAttack.Fishing
         public FishingExpeditionScene Expedition { get; private set; }
         public bool Ashore => Shore != null && Shore.Ashore;
         public Vector3 ExplorerPosition => Ashore ? Shore.Position : Player.transform.position;
-        public int NavigationCount => ShopNavigationIndex + 1 + FishingAdventure.Count;
+        public int HomeNavigationIndex => ShopNavigationIndex + 1 + FishingAdventure.Count;
+        public int NavigationCount => HomeNavigationIndex + 1;
         public int IslandNavigationIndex(int island) => ShopNavigationIndex + 1 + island;
         public FishingWeather Weather { get; private set; }
         public FishingEcology Ecology { get; private set; }
@@ -72,7 +73,7 @@ namespace BoatAttack.Fishing
         public bool QuietMode { get; private set; }
         public int NavigationTarget { get; private set; }
         public Vector3 NavigationPosition => NavigationWorldPosition();
-        public string NavigationName => NavigationTarget > ShopNavigationIndex ? FishingAdventure.Name(NavigationTarget-ShopNavigationIndex-1) : NavigationTarget == ShopNavigationIndex ? ShopName : NavigationTarget == 0 ? "潮汐渔港" : NavigationTarget <= fishingSpots.Length ? FishingGrounds.Name(NavigationTarget - 1) : FishingExploration.SiteName(NavigationTarget - fishingSpots.Length - 1);
+        public string NavigationName => NavigationTarget == HomeNavigationIndex ? "回潮渔屋" : NavigationTarget > ShopNavigationIndex ? FishingAdventure.Name(NavigationTarget-ShopNavigationIndex-1) : NavigationTarget == ShopNavigationIndex ? ShopName : NavigationTarget == 0 ? "潮汐渔港" : NavigationTarget <= fishingSpots.Length ? FishingGrounds.Name(NavigationTarget - 1) : FishingExploration.SiteName(NavigationTarget - fishingSpots.Length - 1);
         public bool CanChangeBait => Session.Phase == CatchPhase.Idle || Session.Phase == CatchPhase.Caught || Session.Phase == CatchPhase.Escaped;
         public CatchCard LastCatch { get; private set; }
         public bool LegendTrophy => Career != null && Career.LegendCatches > 0;
@@ -125,10 +126,11 @@ namespace BoatAttack.Fishing
             Automated = Application.isBatchMode || HasArgument("-fishing-field-capture") || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
             SavePath = AcceptanceOptions != null ? AcceptanceOptions.ProfilePath(Application.temporaryCachePath, false)
                 : Path.Combine(Automated ? Application.temporaryCachePath : Application.persistentDataPath,
-                Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v11.json");
+                Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v12.json");
             // Older executables keep their own files; migration never overwrites their progress.
             string warning;
-            string legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v10.json");
+            string legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v11.json");
+            if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v10.json");
             if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v9.json");
             if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v8.json");
             if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v7.json");
@@ -189,6 +191,8 @@ namespace BoatAttack.Fishing
             Regions=gameObject.AddComponent<FishingRegionPresentation>();Regions.Build(this);
             Letter=gameObject.AddComponent<FishingLetter>();Letter.Build(this);
             WaterRoute=gameObject.AddComponent<FishingWaterRoute>();WaterRoute.Build(this);
+            Home=gameObject.AddComponent<FishingHome>();Home.Build(this);
+            Prologue=gameObject.AddComponent<FishingPrologue>();Prologue.Build(this);
             Shore.RefreshClimbRoutes();
             ConfigurePresentation();
             _feedback=gameObject.AddComponent<AudioSource>();_feedback.spatialBlend=0f;_feedback.volume=0.45f;
@@ -200,6 +204,7 @@ namespace BoatAttack.Fishing
             if(LegendTrophy)BuildTrophy();
             Notice(string.IsNullOrEmpty(warning)?"潮汐回响：N选择岛屿，低速G下船，E与居民交谈 / 进入潮纹秘境。J查看世界航记；店员可介绍商品，离岸可游泳。":warning,10f);
             _initialized=true;
+            if(!Automated && !HasIsolatedProfile && !Career.PrologueSeen && !HasPendingCatch)Prologue.Begin();
             if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }
             else if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
             Debug.Log("[FISHING] Prototype v"+Version+" initialized. Procedural and Hunyuan fish; desktop/XR input.");
@@ -393,7 +398,7 @@ namespace BoatAttack.Fishing
             // 全部工具和掌心目标落位后才解同源骨架；随后只读取竿尖画线，不再次采样。
             Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right,UnityEngine.XR.XRSettings.isDeviceActive);
             Shore.ApplyTraversalPose();
-            Shore.Character.SetOpticalView(View.OpticalView || (Letter.Open && !UnityEngine.XR.XRSettings.isDeviceActive));DockConsole.Present();
+            Shore.Character.SetOpticalView(View.OpticalView || ((Letter.Open || Prologue.Open || Home.Sleeping) && !UnityEngine.XR.XRSettings.isDeviceActive));DockConsole.Present();
         }
         public void ToggleView()
         {
@@ -581,6 +586,7 @@ namespace BoatAttack.Fishing
         }
         public void ToggleJournal()
         {
+            if(Prologue!=null && (Prologue.Open || Home.Sleeping))return;
             TackleShop?.Close();
             if(InventoryOpen)return;
             if(Paused && !JournalOpen)return;
@@ -608,6 +614,7 @@ namespace BoatAttack.Fishing
         }
         public void ReturnToHarbor()
         {
+            Prologue?.Suspend();Home?.CancelSleep();
             Letter?.Close();Residents?.Close();Realms?.Abort();
             CancelWorldAction();
             TackleShop?.Close();

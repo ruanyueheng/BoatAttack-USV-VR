@@ -20,7 +20,7 @@ namespace BoatAttack.Fishing
         public bool Open { get; private set; }
         public float Age { get; private set; }
         public bool Ready => Open && Age >= OpenSeconds;
-        public bool CanRead => !Open && !_c.DialogueOpen && !_c.HasPendingCatch && (!_c.Paused || _c.JournalOpen);
+        public bool CanRead => !Open && !_c.DialogueOpen && !_c.HasPendingCatch && !_c.Prologue.Open && !_c.Home.Sleeping && (!_c.Paused || _c.JournalOpen);
         public Transform Envelope => _envelope;
         public Transform Flap => _flap;
         public Transform Paper => _paper;

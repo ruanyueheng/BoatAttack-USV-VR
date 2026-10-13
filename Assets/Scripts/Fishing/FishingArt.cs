@@ -30,11 +30,12 @@ namespace BoatAttack.Fishing
             renderer.sharedMaterial = Palette(owned, palette, "Fishing v0.4 fish gloss", .55f, .3f);
             if(imported!=null)
             {
-                go.name="Hunyuan / "+kind+(rare?" pearl":"");
-                var material=Palette(owned,palette,"Hunyuan fish / "+kind+(rare?" pearl":""),.22f,.12f);
-                material.SetTexture("_BaseMap",Resources.Load<Texture2D>("FishingFish/"+kind+"Albedo"));
-                material.SetFloat("_Textured",1);
-                material.SetVector("_TailMotion",new Vector4(.28f,4,FishingSpecies.LengthMeters(kind)*.15f,0));
+                go.name=(kind>=FishKind.SeaTurtle?"Coastal fauna / ":"Hunyuan / ")+kind+(rare?" pearl":"");
+                var material=Palette(owned,palette,"Marine model / "+kind+(rare?" pearl":""),.22f,.12f);
+                var texture=Resources.Load<Texture2D>("FishingFish/"+kind+"Albedo");
+                material.SetTexture("_BaseMap",texture);
+                material.SetFloat("_Textured",texture!=null?1:0);
+                material.SetVector("_TailMotion",new Vector4(kind>=FishKind.SeaTurtle?.045f:.28f,kind>=FishKind.SeaTurtle?2:4,FishingSpecies.LengthMeters(kind)*.15f,0));
                 material.SetColor("_BaseColor",rare?new Color(1,.86f,.62f):Color.white);
                 renderer.sharedMaterial=material;
             }

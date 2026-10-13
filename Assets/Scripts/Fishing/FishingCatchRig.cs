@@ -53,10 +53,25 @@ namespace BoatAttack.Fishing
         public void ToggleInspect(){if(_c.HasPendingCatch && !_c.Paused){if(FishingSpecies.Of(_c.Career.PendingCatch.fish.kind).Legendary){Location=Place.Tray;_c.MeasureCatch();return;}Location=Location==Place.Hand?Place.Tray:Place.Hand;if(Location==Place.Hand)_c.MeasureCatch();}}
         public void ApplyActionContactPose(Vector3 position,Quaternion frame)
         {
-            if(_c.HasPendingCatch)_c.ActiveFish.SetPositionAndRotation(position,frame*Quaternion.Euler(0,-90,0));
+            if(_c.HasPendingCatch)_c.ActiveFish.SetPositionAndRotation(position,frame*InspectionRotation);
         }
         public void PrepareHandAction(){if(_c.HasPendingCatch && !_c.Paused)Location=FishingSpecies.Of(_c.Career.PendingCatch.fish.kind).Legendary?Place.Tray:Place.Hand;}
-        public Vector3 InspectionCenter(Quaternion frame)=>_c.Shore.Character.EyePosition+frame*new Vector3(.10f,-.12f,.40f);
+        public Quaternion InspectionRotation
+        {
+            get
+            {
+                var size=_c.ActiveFish.GetComponent<MeshFilter>().sharedMesh.bounds.size;
+                var side=Quaternion.Euler(0,-90,0);
+                return size.y>Mathf.Max(size.x,size.z)?Quaternion.AngleAxis(90,Vector3.forward)*side:side;
+            }
+        }
+        public Vector3 InspectionCenter(Quaternion frame)
+        {
+            var fish=_c.ActiveFish;var bounds=fish.GetComponent<MeshFilter>().sharedMesh.bounds;
+            float depth=Mathf.Max(0,bounds.extents.x*fish.lossyScale.x-.06f);
+            bool vertical=bounds.size.y>Mathf.Max(bounds.size.x,bounds.size.z);
+            return _c.Shore.Character.EyePosition+frame*new Vector3(vertical?0:.10f,vertical?-.08f:-.12f,.40f+depth);
+        }
         public void RequestRelease(bool animate=false)
         {
             if(!_c.HasPendingCatch || _c.Paused)return;
@@ -123,8 +138,15 @@ namespace BoatAttack.Fishing
                 else
                 {
                     var bounds=filter.sharedMesh.bounds;float span=Mathf.Min(bounds.extents.z*.28f,.16f/Mathf.Max(.01f,fish.lossyScale.z));
-                    var a=bounds.center+new Vector3(0,-bounds.extents.y*.7f,span);
-                    var b=bounds.center+new Vector3(0,-bounds.extents.y*.7f,-span);
+                    float nearSide=bounds.extents.x>.10f?-bounds.extents.x*.90f:0;
+                    var a=bounds.center+new Vector3(nearSide,-bounds.extents.y*.7f,span);
+                    var b=bounds.center+new Vector3(nearSide,-bounds.extents.y*.7f,-span);
+                    if(bounds.size.y>Mathf.Max(bounds.size.x,bounds.size.z))
+                    {
+                        float across=Mathf.Min(bounds.extents.y*.28f,.16f/Mathf.Max(.01f,fish.lossyScale.y));
+                        a=bounds.center+new Vector3(-bounds.extents.x*.8f,across,0);
+                        b=bounds.center+new Vector3(-bounds.extents.x*.8f,-across,0);
+                    }
                     _leftFishGrip=fish.InverseTransformPoint(FishingContactGeometry.ClosestPoint(fish,filter.transform.TransformPoint(a)));
                     _rightFishGrip=fish.InverseTransformPoint(FishingContactGeometry.ClosestPoint(fish,filter.transform.TransformPoint(b)));
                 }
@@ -167,7 +189,7 @@ namespace BoatAttack.Fishing
                 if(xr && _c.Hands.TryControllerPalm(false,out pos,out rot))
                 {
                     var mounted=rot*Quaternion.Inverse(Quaternion.LookRotation(Vector3.right,Vector3.down));
-                    pos-=mounted*Vector3.Scale(FishPalmLocal(false),fish.lossyScale);rot=mounted*Quaternion.Euler(0,90,0);
+                    pos-=mounted*Vector3.Scale(FishPalmLocal(false),fish.lossyScale);rot=mounted*Quaternion.Inverse(InspectionRotation);
                 }
                 else if(!xr)
                 {
@@ -180,12 +202,12 @@ namespace BoatAttack.Fishing
             else if(Location==Place.Net){pos=_c.LandingNet.TransformPoint(new Vector3(FishingDetailArt.NetMouthOffset,-.13f,0));rot=_c.LandingNet.rotation;}
             else{pos=_c.NetTray;rot=Quaternion.Euler(0,_c.Player.transform.eulerAngles.y,0);}
             float flop=Location==Place.Hand?0:Mathf.Sin(Time.time*9)*.035f;
-            fish.SetPositionAndRotation(pos+Vector3.up*Mathf.Abs(flop),rot*Quaternion.Euler(flop*120,-90,flop*180));
+            fish.SetPositionAndRotation(pos+Vector3.up*Mathf.Abs(flop),rot*InspectionRotation*Quaternion.Euler(flop*120,0,flop*180));
             if(Location==Place.Hand && !_c.Paused)
             {
                 var left=FishPalmLocal(true);var right=FishPalmLocal(false);
-                if(!xr && !_c.ActionMovesFish)_c.Hands.FitToolPose(fish,left,right,!_netHeld,true);
                 var palmRotation=Quaternion.LookRotation(Vector3.right,Vector3.down);
+                if(!xr && !_c.ActionMovesFish)_c.Hands.FitToolPose(fish,left,right,palmRotation,palmRotation,!_netHeld,true);
                 if(!_netHeld && (xr?(_c.Hands.Left.Visible && Vector3.Distance(_c.Hands.Left.Palm.position,fish.TransformPoint(left))<.16f):_c.Hands.CanReach(true,fish.TransformPoint(left),0)))_c.Hands.SetToolTarget(true,fish,left,palmRotation,.5f);
                 else if(!xr)_c.Hands.RestHand(true);
                 _c.Hands.SetToolTarget(false,fish,right,palmRotation,.55f);

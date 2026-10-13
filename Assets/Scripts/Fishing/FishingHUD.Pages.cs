@@ -53,7 +53,7 @@ namespace BoatAttack.Fishing
             }
         }
         private int _catalogPage;
-        public int CatalogPage { get=>_catalogPage; set=>_catalogPage=Mathf.Clamp(value,0,2); }
+        public int CatalogPage { get=>_catalogPage; set=>_catalogPage=Mathf.Clamp(value,0,(FishingSpecies.Count-1)/4); }
         private void DrawCatalogPage(Rect r)
         {
             var career = Controller.Career;
@@ -93,8 +93,8 @@ namespace BoatAttack.Fishing
         private void DrawCatalogPager(Rect r)
         {
             if(Button(new Rect(r.x+32,r.y+566,140,36),"上一页",_catalogPage>0,false,15))_catalogPage--;
-            Label(r.x+192,r.y+572,490,26,"12 种鱼 · 8 种混元模型   /   "+(_catalogPage+1)+" / 3",15,Muted);
-            if(Button(new Rect(r.x+712,r.y+566,140,36),"下一页",_catalogPage<2,false,15))_catalogPage++;
+            Label(r.x+192,r.y+572,490,26,FishingSpecies.Count+" 种海湾生物 · 实物图鉴   /   "+(_catalogPage+1)+" / "+((FishingSpecies.Count+3)/4),15,Muted);
+            if(Button(new Rect(r.x+712,r.y+566,140,36),"下一页",_catalogPage<(FishingSpecies.Count-1)/4,false,15))_catalogPage++;
         }
         private void DrawLegendPage(Rect r)
         {

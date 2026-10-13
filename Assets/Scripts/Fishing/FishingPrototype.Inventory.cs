@@ -14,6 +14,7 @@ namespace BoatAttack.Fishing
         public void LowerFieldTools(){BinocularsRaised=false;LanternOn=false;}
         public void ToggleInventory()
         {
+            if(Prologue!=null && (Prologue.Open || Home.Sleeping))return;
             TackleShop?.Close();
             if((Paused && !InventoryOpen) || _xrActive || JournalOpen)return;
             InventoryOpen=!InventoryOpen;if(_hud!=null)_hud.ClearFieldSelection();BinocularsRaised=false;TogglePause();

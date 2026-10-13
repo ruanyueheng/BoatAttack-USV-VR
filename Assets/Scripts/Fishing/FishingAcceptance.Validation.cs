@@ -11,8 +11,10 @@ namespace BoatAttack.Fishing
         {
             yield return new WaitForSecondsRealtime(1f);
             string baseline = null;
-            string normalPath = Path.Combine(Application.persistentDataPath, "boatattack-fishing-v11.json");
+            string normalPath = Path.Combine(Application.persistentDataPath, "boatattack-fishing-v12.json");
             string normalStamp = SaveStamp(normalPath), backupStamp = SaveStamp(normalPath + ".bak");
+            string legacyPath=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v11.json");
+            string legacyStamp=SaveStamp(legacyPath),legacyBackupStamp=SaveStamp(legacyPath+".bak");
             int comfort = PlayerPrefs.GetInt("Fishing.V3.Comfort", int.MinValue), quiet = PlayerPrefs.GetInt("Fishing.V3.Quiet", int.MinValue);
             if (!Check(() =>
             {
@@ -69,6 +71,8 @@ namespace BoatAttack.Fishing
                     throw new InvalidOperationException("Acceptance wrote normal-player preferences.");
                 if (SaveStamp(normalPath) != normalStamp || SaveStamp(normalPath + ".bak") != backupStamp)
                     throw new InvalidOperationException("Normal-player save metadata changed during acceptance.");
+                if(SaveStamp(legacyPath)!=legacyStamp || SaveStamp(legacyPath+".bak")!=legacyBackupStamp)
+                    throw new InvalidOperationException("Legacy-player save metadata changed during acceptance.");
                 if (capture && (_manifest == null || _manifest.captures.Count != FishingAcceptanceCases.Count))
                     throw new InvalidOperationException("The screenshot matrix is incomplete.");
                 Debug.Log("[FISHING-ACCEPTANCE] Profiles: fixtures preserve free-play data, preferences and normal-player save/backup metadata.");

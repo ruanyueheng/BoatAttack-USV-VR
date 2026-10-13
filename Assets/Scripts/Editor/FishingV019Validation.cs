@@ -17,7 +17,7 @@ namespace BoatAttack.EditorTools
             for(int frame=0;frame<30;frame++)yield return null;
             FishingV019WorldBuilder.CaptureThumbnails();
             Check(c.Realms!=null && c.Residents!=null && c.Regions!=null,"World systems initialized with production scene");
-            Check(c.NavigationCount==14 && c.Career.Lore.ClearCount==0,"Existing navigation and new empty story progress");
+            Check(c.NavigationCount==15 && c.Career.Lore.ClearCount==0,"Existing island navigation, home and new empty story progress");
             Check(!c.Residents.Talk(0) && !c.Realms.Enter(0),"Remote dialogue/entry rejected from the boat");
             for(int i=0;i<6;i++)Check(c.Residents.Person(i)!=null && c.Residents.Person(i).GetComponentsInChildren<Renderer>().Length>0,"Real NPC geometry "+i);
             var wait=Wait(.5f);while(wait.MoveNext())yield return null;
@@ -93,7 +93,7 @@ namespace BoatAttack.EditorTools
             FishingV016Validation.Capture(c,evidence,"shop-interior");
             var display=c.TackleShop.transform.Find("V018 stocked chandlery");Check(display.childCount>70 && display.GetComponents<BoxCollider>().Length==2,"Store has distinct 3D goods and retained clear aisle colliders");
             var saved=FishingSaveStore.Load(c.SavePath,out string warning);
-            Check(warning=="" && saved.Snapshot().version==11 && saved.Lore.Finale && saved.Lore.ClearCount==4,"Real Unity JSON story save round trip");
+            Check(warning=="" && saved.Snapshot().version==12 && saved.Lore.Finale && saved.Lore.ClearCount==4,"Real Unity JSON story save round trip");
             c.ReturnToHarbor();yield return null;yield return null;
             var traversal=Traversal(c,evidence);while(traversal.MoveNext())yield return null;
             c.ReturnToHarbor();yield return null;yield return null;

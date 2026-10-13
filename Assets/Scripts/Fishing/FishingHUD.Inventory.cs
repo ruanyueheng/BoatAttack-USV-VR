@@ -86,16 +86,18 @@ namespace BoatAttack.Fishing
         {
             var stack=Controller.Career.Backpack.At(index);
             Rounded(r,source?ButtonHover:InkRaised,7);Outline(r,source?Mint:equipped?Gold:Hairline,7,equipped||source?2:1);
-            if(index<9)Label(r.x+4,r.y+2,18,16,(index+1).ToString(),11,equipped?Gold:Faint,true);
             if(stack.count>0)
             {
-                FieldIcon(new Rect(r.center.x-13,r.y+8,26,r.height<60?23:30),stack.item);
+                FieldIcon(new Rect(r.x+3,r.y+5,r.width-6,r.height-24),stack.item);
                 Label(new Rect(r.x+2,r.yMax-21,r.width-4,20),FishingBackpack.Name(stack.item),11,Color.white,false,TextAnchor.MiddleCenter);
-                if(stack.count>1)Label(new Rect(r.x+2,r.y+18,r.width-5,20),stack.count.ToString(),12,Gold,true,TextAnchor.MiddleRight);
+                if(stack.count>1){Rounded(new Rect(r.xMax-23,r.y+18,21,18),InkRaised,3);Label(new Rect(r.x+2,r.y+18,r.width-5,20),stack.count.ToString(),12,Gold,true,TextAnchor.MiddleRight);}
             }
+            if(index<9)Label(r.x+4,r.y+2,18,16,(index+1).ToString(),11,equipped?Gold:Faint,true);
         }
         private void FieldIcon(Rect r,FieldItem item)
         {
+            var texture=FishingV023Art.Icon(item);
+            if(texture!=null){GUI.DrawTexture(r,texture,ScaleMode.ScaleToFit,true);return;}
             float x=r.x,y=r.y,w=r.width,h=r.height;
             if(item==FieldItem.Binoculars)
             {
