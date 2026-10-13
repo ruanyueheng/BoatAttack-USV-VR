@@ -30,7 +30,7 @@ namespace BoatAttack.Fishing
             else if (_journalPage == 6) DrawLorePage(r);
             else { DrawCatalogPage(r); DrawCatalogPager(r); }
             if (_journalPage != 4 && _journalPage != 5 && _journalPage != 6) DrawJournalSide(r);
-            Label(r.x + 34, r.yMax - 52, 820, 24, _journalPage==6?"E交谈 / 进入石门 · 四岛自由探索 · 每处首通90；回港林舟领取终章180金币。":_journalPage==3?"岸上调查不占鱼箱 · 每区两项调查返港领 25 金币 · 四区全部交付额外 60 金币。":_journalPage==5?"四岛顺序自由 · 探索奖励各领一次 · 点亮四灯后返港 E 交付 +150 金币。":"自然观察不奖励金币；请保持距离。传说旗鱼测量后放生。", 14, Faint);
+            Label(r.x + 34, r.yMax - 52, 820, 24, c.HasPendingCatch?"请先收好或放生待处理的鱼，再阅读来信与航记。":_journalPage==6?"E交谈 / 进入石门 · 四岛自由探索 · 每处首通90；回港林舟领取终章180金币。":_journalPage==3?"岸上调查不占鱼箱 · 每区两项调查返港领 25 金币 · 四区全部交付额外 60 金币。":_journalPage==5?"四岛顺序自由 · 探索奖励各领一次 · 点亮四灯后返港 E 交付 +150 金币。":"自然观察不奖励金币；请保持距离。传说旗鱼测量后放生。", 14, Faint);
             if (Button(new Rect(r.xMax - 286, r.yMax - 64, 254, 44), "J / Esc  返回海湾")) c.ToggleJournal();
         }
 
@@ -44,6 +44,7 @@ namespace BoatAttack.Fishing
                 bool done=FishingExploration.SiteDone(c.Career.ShoreTaskMask,i);
                 bool paid=(c.Career.ShoreRewardMask&(1<<i))!=0;
                 Label(row.x+18,row.y+8,780,27,((char)('A'+i))+" · "+FishingExploration.SiteName(i)+"  /  "+(paid?"已提交":done?"回港 E 提交 +25":"待调查"),20,done?Mint:Gold,true);
+                if(i==0 && c.Career.Expedition.Has(FishingExpedition.RecordRead) && Button(new Rect(row.xMax-180,row.y+8,160,27),"重读维修记录",c.Letter.CanRead,false,14))c.Expedition.ReadRecordFromJournal();
                 for(int t=0;t<2;t++)
                 {
                     int id=i*2+t;

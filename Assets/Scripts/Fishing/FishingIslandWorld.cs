@@ -55,20 +55,21 @@ namespace BoatAttack.Fishing
         }
         public bool InteractAt(int id)
         {
-            if(_c.Paused || _c.ShopBlocksGameplay || !_c.Ashore || id<0 || id>=12 || !TryTarget(out int near,out _) || near!=id)return false;
+            if(_c.Paused || _c.StoryBlocksGameplay || _c.InventoryOpen || _c.JournalOpen || _c.ShopBlocksGameplay || !_c.Ashore || id<0 || id>=12 || !TryTarget(out int near,out _) || near!=id)return false;
             int island=id/3;var a=_c.Career.Adventure;int pay=0;
             if(id%3==0)pay=_c.Career.DiscoverIsland(island);
             else if(!a.Visited(island)){_c.Notice("先阅读码头附近的航海来信，找到这座岛的线索。",5);return false;}
             else if(id%3==1)pay=_c.Career.OpenIslandTreasure(island);
             else a.Rotate(island);
             Refresh();_c.Save();
+            if(id%3==0)_c.Letter.ShowIsland(island);
             _c.Notice(id%3==2 ? (a.Restored(island)?"信标已经点亮，航线恢复。":"航向盘朝"+FishingAdventure.DirectionName(a.Direction(island))+" · E 转动，F 确认。"+FishingAdventure.Clue(island))
                 : FishingAdventure.Name(island)+" · "+(pay>0?"+"+pay+" 金币 · ":"")+FishingAdventure.Clue(island),9);
             return true;
         }
         public bool ConfirmNearby()
         {
-            if(_c.Paused || _c.InventoryOpen || _c.JournalOpen || _c.HasPendingCatch || _c.WorldActionBlocksGameplay || _c.ShopBlocksGameplay
+            if(_c.Paused || _c.StoryBlocksGameplay || _c.InventoryOpen || _c.JournalOpen || _c.HasPendingCatch || _c.WorldActionBlocksGameplay || _c.ShopBlocksGameplay
                 || !TryTarget(out int id,out _) || id%3!=2)return false;
             int pay=_c.Career.RestoreIslandBeacon(id/3);
             if(pay==0){_c.Notice("灯头未对准来信里的方向；E 转动航向盘，F 再次确认。",5);return false;}

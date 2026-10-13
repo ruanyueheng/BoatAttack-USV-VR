@@ -9,7 +9,7 @@ namespace BoatAttack.Fishing
         private int _loreIsland;
         private void ArtIllustration(Rect rect,string name)
         {
-            if(!_artIcons.TryGetValue(name,out var image))_artIcons[name]=image=Resources.Load<Texture2D>("FishingV019/Thumbnails/"+name);
+            if(!_artIcons.TryGetValue(name,out var image))_artIcons[name]=image=Resources.Load<Texture2D>((name.StartsWith("Resident")?"FishingV022":"FishingV019")+"/Thumbnails/"+name);
             if(image==null)return;
             var prior=GUI.color;GUI.color=Faded(Color.white);GUI.DrawTexture(rect,image,ScaleMode.ScaleToFit,true);GUI.color=prior;
         }
@@ -77,7 +77,8 @@ namespace BoatAttack.Fishing
                 Label(row.x+116,row.y+12,500,27,FishingAdventure.Name(i)+" · "+FishingLore.ShrineName(i),20,Gold,true);
                 Label(row.x+116,row.y+45,500,24,FishingLore.ResidentName(i)+" · "+FishingLore.ResidentRole(i),15,Muted);
                 Label(row.x+116,row.y+73,500,20,lore.Cleared(i)?"回响已取回 · 首通奖励已领取":lore.Met(i)?"已结识居民 · E进入潮纹石门":"先结识岛上居民，听听当地的故事",13,lore.Cleared(i)?Mint:Faint);
-                if(Button(new Rect(row.xMax-148,row.y+12,130,30),"阅读故事",true,false,14))_loreIsland=i;
+                if(Button(new Rect(row.xMax-148,row.y+12,130,30),"阅读故事",c.Letter.CanRead,false,14))
+                {_loreIsland=i;c.ToggleJournal();c.Letter.Show(FishingLore.ShrineName(i)+"航记",FishingLore.ResidentName(i),"回潮海档案：\n\n"+(lore.Cleared(i)?FishingLore.Echo(i):FishingLore.TrialHint(i))+"\n\n风、林、潮与星，仍在等待新的领航员。");}
                 if(Button(new Rect(row.xMax-148,row.y+53,130,30),"设为航点",true,false,14)){c.ToggleJournal();c.SelectNavigation(c.IslandNavigationIndex(i));}
             }
             var side=new Rect(r.x+884,r.y+118,420,462);Rounded(side,InkRaised,10);

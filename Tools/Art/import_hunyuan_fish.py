@@ -19,7 +19,8 @@ OUT = ROOT / "Assets/Resources/FishingFish"
 PREVIEW = ROOT / "Logs/Hunyuan"
 INSPECT = "--inspect" in sys.argv
 LENGTHS = {"Mackerel": .29, "SeaBream": .27, "Sardine": .17, "Grouper": .35,
-           "Butterfly": .20, "Tuna": .38, "Lanternfish": .18, "Lionfish": .26}
+           "Butterfly": .20, "Tuna": .38, "Lanternfish": .18, "Lionfish": .26,
+           "Coral": .24, "Dart": .32, "Puffer": .21, "Sailfish": .82}
 # Source side previews determine which end is the head (positive X in the supplied GLB).
 REVERSE = {"Grouper", "Sardine", "Tuna"}
 OUT.mkdir(parents=True, exist_ok=True)
@@ -28,6 +29,8 @@ report = []
 for name, length in LENGTHS.items():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     source = SOURCE / (name + ".glb")
+    if not source.exists() and name in {"Coral", "Dart", "Puffer", "Sailfish"}:
+        continue  # Optional V022 replacements; keep the established fish until approved sources arrive.
     bpy.ops.import_scene.gltf(filepath=str(source))
     meshes = [o for o in bpy.context.scene.objects if o.type == "MESH"]
     assert len(meshes) == 1, (name, "Expected one source mesh")

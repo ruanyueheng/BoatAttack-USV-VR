@@ -91,6 +91,7 @@ namespace BoatAttack.Fishing
                 Label(legendX + 112, footer.y + 1, 40, 18, "水面", 10, Muted);
                 string note = _terrainMap != null && _terrainMap.IsUsable
                     ? "北↑ · 斜纹未知 · 不代表水深 / 可通航" : "北↑ · 地形未烘焙 · 仅显示方位标记";
+                if(!Controller.Ashore && Controller.WaterRoute!=null && Controller.WaterRoute.Failure.Length>0)note=Controller.WaterRoute.Failure;
                 Label(new Rect(footer.x, footer.y + 18, footer.width, 18), note, 11, Muted, false, TextAnchor.MiddleCenter);
             }
             finally { GUI.matrix = matrix; GUI.color = color; }

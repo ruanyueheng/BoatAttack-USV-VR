@@ -31,7 +31,9 @@ namespace BoatAttack.Fishing
         }
         private void Create(int id, Vector3 feet)
         {
-            var t = FishingV019Art.Spawn("Resident" + id, transform, feet, id == 0 || id == 1 ? 1.70f : 1.78f, 180);
+            var prefab=Resources.Load<GameObject>("FishingV022/Residents/Resident"+id);
+            if(prefab==null)throw new System.InvalidOperationException("Missing textured resident "+id+"; run FishingV022Assets.Build");
+            var t=Instantiate(prefab,transform,false).transform;t.SetPositionAndRotation(feet,Quaternion.Euler(0,180,0));
             t.name = "Resident " + id + " " + FishingLore.ResidentName(id); _people[id] = t;
             var body = t.gameObject.AddComponent<CapsuleCollider>(); body.radius = .25f; body.height = 1.65f; body.center = Vector3.up * .825f;
             if (id == 0) FishingV019Art.Spawn("WindBell", t, new Vector3(-.43f, .74f, .03f), .22f);
