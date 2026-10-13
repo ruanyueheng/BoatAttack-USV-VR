@@ -281,7 +281,7 @@ namespace BoatAttack.Fishing
         }
         public Vector3 RoomStep(Vector3 delta)
         {
-            if(!Ashore || Controller.Paused || Controller.WorldActionBusy)return Vector3.zero;
+            if(!Ashore || Controller.Paused || Controller.StoryBlocksGameplay || Controller.WorldActionBusy)return Vector3.zero;
             var before=Actor.position;var desired=before+Vector3.ProjectOnPlane(delta,Vector3.up);
             if(WalkingGroundBelow(desired,before.y+.35f,1f,out var ground) && Mathf.Abs(ground.y-before.y)<.32f)
                 Body.Move(Vector3.ProjectOnPlane(delta,Vector3.up));

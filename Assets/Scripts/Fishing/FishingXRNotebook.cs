@@ -62,6 +62,7 @@ namespace BoatAttack.Fishing
             IsOpen=true;_page=page;_offset=0;_canvas.gameObject.SetActive(true);_c.WorkshopWorld.SelectNearby();Refresh();
         }
         public void Close(){IsOpen=false;if(_canvas!=null)_canvas.gameObject.SetActive(false);if(_ray!=null)_ray.enabled=false;_trigger.Reset();_tipSample=false;}
+        public void ResetInput(){_menu.Reset();_primary.Reset();_board.Reset();_slot.Reset();_trigger.Reset();_turnReady=false;_tipSample=false;}
         private void Set(int index,string label,Action action){_labels[index].text=label;_actions[index]=action;_plates[index].color=action==null?new Color(.09f,.13f,.14f):new Color(.12f,.27f,.25f);}
         private void Refresh()
         {

@@ -165,54 +165,14 @@ namespace BoatAttack.Fishing
             }
         }
 
-        private static Color SpeciesColor(FishKind kind, bool rare)
-        {
-            Color body = kind == FishKind.Coral ? new Color(0.95f, 0.36f, 0.25f)
-                : kind == FishKind.Dart ? new Color(0.25f, 0.6f, 0.88f)
-                : kind == FishKind.Puffer ? new Color(0.9f, 0.7f, 0.25f) : new Color(0.2f, 0.42f, 0.78f);
-            return rare ? Color.Lerp(body, Gold, 0.55f) : body;
-        }
-
-        /// <summary>A fish silhouette from rounded shapes, tinted per species, for cards and journal rows.</summary>
+        /// <summary>All catalog entries use portraits of their actual game meshes.</summary>
         private void FishGlyph(Rect r, FishKind kind, bool rare)
         {
-            if((int)kind>=4)
-            {
-                if(!_fishThumbnails.TryGetValue(kind,out var thumbnail))
-                {_fishThumbnails[kind]=thumbnail=Resources.Load<Texture2D>("FishingFish/"+kind+"Thumbnail");}
-                if(thumbnail!=null)
-                {
-                    var color=GUI.color;GUI.color=Faded(rare?new Color(1,.88f,.65f):Color.white);
-                    GUI.DrawTexture(r,thumbnail,ScaleMode.ScaleToFit,true);GUI.color=color;return;
-                }
-            }
-            Color body = SpeciesColor(kind, rare);
-            Color fin = new Color(body.r * 0.8f, body.g * 0.8f, body.b * 0.8f, 1f);
-            float h = kind == FishKind.Puffer ? r.height * 0.74f : kind == FishKind.Sailfish ? r.height * 0.34f : r.height * 0.5f;
-            var bodyRect = new Rect(r.x + r.width * 0.2f, r.center.y - h * 0.5f, r.width * 0.64f, h);
-            var tailPivot = new Vector2(bodyRect.x + 4, r.center.y);
-            float tail = Mathf.Max(8f, r.height * 0.18f);
-            var matrix = GUI.matrix;
-            Rotate(28f, tailPivot);
-            Rounded(new Rect(tailPivot.x - r.width * 0.22f, tailPivot.y - tail * 0.5f, r.width * 0.24f, tail), fin, tail * 0.45f);
-            GUI.matrix = matrix;
-            Rotate(-28f, tailPivot);
-            Rounded(new Rect(tailPivot.x - r.width * 0.22f, tailPivot.y - tail * 0.5f, r.width * 0.24f, tail), fin, tail * 0.45f);
-            GUI.matrix = matrix;
-            if (kind == FishKind.Sailfish)
-            {
-                // The golden sail rises along the back and a bill extends from the snout.
-                Rounded(new Rect(bodyRect.x + bodyRect.width * 0.14f, bodyRect.y - r.height * 0.34f, bodyRect.width * 0.6f, r.height * 0.42f), Gold, r.height * 0.14f);
-                Rounded(new Rect(bodyRect.xMax - 8, r.center.y - 2f, r.width * 0.22f, 4), fin, 2f);
-            }
-            Rounded(bodyRect, body, h * 0.5f);
-            if (kind == FishKind.Coral)
-                for (int i = 0; i < 2; i++) Rounded(new Rect(bodyRect.x + bodyRect.width * (0.36f + i * 0.2f), bodyRect.y + 2, Mathf.Max(3f, r.width * 0.05f), h - 4), new Color(1f, 0.95f, 0.85f, 0.9f), 2f);
-            else if (kind == FishKind.Dart)
-                Rounded(new Rect(bodyRect.x + 6, r.center.y - 1.5f, bodyRect.width - 16, 3), new Color(0.9f, 0.96f, 1f, 0.85f), 1.5f);
-            else if (kind == FishKind.Puffer)
-                for (int i = 0; i < 4; i++) Disc(new Vector2(bodyRect.x + bodyRect.width * (0.28f + i * 0.14f), r.center.y + (i % 2 == 0 ? -h * 0.18f : h * 0.14f)), Mathf.Max(1.5f, h * 0.06f), new Color(0.35f, 0.24f, 0.08f));
-            Disc(new Vector2(bodyRect.xMax - h * 0.3f, r.center.y - h * 0.12f), Mathf.Max(2.5f, h * 0.1f), new Color(0.05f, 0.08f, 0.1f));
+            if(!_fishThumbnails.TryGetValue(kind,out var thumbnail))
+                _fishThumbnails[kind]=thumbnail=Resources.Load<Texture2D>("FishingFish/"+kind+"Thumbnail");
+            if(thumbnail==null)return;
+            var color=GUI.color;GUI.color=Faded(rare?new Color(1,.88f,.65f):Color.white);
+            GUI.DrawTexture(r,thumbnail,ScaleMode.ScaleToFit,true);GUI.color=color;
         }
         private readonly System.Collections.Generic.Dictionary<FishKind,Texture2D> _fishThumbnails=new System.Collections.Generic.Dictionary<FishKind,Texture2D>();
     }

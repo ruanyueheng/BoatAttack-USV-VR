@@ -23,7 +23,7 @@ namespace BoatAttack.Fishing
         {
             var go = new GameObject("Original " + kind + (rare ? " pearl variant" : " fish"), typeof(MeshFilter), typeof(MeshRenderer));
             go.transform.SetParent(parent, false);
-            var source=(int)kind>=4?Resources.Load<GameObject>("FishingFish/"+kind):null;
+            var source=Resources.Load<GameObject>("FishingFish/"+kind);
             var imported=source!=null?source.GetComponentInChildren<MeshFilter>():null;
             go.GetComponent<MeshFilter>().sharedMesh = imported!=null?imported.sharedMesh:Cached(owned, FishingMeshBuilder.FishMeshName(kind, rare), () => FishingMeshBuilder.Fish(kind, rare));
             var renderer = go.GetComponent<MeshRenderer>();

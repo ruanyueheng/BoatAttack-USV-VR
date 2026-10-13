@@ -13,6 +13,7 @@ namespace BoatAttack.Fishing
                 Label(row.x+18,row.y+41,780,25,a.Visited(i)?FishingAdventure.Clue(i):"寻找码头旁的航海来信，读信后获得地标寻宝与灯头方向线索。",14,Muted);
                 Label(row.x+18,row.y+72,760,21,(a.Visited(i)?"来信已读":"发现 +10")+"   /   "+(a.TreasureFound(i)?"宝箱已开":"寻宝 +40")+"   /   "+(a.Restored(i)?"信标已亮":"信标 +75"),14,Mint);
                 if(Button(new Rect(row.xMax-160,row.y+7,140,32),"设为航点",true,false,14)){c.ToggleJournal();c.SelectNavigation(c.IslandNavigationIndex(i));}
+                if(a.Visited(i) && Button(new Rect(row.xMax-160,row.y+58,140,28),"重读来信",true,false,14)){c.ToggleJournal();c.Letter.ShowIsland(i);}
             }
             var side=new Rect(r.x+884,r.y+118,420,438);Rounded(side,InkRaised,12);
             Label(side.x+20,side.y+17,380,30,"群岛来信 · 重连海湾",22,Gold,true);

@@ -121,7 +121,11 @@ namespace BoatAttack.EditorTools
         {
             Check(c.Automated && c.HasIsolatedProfile && c.SavePath.StartsWith(Application.temporaryCachePath),"仅操作临时隔离存档");
             int firstFrame=Time.frameCount;while(Time.frameCount==firstFrame)yield return null;
-            if(suite=="V021")
+            if(suite=="V022")
+            {
+                var run=FishingV022Validation.Checks(c);while(run.MoveNext())yield return null;
+            }
+            else if(suite=="V021")
             {
                 var run=FishingV021Validation.Checks(c);while(run.MoveNext())yield return null;
             }

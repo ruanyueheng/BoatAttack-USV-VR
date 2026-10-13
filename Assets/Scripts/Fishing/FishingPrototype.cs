@@ -25,7 +25,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.21.0";
+        public const string Version = "0.22.0";
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
@@ -187,6 +187,8 @@ namespace BoatAttack.Fishing
             Realms=gameObject.AddComponent<FishingRealmWorld>();Realms.Build(this);
             Residents=gameObject.AddComponent<FishingResidents>();Residents.Build(this);
             Regions=gameObject.AddComponent<FishingRegionPresentation>();Regions.Build(this);
+            Letter=gameObject.AddComponent<FishingLetter>();Letter.Build(this);
+            WaterRoute=gameObject.AddComponent<FishingWaterRoute>();WaterRoute.Build(this);
             Shore.RefreshClimbRoutes();
             ConfigurePresentation();
             _feedback=gameObject.AddComponent<AudioSource>();_feedback.spatialBlend=0f;_feedback.volume=0.45f;
@@ -391,7 +393,7 @@ namespace BoatAttack.Fishing
             // 全部工具和掌心目标落位后才解同源骨架；随后只读取竿尖画线，不再次采样。
             Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right,UnityEngine.XR.XRSettings.isDeviceActive);
             Shore.ApplyTraversalPose();
-            Shore.Character.SetOpticalView(View.OpticalView);DockConsole.Present();
+            Shore.Character.SetOpticalView(View.OpticalView || (Letter.Open && !UnityEngine.XR.XRSettings.isDeviceActive));DockConsole.Present();
         }
         public void ToggleView()
         {
@@ -606,7 +608,7 @@ namespace BoatAttack.Fishing
         }
         public void ReturnToHarbor()
         {
-            Residents?.Close();Realms?.Abort();
+            Letter?.Close();Residents?.Close();Realms?.Abort();
             CancelWorldAction();
             TackleShop?.Close();
             if(Paused)return;if(CatchRig!=null)CatchRig.Recover();Expedition.Cancel();if(Ashore)Shore.BoardImmediately();if(HasPendingCatch){Anchored=false;Session.Cancel();}else LeaveStation();Teleport(spawnPosition,spawnRotation);Notice("已救援回港；鱼箱和金币保留。",5f);
@@ -640,6 +642,10 @@ namespace BoatAttack.Fishing
 
         private void BuildWorld()
         {
+            // The copied racing level bounds enclosed the bay and made the four outer islands unreachable by boat.
+            foreach(var wall in FindObjectsOfType<BoxCollider>())
+                if(wall.gameObject.scene==gameObject.scene && wall.transform.parent!=null && wall.transform.parent.name=="LevelBounds"
+                    && wall.transform.parent.parent!=null && wall.transform.parent.parent.name=="Logic")wall.enabled=false;
             // Race buoys are particle impostors with no collision; fishing has its own physical markers.
             foreach(var raceBuoys in FindObjectsOfType<BuoyManager>())raceBuoys.gameObject.SetActive(false);
             for(int i=0;i<fishingSpots.Length;i++)
