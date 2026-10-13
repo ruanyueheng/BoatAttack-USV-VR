@@ -20,6 +20,7 @@ namespace BoatAttack.Fishing
         public bool Open { get; private set; }
         public float Age { get; private set; }
         public bool Ready => Open && Age >= OpenSeconds;
+        public bool CanRead => !Open && !_c.DialogueOpen && !_c.HasPendingCatch && (!_c.Paused || _c.JournalOpen);
         public Transform Envelope => _envelope;
         public Transform Flap => _flap;
         public Transform Paper => _paper;
@@ -73,7 +74,7 @@ namespace BoatAttack.Fishing
             "致新来的领航员：\n\n"+FishingAdventure.Clue(island)+"\n\n愿这盏灯重新连起回家的航路。\n海风会替我们记住你的到来。",_c.Islands.WorldRoot.GetChild(island).Find("Voyage letter"));
         internal void Show(string title, string sender, string body, Transform source=null)
         {
-            if (Open || _c.Paused || _c.DialogueOpen || _c.HasPendingCatch) return;
+            if (!CanRead || _c.Paused) return;
             _c.XRNotebook.Close(); _c.StoryModalChanged();
             _heading.text=title; _sender.text="—— "+sender; _body.text=body;
             _sourceRenderers=source!=null?source.GetComponentsInChildren<Renderer>():null;

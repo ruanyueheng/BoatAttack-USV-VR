@@ -98,7 +98,7 @@ namespace BoatAttack.Fishing
             if(target==0)
             {
                 Facts.ReadRecord();_c.CommitExpedition("维修记录：备用线圈运往 D 南岸，认准青色双环箱。鱼纹箱装渔具，条纹箱装布料。");
-                _c.Letter.Show("旧港维修记录","旧港维修员","给接班的领航员：\n\n备用线圈已运往南岸，请认准青色双环标记箱。鱼纹箱装的是渔具，条纹箱装的是布料。\n\n取到线圈后，回旧港安装，再让灯头朝向海上的双环航标。",_interactionVisuals[0]);
+                ShowRecord();
             }
             else if(target==2){Facts.FindComponent();Refresh();_c.CommitExpedition("取得维修线圈！不占鱼箱；接取委托并阅读记录后，到 C 旧港安装。");}
             else if(target==1 || target==3)_c.Notice("不是维修箱。"+(target==1?"鱼纹箱是渔具。":"条纹箱是布料。")+"找青色双环标记。",6);
@@ -106,6 +106,12 @@ namespace BoatAttack.Fishing
             else {Dial.Begin();_c.Notice("灯头校准：A/D 转向海上双环航标，E 确认；Esc 取消，线圈不会消耗。",8);}
             return true;
         }
+        public bool ReadRecordFromJournal()
+        {
+            if(!_c.JournalOpen || !Facts.Has(FishingExpedition.RecordRead) || !_c.Letter.CanRead)return false;
+            _c.ToggleJournal();ShowRecord();return _c.Letter.Open;
+        }
+        private void ShowRecord()=>_c.Letter.Show("旧港维修记录","旧港维修员","给接班的领航员：\n\n备用线圈已运往南岸，请认准青色双环标记箱。鱼纹箱装的是渔具，条纹箱装的是布料。\n\n取到线圈后，回旧港安装，再让灯头朝向海上的双环航标。",_interactionVisuals[0]);
         public void Confirm()
         {
             if(!Aligning || _c.Paused || !_c.Ashore)return;

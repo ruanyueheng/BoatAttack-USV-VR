@@ -72,6 +72,17 @@ namespace BoatAttack.EditorTools
             c.PresentCharacterFrame();yield return null;
             Check(c.Expedition.InteractAt(0) && c.Letter.Open && c.Career.Expedition.Has(FishingExpedition.RecordRead),"Maintenance record uses shared reading presentation and preserves quest progress");
             c.Letter.Reveal();c.ReturnToHarbor();yield return null;
+            int recordCoins=c.Career.Coins,recordFacts=c.Career.Expedition.Facts;
+            c.ToggleJournal();
+            Check(c.JournalOpen && c.Letter.CanRead && c.Expedition.ReadRecordFromJournal() && !c.JournalOpen && c.Letter.Open,"Journal rereads an already-read maintenance record from the boat");
+            Check(c.Career.Coins==recordCoins && c.Career.Expedition.Facts==recordFacts,"Record reread does not mutate quest facts or rewards");
+            c.Letter.Close();yield return null;yield return null;
+            int pendingGrams=FishingSpecies.Grams(FishKind.Coral,.5f);
+            Check(c.Career.BeginPending(new CatchRecord{id="v022-read-guard",kind=FishKind.Coral,grams=pendingGrams,value=FishingSpecies.Value(FishKind.Coral,false,pendingGrams)},0,c.spawnPosition.x,c.spawnPosition.z),"Create a valid pending catch through the production transaction");
+            c.RestorePendingFishVisual();c.ToggleJournal();
+            Check(c.JournalOpen && c.Paused && !c.Letter.CanRead,"All reading buttons are disabled while a pending catch needs settlement");
+            Check(!c.Expedition.ReadRecordFromJournal() && c.JournalOpen && c.Paused && c.HasPendingCatch && !c.Letter.Open,"Blocked reading preserves the open journal and pending fish");
+            c.ToggleJournal();Check(c.ResolveCatch(false) && c.Letter.CanRead,"Settling the pending catch restores reading eligibility");yield return null;
             foreach(int id in new[]{0,1,2,3,5})
             {
                 var npc=c.Residents.Person(id);var group=npc.GetComponent<LODGroup>();
