@@ -60,7 +60,7 @@ namespace BoatAttack.EditorTools
             c.ReturnToHarbor();c.MoveToSpotForAutomation(0);c.Interact();Check(c.Cast(),"start real production catch");var s=c.Session;
             for(int i=0;i<1500 && s.Phase==CatchPhase.Waiting;i++)s.Tick(.02f,false);Check(c.Hook(),"hook real bite");
             for(int i=0;i<6000 && s.Phase==CatchPhase.Fighting;i++)s.Tick(.02f,s.Tension<.6f);
-            Check(s.Phase==CatchPhase.Landing,"existing fish fight reaches landing");s.HoldForNet();for(int i=0;i<300;i++)s.Tick(.1f,false);Check(s.Phase==CatchPhase.Landing,"stable wait lets the left hand leave the reel and take the net");
+            Check(s.Phase==CatchPhase.Landing,"existing fish fight reaches landing");for(int i=0;i<15;i++)s.Tick(.1f,false);Check(s.CanNet,"bounded drag lets the left hand take the net");
         }
         private static bool Ray(FishingPrototype c,FishingDockAction action,bool held)
         {
@@ -100,7 +100,7 @@ namespace BoatAttack.EditorTools
             Check(!Ray(c,FishingDockAction.Pause,true) && !c.Paused,"recovery with held trigger cannot select");
             Ray(c,FishingDockAction.UpgradeLine,false);Check(Ray(c,FishingDockAction.UpgradeLine,true) && c.Career.LineLevel==0,"disabled action consumes ray click without purchasing");
             Ray(c,FishingDockAction.MarkOrder,false);Check(Ray(c,FishingDockAction.MarkOrder,true) && c.Career.OrderMarked,"world-space order acknowledgement persists");
-            for(int i=0;i<12;i++){c.DockConsole.Press(FishingDockAction.NextWaypoint);Check(c.NavigationTarget<c.NavigationCount && (c.NavigationTarget==0 || c.NavigationTarget>c.fishingSpots.Length || FishingGrounds.Available(c.NavigationTarget-1,c.Career.Expedition)),"XR navigation includes coast/shop and skips locked fishing destinations "+i);}
+            for(int i=0;i<12;i++){c.DockConsole.Press(FishingDockAction.NextWaypoint);Check(c.NavigationTarget<c.NavigationCount && (c.NavigationTarget==0 || c.NavigationTarget>c.fishingSpots.Length || FishingGrounds.AvailableForCareer(c.NavigationTarget-1,c.Career)),"XR navigation includes coast/shop and skips locked fishing destinations "+i);}
             c.Career.Store(Fish());c.Career.Store(Fish());
             int value=c.Career.SaleValue;Check(value>30,"fixture has unreserved cargo");
             Check(!c.DockConsole.Press(FishingDockAction.Sell) && c.Career.Coins==0,"sale requires confirmation");

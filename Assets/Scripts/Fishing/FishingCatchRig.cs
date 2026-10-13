@@ -46,7 +46,8 @@ namespace BoatAttack.Fishing
         public bool RequestScoop()
         {
             if(_c.Paused || !_c.Anchored || _c.HasPendingCatch || _c.Session.Phase!=CatchPhase.Landing || XRSettings.isDeviceActive)return false;
-            if(!_assist){_c.Session.HoldForNet();_assist=true;_assistTime=0;_gate.Reset();_hadSample=false;}
+            if(!_c.Session.CanNet){_c.Notice("张力过高，松开收线后再按 E 抄鱼。",3);return false;}
+            if(!_assist){_assist=true;_assistTime=0;_gate.Reset();_hadSample=false;}
             return true;
         }
         public void ToggleInspect(){if(_c.HasPendingCatch && !_c.Paused){if(FishingSpecies.Of(_c.Career.PendingCatch.fish.kind).Legendary){Location=Place.Tray;_c.MeasureCatch();return;}Location=Location==Place.Hand?Place.Tray:Place.Hand;if(Location==Place.Hand)_c.MeasureCatch();}}
@@ -93,7 +94,7 @@ namespace BoatAttack.Fishing
             var boatRotation=Quaternion.Euler(0,_c.Player.transform.eulerAngles.y,0);
             var local=Quaternion.Inverse(boatRotation)*(center-_c.Player.transform.position);
             float speed=_hadSample && dt>0?Vector3.Distance(local,_lastNet)/dt:0;_lastNet=local;_hadSample=true;
-            bool caught=_gate.Step(_c.Anchored && !_c.Paused && !_c.HasPendingCatch && _c.Session.Phase==CatchPhase.Landing,
+            bool caught=_gate.Step(_c.Anchored && !_c.Paused && !_c.HasPendingCatch && _c.Session.CanNet,
                 new Vector2(relative.x,relative.z/.8f).magnitude,relative.y,Vector3.Dot(rotation*Vector3.up,Vector3.up),speed,local.y,dt);
             if(caught)
             {

@@ -1,0 +1,692 @@
+[
+  {
+    "version": "0.21.0",
+    "format": "wide",
+    "count": 48,
+    "manifest": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/manifest.json",
+    "manifestSha256": "0420EC0F2F6A4B130D51474790187C9DD20D74A6B236ED20EFFBA93B0AA1AD38",
+    "captures": [
+      {
+        "scenario": "FreePlay",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/01-FreePlay-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "2DD66A32E2F1EA431B53520B792E858F17AEAB5B2ECC0A863DB94DC344FD85F4"
+      },
+      {
+        "scenario": "Bite",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/02-Bite-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "B7C3BD32C4659A52051BCA1A8DD528FA8BB4F3D5A8190FF84155F68B38568D28"
+      },
+      {
+        "scenario": "Fighting",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/03-Fighting-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "B55AA39567CA736D791558C23B1D2D448A9EC368C8215F4249A498AE95EDF48D"
+      },
+      {
+        "scenario": "Landing",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/04-Landing-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "F413A7A6382224804FF64DAFCF4BF8B8575AC48734525434FD226A9C059C82F7"
+      },
+      {
+        "scenario": "Catch",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/05-Catch-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "570209B3A607F0709249B3D4090F9A8379573859DFFBE872C0804C572EDFBC47"
+      },
+      {
+        "scenario": "LegendLeap",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/06-LegendLeap-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "FBB298F5739FA90713D56ABC055408D567BC1BA9806BB993B57E0CD7A1A190F6"
+      },
+      {
+        "scenario": "HarborOrders",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/07-HarborOrders-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "602F7A683443FA753AAAEAE2D4FCFF88DAE86B4F73EB795715ACA0B3C914CC6A"
+      },
+      {
+        "scenario": "FullHold",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/08-FullHold-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "7A5B7950889619AC2DCC849A8FE20165A7A4C9CE6873393623A9A36343227D59"
+      },
+      {
+        "scenario": "MaxUpgrades",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/09-MaxUpgrades-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "3FA1CB9CAC9C317811E523D719255C54B5ABA70A22D2B48F6D636E96A53E5C63"
+      },
+      {
+        "scenario": "Details",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/10-Details-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "8616FB8ED5CD1B61CB0BC7228671623D5651BB492C18DDA31D2F2F1C831CF446"
+      },
+      {
+        "scenario": "Journal",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/11-Journal-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "1B3035EFF498D4E8ADE73682A9F3C8D879054F948C339E40EA7D74F59E56F313"
+      },
+      {
+        "scenario": "Settings",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/12-Settings-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "3630684BA1F9862F1D18C2FE174187C0CBE503BF6A785DCEDAAF8803BDD25314"
+      },
+      {
+        "scenario": "ShoreFirstPerson",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/13-ShoreFirstPerson-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "173AF683591A1BF8BFD1136C6F81A491BC6331D3DE30365D960BC5C66D3250C7"
+      },
+      {
+        "scenario": "ShoreThirdPerson",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/14-ShoreThirdPerson-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "F9FEFBFD575540CB24D896096C5ACAFD12620126A07C2B1D65E320B92780A518"
+      },
+      {
+        "scenario": "ShopCounter",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/15-ShopCounter-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "44DDAFEC7CD9F88AC001C1639F637A08C44573594901AEBB51DA69A632B3FB8D"
+      },
+      {
+        "scenario": "StonePickaxe",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/16-StonePickaxe-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "8B99D26AD532395C5E42C7A9383381836DB8B5345021BF7478AB360FE4B68B0E"
+      },
+      {
+        "scenario": "IronPickaxe",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/17-IronPickaxe-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "49D47A1B0F99919BA438C32943BCD5B4B381B7660AEA0E6D95CD3C9202B3A94D"
+      },
+      {
+        "scenario": "BinocularCarry",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/18-BinocularCarry-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "278706DA563ABD83FAD7544E8BC4F64C83968CB97D0BC8930944E7AE7C59A24A"
+      },
+      {
+        "scenario": "BinocularObserve",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/19-BinocularObserve-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "CF96EE726C1F329963655F9C92ADDD75F691E458C780B05167C7A0B1E97748DB"
+      },
+      {
+        "scenario": "LookDownStanding",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/20-LookDownStanding-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "A30029C9E5EE3B8D5CDE18ABB192EB4D86B1734E54EBB7A5BA9FA2298F7BFBA2"
+      },
+      {
+        "scenario": "LookDownCrouched",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/21-LookDownCrouched-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "47A546227CD366DD41944AEC97AFCDDB0B357B46B2089119725C47B8CEB9BA0A"
+      },
+      {
+        "scenario": "ShopAttendant",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/22-ShopAttendant-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "F36845CE1BAECBAF08A662CC2F009B2DAE1D2A61AAD4250C760F21E322CA29C3"
+      },
+      {
+        "scenario": "BinocularThirdPerson",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/23-BinocularThirdPerson-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "FD7C85C50E09A6806AD9AC99B6223594A45B5D2963FB66F03BB7E348FFB789CE"
+      },
+      {
+        "scenario": "Calendar",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/24-Calendar-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "1803AA3A2C3A1B337E8CB5A97981FDF24C27FBFDC2801084E2AC5AFFD03F2510"
+      },
+      {
+        "scenario": "NightCoast",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/25-NightCoast-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "55A59C1AEAACEC1AB2AD1E9707B0BFF039FB3EABCE0CCA9D83FA03A100650E7B"
+      },
+      {
+        "scenario": "LanternCoast",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/26-LanternCoast-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "3DEF439A94E7DAB8D9BB3A0D41EDBC06A9BAD850DAE7A247B1D3BF0D18A00878"
+      },
+      {
+        "scenario": "HuntingSpear",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/27-HuntingSpear-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "1FC097246758166CA93F7987090DFFF58EE7B02093C8B81A2A342EB993222C69"
+      },
+      {
+        "scenario": "HunyuanCatalog",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/28-HunyuanCatalog-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "5CD0E1979F0BBA1173FD58D7E87643C5847AB19FC31125688BE1EE693262381C"
+      },
+      {
+        "scenario": "HunyuanNightCatalog",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/29-HunyuanNightCatalog-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "1DD4DDD781CC0056666B5AC83B9CAE1989E2871C98C1CB7B41F15545FFD685AF"
+      },
+      {
+        "scenario": "CastFlight",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/30-CastFlight-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "78867C9D45EBB0508861605C52738C4DE47C05980292AD9AF07A3B8CF7F4C4B2"
+      },
+      {
+        "scenario": "NightBoat",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/31-NightBoat-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "26596DA7477EAD00DC4F08E70409EE3102E4FD5930889A0B8502651B9FF98A78"
+      },
+      {
+        "scenario": "LuxuryBoat",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/32-LuxuryBoat-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "947F06BFEB57300B074DEB0260651A07D94F29BD520AD5A81CB04205A615CADB"
+      },
+      {
+        "scenario": "IslandLanding",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/33-IslandLanding-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "ACCEBF2D27316A241784DC5A7222627D5B2196F4AC64EACE157C695523DD303B"
+      },
+      {
+        "scenario": "ShopSupplies",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/34-ShopSupplies-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "D3052316CB9059F5F54FE0E495D7C0F2836B48DC6A6CAECE083B6EEEB2836BE7"
+      },
+      {
+        "scenario": "IslandJournal",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/35-IslandJournal-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "59E5F9AADCF66393ED764C822E1ADFCA6E38FEB1E726FA1F08797E07DB7E0A33"
+      },
+      {
+        "scenario": "ResidentDialogue",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/36-ResidentDialogue-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "38900AA8FA3F9E0940B6022A19BE882303AE872F9E414E949494E8BFDCBD074C"
+      },
+      {
+        "scenario": "WindSanctuary",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/37-WindSanctuary-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "72AE4C5A4DCC219541972202F6139AE2051FF2C83F6538D9545F9150FE3BF3DD"
+      },
+      {
+        "scenario": "ForestSanctuary",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/38-ForestSanctuary-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "6085C1509AEA514DE27FD54A940DD4690F49C7140A9D37C9CB09C83AB56D491E"
+      },
+      {
+        "scenario": "WreckSanctuary",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/39-WreckSanctuary-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "DE03AA954E47955D2C55D7F17DE7344816324D97586FCC2065CD21E0E066D408"
+      },
+      {
+        "scenario": "StarSanctuary",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/40-StarSanctuary-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "1DDDA07E32E60C6E41F8123C9B5085A3F518E7D4C231899CD9CCC3B6CF9CE462"
+      },
+      {
+        "scenario": "LoreJournal",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/41-LoreJournal-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "E0B936EBE19E565A913D874A4F5ABF6D143A3B360784E2D54F9F5AB5A7A60AB1"
+      },
+      {
+        "scenario": "ShopRations",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/42-ShopRations-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "ADCAC186CAD5B77FF5BE908DFA86DB80EA63770525B798BDCC9D0DB102DB6BDB"
+      },
+      {
+        "scenario": "RegionArrival",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/43-RegionArrival-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "59CAE0A8FDA0922DC8B72133EC03E67BBBEB6EB5328C4A3BC63BEDBB9BCAC2C7"
+      },
+      {
+        "scenario": "SwimmingView",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/44-SwimmingView-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "BE2944DCA16807FE9CDF65F3697F41C52314D5272B1151F4E097684628416F16"
+      },
+      {
+        "scenario": "ClimbingView",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/45-ClimbingView-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "1D04DE05D83A25F1657EBCF16CE872BE64BB9FFE6ACBEAE78268D521E044F266"
+      },
+      {
+        "scenario": "ForestIslandLanding",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/46-ForestIslandLanding-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "43E399A113C611642C211D506E1F8C2475352B3906C2DB05DC0267BDE0B3FF65"
+      },
+      {
+        "scenario": "WreckIslandLanding",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/47-WreckIslandLanding-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "7FE40BDD4F37D9500F7BA92201F56FBD5F57D31358A6BFB2850901318E246F9C"
+      },
+      {
+        "scenario": "StarIslandLanding",
+        "file": "Logs/desktop-acceptance-ad906b3005ab4241b4a3f994422ee5b8/capture-20261013-041048-73b860f3/48-StarIslandLanding-1600x900.png",
+        "width": 1600,
+        "height": 900,
+        "sha256": "42109E031B70655BE719ADFDA0F34AD811DE4423D30072719102E0E1E46EB7E4"
+      }
+    ]
+  },
+  {
+    "version": "0.21.0",
+    "format": "square",
+    "count": 48,
+    "manifest": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/manifest.json",
+    "manifestSha256": "4B7BD82C32723BBD3E114A710BFCC1CC6C92F651AB637C95487B62DC086AAE20",
+    "captures": [
+      {
+        "scenario": "FreePlay",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/01-FreePlay-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "EBFCF55C904E8910E7DC546157B93222BE574E2CEB9C1568DB412455AC9D937E"
+      },
+      {
+        "scenario": "Bite",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/02-Bite-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "28F0F0A4377A7B6250E5E564403B4E127BE6E19F4C4B632F798F55730728D549"
+      },
+      {
+        "scenario": "Fighting",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/03-Fighting-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "10ED5F87A73F0238A4CFE408EC20D31CBCED34884D685BA324D508B2944017C6"
+      },
+      {
+        "scenario": "Landing",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/04-Landing-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "147F4AA4F30F5940AA56E2940DD1821B5001DF1DB81E62FEEA630A92776361BD"
+      },
+      {
+        "scenario": "Catch",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/05-Catch-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "5CE9769FFADB89C7879027252A3C68BDE45871DE45454CDBC62EBABAA2208302"
+      },
+      {
+        "scenario": "LegendLeap",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/06-LegendLeap-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "F835F4F18104A878B8671268205264C1E5BA4F725EDA7C24CD93FD003101E5E4"
+      },
+      {
+        "scenario": "HarborOrders",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/07-HarborOrders-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "F9AD23016689AA249E78110F1C0E4211DDA10B008F868DD3EAC589BF5CBE065C"
+      },
+      {
+        "scenario": "FullHold",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/08-FullHold-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "5A8326D18C6E67EF9C7AF5C442645EB210E2F8FB79A4B896E8378CE8CABF156F"
+      },
+      {
+        "scenario": "MaxUpgrades",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/09-MaxUpgrades-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "70B78C32E961B5BAD64AA5F4CF3CB18CF98649F8F993ACB4002B20DC2F54B9BA"
+      },
+      {
+        "scenario": "Details",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/10-Details-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "E123225F28089EE02E530472CEF448F7B0E41AE1FC6E0AB92DD559FE3763CA5E"
+      },
+      {
+        "scenario": "Journal",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/11-Journal-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "082CBFCF11F502C8E0464F10C7D8784B487192458686A470CD91CA0B251F291D"
+      },
+      {
+        "scenario": "Settings",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/12-Settings-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "4C14BDF25413DDBAD25FE0AC4200FF6B31F33B54E0E4FC910FBA4CE8B6411F77"
+      },
+      {
+        "scenario": "ShoreFirstPerson",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/13-ShoreFirstPerson-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "6D928AE22EDBA505A725104C424A9E54DE88E297EFDD13ADC218FCD397DBB8D5"
+      },
+      {
+        "scenario": "ShoreThirdPerson",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/14-ShoreThirdPerson-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "495567E88C64515163BCCF1C4FFBABCFA0AEC46D70E4775308E9172A7F86A221"
+      },
+      {
+        "scenario": "ShopCounter",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/15-ShopCounter-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "2E81DCC9011F61450DBE3D9355D338C4291A8C36F021D4ADF5CB371006C8FE53"
+      },
+      {
+        "scenario": "StonePickaxe",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/16-StonePickaxe-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "700AFF81A1F3DEF15FA4740CCAFD986FC67E889645FD6663D64A80DD053832D7"
+      },
+      {
+        "scenario": "IronPickaxe",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/17-IronPickaxe-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "F67FF53DE3EBC9946072CC61FB6913657E1A04DACB7877D446B917A232874351"
+      },
+      {
+        "scenario": "BinocularCarry",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/18-BinocularCarry-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "65E8B38A24C2F90BA5A2182C3B7E71968AED7D72756181F0EF0DD8349AF5878C"
+      },
+      {
+        "scenario": "BinocularObserve",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/19-BinocularObserve-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "3F1A7EED0BEA32C472A88A66A7D31307E6267E627A3ADF3F2E77A49443E72426"
+      },
+      {
+        "scenario": "LookDownStanding",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/20-LookDownStanding-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "7913CB3BE175FC420E3B13DC0E1B3161DC01680EDFC80D12B57B097DFBBB670F"
+      },
+      {
+        "scenario": "LookDownCrouched",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/21-LookDownCrouched-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "A805A57C6EC4E59E84BDEDE99B8BC673BD18051643D0CFA97F7D2C6D96D2D705"
+      },
+      {
+        "scenario": "ShopAttendant",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/22-ShopAttendant-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "E8C35827BB28DDBF4334E9ACB33552500A0F08609BE69C75E3DF52A6BC7DEDFA"
+      },
+      {
+        "scenario": "BinocularThirdPerson",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/23-BinocularThirdPerson-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "72E8C92913925367743B77EB18177CF9519AB415D1BC3F8F091DE921381A8584"
+      },
+      {
+        "scenario": "Calendar",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/24-Calendar-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "2B49510D02B6360AABECEC5A62AB5AFF6E3F3B8FFE6B9E4037602653BDF155E7"
+      },
+      {
+        "scenario": "NightCoast",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/25-NightCoast-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "13CAA3AB5F72118E62912736FA058ED023A1752126AAA88230DA6A805CBF5156"
+      },
+      {
+        "scenario": "LanternCoast",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/26-LanternCoast-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "B36501A6B994607CEE0146FB162C538A5DB2B6F47D317A859C0A7CB8CBD75B95"
+      },
+      {
+        "scenario": "HuntingSpear",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/27-HuntingSpear-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "8C1186892754558EC878AB5D2A32D98ABE8B016C34494947B3116FC231DC74FD"
+      },
+      {
+        "scenario": "HunyuanCatalog",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/28-HunyuanCatalog-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "39D0D8160FE213890EE8F02C965692184A43E46DAB7C28E997D6837662E9C2B4"
+      },
+      {
+        "scenario": "HunyuanNightCatalog",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/29-HunyuanNightCatalog-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "C08E45DF8D1550E046E9B0B3F793D447601A5EFD3FE2E4F13E4BF8FEF4CE8B3B"
+      },
+      {
+        "scenario": "CastFlight",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/30-CastFlight-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "245F0072255CCA4A3D97E3FD492AA7785B4CC54EDE82155F15DF1E3D89CF89A6"
+      },
+      {
+        "scenario": "NightBoat",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/31-NightBoat-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "118D2772D542FC2F5256C10A5C7DA8911DDD4C571E1BD9F78169DBE9E47CB477"
+      },
+      {
+        "scenario": "LuxuryBoat",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/32-LuxuryBoat-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "5DE2FAE9ACF7C20EC9A37D89C8C80FBFAE58B598F59F2350E3D97AD5AE29E08C"
+      },
+      {
+        "scenario": "IslandLanding",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/33-IslandLanding-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "0CDAA937D4BFD14CCC24452225CC2DE94DD4730FA069F0B4F41E87F27E62428E"
+      },
+      {
+        "scenario": "ShopSupplies",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/34-ShopSupplies-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "76744EFC85DF3555010F7217C5A57B59E57C787289F891C3DA6776E13D00DF1C"
+      },
+      {
+        "scenario": "IslandJournal",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/35-IslandJournal-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "4FB3E8326125A38C7A85C2E0A08BA942341C6383AED3DDD733097B39EF1F675E"
+      },
+      {
+        "scenario": "ResidentDialogue",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/36-ResidentDialogue-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "B6E2F9017238EA95366D11F80F0B964BAA7D6BD9CC3E738619BF1C69926DF945"
+      },
+      {
+        "scenario": "WindSanctuary",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/37-WindSanctuary-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "559026C05F0C261312ED4858C59775688A7C74604779F018E2088B89AA77500A"
+      },
+      {
+        "scenario": "ForestSanctuary",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/38-ForestSanctuary-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "12070A9A4DF1C14D02F58EDC683DA3DDB31253008E61E90972B32FB4BD8BFB21"
+      },
+      {
+        "scenario": "WreckSanctuary",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/39-WreckSanctuary-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "B4A45C1C7418EF875324D026B3D01C08E32D65A7EAEEFB61E807CDA39A672685"
+      },
+      {
+        "scenario": "StarSanctuary",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/40-StarSanctuary-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "79779EA4E488340FB9AC47B9F9D0131F55139DD809C781FA4AC70C4761C050B5"
+      },
+      {
+        "scenario": "LoreJournal",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/41-LoreJournal-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "D076974AB679D630C9FF0A2D6CC6DE9CDC73CEE5CEF9BD489DE1647A5505438E"
+      },
+      {
+        "scenario": "ShopRations",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/42-ShopRations-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "D5039BFA09C76B2F0A36777C026E28B66078164502FCA381A1D817BAC33A03FE"
+      },
+      {
+        "scenario": "RegionArrival",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/43-RegionArrival-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "4094A279573025FE9AEDCB9A946B9ACECE01EF3242BB2979E0A53D1697830BBC"
+      },
+      {
+        "scenario": "SwimmingView",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/44-SwimmingView-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "9C65B8416E59A2C78A1D83BC3D9C25676F2845262FBDDD23BE6C12FEF6CCAAEE"
+      },
+      {
+        "scenario": "ClimbingView",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/45-ClimbingView-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "A9C292D0F7A835F8B6D694A4521D2BD84A88FD300623E637093CC4012FA592F9"
+      },
+      {
+        "scenario": "ForestIslandLanding",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/46-ForestIslandLanding-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "46122B99D14AE9F3D73D9EF3B5ED6AB51EF51A947FC89F926FB2E0CC718B3A3A"
+      },
+      {
+        "scenario": "WreckIslandLanding",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/47-WreckIslandLanding-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "2565126C2BFAD6D784E7ED7B2CFB11192CD6F8F891E97C20BCF72F3A33A876A0"
+      },
+      {
+        "scenario": "StarIslandLanding",
+        "file": "Logs/desktop-acceptance-dd1f15352ebd4d8c83ddd227f79f9bb3/capture-20261013-041148-302798b3/48-StarIslandLanding-1280x1024.png",
+        "width": 1280,
+        "height": 1024,
+        "sha256": "6E5F52EFBFCE7DFFE3D716C2044C718F73AAC3BE2C823EE16473CF8F147FF68D"
+      }
+    ]
+  }
+]

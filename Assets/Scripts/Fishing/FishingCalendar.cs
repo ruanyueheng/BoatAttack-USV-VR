@@ -31,6 +31,8 @@ namespace BoatAttack.Fishing
         public int Weekday => Day % 7;
         public float Hour => (float)(Minute / 60);
         public bool Night => Hour < 6 || Hour >= 19;
+        public bool RisingTide => Minute % 720 < 360;
+        public string TideName => RisingTide ? "涨潮" : "落潮";
         private static readonly string[] Seasons={"春","夏","秋","冬"};
         public string SeasonName => Seasons[Season];
         public string DateLabel => "第 " + Year + " 年 · " + SeasonName + " " + Date + " 日";

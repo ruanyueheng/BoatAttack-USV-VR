@@ -53,14 +53,14 @@ namespace BoatAttack.Fishing
 
         private static readonly FishSpecies[] Table =
         {
-            new FishSpecies(FishKind.Coral, "珊瑚鱼", "浅湾环礁 · 短冲刺，适合初学", 10, 600, 1400, 2.2f, 10f, 0.36f, 5.4f, 1.55f, 75f, false),
+            new FishSpecies(FishKind.Coral, "珊瑚鱼", "浅湾环礁 · 短冲刺，适合初学", 10, 600, 1400, 2.2f, 6f, 0.36f, 5.4f, 1.55f, 75f, false),
             new FishSpecies(FishKind.Dart, "飞梭鱼", "航标水道 · 冲刺频繁，提前放线", 16, 900, 2200, 2.55f, 12f, 0.45f, 3.6f, 1.55f, 75f, false),
             new FishSpecies(FishKind.Puffer, "鼓鼓鱼", "鼓鼓礁群 · 蓄力较久，冲刺更强", 22, 1200, 3000, 2.9f, 14f, 0.54f, 6.4f, 1.8f, 75f, false),
             new FishSpecies(FishKind.Sailfish, "金帆旗鱼", "航标水道 · 金色夕照 · 追逐珍珠饵", 120, 18000, 32000, 3.2f, 24f, 0.5f, 6.8f, 1.7f, 120f, true),
-            new FishSpecies(FishKind.Mackerel, "青花鲭", "航标水道 · 春秋 / 雨天 · 银腹与青纹", 18, 300, 1100, 2.3f, 12, .41f, 4.2f, 1.5f, 80, false),
+            new FishSpecies(FishKind.Mackerel, "青花鲭", "航标水道 · 仅雨天 · 银腹与青纹", 18, 300, 1100, 2.3f, 12, .41f, 4.2f, 1.5f, 80, false),
             new FishSpecies(FishKind.SeaBream, "金线海鲷", "珊瑚浅湾 · 春夏白昼 · 高身金鳍", 24, 500, 1800, 2.6f, 12, .43f, 5.5f, 1.6f, 80, false),
-            new FishSpecies(FishKind.Sardine, "银沙丁", "各海域 · 白昼 · 小型群游鱼", 8, 80, 240, 1.8f, 8, .29f, 5.8f, 1.3f, 70, false),
-            new FishSpecies(FishKind.Grouper, "斑点石斑", "鼓鼓礁 · 秋冬 / 薄雾 · 底栖伏击", 32, 900, 3800, 3.2f, 15, .5f, 6.2f, 1.8f, 90, false),
+            new FishSpecies(FishKind.Sardine, "银沙丁", "各海域 · 白昼 · 小型群游鱼", 8, 80, 240, 1.8f, 4, .29f, 5.8f, 1.3f, 70, false),
+            new FishSpecies(FishKind.Grouper, "斑点石斑", "鼓鼓礁 · 涨潮且秋冬 / 薄雾 · 底栖伏击", 32, 900, 3800, 3.2f, 15, .5f, 6.2f, 1.8f, 90, false),
             new FishSpecies(FishKind.Butterfly, "月纹蝶鱼", "珊瑚浅湾 · 夏季白昼 · 蝶形侧影", 20, 120, 400, 2.5f, 10, .34f, 5.2f, 1.4f, 75, false),
             new FishSpecies(FishKind.Tuna, "蓝鳍鲔", "航标水道 · 夏秋白昼 · 急速冲刺", 45, 2000, 7000, 3.1f, 18, .51f, 4.1f, 1.8f, 100, false),
             new FishSpecies(FishKind.Lanternfish, "星灯鱼", "各海域 · 仅夜间 · 腹部星斑", 28, 100, 450, 2.4f, 11, .38f, 5.8f, 1.5f, 80, false),
@@ -77,10 +77,10 @@ namespace BoatAttack.Fishing
             int season = calendar.Season; bool night = calendar.Night;
             switch (kind)
             {
-                case FishKind.Mackerel: return zone == 1 && (season == 0 || season == 2 || weather == BayWeather.Rain);
+                case FishKind.Mackerel: return zone == 1 && weather == BayWeather.Rain;
                 case FishKind.SeaBream: return zone == 0 && !night && season < 2;
                 case FishKind.Sardine: return !night;
-                case FishKind.Grouper: return zone == 2 && (season >= 2 || weather == BayWeather.Mist);
+                case FishKind.Grouper: return zone == 2 && calendar.RisingTide && (season >= 2 || weather == BayWeather.Mist);
                 case FishKind.Butterfly: return zone == 0 && season == 1 && !night;
                 case FishKind.Tuna: return zone == 1 && !night && (season == 1 || season == 2);
                 case FishKind.Lanternfish: return night;

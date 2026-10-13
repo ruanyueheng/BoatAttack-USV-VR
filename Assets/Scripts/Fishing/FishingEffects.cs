@@ -32,14 +32,15 @@ namespace BoatAttack.Fishing
             _starMaterial=new Material(_material){name="Night star palette"};stars.GetComponent<MeshFilter>().sharedMesh=_starMesh;
             var sr=stars.GetComponent<MeshRenderer>();sr.sharedMaterial=_starMaterial;sr.shadowCastingMode=ShadowCastingMode.Off;sr.receiveShadows=false;
         }
-        public void Burst(Vector3 at,Color color)
+        public void Burst(Vector3 at,Color color,bool splash=false)
         {
             if(_sparks==null || Controller.Paused)return;
             int count=Controller.Weather.ReducedEffects?4:12;
             for(int i=0;i<count;i++)
             {
                 float angle=i*2.399963f;
-                _sparks.Emit(new ParticleSystem.EmitParams{position=at,startColor=color,velocity=new Vector3(Mathf.Cos(angle)*.25f,.15f+(i%4)*.08f,Mathf.Sin(angle)*.25f)},1);
+                _sparks.Emit(new ParticleSystem.EmitParams{position=at,startColor=color,startSize=splash?.07f:.025f,
+                    velocity=new Vector3(Mathf.Cos(angle)*.25f,.15f+(i%4)*.08f,Mathf.Sin(angle)*.25f)*(splash?4f:1f)},1);
             }
         }
         private void LateUpdate()

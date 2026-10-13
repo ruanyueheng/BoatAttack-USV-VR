@@ -34,15 +34,17 @@ namespace BoatAttack.Fishing
             if(legend && store){MeasureCatch();Notice("传说鱼已测量。请确认放生领取纪念，不作为普通鱼售卖。",6);return false;}
             if(legend && !p.measured){Notice("先拿起传说鱼测量，再确认放生。",5);return false;}
             bool hadEvidence=Career.Expedition.Has(FishingExpedition.TargetCaught);
+            int surveyBefore=FishingSurvey.Stage(Career);
             bool discovery=!Career.Discovered(p.fish.kind,p.fish.rare);int best=Career.BestGrams(p.fish.kind);
             if(!Career.ResolvePending(store,out var record,out int bounty))
             {Notice("鱼箱已满。鱼仍安全保留，可整理鱼箱或选择放生。",5);return false;}
             _caughtAt=store && !legend?Time.time:-100;_catchStart=_fish.transform.position;
             if(!store)StartCoroutine(ReleaseFishVisual(record,_catchStart,_fish.transform.rotation,_fish.transform.localScale));
-            LastCatch=new CatchCard{Fish=record.Copy(),ShownAt=Time.unscaledTime,Discovery=discovery,PersonalBest=best>0 && record.grams>best,Bounty=bounty};
+            LastCatch=new CatchCard{Fish=record.Copy(),ShownAt=Time.unscaledTime,Discovery=discovery,PersonalBest=best>0 && record.grams>best,Bounty=bounty,Released=!store};
             if(legend && _trophy==null)BuildTrophy();
             Effects?.Burst(_catchStart,new Color(.46f,.82f,.80f));RefreshHold();Save();_feedback.PlayOneShot(legend?_legendTone:_successTone);
-            if(!hadEvidence && Career.Expedition.Has(FishingExpedition.TargetCaught))Notice("北岛捕获记录已收录！鱼货与主线凭证独立，返港可提交捕获记录。",9,false);
+            if(FishingSurvey.Stage(Career)>surveyBefore)Notice(FishingSurvey.Stage(Career)==1?"浅湾调查完成！北岛渔场已开放。J 查看下一组水道调查。":"北岛渔场与传说坐标已解锁！夕照、飞梭水道、珍珠饵、强化鱼线：条件齐备必遇金帆旗鱼。",10,false);
+            else if(!hadEvidence && Career.Expedition.Has(FishingExpedition.TargetCaught))Notice("北岛捕获记录已收录！鱼货与主线凭证独立，返港可提交捕获记录。",9,false);
             else Notice(FishingSpecies.Name(record.kind)+" "+FishingText.Weight(record.grams)+(legend?" 已测量放生，赏金 +"+bounty:store?" 已放入鱼箱。":" 已放生；保留图鉴与体型记录，不获得售鱼金币。"),7,true);
             CatchRig.Recover();return true;
         }
