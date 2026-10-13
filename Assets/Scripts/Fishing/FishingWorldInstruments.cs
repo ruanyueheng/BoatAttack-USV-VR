@@ -52,11 +52,13 @@ namespace BoatAttack.Fishing
                 if (Time.deltaTime > 0f) _height = Mathf.SmoothDamp(_height, boat.position.y, ref _heightVelocity, 2.5f);
                 _canvas.transform.SetPositionAndRotation(new Vector3(boat.position.x, _height + 1.15f, boat.position.z) + yaw * new Vector3(-0.35f, 0, ReferenceDistance), yaw);
             }
-            _fill.sizeDelta = new Vector2(c.Session.Tension * 400, 10);
+            _fill.sizeDelta = new Vector2((c.Anchored?c.Session.Tension:c.Boost.Heat) * 400, 10);
             if (Time.unscaledTime < _nextText) return; _nextText = Time.unscaledTime + 0.1f;
             string hold = "HOLD " + c.Career.Count + "/" + c.Career.Capacity;
             _status.text = c.Anchored ? "FISHING  /  " + c.Session.Phase.ToString().ToUpperInvariant() + "\nLINE " + (c.Session.Tension * 100).ToString("0") + "%   " + hold : "TIDE & FIN   /   HELM\n" + (c.Speed * 3.6f).ToString("0") + " km/h    " + hold;
-            _hint.text = c.Paused ? "PAUSED" : c.Anchored && c.Session.Phase == CatchPhase.Fighting ? BeatHint(c.Session.Beat) : "HARBOR " + c.HarborDistance.ToString("0") + "m";
+            _hint.text = c.Paused ? "PAUSED" : c.Anchored && c.Session.Phase == CatchPhase.Fighting ? BeatHint(c.Session.Beat)
+                : c.Anchored && c.Session.Phase == CatchPhase.Landing ? "NET NOW - " + c.Session.Remaining.ToString("0.0") + "s"
+                : "HEAT " + (c.Boost.Heat*100).ToString("0") + "%" + (c.Boost.Overheated?" - COOL TO 25%":"");
         }
         private static string BeatHint(FishBeat beat)
         {

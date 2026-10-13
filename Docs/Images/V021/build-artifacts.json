@@ -1,0 +1,12 @@
+[
+  {
+    "file": "Builds/FishingPrototype-v0.21.0/FishingPrototype.exe",
+    "bytes": 666624,
+    "sha256": "3AA99A12CEADFA13DA1FF1262E0F076BDEC1C93319989ED000E708D7596550DF"
+  },
+  {
+    "file": "Builds/FishingPrototype-v0.21.0/FishingPrototype_Data/Managed/Assembly-CSharp.dll",
+    "bytes": 574976,
+    "sha256": "B4A6B0ADB0F6A1FF23110AB7FA964E7FA0ABA8D34AF3101AC697B31E6960F00B"
+  }
+]

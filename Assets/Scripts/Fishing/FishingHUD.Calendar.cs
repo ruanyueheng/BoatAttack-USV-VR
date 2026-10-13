@@ -6,7 +6,7 @@ namespace BoatAttack.Fishing
         private void DrawCalendarPage(Rect r)
         {
             var day=Controller.Career.Calendar;
-            Label(r.x+32,r.y+116,900,42,day.DateLabel+"    "+day.TimeLabel,28,InkText,true);
+            Label(r.x+32,r.y+116,900,42,day.DateLabel+"    "+day.TimeLabel+" · "+day.TideName,28,InkText,true);
             Label(r.x+32,r.y+163,1000,24,"每季 28 天 · 四季轮转 · 15 分钟一昼夜 · 日志、背包与暂停时停表",16,Muted);
             string[] week={"一","二","三","四","五","六","日"};
             for(int i=0;i<7;i++)Label(new Rect(r.x+32+i*132,r.y+202,120,30),"周"+week[i],16,Muted,true,TextAnchor.MiddleCenter);

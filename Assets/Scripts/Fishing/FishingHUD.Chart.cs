@@ -35,7 +35,7 @@ namespace BoatAttack.Fishing
             DrawWorkshopMarkers(center);
             ChartMarker(c.harbor,center,"港",0,MapPortColor);
             for(int i=0;i<c.fishingSpots.Length;i++)
-                ChartMarker(c.fishingSpots[i],center,(i+1).ToString(),i+1,FishingGrounds.Available(i,c.Career.Expedition)?MapFishColor:Faint);
+                ChartMarker(c.fishingSpots[i],center,(i+1).ToString(),i+1,FishingGrounds.AvailableForCareer(i,c.Career)?MapFishColor:Faint);
             if(c.Shore!=null)
                 for(int i=0;i<c.Shore.Sites.Length;i++)if(c.Shore.Sites[i].Available)
                     ChartMarker(c.Ashore?c.Shore.Sites[i].Landing:c.Shore.Sites[i].Berth,center,

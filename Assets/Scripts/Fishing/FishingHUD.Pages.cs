@@ -158,6 +158,15 @@ namespace BoatAttack.Fishing
                 if(Button(new Rect(stats.x+20,stats.y+132,380,34),c.Expedition.PrecisionGuide?"关闭精确指引（地图 ★）":"需要帮助：开启地图精确指引",true,false,14))c.Expedition.ToggleGuide();
                 return;
             }
+            if(_journalPage==0 || _journalPage==1)
+            {
+                Label(stats.x+20,stats.y+12,380,44,FishingSurvey.Goal(career),16,Gold,true);
+                Label(stats.x+20,stats.y+60,380,26,FishingSurvey.Checklist(career),14,Mint);
+                Label(stats.x+20,stats.y+90,380,40,FishingSpecies.Of(FishingSurvey.NextFish(career)).Habitat,14,Muted);
+                int destination=FishingSurvey.Stage(career)==0?1:2;
+                if(Button(new Rect(stats.x+20,stats.y+136,380,34),"设定调查航点 · "+FishingGrounds.Name(destination-1),true,false,14))c.NavigateSurvey();
+                return;
+            }
             Label(stats.x + 20, stats.y + 16, 380, 26, "航海统计", 17, Color.white, true);
             Label(stats.x + 20, stats.y + 50, 380, 110,
                 "累计捕获   " + career.Catches + " 条\n完成委托   " + career.OrdersCompleted + " 份\n放生传说   " + career.LegendCatches + " 次\n持有金币   " + career.Coins.ToString("N0", CultureInfo.InvariantCulture), 17, Mint);

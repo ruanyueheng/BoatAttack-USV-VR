@@ -59,8 +59,10 @@ internal static class CatchTransactionTests
         var session=new CatchSession();session.Cast(FishKind.Coral,false,0,"stable-net");
         for(int i=0;i<1500 && session.Phase==CatchPhase.Waiting;i++)session.Tick(.02f,false);session.Hook();
         for(int i=0;i<6000 && session.Phase==CatchPhase.Fighting;i++)session.Tick(.02f,session.Tension<.6f);
-        session.HoldForNet();for(int i=0;i<2000;i++)session.Tick(.1f,false);
-        check(session.WaitingForNet && session.Phase==CatchPhase.Landing,"Production waiting-for-net mode stays stable without a third hand on the reel");
+        for(int i=0;i<50;i++)session.Tick(.1f,false);
+        check(session.CanNet && session.Phase==CatchPhase.Landing,"V21 drag permits net handover without a third hand on the reel");
+        for(int i=0;i<60;i++)session.Tick(.1f,false);
+        check(session.Failure==CatchFailure.LandingTimeout,"V21 handover cannot freeze the net deadline");
         var edge=new FishingPressEdge();
         check(!edge.Step(true,true),"Initially held trigger cannot select");edge.Step(true,false);check(edge.Step(true,true) && !edge.Step(true,true),"Trigger emits only one press");
         edge.Step(false,false);check(!edge.Step(true,true),"Tracking/focus recovery requires trigger release");

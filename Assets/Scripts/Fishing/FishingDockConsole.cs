@@ -23,14 +23,14 @@ namespace BoatAttack.Fishing
         {
             _c=c;var root=new GameObject("XR dock and catch console",typeof(RectTransform),typeof(Canvas));root.transform.SetParent(transform,false);
             _canvas=root.GetComponent<Canvas>();_canvas.renderMode=RenderMode.WorldSpace;_canvas.worldCamera=c.viewCamera;
-            var rect=root.GetComponent<RectTransform>();rect.sizeDelta=new Vector2(500,570);rect.localScale=Vector3.one*.002f;
+            var rect=root.GetComponent<RectTransform>();rect.sizeDelta=new Vector2(500,618);rect.localScale=Vector3.one*.002f;
             var panel=root.AddComponent<Image>();panel.color=new Color(.985f,.977f,.945f,.98f);panel.raycastTarget=false;
-            _status=Label(root.transform,new Vector2(18,-16),new Vector2(464,196),21);
-            _message=Label(root.transform,new Vector2(18,-500),new Vector2(464,58),19);
+            _status=Label(root.transform,new Vector2(18,-16),new Vector2(464,234),21);
+            _message=Label(root.transform,new Vector2(18,-548),new Vector2(464,58),19);
             int i=0;foreach(FishingDockAction action in Enum.GetValues(typeof(FishingDockAction)))
             {
                 var go=new GameObject(action.ToString(),typeof(RectTransform),typeof(Image));go.layer=5;go.transform.SetParent(root.transform,false);
-                var rt=go.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(0,1);rt.pivot=new Vector2(0,1);rt.anchoredPosition=new Vector2(18+(i%2)*239,-202-(i/2)*57);rt.sizeDelta=new Vector2(225,49);
+                var rt=go.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(0,1);rt.pivot=new Vector2(0,1);rt.anchoredPosition=new Vector2(18+(i%2)*239,-250-(i/2)*57);rt.sizeDelta=new Vector2(225,49);
                 var image=go.GetComponent<Image>();image.raycastTarget=false;_buttons.Add(action,image);
                 var label=Label(go.transform,new Vector2(8,-8),new Vector2(210,34),20);label.text=Name(action);
                 var collider=go.AddComponent<BoxCollider>();collider.size=new Vector3(225,49,4);collider.center=new Vector3(112.5f,-24.5f,0);collider.isTrigger=true;
@@ -87,7 +87,7 @@ namespace BoatAttack.Fishing
                 case FishingDockAction.UpgradeLine:ok=_c.BuyUpgrade(UpgradeTrack.Line);break;
                 case FishingDockAction.NextWaypoint:
                     int next=_c.NavigationTarget;
-                    for(int i=0;i<_c.NavigationCount;i++){next=(next+1)%_c.NavigationCount;if(next==0 || next>_c.fishingSpots.Length || FishingGrounds.Available(next-1,_c.Career.Expedition))break;}
+                    for(int i=0;i<_c.NavigationCount;i++){next=(next+1)%_c.NavigationCount;if(next==0 || next>_c.fishingSpots.Length || FishingGrounds.AvailableForCareer(next-1,_c.Career))break;}
                     _c.SelectNavigation(next);break;
                 case FishingDockAction.Anchor:if(_c.Anchored)_c.LeaveStation();else _c.Interact();break;
                 case FishingDockAction.Store:
@@ -136,8 +136,10 @@ namespace BoatAttack.Fishing
             string state=_c.HasPendingCatch?"PENDING: "+_c.Career.PendingCatch.fish.kind+" "+_c.Career.PendingCatch.fish.grams+"g"+(_c.Career.PendingCatch.measured?" [MEASURED]":""):_c.Anchored?"FISHING: "+_c.Session.Phase:"HELM: "+(_c.Speed*3.6f).ToString("0")+" km/h";
             _status.text="TIDE & FIN  /  "+state+"\nCOINS "+_c.Career.Coins+"    HOLD "+_c.Career.Count+"/"+_c.Career.Capacity+"    LINE "+_c.Career.LineLevel+"\nORDER "+(_c.Career.OrdersCompleted+1)+(_c.Career.OrderMarked?" [MARKED]":"")+(_c.Career.OrderReady?" READY":"")+"\n";
             for(int i=0;i<_c.Career.CurrentOrder.LineCount;i++){var line=_c.Career.CurrentOrder.Line(i);_status.text+=line.Kind+" x"+line.Count+(line.Rare?" pearl":"")+"  ";}
-            _status.text+="\n"+(_c.Session.Phase==CatchPhase.Fighting?(_c.Session.Beat+" / LINE "+(_c.Session.Tension*100).ToString("0")+"%  "+(_c.Session.Beat==FishBeat.Rest?"REEL":"EASE / RELEASE")):"NET: COVER, LIFT; BOX: GENTLE TILT");
-            _status.text+="\nBEACON: "+(_c.Career.Expedition.Has(FishingExpedition.TargetCaught)?"EVIDENCE RECORDED":_c.Career.Expedition.Has(FishingExpedition.BeaconRepaired)?"NORTH UNLOCKED":"SHORE: X BOARD / B NOTEBOOK");
+            _status.text+="\n"+(!_c.Anchored?"HEAT "+(_c.Boost.Heat*100).ToString("0")+"%"+(_c.Boost.Overheated?" - COOL TO 25%":"")
+                :_c.Session.Phase==CatchPhase.Fighting?(_c.Session.Beat+" / LINE "+(_c.Session.Tension*100).ToString("0")+"%  "+(_c.Session.Beat==FishBeat.Rest?"REEL":"EASE / RELEASE"))
+                :_c.Session.Phase==CatchPhase.Landing?"NET: "+_c.Session.Remaining.ToString("0.0")+"s - COVER, LIFT":"NET: COVER, LIFT; BOX: GENTLE TILT");
+            _status.text+="\nNORTH: "+(_c.Career.Expedition.Has(FishingExpedition.TargetCaught)?"EVIDENCE RECORDED":FishingGrounds.AvailableForCareer(FishingGrounds.NorthIsland,_c.Career)?"NORTH UNLOCKED":"SHORE: X BOARD / B NOTEBOOK");
             var delta=_c.NavigationPosition-_c.Player.transform.position;
             float bearing=Mathf.DeltaAngle(_c.Player.transform.eulerAngles.y,Mathf.Atan2(delta.x,delta.z)*Mathf.Rad2Deg);
             string turn=Mathf.Abs(bearing)<12?"AHEAD":(bearing<0?"LEFT ":"RIGHT ")+Mathf.Abs(bearing).ToString("0")+" deg";

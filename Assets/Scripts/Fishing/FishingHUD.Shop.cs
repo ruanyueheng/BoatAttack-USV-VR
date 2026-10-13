@@ -38,16 +38,17 @@ namespace BoatAttack.Fishing
                 string description=supplies?(FishingSupplies.Items[product]==FieldItem.CookedMeat?"F食用恢复50%体力 · 体力充足时不消耗":"放入背包 · I装备到快捷栏 / 用于制作"):FishingText.ShopProductDescription(track);
                 Label(x+108,y+46,w-126,24,description,13,Muted);
                 if(!supplies)Label(x+108,y+80,650,22,cost>0?FishingText.UpgradeEffect(track,level)+" → "+FishingText.UpgradeEffect(track,level+1):FishingText.UpgradeEffect(track,level),14,Mint);
-                bool affordable=cost>0 && c.Career.Coins>=cost;
+                bool locked=!supplies && c.Career.SpecializationBlocked(track);
+                bool affordable=!locked && cost>0 && c.Career.Coins>=cost;
                 var buy=new Rect(x+w-180,y+(supplies?76:15),164,32);
-                if(Button(buy,cost<=0?"已满级":"购买 "+cost+" 金币",affordable,affordable,15))
+                if(Button(buy,locked?"专精互斥":cost<=0?"已满级":"购买 "+cost+" 金币",affordable,affordable,15))
                 {if(supplies)c.TackleShop.BuySupply(product);else c.TackleShop.Buy(track);}
                 if(supplies)Label(x+108,y+83,190,22,"已有 "+c.Career.Backpack.Count(FishingSupplies.Items[product]),14,Mint);
             }
             Fill(r.x+30,r.y+548,r.width-60,1,Hairline);
             Label(r.x+30,r.y+565,r.width-60,30,c.VisibleMessage,14,Gold);
             if(Button(new Rect(r.x+30,r.y+618,196,38),"与汐禾交谈",true,false,15))c.Residents.Talk(4);
-            Label(r.x+248,r.y+626,570,23,"升级立即装备 · 用品进入背包 · 自动保存",14,Muted);
+            Label(r.x+248,r.y+626,570,23,"二级载重 / 动力 / 操控专精三选一 · 自动保存",14,Muted);
             if(Button(new Rect(r.xMax-196,r.yMax-62,166,38),"E / Esc 关闭",true,false,15))c.ToggleShop();
         }
     }

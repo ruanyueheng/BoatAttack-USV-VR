@@ -14,6 +14,7 @@ namespace BoatAttack.Fishing
         private Vector3 _lastCastPosition;private bool _castSample;
         private int _presentationFrame=-1;
         private FishBeat _lastCue;
+        private float _nextTensionPulse;
         private readonly FishingHandInput _input=new FishingHandInput();
         private GameObject _pickup;
         private float _pickupTime;
@@ -84,8 +85,8 @@ namespace BoatAttack.Fishing
             _input.Update(available,grip,trigger,Vector3.Distance(rp,_rod.position)<.24f,leftGrip,Vector3.Distance(lp,_knob.position)<.16f,angle);
             if(_input.Reeling)_crank.localRotation=Quaternion.AngleAxis(-angle,Vector3.right);
             if(HoldingRod && !wasHolding)Haptic(right,.22f);
-            if(HoldingRod && _c.Session.Phase==CatchPhase.Fighting && _c.Session.Beat!=_lastCue)
-            {_lastCue=_c.Session.Beat;Haptic(right,_lastCue==FishBeat.Leap?.3f:.12f);}
+            if(HoldingRod && _c.Session.Phase==CatchPhase.Fighting && (_c.Session.Beat!=_lastCue || Time.unscaledTime>=_nextTensionPulse))
+            {_lastCue=_c.Session.Beat;_nextTensionPulse=Time.unscaledTime+.18f;Haptic(right,.06f+.4f*_c.Session.Tension);}
             var localPosition=_c.XRSeat.Origin.transform.InverseTransformPoint(rp);
             float dt=Time.unscaledDeltaTime;
             var forward=_c.XRSeat.Origin.transform.InverseTransformDirection(_c.viewCamera.transform.forward);

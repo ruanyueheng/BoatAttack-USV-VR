@@ -18,13 +18,14 @@ namespace BoatAttack.Fishing
         public float ShownAt;
         public bool Discovery;
         public bool PersonalBest;
+        public bool Released;
         public int Bounty;
     }
 
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.20.0";
+        public const string Version = "0.21.0";
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
@@ -42,9 +43,10 @@ namespace BoatAttack.Fishing
         public FishingCareer Career { get; private set; }
         public CatchSession Session { get; } = new CatchSession();
         public bool Anchored { get; private set; }
+        public USVBoost Boost { get; } = new USVBoost();
         public bool Boosting => _initialized && !Paused && !Ashore && !Anchored && !HasPendingCatch
             && !InventoryOpen && !JournalOpen && !DockConsole.BlocksGameplay && !XRNotebook.IsOpen
-            && !ShopBlocksGameplay && !StoryBlocksGameplay && _input.Current.boost;
+            && !ShopBlocksGameplay && !StoryBlocksGameplay && _input.Current.boost && Boost.Active;
         public bool Paused { get; private set; }
         public bool Automated { get; private set; }
         public FishingViewRig View { get; private set; }
@@ -321,14 +323,15 @@ namespace BoatAttack.Fishing
             {
                 bool reel=Automated?AutomationReel:_xrActive?Hands.XRReeling:(pointerReady && !overTools && !rightHeld && leftHeld)||(gamepadReady && g!=null && g.rightTrigger.ReadValue()>0.5f);
                 _reeling=reel && Session.Phase==CatchPhase.Fighting;
-                if(Session.Phase==CatchPhase.Landing)Session.HoldForNet();
                 if(!CastMotion.Casting && (Acceptance == null || !Acceptance.FreezeScenario)) Session.Tick(Time.deltaTime,reel);
                 if(Session.Phase!=_previousPhase)
                 {
                     if(Session.Phase==CatchPhase.Bite)
                     {
                         bool legend=Session.Species.Legendary;
-                        _feedback.PlayOneShot(legend?_legendTone:_biteTone);
+                        bool special=legend || Session.Rare || FishingSpecies.SizePermille(Session.Kind,Session.Grams)>=850;
+                        _feedback.PlayOneShot(special?_legendTone:_biteTone);
+                        if(special){Effects?.Burst(_bobber.transform.position,new Color(.7f,.9f,1f),true);Hands?.HookGesture();}
                         if(legend)Notice("金帆旗鱼咬钩了！提竿后看到“跃出水面”立刻松开，别硬拉。",7f);
                     }
                     if(Session.Phase==CatchPhase.Escaped)Notice(FishingText.Failure(Session.Failure,_xrActive),8f);
@@ -341,7 +344,11 @@ namespace BoatAttack.Fishing
 
         private void FixedUpdate()
         {
-            if(!_initialized || Paused)return;
+            if(!_initialized)return;
+            bool blocked=Paused || (!Automated && !Application.isFocused) || Ashore || Anchored || HasPendingCatch || InventoryOpen || JournalOpen
+                || DockConsole.BlocksGameplay || XRNotebook.IsOpen || ShopBlocksGameplay || StoryBlocksGameplay;
+            Boost.Tick(Time.fixedDeltaTime,_input.Current.boost && _input.Current.throttle>0 && _input.Current.brake<=0 && Player.engine.InWater,blocked);
+            if(Paused)return;
             var rb=Player.engine.RB;
             if(Ashore){Shore.HoldBoat();return;}
             if(Anchored)
@@ -356,7 +363,7 @@ namespace BoatAttack.Fishing
             if(HasPendingCatch || InventoryOpen || JournalOpen || DockConsole.BlocksGameplay || XRNotebook.IsOpen || ShopBlocksGameplay || StoryBlocksGameplay)return;
             var state=_input.Current;
             float comfort=ComfortMode?0.65f:1f;
-            Player.engine.Accelerate(state.throttle*comfort, state.boost);Player.engine.Turn(state.steering*comfort);
+            Player.engine.Accelerate(state.throttle*comfort, Boost.Active);Player.engine.Turn(state.steering*comfort);
             float braking=state.brake; // S is reverse thrust; only Shift/explicit brake decelerates velocity.
             if(braking>0f)
             {
@@ -443,7 +450,7 @@ namespace BoatAttack.Fishing
             UpdateNearestSpot();
             if(Anchored){if(Session.Phase==CatchPhase.Landing)Scoop();return;}
             if(AtHarbor){int voyage=Islands.CompleteAtHarbor();int survey=ClaimShoreRewards();if(Career.OrderReady)DeliverOrder();else if((survey==0 && voyage==0) || Career.SaleValue>0)Sell();return;}
-            if(!FishingGrounds.Available(Spot,Career.Expedition)){Notice("北岛渔场尚未开放：先完成旧港信标修复。");return;}
+            if(!FishingGrounds.AvailableForCareer(Spot,Career)){Notice("北岛渔场尚未开放：完成浅湾图鉴调查，或修复旧港信标。J 查看调查进度。");return;}
             if(SpotDistance>22f){Notice("先驶入任一黄色渔区，再按 E 停船。");return;}
             if(Speed>3f){Notice("速度过快，按住 Shift 刹车再停船。");return;}
             Anchored=true;ChartExpanded=false;ShowDetails=false;HarborDeskOpen=false;_anchor=Player.engine.RB.position;_anchorRotation=Player.transform.rotation;
@@ -453,11 +460,12 @@ namespace BoatAttack.Fishing
         }
         public bool Cast(float power = .55f)
         {
-            if(HasPendingCatch || Ashore || !Anchored || Paused || !FishingGrounds.Available(Spot,Career.Expedition))return false;
+            if(HasPendingCatch || Ashore || !Anchored || Paused || !FishingGrounds.AvailableForCareer(Spot,Career))return false;
             if(Career.Count>=Career.Capacity){Notice("鱼箱已满！按 Q 起航，返港按 E 出售。");return false;}
             var weather=Weather.Climate.Current;
             var kind=Automated?FishingGrounds.Species(Spot):FishingSpecies.Select(Spot,Career.Calendar,weather,UnityEngine.Random.value);
-            bool legend=LegendRules.CanStrike(Spot,weather,Bait,Career.LineLevel) && (ForceLegend || UnityEngine.Random.value<LegendRules.StrikeChance);
+            bool legend=LegendRules.CanStrike(Spot,weather,Bait,Career.LineLevel)
+                && (ForceLegend || FishingSurvey.LegendCoordinates(Career) || UnityEngine.Random.value<LegendRules.StrikeChance);
             bool rare=!legend && UnityEngine.Random.value<Mathf.Clamp01(FishingVoyage.RareChance(Bait)+BayClimate.RareBonus(weather,kind));
             if(legend)kind=FishKind.Sailfish;
             // Two uniform rolls: average fish are common and record-sized fish stay rare.
@@ -509,6 +517,7 @@ namespace BoatAttack.Fishing
         {
             if(Paused || InventoryOpen || JournalOpen || HasPendingCatch || (!AtHarbor && (TackleShop == null || !TackleShop.CanPurchase)))
             {Notice("请到港口交易台，或登岸进入钓具店柜台后购买。");return false;}
+            if(Career.SpecializationBlocked(track)){Notice("二级专精只能选择载重、动力或操控中的一项；其他两项可升至一级。",7);return false;}
             int cost=Career.NextUpgradeCost(track);
             if(cost<=0){Notice(FishingText.UpgradeName(track)+"已经升到满级。",4f);return false;}
             bool ok=Career.Upgrade(track);
@@ -549,6 +558,12 @@ namespace BoatAttack.Fishing
             Bait=(BaitKind)(((int)Bait+1)%3);Notice(FishingVoyage.BaitName(Bait)+" · "+FishingVoyage.BaitHelp(Bait),4f);
         }
         public void CycleNavigation() => SelectNavigation((NavigationTarget+1)%NavigationCount);
+        public void NavigateSurvey()
+        {
+            if(JournalOpen)ToggleJournal();
+            if(Paused)return;
+            XRNotebook.Close();SelectNavigation(FishingSurvey.Stage(Career)==0?1:2);
+        }
         public void SelectNavigation(int target)
         {
             if(Paused || target<0 || target>=NavigationCount)return;
