@@ -242,6 +242,9 @@ namespace UnityEngine.Rendering.Universal
             if (camera.cameraType == CameraType.Reflection || camera.cameraType == CameraType.Preview)
                 return;
 
+            // UI and asset-photo cameras cannot see water and need no reflected oblique frustum.
+            if ((camera.cullingMask & (1 << 4)) == 0) return;
+
             Shader.SetGlobalFloat("_WaterStereoCamera", camera.stereoEnabled ? 1f : 0f);
             if (camera.stereoEnabled) return; // Water shader falls back to probes in XR.
             UpdateReflectionCamera(camera); // create reflected camera

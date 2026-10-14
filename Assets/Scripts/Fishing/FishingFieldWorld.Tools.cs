@@ -32,9 +32,9 @@ namespace BoatAttack.Fishing
             bool preview=_previewUntil>Time.time && !_c.WorldActionBusy;
             if(preview)item=_previewItem;
             bool pick=item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe;
-            bool facility=item==FieldItem.Workbench || item==FieldItem.Furnace;
+            bool facility=FishingRecipes.IsStation(item);
             bool tool=pick || facility || item==FieldItem.HuntingSpear || item==FieldItem.FieldGuide || item==FieldItem.Binoculars || item==FieldItem.Lantern || preview;
-            bool visible=_c.Ashore && !_c.StoryBlocksGameplay && !_c.Shore.Swimming && !_c.Shore.Climbing && (_c.XRNotebook==null || !_c.XRNotebook.IsOpen) && _c.Hands.CanPresentTools && !_c.ShopBlocksGameplay && !_c.Hands.HasGesture && !_c.Hands.PresentingPickup && !_c.Expedition.Aligning && !_c.ActionSuppressesHeldTool && tool;
+            bool visible=_c.Ashore && !_c.StoryBlocksGameplay && !_c.Shore.Swimming && !_c.Shore.Climbing && (_c.XRNotebook==null || !_c.XRNotebook.BlocksGameplay) && _c.Hands.CanPresentTools && !_c.ShopBlocksGameplay && !_c.Hands.HasGesture && !_c.Hands.PresentingPickup && !_c.Expedition.Aligning && !_c.ActionSuppressesHeldTool && tool;
             _held.gameObject.SetActive(visible);_lamp.enabled=false;
             PresentedItem=visible?item:FieldItem.Empty;
             if(!visible)return;
@@ -86,6 +86,10 @@ namespace BoatAttack.Fishing
                 case FieldItem.Workbench:
                     twoHands=true;scale=.35f;leftPalm=new Vector3(-.68f,.88f,0);rightPalm=new Vector3(.68f,.88f,0);
                     fingers=FishingFingerPose.Book;
+
+                    position=eye+frame*new Vector3(0,-.46f,.35f);leftRotation=rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.down);break;
+                case FieldItem.Forge:
+                    twoHands=true;scale=.35f;leftPalm=new Vector3(-.52f,.6f,-.3f);rightPalm=new Vector3(.52f,.6f,-.3f);
                     position=eye+frame*new Vector3(0,-.46f,.35f);leftRotation=rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.down);break;
                 case FieldItem.Furnace:
                     twoHands=true;scale=.30f;leftPalm=new Vector3(-.56f,.43f,0);rightPalm=new Vector3(.56f,.43f,0);

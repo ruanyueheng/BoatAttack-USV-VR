@@ -11,6 +11,7 @@ namespace BoatAttack.Fishing
         internal void NotifyWorkshopTransaction(){_workshopReceipt=true;}
         public FishingWorkshopWorld WorkshopWorld { get; private set; }
         public FishingFieldWorld FieldWorld { get; private set; }
+        public FishingRifleHunting RifleHunting { get; private set; }
         public void LowerFieldTools(){BinocularsRaised=false;LanternOn=false;}
         public void ToggleInventory()
         {
@@ -56,15 +57,16 @@ namespace BoatAttack.Fishing
             if((Shore.Swimming || Shore.Climbing) && Career.Backpack.Equipped!=FieldItem.CookedMeat){Notice("游泳或攀登时先收起工具；可选择口粮恢复体力。",3);return;}
             switch(Career.Backpack.Equipped)
             {
+                case FieldItem.HuntingRifle:RifleHunting.TryFire();break;
                 case FieldItem.CookedMeat:if(!Shore.EatRation())Notice("体力充足时不消耗口粮；快跑、游泳或攀登后可食用。",3);break;
                 case FieldItem.HuntingSpear:FieldWorld.BeginHunt();break;
-                case FieldItem.Workbench:case FieldItem.Furnace:RequestPlaceEquipped();break;
+                case FieldItem.Workbench:case FieldItem.Furnace:case FieldItem.Forge:RequestPlaceEquipped();break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:RequestHarvest();break;
                 case FieldItem.FieldGuide: FieldWorld.Observe();break;
                 case FieldItem.Binoculars:
                     BinocularsRaised=!BinocularsRaised;Notice(BinocularsRaised?(_xrActive?"望远镜 · A 记录动物 / 扳机放下":"望远镜 · T 记录动物 / F 放下"):"已放下望远镜",3);break;
                 case FieldItem.Lantern:LanternOn=!LanternOn;Notice(LanternOn?"提灯已点亮":"提灯已熄灭",3);break;
-                default:Notice("1–9 选择自然手册、望远镜或提灯，再按 F 使用。I → 制作查看配方；工作台 / 熔炉放入快捷栏后 F 放置。",4);break;
+                default:Notice(UnityEngine.XR.XRSettings.isDeviceActive?"Y 换装备，右扳机使用工具。B → 制作查看配方；设施换入快捷栏后按右扳机放置。":"1–9 选择自然手册、望远镜或提灯，再按 F 使用。I → 制作查看配方；工作台 / 熔炉放入快捷栏后 F 放置。",4);break;
             }
         }
         private void ReadFieldShortcuts(Keyboard k,Mouse m)
@@ -84,15 +86,15 @@ namespace BoatAttack.Fishing
         public bool CollectFieldItem(int id,FieldItem item,int count)
         {
             if(Paused || !Ashore)return false;
-            if(!Career.Backpack.TryCollect(id,item,count)){Notice("背包已满或物品已领取；I 整理背包后再试。",4);return false;}
-            Save();Notice("已拾取 "+FishingBackpack.Name(item)+" ×"+count+" · I 打开背包",4);return true;
+            if(!Career.Backpack.TryCollect(id,item,count)){Notice(UnityEngine.XR.XRSettings.isDeviceActive?"背包已满或物品已领取；B 查看背包后再试。":"背包已满或物品已领取；I 整理背包后再试。",4);return false;}
+            Save();Notice("已拾取 "+FishingBackpack.Name(item)+" ×"+count+(UnityEngine.XR.XRSettings.isDeviceActive?" · B 打开背包":" · I 打开背包"),4);return true;
         }
         public bool RecordLandAnimal(LandAnimalKind kind)
         {
             if(Paused || !Ashore)return false;
             bool fresh=Career.Backpack.Observe(kind);
-            if(fresh){Save();Notice("自然手册新增："+FishingBackpack.AnimalName(kind)+" · I 查看陆地记录",5);}
-            else Notice("已记录："+FishingBackpack.AnimalName(kind)+"。按住 Ctrl 蹲下可以靠得更近。",4);
+            if(fresh){Save();Notice("自然手册新增："+FishingBackpack.AnimalName(kind)+(UnityEngine.XR.XRSettings.isDeviceActive?" · B 查看自然观察记录":" · I 查看陆地记录"),5);}
+            else Notice("已记录："+FishingBackpack.AnimalName(kind)+(UnityEngine.XR.XRSettings.isDeviceActive?"。缓慢接近或轻蹲可以靠得更近。":"。按住 Ctrl 蹲下可以靠得更近。"),4);
             return fresh;
         }
     }

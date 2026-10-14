@@ -21,7 +21,7 @@ namespace BoatAttack.Fishing
         public bool Harvest(FishingBackpack bag, int id, LandAnimalKind kind, double now)
         {
             if (bag == null || !Huntable(kind) || now < 0 || now > FishingCalendar.MaxDay * 1440d || !Available(id, now)
-                || bag.Equipped != FieldItem.HuntingSpear || !bag.TryAdd(FieldItem.RawMeat, kind == LandAnimalKind.Rabbit ? 2 : 3)) return false;
+                || bag.Equipped != FieldItem.HuntingSpear || !bag.TryAddBundle(FishingAnimalLoot.Drops(kind,true))) return false;
             _data.availableMinutes[id] = now + RecoveryMinutes;
             _data.availableDays[id] = (int)(now / 1440d) + 1; _data.harvests++; return true;
         }

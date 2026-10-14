@@ -58,7 +58,7 @@ namespace BoatAttack.Fishing
         }
         private static bool IsPick(FieldItem item)=>item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe;
 
-        private enum WorldTargetKind { None,Expedition,Station,Resource,Pickup,Survey,Island }
+        private enum WorldTargetKind { None,Expedition,Station,Resource,Pickup,Survey,Island,Carcass }
         private struct WorldTarget
         {
             public WorldTargetKind Kind;public int Id;public Transform Root;
@@ -90,6 +90,7 @@ namespace BoatAttack.Fishing
                 else if(resource!=null)Offer(new WorldTarget{Kind=WorldTargetKind.Resource,Id=resource.Id,Root=resource.Root,Resource=resource},resource.Feet);
             }
             if(FieldWorld.TryPickupTarget(out var pickup,refresh))Offer(new WorldTarget{Kind=WorldTargetKind.Pickup,Id=pickup.Id,Root=pickup.Root,Pickup=pickup},pickup.Feet);
+            if(RifleHunting!=null && RifleHunting.TryLootTarget(out var carcass))Offer(new WorldTarget{Kind=WorldTargetKind.Carcass,Id=carcass.Id,Root=carcass.Root},carcass.Feet);
             if(refresh)Shore.UpdateProximity();int task=Shore.NearbyTask;var marker=Shore.SurveyMarker(task);
             if(marker!=null)Offer(new WorldTarget{Kind=WorldTargetKind.Survey,Id=task,Root=marker},marker.position);
             if(Islands.TryTarget(out int islandTarget,out var islandRoot))Offer(new WorldTarget{Kind=WorldTargetKind.Island,Id=islandTarget,Root=islandRoot},islandRoot.position);
@@ -137,8 +138,8 @@ namespace BoatAttack.Fishing
                 else
                 {
                     point=FishingContactGeometry.ClosestPoint(target.Root,Shore.Character.ShoulderPosition(false));rotation=Shore.Actor.rotation;
-                    kind=target.Kind==WorldTargetKind.Pickup || (target.Kind==WorldTargetKind.Island && target.Id%3==1)?FishingActionKind.Pickup:target.Kind==WorldTargetKind.Expedition && target.Id==4?FishingActionKind.Repair:FishingActionKind.Inspect;
-                    targetId=(target.Kind==WorldTargetKind.Pickup?"pickup:":target.Kind==WorldTargetKind.Expedition?"expedition:":target.Kind==WorldTargetKind.Island?"island:":"survey:")+target.Id;
+                    kind=target.Kind==WorldTargetKind.Carcass || target.Kind==WorldTargetKind.Pickup || (target.Kind==WorldTargetKind.Island && target.Id%3==1)?FishingActionKind.Pickup:target.Kind==WorldTargetKind.Expedition && target.Id==4?FishingActionKind.Repair:FishingActionKind.Inspect;
+                    targetId=(target.Kind==WorldTargetKind.Carcass?"carcass:":target.Kind==WorldTargetKind.Pickup?"pickup:":target.Kind==WorldTargetKind.Expedition?"expedition:":target.Kind==WorldTargetKind.Island?"island:":"survey:")+target.Id;
                 }
                 check=EvaluateActionStart(kind,target.Root,point,rotation,false);check.TargetId=targetId;
                 if(target.Kind==WorldTargetKind.Resource)
@@ -208,8 +209,9 @@ namespace BoatAttack.Fishing
                     case WorldTargetKind.Expedition:return "E "+Expedition.InteractionLabel(target.Id);
                     case WorldTargetKind.Station:
                         var station=Career.Workshop.Station(target.Id);return station==null?null:"E 打开"+FishingRecipes.StationName(station.kind);
-                    case WorldTargetKind.Resource:return "E 采集 "+FishingBackpack.Name(target.Resource.Item);
+                    case WorldTargetKind.Resource:return target.Resource.Item==FieldItem.Coal?"E 开采山脚煤矿 · 需手持石镐 / 铁镐":"E 采集 "+FishingBackpack.Name(target.Resource.Item);
                     case WorldTargetKind.Pickup:return "E 拾取 "+FishingBackpack.Name(target.Pickup.Item)+" ×"+target.Pickup.Count;
+                    case WorldTargetKind.Carcass:return "E 收取猎物 · "+FishingAnimalLoot.Description(Career.HuntedAnimal(target.Id).kind);
                     case WorldTargetKind.Survey:return "E "+FishingExploration.TaskName(target.Id);
                     case WorldTargetKind.Island:return Islands.NearbyHint;
                     default:return null;
@@ -232,6 +234,8 @@ namespace BoatAttack.Fishing
             if(target.Kind==WorldTargetKind.Station)return WorkshopWorld.OpenStation(target.Id);
             if(target.Kind==WorldTargetKind.Resource)return RequestHarvest(target.Resource);
             var point=FishingContactGeometry.ClosestPoint(target.Root,Shore.Character.ShoulderPosition(false));int id=target.Id;
+            if(target.Kind==WorldTargetKind.Carcass)
+                return BeginWorldAction(FishingActionKind.Pickup,"carcass:"+id,target.Root,point,Shore.Actor.rotation,()=>RifleHunting.CollectAnimal(id));
             if(target.Kind==WorldTargetKind.Island)
                 return _xrActive ? Islands.InteractAt(id) : BeginWorldAction(id%3==1?FishingActionKind.Pickup:FishingActionKind.Inspect,"island:"+id,target.Root,point,Shore.Actor.rotation,()=>Islands.InteractAt(id));
             if(target.Kind==WorldTargetKind.Expedition)

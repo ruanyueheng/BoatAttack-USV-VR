@@ -75,6 +75,7 @@ namespace BoatAttack.Fishing
                     DrawCatchToast();
                     DrawCompactNotice();
                     DrawHotbar();
+                    DrawHuntingAim();
                     DrawExplorationStatus();
                     DrawRegionTitle();
                 }

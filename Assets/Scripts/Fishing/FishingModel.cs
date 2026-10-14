@@ -186,8 +186,10 @@ namespace BoatAttack.Fishing
     [Serializable]
     public sealed class FishingSaveData
     {
+        public List<HuntedAnimalData> huntedAnimals=new List<HuntedAnimalData>();
         public int version = 12;
         public bool prologueSeen;
+
         public LoreData lore = new LoreData();
         public int engineLevel, rudderLevel, cabinLevel;
         public AdventureData adventure = new AdventureData();
@@ -446,6 +448,7 @@ namespace BoatAttack.Fishing
                 bestGrams = new List<int>(_bestGrams), recordedIds = new List<string>(_recentIds)
             };
             foreach (var item in _inventory) result.inventory.Add(item.Copy());
+            foreach(var animal in _huntedAnimals)result.huntedAnimals.Add(animal.Copy());
             return result;
         }
 
@@ -501,7 +504,7 @@ namespace BoatAttack.Fishing
             }
             if(data.version>=6)
             {
-                if(!FishingBackpack.TryRestore(data.backpack,data.selectedSlot,data.collectedPickupMask,data.landAnimalMask,out var bag))return false;
+                if(!FishingBackpack.TryRestore(FishingBackpack.MigrateLocalV8(data.backpack,data.version),data.selectedSlot,data.collectedPickupMask,data.landAnimalMask,out var bag))return false;
                 result.Backpack=bag;
             }
             else if((data.backpack!=null && data.backpack.Count!=0) || data.selectedSlot!=0 || data.collectedPickupMask!=0 || data.landAnimalMask!=0)return false;
@@ -545,7 +548,22 @@ namespace BoatAttack.Fishing
                 if (!FishingLore.TryRestore(data.lore, out var lore)) return false;
                 result.Lore = lore;
             }
+            if(data.huntedAnimals!=null)
+            {
+                if(data.huntedAnimals.Count>FishingAnimalLoot.TargetCount || (data.version<8 && data.huntedAnimals.Count>0))return false;
+                var ids=new HashSet<int>();
+                foreach(var animal in data.huntedAnimals)
+                {
+                    if(!ValidHuntedAnimal(animal) || !ids.Add(animal.id))return false;
+                    var receipt=animal.Copy();
+                    // Pre-timer local saves still owe a full active recovery after their collected kill.
+                    if(receipt.collected && !receipt.activeRecovery && receipt.respawnAt==0)
+                    {receipt.activeRecovery=true;receipt.respawnSeconds=FishingAnimalLoot.RespawnSeconds;}
+                    result._huntedAnimals.Add(receipt);
+                }
+            }
             result.PrologueSeen = data.prologueSeen;
+
             career = result;
             return true;
         }

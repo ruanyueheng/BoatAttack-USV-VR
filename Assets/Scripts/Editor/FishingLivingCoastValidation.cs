@@ -112,9 +112,9 @@ namespace BoatAttack.EditorTools
             int before=c.Career.Hunting.Harvests;
             Check(c.FieldWorld.BeginHunt(),"Live spear windup starts on the sensed rabbit / "+c.Message+" aim="+Vector3.Dot(c.viewCamera.transform.forward,direction.normalized)+" distance="+direction.magnitude);
             for(int i=0;i<90 && c.Career.Hunting.Harvests==before;i++){c.Shore.Move(Vector2.zero,false,false,true,.02f);yield return null;}
-            Check(c.Career.Hunting.Harvests==before+1 && c.Career.Backpack.Count(FieldItem.RawMeat)>=2,"Spear-tip contact awards meat through the runtime path");
+            Check(c.Career.Hunting.Harvests==before+1 && c.Career.Backpack.Count(FieldItem.RabbitMeat)>=2,"Spear-tip contact awards meat through the runtime path");
             Check(!prey.Root.gameObject.activeSelf,"Harvested animal leaves scene until recovery");
-            int meat=c.Career.Backpack.Count(FieldItem.RawMeat);
+            int meat=c.Career.Backpack.Count(FieldItem.RabbitMeat);
             Check(FishingCareer.TryRestore(c.Career.Snapshot(),out var reload) && !reload.Hunting.Available(prey.Id,reload.Calendar.TotalMinutes),"Saved cooldown prevents immediate reload farming");
             for(int i=0;i<1199;i++)c.Career.Calendar.Tick(.25f,false);
             yield return null;
@@ -122,7 +122,7 @@ namespace BoatAttack.EditorTools
             c.Career.Calendar.Tick(.25f,false);c.Career.Calendar.Tick(.25f,false);
             yield return null;yield return null;
             Check(prey.Root.gameObject.activeSelf && Vector3.Distance(prey.Root.position,prey.Home)<.5f
-                && c.Career.Backpack.Count(FieldItem.RawMeat)==meat,"Live animal returns home without adding meat");
+                && c.Career.Backpack.Count(FieldItem.RabbitMeat)==meat,"Live animal returns home without adding meat");
             Capture(c.viewCamera,"hunting-result");c.Shore.SetCrouch(false,true);
         }
         private static void TrackedHands(FishingPrototype c)

@@ -83,6 +83,19 @@ namespace BoatAttack.Fishing
             if (!CanPurchase) return false;
             return Controller.BuyUpgrade(track);
         }
+        public bool BuyRifle()
+        {
+            if(!CanPurchase)return false;
+            if(!Controller.Career.BuyHuntingRifle())
+            {Controller.Notice("购买失败：需要 "+FishingCareer.HuntingRiflePrice+" 金币、一个空背包格，且尚未持有猎枪。",5);return false;}
+            var bag=Controller.Career.Backpack;
+            for(int i=0;i<FishingBackpack.SlotCount;i++)if(bag.At(i).item==FieldItem.HuntingRifle)
+            {
+                if(i>=FishingBackpack.HotbarCount){bag.Move(i,8);i=8;}
+                bag.Select(i);break;
+            }
+            Controller.Save();Controller.Notice(XRSettings.isDeviceActive?"已购买猎枪 · 右扳机单发；命中后靠近，将右手伸到猎物旁按 A 收取材料。":"已购买猎枪 · 左键 / F 单发 · 命中动物后一枪击倒，靠近 E 收取兽肉和毛皮。",7);return true;
+        }
         // Called by the controller BEFORE world input. No independent Update ordering race.
         public bool BuySupply(int product)
         {

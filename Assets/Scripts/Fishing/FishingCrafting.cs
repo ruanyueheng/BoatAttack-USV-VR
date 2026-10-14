@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 namespace BoatAttack.Fishing
 {
-    public enum CraftStation { Hand, Workbench, Furnace }
+    public enum CraftStation { Hand, Workbench, Furnace, Forge }
     public sealed class CraftRecipe
     {
         public readonly string Id;
@@ -36,10 +36,26 @@ namespace BoatAttack.Fishing
             R("brick",CraftStation.Furnace,FieldItem.Brick,1,Stack(FieldItem.Clay,1)),
             R("glass",CraftStation.Furnace,FieldItem.Glass,1,Stack(FieldItem.Sand,1)),
             R("brick-furnace",CraftStation.Workbench,FieldItem.Furnace,1,Stack(FieldItem.Brick,6),Stack(FieldItem.Stone,2)),
-            R("shell-lantern",CraftStation.Workbench,FieldItem.Lantern,1,Stack(FieldItem.Shell,6),Stack(FieldItem.Glass,2),Stack(FieldItem.Charcoal,1))
+            R("shell-lantern",CraftStation.Workbench,FieldItem.Lantern,1,Stack(FieldItem.Shell,6),Stack(FieldItem.Glass,2),Stack(FieldItem.Charcoal,1)),
+            R("roast-rabbit",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.RabbitMeat,1)),
+            R("roast-fox",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.FoxMeat,1)),
+            R("roast-turtle",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.TurtleMeat,1)),
+            R("roast-gull",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.GullMeat,1)),
+            R("roast-legacy-meat",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.Meat,1)),
+            R("forge",CraftStation.Workbench,FieldItem.Forge,1,Stack(FieldItem.Stone,8),Stack(FieldItem.Clay,4),Stack(FieldItem.Plank,4)),
+            R("forge-stone-pick",CraftStation.Forge,FieldItem.StonePickaxe,1,Stack(FieldItem.Stone,3),Stack(FieldItem.Stick,2),Stack(FieldItem.Fiber,2)),
+            R("forge-iron",CraftStation.Forge,FieldItem.IronIngot,1,Stack(FieldItem.IronOre,2),Stack(FieldItem.Coal,1)),
+            R("forge-iron-pick",CraftStation.Forge,FieldItem.IronPickaxe,1,Stack(FieldItem.IronIngot,3),Stack(FieldItem.Stick,2),Stack(FieldItem.Rope,1)),
+            R("coal-rabbit-lantern",CraftStation.Forge,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.RabbitFur,1)),
+            R("coal-fox-lantern",CraftStation.Forge,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.FoxFur,1)),
+            R("coal-legacy-lantern",CraftStation.Forge,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.Fur,1))
         };
+        public static readonly CraftRecipe[] ForgeRecipes=Array.FindAll(All,r=>r.Station==CraftStation.Forge);
         public static CraftRecipe Find(string id){foreach(var r in All)if(r.Id==id)return r;return null;}
-        public static string StationName(CraftStation s)=>s==CraftStation.Hand?"徒手":s==CraftStation.Workbench?"工作台":"熔炉";
+        public static string StationName(CraftStation s)=>s==CraftStation.Hand?"徒手":s==CraftStation.Workbench?"工作台":s==CraftStation.Forge?"锻造台":"熔炉";
+        public static FieldItem StationItem(CraftStation kind)=>kind==CraftStation.Workbench?FieldItem.Workbench:kind==CraftStation.Furnace?FieldItem.Furnace:kind==CraftStation.Forge?FieldItem.Forge:FieldItem.Empty;
+        public static CraftStation StationKind(FieldItem item)=>item==FieldItem.Workbench?CraftStation.Workbench:item==FieldItem.Furnace?CraftStation.Furnace:item==FieldItem.Forge?CraftStation.Forge:CraftStation.Hand;
+        public static bool IsStation(FieldItem item)=>StationKind(item)!=CraftStation.Hand;
         public static int FuelUnits(FieldItem fuel)=>fuel==FieldItem.Coal || fuel==FieldItem.Charcoal?4:fuel==FieldItem.Driftwood || fuel==FieldItem.Plank?1:0;
         public static bool CanCraft(FishingBackpack bag,CraftRecipe r,CraftStation station)
         {
@@ -84,16 +100,16 @@ namespace BoatAttack.Fishing
         private static bool Finite(float n)=>!float.IsNaN(n)&&!float.IsInfinity(n);
         public int Place(FishingBackpack bag,CraftStation kind,float x,float y,float z,float yaw,bool permanent=false)
         {
-            if(_data.stations.Count>=MaxStations || _data.nextId>=1000000 || (kind!=CraftStation.Workbench && kind!=CraftStation.Furnace)
+            if(_data.stations.Count>=MaxStations || _data.nextId>=1000000 || FishingRecipes.StationItem(kind)==FieldItem.Empty
                 || !Finite(x)||!Finite(y)||!Finite(z)||!Finite(yaw)||Math.Abs(x)>2000||Math.Abs(z)>2000||y<.1f||y>100)return -1;
-            var item=kind==CraftStation.Workbench?FieldItem.Workbench:FieldItem.Furnace;
+            var item=FishingRecipes.StationItem(kind);
             if(!permanent && (bag==null || !bag.Exchange(new[]{FishingRecipes.Stack(item,1)},FieldItem.Empty,0)))return -1;
             int id=_data.nextId++;_data.stations.Add(new WorkshopStationData{id=id,kind=kind,x=x,y=y,z=z,yaw=yaw,permanent=permanent});return id;
         }
         public bool Remove(FishingBackpack bag,int id)
         {
             var s=Find(id);if(s==null || s.permanent || s.remaining>0 || s.ready>0)return false;
-            if(!bag.TryAdd(s.kind==CraftStation.Workbench?FieldItem.Workbench:FieldItem.Furnace,1))return false;
+            if(!bag.TryAdd(FishingRecipes.StationItem(s.kind),1))return false;
             _data.stations.Remove(s);return true;
         }
         public bool Start(FishingBackpack bag,int id,string recipe,int batches,FieldItem fuel)
@@ -143,10 +159,10 @@ namespace BoatAttack.Fishing
             foreach(var c in data.resourceCooldowns)if(!Finite(c)||c<0||c>90)return false;
             foreach(var s in data.stations)
             {
-                if(s==null || s.id<1 || s.id>=data.nextId || !ids.Add(s.id) || (s.kind!=CraftStation.Workbench && s.kind!=CraftStation.Furnace)
+                if(s==null || s.id<1 || s.id>=data.nextId || !ids.Add(s.id) || FishingRecipes.StationItem(s.kind)==FieldItem.Empty
                     || !Finite(s.x)||!Finite(s.y)||!Finite(s.z)||!Finite(s.yaw)||Math.Abs(s.x)>2000||Math.Abs(s.z)>2000||s.y<.1f||s.y>100
                     || s.remaining<0||s.remaining>8||s.ready<0||s.ready>8||s.remaining+s.ready>8||!Finite(s.progress)||s.progress<0||s.progress>=8)return false;
-                if(s.permanent && ++permanent>2)return false;
+                if(s.permanent && ++permanent>3)return false;
                 bool active=s.remaining>0 || s.ready>0;
                 var r=FishingRecipes.Find(s.recipe);
                 if(active?(s.kind!=CraftStation.Furnace || r==null || r.Station!=CraftStation.Furnace):!string.IsNullOrEmpty(s.recipe))return false;

@@ -30,6 +30,7 @@ namespace BoatAttack.Fishing
         }
         private void CheckSpearContact(bool tracked)
         {
+            if(_c.XRNotebook!=null && _c.XRNotebook.BlocksGameplay){CancelHunt();return;}
             var tip=_held.TransformPoint(SpearTip);
             float dt=Time.deltaTime;
             // Tracking-space motion excludes locomotion and snap-turns from weapon strikes.
@@ -49,7 +50,7 @@ namespace BoatAttack.Fishing
                     {
                         _huntTarget.Root.gameObject.SetActive(false);_c.Save();
                         _c.Effects?.Burst(target,new Color(.91f,.73f,.44f));
-                        _c.Notice("获得生兽肉 · 熔炉可烤肉；动物在继续游玩 5 分钟后恢复，休息也会推进恢复。",5);
+                        _c.Notice("获得"+FishingAnimalLoot.Description(_huntTarget.Kind,true)+" · 熔炉可烤肉；动物继续游玩 5 分钟后恢复。",5);
                         var device=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
                         if(tracked && device.TryGetHapticCapabilities(out var h) && h.supportsImpulse)device.SendHapticImpulse(0,.35f,.06f);
                     }

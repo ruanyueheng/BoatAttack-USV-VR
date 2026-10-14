@@ -121,7 +121,11 @@ namespace BoatAttack.EditorTools
         {
             Check(c.Automated && c.HasIsolatedProfile && c.SavePath.StartsWith(Application.temporaryCachePath),"仅操作临时隔离存档");
             int firstFrame=Time.frameCount;while(Time.frameCount==firstFrame)yield return null;
-            if(suite=="V024")
+            if(suite=="V025")
+            {
+                var run=FishingV025Validation.Checks(c);while(run.MoveNext())yield return null;
+            }
+            else if(suite=="V024")
             {
                 var run=FishingV024Validation.Checks(c);while(run.MoveNext())yield return null;
             }
@@ -176,6 +180,14 @@ namespace BoatAttack.EditorTools
             else if(suite=="FIRST-PERSON")
             {
                 var run=FishingFirstPersonValidation.Checks(c);while(run.MoveNext())yield return null;
+            }
+            else if(suite=="HUNTING")
+            {
+                var run=FishingHuntingValidation.Checks(c);while(run.MoveNext())yield return null;
+            }
+            else if(suite=="FORGE")
+            {
+                var run=FishingForgeValidation.Checks(c);while(run.MoveNext())yield return null;
             }
             else if(suite=="PLAYER")
             {

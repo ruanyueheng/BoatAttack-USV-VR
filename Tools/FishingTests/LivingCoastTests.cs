@@ -61,7 +61,7 @@ internal static class LivingCoastTests
         var career=new FishingCareer();var bag=career.Backpack;
         bag.TryAdd(FieldItem.HuntingSpear,1);bag.Select(1);
         double now=career.Calendar.TotalMinutes;
-        check(career.Hunting.Harvest(bag,0,LandAnimalKind.Rabbit,now) && bag.Count(FieldItem.RawMeat)==2,"Successful hunt commits meat and return time together");
+        check(career.Hunting.Harvest(bag,0,LandAnimalKind.Rabbit,now) && bag.Count(FieldItem.RabbitMeat)==2,"Successful hunt commits meat and return time together");
         check(!career.Hunting.Harvest(bag,0,LandAnimalKind.Rabbit,now) && !career.Hunting.Harvest(bag,1,LandAnimalKind.Tortoise,now),"No repeat hunt or protected animal reward");
         check(FishingCareer.TryRestore(career.Snapshot(),out var restored) && !restored.Hunting.Available(0,now+479.99) && restored.Hunting.Available(0,now+480),"Five-minute recovery survives reload and has an exact boundary");
         double pausedTime=restored.Calendar.TotalMinutes;restored.Calendar.Tick(300,true);
@@ -78,7 +78,7 @@ internal static class LivingCoastTests
         for(int i=1;i<FishingBackpack.SlotCount;i++)full.TryAdd(FieldItem.Stone,64);
         var hunting=new FishingHunting();check(!hunting.Harvest(full,1,LandAnimalKind.Fox,0) && hunting.Available(1,0),"Full bag leaves animal available");
         bag.TryAdd(FieldItem.Coal,1);int furnace=career.Workshop.Place(bag,CraftStation.Furnace,1,1,1,0,true);
-        check(career.Workshop.Start(bag,furnace,"roast-meat",2,FieldItem.Coal),"Furnace consumes raw meat plus fuel");
+        check(career.Workshop.Start(bag,furnace,"roast-rabbit",2,FieldItem.Coal),"Furnace consumes raw meat plus fuel");
         for(int i=0;i<16;i++)career.Workshop.Tick(1);
         check(career.Workshop.Collect(bag,furnace) && bag.Count(FieldItem.CookedMeat)==2 && !career.Workshop.Collect(bag,furnace),"Cooking completion is collected exactly once");
         var motion=new FishingCastMotion();motion.Prepare();

@@ -17,7 +17,7 @@ namespace BoatAttack.EditorTools
             string evidence=Path.GetFullPath("Logs/v024-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(evidence);
             for(int i=0;i<35;i++)yield return null;
             var home=c.Home;var shop=c.TackleShop;var market=c.transform.Find("Tide and Fin floating fish market");
-            Check(FishingPrototype.Version=="0.24.0" && home!=null && shop!=null && market!=null,"V024 production home, shop and harbor market exist");
+            Check(home!=null && shop!=null && market!=null,"V024 production home, shop and harbor market exist");
             Check(FishingPrototype.FlatDistance(home.Origin,c.harbor)>40 && FishingPrototype.FlatDistance(home.Origin,shop.Position)>40,"Home is separated from both shops");
             foreach(var spot in c.fishingSpots)Check(FishingPrototype.FlatDistance(home.Origin,spot)>45,"Home leaves fishing ground clearance");
             var homeColliders=new System.Collections.Generic.List<Collider>(home.House.GetComponentsInChildren<Collider>());

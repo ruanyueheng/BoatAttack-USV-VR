@@ -25,7 +25,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.24.0";
+        public const string Version = "0.25.0";
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
@@ -45,7 +45,7 @@ namespace BoatAttack.Fishing
         public bool Anchored { get; private set; }
         public USVBoost Boost { get; } = new USVBoost();
         public bool Boosting => _initialized && !Paused && !Ashore && !Anchored && !HasPendingCatch
-            && !InventoryOpen && !JournalOpen && !DockConsole.BlocksGameplay && !XRNotebook.IsOpen
+            && !InventoryOpen && !JournalOpen && !DockConsole.BlocksGameplay && !XRNotebook.BlocksGameplay
             && !ShopBlocksGameplay && !StoryBlocksGameplay && _input.Current.boost && Boost.Active;
         public bool Paused { get; private set; }
         public bool Automated { get; private set; }
@@ -180,6 +180,7 @@ namespace BoatAttack.Fishing
             BindTackleShop();
             Expedition=gameObject.AddComponent<FishingExpeditionScene>();Expedition.Build(this);
             FieldWorld=gameObject.AddComponent<FishingFieldWorld>();FieldWorld.Build(this);
+            RifleHunting=gameObject.AddComponent<FishingRifleHunting>();RifleHunting.Build(this);
             Effects=gameObject.AddComponent<FishingEffects>();Effects.Controller=this;
             WorkshopWorld=gameObject.AddComponent<FishingWorkshopWorld>();WorkshopWorld.Build(this);
             XRSeat=gameObject.AddComponent<FishingXRSeat>();XRSeat.Build(this);
@@ -202,9 +203,12 @@ namespace BoatAttack.Fishing
             gameObject.AddComponent<FishingWorldInstruments>().Controller=this;
             _feedback.mute=QuietMode;
             if(LegendTrophy)BuildTrophy();
-            Notice(string.IsNullOrEmpty(warning)?"潮汐回响：N选择岛屿，低速G下船，E与居民交谈 / 进入潮纹秘境。J查看世界航记；店员可介绍商品，离岸可游泳。":warning,10f);
+            Notice(string.IsNullOrEmpty(warning)?(_xrActive || Application.platform==RuntimePlatform.Android
+                ?"欢迎来到回潮海。校准完成后将播放序章和手柄教学；B 可随时打开潮汐手册。"
+                :"潮汐回响：N选择岛屿，低速G下船，E与居民交谈 / 进入潮纹秘境。J查看世界航记；店员可介绍商品，离岸可游泳。"):warning,10f);
             _initialized=true;
-            if(!Automated && !HasIsolatedProfile && !Career.PrologueSeen && !HasPendingCatch)Prologue.Begin();
+            if(!Automated && !HasIsolatedProfile && !Career.PrologueSeen && !HasPendingCatch
+                && !_xrActive && Application.platform!=RuntimePlatform.Android)Prologue.Begin();
             if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }
             else if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
             Debug.Log("[FISHING] Prototype v"+Version+" initialized. Procedural and Hunyuan fish; desktop/XR input.");
@@ -316,6 +320,7 @@ namespace BoatAttack.Fishing
                         else Cast();
                     }
                 }
+                if(press && Ashore && (k==null || (!k.leftAltKey.isPressed && !k.rightAltKey.isPressed)))RifleHunting.TryFire();
                 if(CastMotion.Preparing)
                 {
                     if(!pointerReady || overTools || rightHeld || !CanChangeBait)CastMotion.CancelPreparation();
@@ -353,11 +358,17 @@ namespace BoatAttack.Fishing
         {
             if(!_initialized)return;
             bool blocked=Paused || (!Automated && !Application.isFocused) || Ashore || Anchored || HasPendingCatch || InventoryOpen || JournalOpen
-                || DockConsole.BlocksGameplay || XRNotebook.IsOpen || ShopBlocksGameplay || StoryBlocksGameplay;
+                || DockConsole.BlocksGameplay || XRNotebook.BlocksGameplay || ShopBlocksGameplay || StoryBlocksGameplay;
             Boost.Tick(Time.fixedDeltaTime,_input.Current.boost && _input.Current.throttle>0 && _input.Current.brake<=0 && Player.engine.InWater,blocked);
             if(Paused)return;
             var rb=Player.engine.RB;
             if(Ashore){Shore.HoldBoat();return;}
+            if(_xrActive && (XRNotebook.BlocksGameplay || StoryBlocksGameplay))
+            {
+                rb.velocity=new Vector3(0,rb.velocity.y,0);
+                rb.angularVelocity=new Vector3(rb.angularVelocity.x,0,rb.angularVelocity.z);
+                return;
+            }
             if(Anchored)
             {
                 var p=rb.position;
@@ -367,7 +378,7 @@ namespace BoatAttack.Fishing
                 rb.MoveRotation(Quaternion.Slerp(rb.rotation,yaw,Time.fixedDeltaTime*2f));
                 return;
             }
-            if(HasPendingCatch || InventoryOpen || JournalOpen || DockConsole.BlocksGameplay || XRNotebook.IsOpen || ShopBlocksGameplay || StoryBlocksGameplay)return;
+            if(HasPendingCatch || InventoryOpen || JournalOpen || DockConsole.BlocksGameplay || XRNotebook.BlocksGameplay || ShopBlocksGameplay || StoryBlocksGameplay)return;
             var state=_input.Current;
             float comfort=ComfortMode?0.65f:1f;
             Player.engine.Accelerate(state.throttle*comfort, Boost.Active);Player.engine.Turn(state.steering*comfort);
@@ -395,6 +406,7 @@ namespace BoatAttack.Fishing
         {
             if(!_initialized)return;
             XRSeat.Apply();Shore.SyncRider();View.ApplyView();Hands.Apply();FieldWorld.ApplyHeldTool();XRNotebook.SampleTool();ApplyWorldActionPose();CatchRig.Apply(deltaTime);
+            RifleHunting.Present();
             // 全部工具和掌心目标落位后才解同源骨架；随后只读取竿尖画线，不再次采样。
             Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right,UnityEngine.XR.XRSettings.isDeviceActive);
             Shore.ApplyTraversalPose();
@@ -425,8 +437,10 @@ namespace BoatAttack.Fishing
             if(Hands!=null)Hands.ResetInteraction();
             BinocularsRaised=false;
         }
-        private void OnApplicationFocus(bool focused){if(!focused)ResetToolInput();}
-        private void OnApplicationPause(bool paused){if(paused)ResetToolInput();}
+        private void OnApplicationFocus(bool focused){if(!focused){ResetToolInput();SaveOnSuspend();}}
+        private void OnApplicationPause(bool paused){if(paused){ResetToolInput();SaveOnSuspend();}}
+        private void OnApplicationQuit()=>SaveOnSuspend();
+        private void SaveOnSuspend(){if(_initialized && !Automated)Save();}
         private void ConfigurePresentation()
         {
             // The grade is isolated to this desktop camera, not the original race or XR camera.

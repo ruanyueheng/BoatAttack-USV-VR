@@ -47,6 +47,8 @@ namespace BoatAttack.Fishing
                     // Surface swimmers circle between the 9 m station ring and the reef rocks (~10.8 m inner edge),
                     // inside the 15 m radius the scene generator verified as open water. Schools stay underwater.
                     _creatures.Add(new Creature{transform=go.transform,kind=(MarineKind)kind,home=home,radius=kind==4?10:kind==2?10.5f:kind==3?7.5f:10f,phase=i*2.1f+kind*.65f});
+                    go.transform.position=home+Vector3.up*(kind==4?6:0);
+                    Controller.RifleHunting?.RegisterMarine((MarineKind)kind,i,go.transform);
                 }
             }
             for(int i=0;i<3;i++)BuildReef(i);
@@ -118,6 +120,7 @@ namespace BoatAttack.Fishing
             var climate=Controller.Weather.Climate;
             foreach(var c in _creatures)
             {
+                if(Controller.RifleHunting!=null && Controller.RifleHunting.DeadWildlife(c.transform))continue;
                 // Integrate speed rather than multiplying absolute time: weather changes cannot teleport animals.
                 float activity=Mathf.Lerp(BayClimate.Activity(c.kind,climate.Previous),BayClimate.Activity(c.kind,climate.Current),climate.Blend);
                 float speed=c.kind==MarineKind.Dolphin?.34f:c.kind==MarineKind.Gull?.22f:c.kind==MarineKind.School?.25f:.11f;
@@ -150,6 +153,7 @@ namespace BoatAttack.Fishing
             VisibleCount=0;Candidate=null;_candidate=null;float nearest=28;
             foreach(var c in _creatures)
             {
+                if(Controller.RifleHunting!=null && Controller.RifleHunting.DeadWildlife(c.transform))continue;
                 bool visible=(Controller.ExplorerPosition-c.home).sqrMagnitude<160*160;
                 c.transform.gameObject.SetActive(visible);if(!visible)continue;VisibleCount++;
                 if(Controller.Career.Seen(c.kind))continue;
