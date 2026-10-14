@@ -48,10 +48,10 @@
 
 构建成功、截图与自动断言分别记录；它们不能代替真人佩戴后对双眼画面、手柄倾角、持续帧率和眩晕改善的确认。保留单发无限弹药和即时锻造配方的既有范围。
 
-本轮五项 Unity 专项通过，纯规则 3593 项、输入 70 项通过。实际 Windows 包通过 48 个状态场景和 48 张完整 HUD 截图检查。Windows 便携 ZIP 位于 `Builds/FishingPrototype-v0.25.0-Windows.zip`，解压后保持 exe、Data 和 MonoBleedingEdge 文件夹在一起。
+本轮五项 Unity 专项通过，纯规则 3601 项、输入 70 项通过。实际 Windows 包通过 48 个状态场景和 48 张完整 HUD 截图检查。Windows 便携 ZIP 位于 `Builds/FishingPrototype-v0.25.0-Windows.zip`，解压后保持 exe、Data 和 MonoBleedingEdge 文件夹在一起。
 
-APK 大小 248,902,105 字节，ARM64 库、848 个归档条目读取及 v2 签名检查通过。SHA-256：`97aaa9c26573a6515815facbcddb98ebefff11eb518fbb860fc61502fa227525`。
+APK 大小 248,900,301 字节，ARM64 库、848 个归档条目读取及 v2 签名检查通过。SHA-256：`b0df9873e2781587cbc0dccf7dcc7bfe21548d79e680d7bd85f5ed5e0db65bd4`。
 
-测试阶段 Pico USB 连接已断开，未完成安装和设备启动认证。重新连接并允许 USB 调试后，可用 PICO 开发者中心选择 APK 更新安装；保留包名和签名，不卸载、不清除数据。首次安全进入本版将播放序章并进行手柄教学。
+用户目前没有头显，按要求先交付安装包；未完成安装和设备启动认证。重新连接并允许 USB 调试后，可用 PICO 开发者中心选择 APK 更新安装；保留包名和签名，不卸载、不清除数据。首次安全进入本版将播放序章并进行手柄教学。
 
 空间界面截图见 [完整手柄教学](Images/V025/controller-guide.png)、[中文手册](Images/V025/notebook-home.png)、[带位置标记的航海图](Images/V025/notebook-map.png)、[开场影院](Images/V025/opening-cinema.png)。这些是实际 UI 渲染证据，属于编辑器图形检查。

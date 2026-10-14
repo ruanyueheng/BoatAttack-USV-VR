@@ -553,7 +553,14 @@ namespace BoatAttack.Fishing
                 if(data.huntedAnimals.Count>FishingAnimalLoot.TargetCount || (data.version<8 && data.huntedAnimals.Count>0))return false;
                 var ids=new HashSet<int>();
                 foreach(var animal in data.huntedAnimals)
-                {if(!ValidHuntedAnimal(animal) || !ids.Add(animal.id))return false;result._huntedAnimals.Add(animal.Copy());}
+                {
+                    if(!ValidHuntedAnimal(animal) || !ids.Add(animal.id))return false;
+                    var receipt=animal.Copy();
+                    // Pre-timer local saves still owe a full active recovery after their collected kill.
+                    if(receipt.collected && !receipt.activeRecovery && receipt.respawnAt==0)
+                    {receipt.activeRecovery=true;receipt.respawnSeconds=FishingAnimalLoot.RespawnSeconds;}
+                    result._huntedAnimals.Add(receipt);
+                }
             }
             result.PrologueSeen = data.prologueSeen;
 

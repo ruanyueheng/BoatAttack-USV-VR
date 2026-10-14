@@ -43,6 +43,30 @@ internal static class HuntingTests
         check(FishingCareer.TryRestore(legacy,out var migratedLocal) && migratedLocal.Backpack.Equipped==FieldItem.HuntingRifle
             && migratedLocal.Backpack.Count(FieldItem.Meat)==4 && migratedLocal.Backpack.Count(FieldItem.Fur)==2,"Local v8 rifle and generic loot migrate without ID collisions");
         check((int)legacy.backpack[1].item==23,"Migration does not mutate caller save");
+        legacy.huntedAnimals.Add(new HuntedAnimalData{id=0,kind=LandAnimalKind.Rabbit,collected=true,x=2,y=1,z=3});
+        legacy.huntedAnimals.Add(new HuntedAnimalData{id=1,kind=LandAnimalKind.Fox,collected=false,x=4,y=1,z=5});
+        legacy.huntedAnimals.Add(new HuntedAnimalData{id=2,kind=LandAnimalKind.Tortoise,collected=true,respawnAt=960});
+        legacy.huntedAnimals.Add(new HuntedAnimalData{id=8,kind=LandAnimalKind.Gull,collected=true,activeRecovery=true,respawnSeconds=163});
+        legacy.huntedAnimals.Add(new HuntedAnimalData{id=9,kind=LandAnimalKind.Gull,collected=true,activeRecovery=true,respawnSeconds=0});
+        check(FishingCareer.TryRestore(legacy,out var oldWildlife) && oldWildlife.HuntedAnimal(0).activeRecovery
+            && oldWildlife.HuntedAnimal(0).respawnSeconds==300,"Local v8 collected wildlife without timer starts five active minutes on restore");
+        check(!legacy.huntedAnimals[0].activeRecovery && legacy.huntedAnimals[0].respawnSeconds==0 && legacy.huntedAnimals[0].respawnAt==0,
+            "Legacy recovery migration never mutates the supplied receipt");
+        check(oldWildlife.HuntedAnimal(8).respawnSeconds==163 && oldWildlife.HuntedAnimal(9)==null,
+            "Migration preserves active timer remainder and already completed recovery");
+        check(!oldWildlife.HuntedAnimal(2).activeRecovery && oldWildlife.HuntedAnimal(2).respawnAt==960,
+            "Legacy calendar-based receipt keeps its original deadline");
+        oldWildlife.TickHuntedRespawns(1,true);oldWildlife.Calendar.RestUntilMorning();
+        check(oldWildlife.HuntedAnimal(0).respawnSeconds==300 && oldWildlife.HuntedAnimal(2)==null,
+            "Migrated activity timer ignores pause and calendar jumps while old calendar recovery still expires");
+        for(int i=0;i<299;i++)oldWildlife.TickHuntedRespawns(1);
+        check(oldWildlife.HuntedAnimal(0)!=null && oldWildlife.HuntedAnimal(0).respawnSeconds==1
+            && FishingCareer.TryRestore(oldWildlife.Snapshot(),out var oldWildlifeReload) && oldWildlifeReload.HuntedAnimal(0).respawnSeconds==1,
+            "Migrated wildlife waits all 300 seconds and does not restart its timer on reload");
+        oldWildlife.TickHuntedRespawns(1);
+        check(oldWildlife.HuntedAnimal(0)==null && !oldWildlife.CollectHuntedAnimal(0),"Migrated collected wildlife returns at exactly 300 seconds without duplicate loot");
+        check(oldWildlife.HuntedAnimal(1)!=null && !oldWildlife.HuntedAnimal(1).collected && !oldWildlife.HuntedAnimal(1).activeRecovery,
+            "Legacy unclaimed remains are preserved and never start a recovery timer");
         var main=new FishingCareer().Snapshot();main.backpack[1]=new FieldStack{item=FieldItem.HuntingSpear,count=1};
         main.backpack[2]=new FieldStack{item=FieldItem.RawMeat,count=3};
         check(FishingCareer.TryRestore(main,out var migratedMain) && migratedMain.Backpack.Count(FieldItem.HuntingSpear)==1
@@ -69,7 +93,8 @@ internal static class HuntingTests
         check(hunter.HuntedAnimal(8)!=null && !hunter.HuntedAnimal(8).collected,"Unclaimed corpse never disappears or starts an active timer");
         check(hunter.CollectHuntedAnimal(8) && hunter.HuntedAnimal(8).respawnSeconds==FishingAnimalLoot.RespawnSeconds,"Picking up a delayed corpse starts a fresh full cooldown");
         var legacyReceipt=hunter.Snapshot();legacyReceipt.huntedAnimals[0].activeRecovery=false;legacyReceipt.huntedAnimals[0].respawnSeconds=0;legacyReceipt.huntedAnimals[0].respawnAt=0;
-        check(FishingCareer.TryRestore(legacyReceipt,out var oldReceipt) && oldReceipt.HuntedAnimal(2)!=null,"Legacy collected receipt with no timer remains loadable");
+        check(FishingCareer.TryRestore(legacyReceipt,out var oldReceipt) && oldReceipt.HuntedAnimal(2).activeRecovery
+            && oldReceipt.HuntedAnimal(2).respawnSeconds==300,"Timerless collected receipt is repaired even after a legacy save was resaved as v12");
         var badTimer=hunter.Snapshot();badTimer.huntedAnimals[0].respawnSeconds=double.NaN;
         check(!FishingCareer.TryRestore(badTimer,out _),"Invalid persisted respawn timer rejected");
         foreach(var meat in new[]{FieldItem.RabbitMeat,FieldItem.FoxMeat,FieldItem.TurtleMeat,FieldItem.GullMeat})
