@@ -4,6 +4,7 @@ using BoatAttack.Fishing;
 
 internal static class ProgressionTests
 {
+    private static int _nextHookId;
     private static CatchRecord Sized(string id, FishKind kind, int grams, bool rare = false)
         => new CatchRecord { id = id, kind = kind, rare = rare, grams = grams, value = FishingSpecies.Value(kind, rare, grams) };
 
@@ -11,7 +12,7 @@ internal static class ProgressionTests
         int reel = 0, BayWeather weather = BayWeather.Clear)
     {
         var s = new CatchSession();
-        s.Cast(kind, false, line, "hooked-" + Guid.NewGuid().ToString("N"), bait, weather, size, reel);
+        s.Cast(kind, false, line, "hooked-" + kind + "-" + _nextHookId++, bait, weather, size, reel);
         for (int i = 0; i < 400 && s.Phase == CatchPhase.Waiting; i++) s.Tick(0.02f, false);
         s.Hook();
         return s;
@@ -131,7 +132,8 @@ internal static class ProgressionTests
         {
             bool leap = careless.Beat == FishBeat.Leap;
             sawLeap |= leap;
-            careless.Tick(0.02f, leap || careless.Tension < 0.6f);
+            // Load the line before the leap so the shortest rhythm still breaks during airborne reeling.
+            careless.Tick(0.02f, leap || careless.Tension < 0.72f);
         }
         check(sawLeap && careless.Failure == CatchFailure.LeapSnapped, "V4 reeling through a leap snaps the line");
         var patient = Hooked(FishKind.Sailfish, BaitKind.Pearl, 1, 0.5f, 0, BayWeather.Sunset);
