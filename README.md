@@ -1,9 +1,12 @@
-# BoatAttack USV VR — v0.20.0 海岸重塑
+# BoatAttack USV VR — v0.21.0 收线与取舍
 
-基于 Unity Boat Attack，使用 **Unity 2022.3.62f1 / URP 14.0.12**。第20版提高钓艇转向响应，加入按住 Ctrl 的前进加速，使用 Blender 原创模型重做四岛海岸、岩拱、树林、沉船、观星台、石门和木板栈桥。
+基于 Unity Boat Attack，使用 **Unity 2022.3.62f1 / URP 14.0.12**。第21版加入每次不同的遛鱼节奏、传说鱼反扑、10秒抄网窗口、图鉴调查解锁、天气与潮汐鱼种条件、加速过热和二级船舶专精取舍。
 
-**Ctrl + W 加速，Shift 刹车，S 倒航。** J 日志设置四岛航点，低速 G 下船；E 与居民交谈、读信、寻宝与进入秘境，F 点亮信标。六条升级线、18种用品及第19版剧情、游泳、攀登继续可用，沿用 v11 存档。Windows试玩入口：`Builds/FishingPrototype-v0.20.0/FishingPrototype.exe`。
+**Ctrl + W 加速，Shift 刹车，S 倒航。** 注意热量，过热后巡航冷却。J 查看调查清单与出没条件，低速 G 下船；E 交谈、寻宝或抄鱼。四岛、秘境、游泳、攀登继续可用，沿用 v11 存档并保留旧升级。Windows试玩入口：`Builds/FishingPrototype-v0.21.0/FishingPrototype.exe`。
 
+- [第21版操作与改进](Docs/PLAY_V021.md)
+- [第21版验证记录](Docs/VALIDATION_V021.md)
+- [第21版PR审查](Docs/PR_REVIEW_V021.md)
 - [第20版操作与改进](Docs/PLAY_V020.md)
 - [第20版测试、构建与实际画面](Docs/VALIDATION_V020.md)
 - [第20版Blender模型与来源](ArtSource/V020/BUILD_NOTES.md)

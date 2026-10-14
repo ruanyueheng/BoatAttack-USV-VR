@@ -101,7 +101,7 @@ namespace BoatAttack.Fishing
             }
             else if(_page==3)
             {
-                _status.text=day.DateLabel+"   "+day.TimeLabel+"\n每季 28 天 · 每日 15 分钟\n今日："+BayClimate.Name(_c.Weather.Climate.Current)+
+                _status.text=day.DateLabel+"   "+day.TimeLabel+" · "+day.TideName+"\n每季 28 天 · 每日 15 分钟\n今日："+BayClimate.Name(_c.Weather.Climate.Current)+
                     "\n明日："+BayClimate.Name(FishingCalendar.Forecast(day.Day+1))+"\n夜间提灯照路 · 星灯鱼仅在夜间出现\n打开手册时日历和熔炉暂停";
                 Set(0,"休息至清晨",_c.CanRest?(Action)(()=>{Close();_c.RestUntilMorning();}):null);
                 Set(1,"观察附近动物",()=>{Close();if(_c.Ashore)_c.FieldWorld.Observe();else _c.Ecology.Observe();});
@@ -149,17 +149,20 @@ namespace BoatAttack.Fishing
             }
             else if(_page==7)
             {
+                _status.text=FishingSurvey.Goal(_c.Career)+"\n"+FishingSurvey.Checklist(_c.Career)+"\n"+FishingSpecies.Of(FishingSurvey.NextFish(_c.Career)).Habitat;
                 Set(0,"接取 / 提交旧港任务",()=>{Close();_c.Expedition.PortAction();});
                 Set(1,"交付海岸调查",()=>{Close();_c.ClaimShoreRewards();});
                 Set(2,"领取炉内成品",()=>_c.WorkshopWorld.Collect());
                 Set(3,"下一航点\n"+_c.NavigationName,()=>{_c.CycleNavigation();Refresh();});
                 Set(4,"切换鱼饵",()=>{Close();_c.CycleBait();});
                 Set(5,"提交群岛航记",()=>{Close();_c.Islands.CompleteAtHarbor();});
+                Set(6,"设为图鉴调查航点",()=>_c.NavigateSurvey());
                 Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
             }
             else
             {
-                for(int i=0;i<6;i++){var track=(UpgradeTrack)i;Set(i,FishingText.UpgradeName(track)+" Lv."+_c.Career.Level(track)+"\n"+_c.Career.NextUpgradeCost(track)+" 金币",()=>{_c.BuyUpgrade(track);Refresh();});}
+                _status.text="二级载重 / 动力 / 操控专精三选一\n其他两项可升至一级；旧升级保留\n金币 "+_c.Career.Coins;
+                for(int i=0;i<6;i++){var track=(UpgradeTrack)i;bool locked=_c.Career.SpecializationBlocked(track);Set(i,FishingText.UpgradeName(track)+" Lv."+_c.Career.Level(track)+"\n"+(locked?"专精互斥":_c.Career.NextUpgradeCost(track)+" 金币"),locked?null:(Action)(()=>{_c.BuyUpgrade(track);Refresh();}));}
                 Set(6,"购买探索用品",()=>Open(5));
                 Set(7,_c.TackleShop.NearCounter?"店员介绍 / 故事":"返回首页",_c.TackleShop.NearCounter?(Action)(()=>_c.Residents.Talk(4)):(Action)(()=>Open()));Set(8,"关闭",Close);
             }

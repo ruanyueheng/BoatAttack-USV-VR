@@ -73,11 +73,13 @@ namespace BoatAttack.Fishing
                 }
                 bool near = c.SpotDistance <= 22f;
                 title = near ? (c.Speed > 3f ? "按住 Shift 减速，再按 E 停船" : "进入 " + FishingGrounds.Name(c.Spot) + " · E 停船") : "驶向彩色航标，靠近后按 E 停船";
-                if(near && !FishingGrounds.Available(c.Spot,c.Career.Expedition))title="北岛信标渔场 · 修复旧港信标后开放";
+                if(near && !FishingGrounds.AvailableForCareer(c.Spot,c.Career))title="北岛渔场 · 完成浅湾图鉴调查或修复信标";
                 if(c.Shore.BerthDistance<18 || c.NavigationTarget>c.fishingSpots.Length)
                 {title=c.Expedition.ActionTitle ?? c.Shore.ActionTitle;help="Ctrl + W 加速 · Shift 刹车 · S 倒航 · N 航点";}
                 else help = "Ctrl + W 加速 · Shift 刹车 · S 倒航 · N 航点";
                 if(c.Boosting){title="引擎加速中 · " + (c.Speed*3.6f).ToString("0.0") + " km/h";accent=Gold;}
+                if(c.Boost.Overheated){title="引擎过热 · 巡航冷却至25%后可再加速";accent=Danger;}
+                help="Ctrl + W 加速 · 引擎热量 "+(c.Boost.Heat*100).ToString("0")+"% · Shift 刹车 · S 倒航";
             }
             else
             {
@@ -86,7 +88,7 @@ namespace BoatAttack.Fishing
                     case CatchPhase.Waiting: title = c.CastMotion.Casting?"浮标飞向海面":"等待咬钩…"; help = c.CastMotion.Casting?"鱼线正在放出 · 落水后开始等待":"留意浮标与声音，出现咬钩提示再点击左键"; break;
                     case CatchPhase.Bite: title = (s.Species.Legendary ? "金帆旗鱼！" : "咬钩了！") + "点击左键提竿"; help = "剩余 " + s.Remaining.ToString("0.0") + " 秒"; accent = Gold; break;
                     case CatchPhase.Fighting: title = FightTitle(s); help = ""; accent = s.Beat == FishBeat.Leap || s.Tension > .78f ? Danger : Mint; break;
-                    case CatchPhase.Landing: title = "E 辅助抄网 · 套住鱼后轻抬"; help = "XR：左握键拿网；网口覆盖鱼体，保持片刻再轻抬"; break;
+                    case CatchPhase.Landing: title = "剩余 "+s.Remaining.ToString("0.0")+"秒 · 松开收线，E 抄网"; help = "XR：自动泄力；左握键拿网，覆盖鱼体后轻抬"; break;
                     case CatchPhase.Caught: title = "捕获成功 · 点击左键再抛一竿"; help = "B 换饵 · Q 起航 · J 查看图鉴与纪录"; break;
                     case CatchPhase.Escaped: title = "鱼逃走了 · 点击左键重试"; help = "B 换饵 · Q 起航"; break;
                     default: title = c.CastMotion.Preparing?"松开左键甩竿 · 蓄力 "+(c.CastMotion.Charge*100).ToString("0")+"%":"按住左键后摆，松开甩竿"; help = "轻点近抛 · 按住远抛 · B 换饵 · Q 起航"; break;
@@ -101,11 +103,13 @@ namespace BoatAttack.Fishing
             else if (c.Anchored && s.Phase == CatchPhase.Landing)
             {
                 Label(r.x + 20, r.y + 43, r.width - 40, 20, help, 14, Muted);
-                Label(r.x+20,r.y+77,r.width-40,20,"捕获后不会自动入箱：可拿起观察、入箱或放生。",13,Faint);
+                Label(r.x+20,r.y+77,r.width-40,20,"张力 "+(s.Tension*100).ToString("0")+"% · 持续硬拉会断线，拖延会脱钩",13,Faint);
+                Bar(new Rect(r.x+20,r.yMax-7,r.width-40,3),s.Remaining/10f,Gold);
             }
             else
             {
                 Label(r.x + 20, r.y + 44, r.width - 40, 22, help, 14, Muted);
+                if(!c.Ashore && !c.Anchored)Bar(new Rect(r.x+20,r.yMax-7,r.width-40,3),c.Boost.Heat,c.Boost.Overheated?Danger:Gold);
                 if (c.Anchored && s.Phase == CatchPhase.Bite) Bar(new Rect(r.x + 20, r.yMax - 7, r.width - 40, 3), s.Remaining / 2.5f, Gold);
             }
         }
@@ -131,9 +135,9 @@ namespace BoatAttack.Fishing
             Glass(r);
             FishGlyph(new Rect(r.x + 12, r.y + 26, 76, 48), fish.kind, fish.rare);
             Label(r.x + 102, r.y + 12, 236, 27, FishingSpecies.Name(fish.kind) + "  " + FishingText.Weight(fish.grams), 18, Color.white, true);
-            string result = FishingSpecies.Of(fish.kind).Legendary ? "已放生 · 奖励 +" + card.Bounty : "已入箱 · 价值 " + fish.value + " 金币";
+            string result = FishingSpecies.Of(fish.kind).Legendary ? "已放生 · 奖励 +" + card.Bounty : card.Released ? "已放生 · 图鉴与纪录保留" : "已入箱 · 价值 " + fish.value + " 金币";
             Label(r.x + 102, r.y + 43, 236, 23, result, 14, Gold);
-            Label(r.x + 102, r.y + 69, 236, 20, card.Discovery ? "图鉴新发现" : card.PersonalBest ? "刷新个人纪录" : fish.rare ? "珍珠变体" : "J 查看鱼获图鉴", 13, Mint);
+            Label(r.x + 102, r.y + 69, 236, 20, card.Discovery ? "首次发现 · 写入渔获记录册" : card.PersonalBest ? "刷新个人最大鱼纪录！" : fish.rare ? "珍珠变体" : "J 查看鱼获图鉴", 13, Mint);
             _fade = 1f;
         }
 

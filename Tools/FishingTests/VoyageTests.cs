@@ -17,7 +17,7 @@ internal static class VoyageTests
                 rest |= session.Beat == FishBeat.Rest; windup |= session.Beat == FishBeat.Windup; surge |= session.Beat == FishBeat.Surge;
                 session.Tick(0.02f, session.Tension < 0.6f);
             }
-            check(rest && windup && surge, "V3 telegraphs every beat " + kind + " / " + bait);
+            check(rest && (kind == FishKind.Coral || kind == FishKind.Sardine || (windup && surge)), "Fight telegraphs every required beat " + kind + " / " + bait);
             check(session.Phase == CatchPhase.Landing && session.Land() && session.Claim() != null, "V3 every bait/species combination catchable " + kind + " / " + bait);
         }
         check(!new CatchSession().Cast(FishKind.Coral, false, 0, "bad-bait", (BaitKind)20), "V3 invalid bait rejected");

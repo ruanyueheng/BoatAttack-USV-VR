@@ -31,8 +31,10 @@ namespace BoatAttack.Fishing
         public float Tension { get; private set; }
         public BaitKind Bait { get; private set; }
         public BayWeather WeatherAtCast { get; private set; }
-        public FishBeat Beat => FishingVoyage.Beat(Kind, _timer);
-        public float BeatProgress => _timer % Species.BeatSeconds / Species.BeatSeconds;
+        public FishBeat Beat => FishingVoyage.Beat(Kind, _beatTime);
+        public float BeatProgress => _beatTime / Species.BeatSeconds;
+        public float FightTime { get; private set; }
+        public float Struggle => (Beat == FishBeat.Leap ? LeapEffort : Beat == FishBeat.Surge ? Species.SurgeEffort : Beat == FishBeat.Windup ? 1f : .75f) * _surgeScale;
         /// <summary>0-1 across the current leap and 0 outside one; drives the airborne arc.</summary>
         public float LeapProgress => Beat == FishBeat.Leap
             ? (BeatProgress - FishingVoyage.LeapStart) / (FishingVoyage.LeapEnd - FishingVoyage.LeapStart) : 0f;
@@ -42,14 +44,15 @@ namespace BoatAttack.Fishing
         // Half-width of the scoop window around the centre of the landing gauge.
         public float LandZone => Species.Legendary ? 0.15f : 0.25f;
         public bool CanLand => Phase == CatchPhase.Landing && Math.Abs(LandPointer - 0.5f) <= LandZone;
+        public bool CanNet => Phase == CatchPhase.Landing && Tension < .85f;
         public CatchFailure Failure { get; private set; }
         public float Remaining => Math.Max(0f, _deadline - _timer);
         private string _id;
         private float _timer, _deadline, _overload, _slack, _sizeTension = 1f;
         private int _lineLevel, _reelLevel, _misses;
-        private bool _claimed,_waitingForNet;
-        public bool WaitingForNet=>Phase==CatchPhase.Landing && _waitingForNet;
-        public void HoldForNet(){if(Phase==CatchPhase.Landing)_waitingForNet=true;}
+        private bool _claimed;
+        private uint _rhythmSeed;
+        private float _beatTime, _rhythmRate = 1f, _surgeScale = 1f;
 
         public static float LineFactor(int level) => level >= 2 ? 0.58f : level == 1 ? 0.72f : 1f;
         public static float ReelFactor(int level) => 1f + 0.2f * Math.Max(0, Math.Min(2, level));
@@ -74,7 +77,11 @@ namespace BoatAttack.Fishing
             // Bigger fish pull a little harder and start a little farther away.
             _sizeTension = 0.92f + 0.16f * size;
             MaxDistance = Distance = species.LineMeters * (0.9f + 0.2f * size);
-            _claimed = false;_waitingForNet=false;
+            _claimed = false;
+            _rhythmSeed = 2166136261;
+            foreach (char letter in id) _rhythmSeed = unchecked((_rhythmSeed ^ letter) * 16777619);
+            _beatTime = FightTime = 0;
+            NextRhythm();
             _misses = 0;
             _overload = _slack = 0f;
             Tension = 0.3f;
@@ -86,7 +93,6 @@ namespace BoatAttack.Fishing
         public void Tick(float deltaTime, bool reel)
         {
             if (float.IsNaN(deltaTime) || float.IsInfinity(deltaTime) || deltaTime <= 0f) return;
-            if(WaitingForNet)return;
             // Do not skip entire reaction windows on an application hitch.
             float dt = Math.Min(deltaTime, 0.1f);
             _timer += dt;
@@ -99,19 +105,35 @@ namespace BoatAttack.Fishing
                     if (_timer >= _deadline) Escape(CatchFailure.MissedBite);
                     break;
                 case CatchPhase.Fighting:
+                    FightTime += dt;
+                    _beatTime += dt * _rhythmRate;
+                    if (_beatTime >= Species.BeatSeconds) { _beatTime -= Species.BeatSeconds; NextRhythm(); }
                     Fight(dt, reel);
                     break;
                 case CatchPhase.Landing:
-                    if (_timer >= _deadline) Escape(CatchFailure.LandingTimeout);
+                    // The drag keeps the line taut while the left hand moves from reel to net.
+                    Tension = Clamp(Tension + (reel ? Species.TensionGain * 1.8f : -.48f) * dt, .2f, 1f);
+                    _overload = Tension >= .98f ? _overload + dt : 0f;
+                    if (_overload >= .7f) Escape(CatchFailure.LineSnapped);
+                    else if (_timer >= _deadline) Escape(CatchFailure.LandingTimeout);
                     break;
             }
+        }
+
+        private void NextRhythm()
+        {
+            _rhythmSeed = unchecked(_rhythmSeed * 1664525 + 1013904223);
+            _rhythmRate = .85f + (_rhythmSeed & 255) / 255f * .3f;
+            _surgeScale = .9f + ((_rhythmSeed >> 8) & 255) / 255f * .2f;
+            // Later legendary cycles shorten the apparent rest before another warned lunge.
+            if (Species.Legendary && FightTime >= 10f) _rhythmRate *= 1.35f;
         }
 
         private void Fight(float dt, bool reel)
         {
             var species = Species;
             var beat = Beat;
-            float effort = beat == FishBeat.Surge ? species.SurgeEffort : beat == FishBeat.Rest ? 0.75f : beat == FishBeat.Leap ? LeapEffort : 1f;
+            float effort = Struggle;
             float gain = species.TensionGain * effort * FishingVoyage.TensionScale(Bait) * LineFactor(_lineLevel) * _sizeTension;
             float retrieve = beat == FishBeat.Rest ? 2.65f : beat == FishBeat.Windup ? 1.8f : beat == FishBeat.Leap ? 0f : 0.8f;
             retrieve *= FishingVoyage.ReelScale(Bait) * ReelFactor(_reelLevel);
@@ -124,7 +146,11 @@ namespace BoatAttack.Fishing
             if (_overload >= 0.7f) Escape(beat == FishBeat.Leap ? CatchFailure.LeapSnapped : CatchFailure.LineSnapped);
             else if (_slack >= 4f) Escape(CatchFailure.SlackLine);
             else if (_timer > _deadline) Escape(CatchFailure.SwamAway);
-            else if (Distance <= 0f) Enter(CatchPhase.Landing, species.Legendary ? 8f : 10f);
+            else if (Distance <= 0f)
+            {
+                if (species.Legendary && FightTime < 20f) Distance = .7f;
+                else { Tension = Math.Min(Tension, .74f); _overload = 0; Enter(CatchPhase.Landing, 10f); }
+            }
         }
 
         public bool Hook()
@@ -137,12 +163,12 @@ namespace BoatAttack.Fishing
         public bool Land()
         {
             if (Phase != CatchPhase.Landing) return false;
-            if (CanLand) { Enter(CatchPhase.Caught, 0f); return true; }
+            if (CanLand && CanNet) { Enter(CatchPhase.Caught, 0f); return true; }
             if (++_misses >= 3) Escape(CatchFailure.NetMissed);
             return false;
         }
 
-        public bool LandFromNet(){if(Phase!=CatchPhase.Landing)return false;Enter(CatchPhase.Caught,0f);return true;}
+        public bool LandFromNet(){if(!CanNet)return false;Enter(CatchPhase.Caught,0f);return true;}
 
         public CatchRecord Claim()
         {
@@ -304,10 +330,15 @@ namespace BoatAttack.Fishing
 
         public int NextUpgradeCost(UpgradeTrack track) => UpgradeCost(track, Level(track));
 
+        public bool SpecializationBlocked(UpgradeTrack track) => Level(track) == 1
+            && ((track == UpgradeTrack.Hold && (EngineLevel == 2 || RudderLevel == 2))
+                || (track == UpgradeTrack.Engine && (HoldLevel == 2 || RudderLevel == 2))
+                || (track == UpgradeTrack.Rudder && (HoldLevel == 2 || EngineLevel == 2)));
+
         public bool Upgrade(UpgradeTrack track)
         {
             int cost = NextUpgradeCost(track);
-            if (cost <= 0 || Coins < cost) return false;
+            if (cost <= 0 || Coins < cost || SpecializationBlocked(track)) return false;
             Coins -= cost;
             if (track == UpgradeTrack.Line) LineLevel++;
             else if (track == UpgradeTrack.Reel) ReelLevel++;

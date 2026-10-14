@@ -131,7 +131,7 @@ namespace BoatAttack.Fishing
             x += ConditionChip(x, r.y + 82, 2, "珍珠饵", c.Bait == BaitKind.Pearl) + 6;
             ConditionChip(x, r.y + 82, 2, "强化鱼线", career.LineLevel >= 1);
             bool ready = inArea && LegendRules.CanStrike(FishingSpecies.LegendArea, c.Weather.Climate.Current, c.Bait, career.LineLevel);
-            Label(r.x + 20, r.y + 110, 290, 18, ready ? "条件齐备！在水道抛竿试试运气" : "线索在日志“传说”页查看", 12, ready ? Gold : Faint);
+            Label(r.x + 20, r.y + 110, 290, 18, ready ? (FishingSurvey.LegendCoordinates(career)?"调查坐标已定位 · 此处抛竿必遇传说":"条件齐备！在水道抛竿试试运气") : "J 图鉴调查可解锁传说精确坐标", 12, ready ? Gold : Faint);
         }
 
         private float ConditionChip(float x, float y, int clue, string text, bool met)
@@ -180,8 +180,9 @@ namespace BoatAttack.Fishing
                 Pips(x + 76, y + 7, level, FishingCareer.MaxLevel, Gold);
                 string effect = FishingText.UpgradeEffect(track, level) + (cost > 0 ? "  →  " + FishingText.UpgradeEffect(track, level + 1) : "");
                 Label(x, y + 26, 260, 20, effect, 13, Muted);
-                string label = cost > 0 ? cost + " 金币" : "已满级";
-                if (Button(new Rect(x + w - 136, y + 4, 136, 38), label, cost > 0 && career.Coins >= cost, false, 15)) c.BuyUpgrade(track);
+                bool locked=career.SpecializationBlocked(track);
+                string label = locked ? "专精互斥" : cost > 0 ? cost + " 金币" : "已满级";
+                if (Button(new Rect(x + w - 136, y + 4, 136, 38), label, !locked && cost > 0 && career.Coins >= cost, false, 15)) c.BuyUpgrade(track);
             }
             if(Button(layout.Footer,c.Expedition.PortLabel,true,false,13))c.Expedition.PortAction();
         }
@@ -190,7 +191,7 @@ namespace BoatAttack.Fishing
         {
             if (s.Beat == FishBeat.Leap) return "跃出水面！ · 立刻松开左键";
             if (s.Tension > 0.78f) return "张力过高！ · 松开左键";
-            if (s.Beat == FishBeat.Rest) return "鱼在回气 · 按住左键收线";
+            if (s.Beat == FishBeat.Rest) return s.Species.Legendary && s.FightTime>=10 ? "短暂回气 · 收线并防备反扑" : "鱼在回气 · 按住左键收线";
             if (s.Beat == FishBeat.Windup) return "鱼在蓄力 · 准备松开左键";
             return "鱼在冲刺 · 放线避开拉力";
         }

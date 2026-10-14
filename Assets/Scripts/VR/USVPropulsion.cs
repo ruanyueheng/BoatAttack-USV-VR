@@ -1,6 +1,23 @@
 using System;
 namespace BoatAttack.VR
 {
+    public sealed class USVBoost
+    {
+        public float Heat { get; private set; }
+        public bool Overheated { get; private set; }
+        public bool Active { get; private set; }
+        public void Tick(float dt, bool requested, bool blocked)
+        {
+            Active = false;
+            if (blocked || float.IsNaN(dt) || float.IsInfinity(dt) || dt <= 0) return;
+            dt = Math.Min(dt, .1f);
+            Active = requested && !Overheated;
+            Heat = Math.Max(0f, Math.Min(1f, Heat + dt * (Active ? 1f / 8f : -1f / 12f)));
+            if (Heat >= 1f) { Overheated = true; Active = false; }
+            else if (Overheated && Heat <= .25f) Overheated = false;
+        }
+    }
+
     public static class USVPropulsion
     {
         public const float ReverseScale=.55f, MaxReverseSpeed=4f;

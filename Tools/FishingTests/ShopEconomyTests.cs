@@ -23,6 +23,12 @@ internal static class ShopEconomyTests
             check(FishingText.ShopProductName(track).Length > 0 && FishingText.ShopProductDescription(track).Length > 0, "Shop: existing equipment has product text " + track);
             for (int level = 1; level <= FishingCareer.MaxLevel; level++)
             {
+                if(career.SpecializationBlocked(track))
+                {
+                    int before=career.Coins;
+                    check(!career.Upgrade(track) && career.Coins==before,"Shop: conflicting tier two cannot charge " + track);
+                    break;
+                }
                 int price = career.NextUpgradeCost(track);
                 spent += price;
                 check(career.Upgrade(track) && career.Level(track) == level && career.Coins == earned - spent, "Shop: fishing income buys " + track + " level " + level);

@@ -86,7 +86,7 @@ namespace BoatAttack.Fishing
             if (session == null || career == null || !IsCatchCase(value)) throw new ArgumentException("A catch fixture is required.");
             bool legend = value == FishingAcceptanceCase.LegendLeap;
             session.Cancel();
-            if (!session.Cast(legend ? FishKind.Sailfish : FishKind.Coral, false, career.LineLevel,
+            if (!session.Cast(legend ? FishKind.Sailfish : value == FishingAcceptanceCase.Fighting ? FishKind.Puffer : FishKind.Coral, false, career.LineLevel,
                 "acceptance-cast-" + value, legend ? BaitKind.Pearl : BaitKind.Balanced,
                 legend ? BayWeather.Sunset : BayWeather.Clear, .65f, career.ReelLevel))
                 throw new InvalidOperationException("Acceptance cast was rejected.");

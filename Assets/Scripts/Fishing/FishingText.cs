@@ -28,7 +28,7 @@ namespace BoatAttack.Fishing
                 case CatchFailure.LeapSnapped: return "旗鱼跃水时仍在收线，鱼线被扯断：看到“跃出水面”立即松开。";
                 case CatchFailure.SlackLine: return "鱼挣脱了：不要连续放线太久。";
                 case CatchFailure.SwamAway: return "鱼游远了：收线与放线交替进行。";
-                case CatchFailure.LandingTimeout: return "没有及时抄鱼：指针进入绿色区时按 E。";
+                case CatchFailure.LandingTimeout: return "鱼在船边挣脱了：收至船边后松开左键，在10秒内按 E 抄鱼。";
                 case CatchFailure.NetMissed: return "抄网落空三次：看准绿色区域再按 E。";
                 default: return string.Empty;
             }
@@ -70,9 +70,9 @@ namespace BoatAttack.Fishing
             {
                 case UpgradeTrack.Line: return "沿用现有钓竿，换装抗拉鱼线，降低斗鱼张力。";
                 case UpgradeTrack.Reel: return "升级现有卷线器，提高收线速度。";
-                case UpgradeTrack.Hold: return "升级船上鱼箱，增加鱼获储存容量。";
-                case UpgradeTrack.Engine: return "提升起步与巡航速度，换装舷外机罩。";
-                case UpgradeTrack.Rudder: return "更快响应转向，升级船侧操舵轮。";
+                case UpgradeTrack.Hold: return "增加鱼获容量；二级载重专精与二级动力、操控互斥。";
+                case UpgradeTrack.Engine: return "提升巡航速度；二级动力专精与二级载重、操控互斥。";
+                case UpgradeTrack.Rudder: return "更快响应转向；二级操控专精与二级载重、动力互斥。";
                 case UpgradeTrack.Cabin: return "黄铜饰条、软垫与柚木；二级增加遮阳顶。";
                 default: return string.Empty;
             }

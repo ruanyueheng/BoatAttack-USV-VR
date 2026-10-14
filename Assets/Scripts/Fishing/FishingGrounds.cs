@@ -13,6 +13,8 @@ namespace BoatAttack.Fishing
         public static FishKind Species(int ground) => ground == NorthIsland ? FishKind.Coral : FishingSpecies.AreaSpecies(ground);
         public static bool Available(int ground, FishingExpedition expedition) =>
             ground >= 0 && ground < Count && (ground != NorthIsland || (expedition != null && expedition.Has(FishingExpedition.BeaconRepaired)));
+        public static bool AvailableForCareer(int ground, FishingCareer career) => Available(ground, career?.Expedition)
+            || (ground == NorthIsland && FishingSurvey.Stage(career) >= 1);
         public static bool MatchesTarget(int castGround, FishKind kind, float x, float z)
         {
             if (castGround != NorthIsland || kind != FishKind.Coral || float.IsNaN(x) || float.IsNaN(z) || float.IsInfinity(x) || float.IsInfinity(z)) return false;
