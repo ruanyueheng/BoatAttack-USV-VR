@@ -200,7 +200,7 @@ namespace BoatAttack.Fishing
                 if(Shore.Climbing)return Shore.ClimbHint;
                 if(Home!=null && Home.NearBed)return HasPendingCatch?"请先结算鱼获，再回床休息":"E 躺下休息至清晨";
                 if(Realms!=null && Realms.NearbyHint!=null)return Realms.NearbyHint;
-                if(Residents!=null && Residents.TryNearby(out int resident))return "E 与"+FishingLore.ResidentName(resident)+"交谈";
+                if(Residents!=null && Residents.TryNearby(out int resident))return resident==4?"E 与汐禾交谈 · Tab 查看商品":"E 与"+FishingLore.ResidentName(resident)+"交谈";
                 if(Shore.ClimbHint!=null)return Shore.ClimbHint;
                 if(TackleShop!=null && TackleShop.NearCounter)return "E / Tab 潮汐钓具店 · 柜台购买升级";
                 var target=ResolveWorldTarget(false);

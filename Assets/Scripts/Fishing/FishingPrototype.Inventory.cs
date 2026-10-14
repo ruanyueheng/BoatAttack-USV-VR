@@ -34,7 +34,7 @@ namespace BoatAttack.Fishing
         }
         public void SelectFieldSlot(int slot)
         {
-            if(ShopBlocksGameplay || Career==null)return;
+            if(ShopBlocksGameplay || StoryBlocksGameplay || Career==null)return;
             int previous=Career.Backpack.Selected;
             if(!Career.Backpack.Select(slot))return;
             if(previous!=Career.Backpack.Selected){CancelWorldAction();FieldWorld?.ClearToolPresentation();}

@@ -64,7 +64,8 @@ namespace BoatAttack.Fishing
             if (ShopBlocksGameplay) return true;
             if (allowInput && focused && !xrActive && keyboard != null && !Paused && !InventoryOpen && !JournalOpen
                 && !HasPendingCatch && !Expedition.Aligning && TackleShop != null && TackleShop.NearCounter
-                && (keyboard.eKey.wasPressedThisFrame || keyboard.tabKey.wasPressedThisFrame)) return ToggleShop();
+                && (keyboard.eKey.wasPressedThisFrame || keyboard.tabKey.wasPressedThisFrame))
+                return keyboard.eKey.wasPressedThisFrame?Residents.Talk(4):ToggleShop();
             return false;
         }
         private Vector3 NavigationWorldPosition()

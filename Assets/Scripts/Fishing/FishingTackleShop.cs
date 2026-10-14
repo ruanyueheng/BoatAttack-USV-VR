@@ -3,7 +3,7 @@ using UnityEngine.XR;
 
 namespace BoatAttack.Fishing
 {
-    /// <summary>已制作的潮汐钓具店。店员仅提供外观，其余预留站位不代表 NPC AI。</summary>
+    /// <summary>潮汐钓具店，共用居民对话和原商店交易。</summary>
     public sealed class FishingTackleShop : MonoBehaviour
     {
         public Transform entrance, purchasePoint, mooringPoint;
@@ -38,7 +38,19 @@ namespace BoatAttack.Fishing
 
         private void Awake() => ResolveLandingDeck();
         private void Start() { EnsureCashier(); FishingShopDisplay.Ensure(this); }
-        public void Bind(FishingPrototype controller) { Controller = controller; ResolveLandingDeck(); EnsureCashier(); FishingShopDisplay.Ensure(this); }
+        public void Bind(FishingPrototype controller)
+        {
+            Controller = controller; ResolveLandingDeck(); EnsureCashier(); FishingShopDisplay.Ensure(this);
+            if(transform.Find("Shop foundation")==null)
+                FishingArt.Shape("Shop foundation",PrimitiveType.Cube,transform,new Vector3(0,-2.55f,0),new Vector3(12,4.8f,10),controller.wood,true);
+            var barrier=transform.Find("Boat building barrier");
+            if(barrier==null)
+            {
+                barrier=new GameObject("Boat building barrier").transform;barrier.SetParent(transform,false);barrier.localPosition=Vector3.up*.25f;
+                barrier.gameObject.AddComponent<BoxCollider>().size=new Vector3(12,8.6f,10);
+            }
+            if(controller.Shore!=null)Physics.IgnoreCollision(controller.Shore.Body,barrier.GetComponent<Collider>());
+        }
         public FishingShopCashier EnsureCashier()
         {
             if (Cashier == null) Cashier = FishingShopCashier.Create(this);

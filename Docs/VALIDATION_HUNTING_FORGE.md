@@ -18,3 +18,5 @@
 预览见 [狩猎说明](HUNTING_RIFLE.md) 与 [锻造说明](FORGE_PROTOTYPE.md)。收银员增大与肩肘姿势修改保留在 `FishingCashier/FantasyGirl` 模型和 `FishingShopCashier.cs` 中。
 
 后续山脚煤矿/毛皮灯笼/活动时间刷新更新：3593 项规则断言通过，最终 Hunting 与 Forge 专项再次通过。新增内容见 [煤矿、灯笼与刷新说明](COAL_LANTERN_WILDLIFE.md)。
+
+上传期间补入 main v0.24（c518a28），并复测通过：V024 `Logs/usv-validation-d6ed82c1a51943e69067d59adc708841.log`、Hunting `Logs/usv-validation-f362db13f4e645e1a9f7861d9bf6c280.log`、Forge `Logs/usv-validation-f51d8380a14040d1b6662b8864a9b28d.log`。本 PR 保留伙伴的实体商店/收银员对话和玩家落地修复。

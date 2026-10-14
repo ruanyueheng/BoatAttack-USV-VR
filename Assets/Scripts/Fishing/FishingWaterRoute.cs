@@ -62,7 +62,7 @@ namespace BoatAttack.Fishing
             line.shadowCastingMode = ShadowCastingMode.Off; return line;
         }
         private bool Ignored(Collider col) => col.transform.IsChildOf(_c.Player.transform)
-            || col == _c.Shore.Body || col.gameObject.layer == 5 || FishingShore.NonSolidSurface(col);
+            || col == _c.Shore.Body || col.gameObject.layer == 5 || FishingShore.NonSolidSurface(col,false);
         public bool ClearPoint(Vector3 p)
         {
             p.y = 1.2f;

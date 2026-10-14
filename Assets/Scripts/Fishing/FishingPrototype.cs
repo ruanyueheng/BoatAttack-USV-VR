@@ -25,7 +25,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.23.0";
+        public const string Version = "0.24.0";
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
