@@ -39,9 +39,9 @@ namespace BoatAttack.Fishing
                 }
                 c.SelectNavigation(c.ShopNavigationIndex);
                 RequireShop(c.NavigationName == shop.DisplayName && c.NavigationPosition == shop.mooringPoint.position, "boat shop waypoint uses mooring, not survey array");
-                RequireShop(shop.clerkSpaces.Length == 2 && shop.customerSpaces.Length == 4, "six empty reservation markers, not NPC AI");
+                RequireShop(shop.clerkSpaces.Length == 2 && shop.customerSpaces.Length == 4, "two clerk anchors and four customer anchors retained");
                 foreach (var marker in shop.clerkSpaces.Concat(shop.customerSpaces))
-                    RequireShop(!Physics.CheckCapsule(marker.position + Vector3.up * .38f, marker.position + Vector3.up * 1.5f, .3f, ~(1 << 4), QueryTriggerInteraction.Ignore), "reserved floor space clear " + marker.name);
+                    RequireShop(c.Shore.Clearance(marker.position), "reserved floor space clear " + marker.name);
                 SetShopBoat(c, shop.mooringPoint.position, shop.transform.rotation);
                 RequireShop(!shop.Toggle() && !shop.Buy(UpgradeTrack.Line) && !c.BuyUpgrade(UpgradeTrack.Line), "boat cannot shop remotely");
                 RequireShop(c.Shore.TryDisembark(), "real shop landing passes support, clearance and transfer checks");
@@ -59,7 +59,13 @@ namespace BoatAttack.Fishing
                 c.Career.Backpack.Select(2);
                 int coins = c.Career.Coins;
                 var feet = c.Shore.Position;
-                RequireShop(ShopKeys(c, keyboard, Key.E, Key.Digit1, Key.W, Key.F, Key.G), "opening E frame consumed");
+                RequireShop(ShopKeys(c, keyboard, Key.E, Key.Digit1, Key.W, Key.F, Key.G) && c.DialogueOpen && c.Residents.ActiveId == 4, "E opens the original cashier dialogue through production input");
+                c.Shore.Tick(true, .05f); c.SelectFieldSlot(0); c.UseFieldItem();
+                RequireShop(!c.ShopOpen && c.Career.Coins == coins && c.Career.Backpack.Selected == 2 && c.Shore.Position == feet && !c.Shore.TryBoard(), "dialogue opening frame cannot purchase, move, equip, use tools or board");
+                c.Residents.Choose(1);
+                RequireShop(c.Residents.Speech.Contains("望远镜") && c.Residents.Speech.Contains("金币不足"), "cashier explains actual goods and purchase rules");
+                c.Residents.Close(); yield return null;
+                RequireShop(ShopKeys(c, keyboard, Key.Tab, Key.Digit1, Key.W, Key.F, Key.G), "opening Tab frame consumed");
                 c.Shore.Tick(true, .05f); c.SelectFieldSlot(0); c.UseFieldItem();
                 RequireShop(c.ShopOpen && c.Career.Coins == coins && c.Career.Backpack.Selected == 2 && c.Shore.Position == feet && !c.Shore.TryBoard(), "opening frame cannot purchase, move, use tools, change hotbar or board");
                 yield return null;

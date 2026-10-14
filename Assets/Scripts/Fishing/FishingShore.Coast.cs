@@ -17,7 +17,7 @@ namespace BoatAttack.Fishing
             {
                 var landing=home.BoardwalkStart;
                 if(Ground(landing,out feet) && Mathf.Abs(feet.y-landing.y)<.35f && Clearance(feet) && SafeCoastalFooting(feet) && ClearTransfer(feet))
-                {namedSite=true;surveySite=0;return true;}
+                {namedSite=true;return true;}
             }
             var shop=Controller.TackleShop;
             if(shop!=null && shop.Available && FishingPrototype.FlatDistance(Controller.Player.transform.position,shop.mooringPoint.position)<=9f)

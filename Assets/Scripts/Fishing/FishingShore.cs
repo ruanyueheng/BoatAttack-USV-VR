@@ -63,6 +63,8 @@ namespace BoatAttack.Fishing
             _character.Build();
             // A rider's motor is disabled while seated. The hull remains the vessel's collision body.
             foreach (var hull in c.Player.GetComponentsInChildren<Collider>()) Physics.IgnoreCollision(Body,hull);
+            var marketBarrier=c.transform.Find("Tide and Fin floating fish market/Boat building barrier");
+            if(marketBarrier!=null)Physics.IgnoreCollision(Body,marketBarrier.GetComponent<Collider>());
             Physics.SyncTransforms();
             for (int i=0;i<Sites.Length;i++)
             {
@@ -125,7 +127,8 @@ namespace BoatAttack.Fishing
                 {top=nearby.y;point=new Vector3(seed.x,nearby.y,seed.z);found=true;}
             return found;
         }
-        public static bool NonSolidSurface(Collider collider)=>collider.GetComponentInParent<WaterSystem.Water>()!=null || collider.name=="NavMesh";
+        public static bool NonSolidSurface(Collider collider,bool walking=true)=>collider.GetComponentInParent<WaterSystem.Water>()!=null || collider.name=="NavMesh"
+            || (walking && collider.name=="Boat building barrier");
         private bool Ignored(Collider collider) => collider==Body || collider.gameObject.layer==5 || collider.transform.IsChildOf(Controller.Player.transform) || NonSolidSurface(collider);
         public bool Clearance(Vector3 feet)
         {
@@ -246,15 +249,14 @@ namespace BoatAttack.Fishing
             sprint &= Stamina>.08f;
             var velocity=heading*new Vector3(axes.x,0,axes.y)*(XRSettings.isDeviceActive?(Crouched?.9f:1.6f):Crouched?1.25f:sprint?4.4f:2.6f);
             var next=Actor.position+velocity*dt;
-            // Search through the jump arc, but still reject water/large drops relative to the last grounded feet.
-            bool support=WalkingGroundBelow(next,Actor.position.y+.45f,3f,out var floor) && floor.y<=Actor.position.y+.45f && floor.y>=_lastSafe.y-.65f;
+            // Dry land below permits a gravity-driven descent; walls and slopes still use real collision geometry.
+            bool support=WalkingGroundBelow(next,Actor.position.y+.45f,80f,out var floor);
             if(!support && Mathf.Abs(velocity.x)>.01f && Mathf.Abs(velocity.z)>.01f)
             {
                 // Slide along a supported coast edge instead of cancelling both diagonal axes.
                 var alongX=Actor.position+Vector3.right*velocity.x*dt;
                 var alongZ=Actor.position+Vector3.forward*velocity.z*dt;
-                bool Supported(Vector3 seed,out Vector3 point)=>WalkingGroundBelow(seed,Actor.position.y+.45f,3f,out point)
-                    && point.y<=Actor.position.y+.45f && point.y>=_lastSafe.y-.65f;
+                bool Supported(Vector3 seed,out Vector3 point)=>WalkingGroundBelow(seed,Actor.position.y+.45f,80f,out point);
                 if(Supported(alongX,out floor)){velocity.z=0;next=alongX;support=true;}
                 else if(Supported(alongZ,out floor)){velocity.x=0;next=alongZ;support=true;}
             }
