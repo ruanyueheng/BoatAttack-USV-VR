@@ -5,18 +5,22 @@ namespace BoatAttack.Fishing
     public sealed partial class FishingHUD
     {
         private bool _craftPage;
+        private bool _craftBasics;
         private Vector2 _recipeScroll;
         private int _recipeIndex,_batch=1,_fuelIndex;
         private readonly FieldItem[] _fuels={FieldItem.Driftwood,FieldItem.Plank,FieldItem.Charcoal,FieldItem.Coal};
-        public void OpenCraftingPage(){_craftPage=true;_moveFrom=-1;if(Controller.WorkshopWorld.Context==CraftStation.Forge){_recipeIndex=0;_recipeScroll=Vector2.zero;}}
+        public void OpenCraftingPage(){_craftPage=true;_moveFrom=-1;_craftBasics=false;_recipeIndex=0;_recipeScroll=Vector2.zero;}
         private void DrawCraftingContents()
         {
             var world=Controller.WorkshopWorld;var bag=Controller.Career.Backpack;var context=world.Context;
-            var recipes=context==CraftStation.Forge?FishingRecipes.ForgePageRecipes:FishingRecipes.All;
+            bool basic=_craftBasics || context==CraftStation.Hand;
+            var recipes=FishingRecipes.ForStation(context,basic);
             _recipeIndex=Mathf.Clamp(_recipeIndex,0,recipes.Length-1);
-            Label(320,240,890,28,"当前设施："+FishingRecipes.StationName(context)+"  ·  工作台 / 熔炉 / 锻造台：快捷栏 F 放置",17,Mint,true);
-            Rounded(new Rect(320,280,395,435),InkRaised,8);
-            _recipeScroll=GUI.BeginScrollView(new Rect(326,286,384,423),_recipeScroll,new Rect(0,0,359,recipes.Length*45));
+            Label(320,238,940,24,"当前设施："+FishingRecipes.StationName(context)+"  ·  "+FishingRecipes.Purpose(context),16,Mint,true);
+            if(Button(new Rect(320,266,191,30),"设施配方",context!=CraftStation.Hand,!basic,14)){_craftBasics=false;_recipeIndex=0;_recipeScroll=Vector2.zero;}
+            if(Button(new Rect(520,266,195,30),"随身加工",true,basic,14)){_craftBasics=true;_recipeIndex=0;_recipeScroll=Vector2.zero;}
+            Rounded(new Rect(320,302,395,413),InkRaised,8);
+            _recipeScroll=GUI.BeginScrollView(new Rect(326,308,384,401),_recipeScroll,new Rect(0,0,359,recipes.Length*45));
             for(int i=0;i<recipes.Length;i++)
             {
                 var recipe=recipes[i];
@@ -50,7 +54,7 @@ namespace BoatAttack.Fishing
             else
             {
                 bool station=context==r.Station || r.Station==CraftStation.Hand;
-                if(Button(new Rect(746,500,522,45),station?(context==CraftStation.Forge?"锻造  ":"制作  ")+FishingBackpack.Name(r.Output):"靠近"+FishingRecipes.StationName(r.Station)+"按 E 后制作",station && enough,false,18))world.Craft(r.Id);
+                if(Button(new Rect(746,500,522,45),station?(r.Station==CraftStation.Forge?"锻造  ":r.Station==CraftStation.Workbench?"组装  ":"加工  ")+FishingBackpack.Name(r.Output):"靠近"+FishingRecipes.StationName(r.Station)+"按 E 后制作",station && enough,false,18))world.Craft(r.Id);
             }
             var current=world.State.Station(world.SelectedStation);
             if(context==CraftStation.Furnace && current!=null)
@@ -60,7 +64,7 @@ namespace BoatAttack.Fishing
                 Label(746,632,522,34,"背包打开时世界暂停；退出后继续烧制。离开岸边也会加工。",14,Muted);
                 if(current.ready>0 && !smelt && Button(new Rect(746,671,230,34),"领取炉内成品",true,false,15))world.Collect();
             }
-            else Label(746,599,514,70,"漂流木 ×1 → 木棍 ×4（徒手制作，无需寻找木棍）。\n山脚煤矿：手持镐按 E；煤 + 兔毛 / 狐皮可制灯笼。\n资源 90 秒恢复；铁镐提高石矿采集量。",15,Muted);
+            else Label(746,599,514,88,"熔炉：矿石 → 铁锭；锻造台：铁锭 → 金属零件。\n工作台：零件 + 木料 → 装备，煤和毛皮 → 灯笼。\n木棍在“随身加工”中用漂流木直接制作。",14,Muted);
             if(context!=CraftStation.Hand && current!=null && !current.permanent)
                 if(Button(new Rect(1034,681,234,34),"收回此设施",current.remaining==0 && current.ready==0,false,15))world.Remove();
             Label(320,737,950,24,"设施与炉内物品独立保存 · 满包不吞材料 · 公共工坊位于西侧初始登岸点附近",14,Faint);

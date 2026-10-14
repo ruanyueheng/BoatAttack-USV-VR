@@ -29,7 +29,7 @@ namespace BoatAttack.Fishing
             R("bench",CraftStation.Hand,FieldItem.Workbench,1,Stack(FieldItem.Plank,4)),
             R("furnace",CraftStation.Workbench,FieldItem.Furnace,1,Stack(FieldItem.Stone,8)),
             R("stone-pick",CraftStation.Workbench,FieldItem.StonePickaxe,1,Stack(FieldItem.Stone,3),Stack(FieldItem.Stick,2),Stack(FieldItem.Rope,1)),
-            R("iron-pick",CraftStation.Workbench,FieldItem.IronPickaxe,1,Stack(FieldItem.IronIngot,3),Stack(FieldItem.Stick,2),Stack(FieldItem.Rope,1)),
+            R("iron-pick",CraftStation.Workbench,FieldItem.IronPickaxe,1,Stack(FieldItem.IronPickHead,1),Stack(FieldItem.Stick,2),Stack(FieldItem.Rope,1)),
             R("lantern",CraftStation.Workbench,FieldItem.Lantern,1,Stack(FieldItem.IronIngot,2),Stack(FieldItem.Glass,2),Stack(FieldItem.Charcoal,1)),
             R("binoculars",CraftStation.Workbench,FieldItem.Binoculars,1,Stack(FieldItem.IronIngot,3),Stack(FieldItem.Glass,4),Stack(FieldItem.Rope,1)),
             R("charcoal",CraftStation.Furnace,FieldItem.Charcoal,1,Stack(FieldItem.Driftwood,1)),
@@ -44,23 +44,36 @@ namespace BoatAttack.Fishing
             R("roast-gull",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.GullMeat,1)),
             R("roast-legacy-meat",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.Meat,1)),
             R("forge",CraftStation.Workbench,FieldItem.Forge,1,Stack(FieldItem.Stone,8),Stack(FieldItem.Clay,4),Stack(FieldItem.Plank,4)),
-            R("forge-stone-pick",CraftStation.Forge,FieldItem.StonePickaxe,1,Stack(FieldItem.Stone,3),Stack(FieldItem.Stick,2),Stack(FieldItem.Fiber,2)),
-            R("forge-iron",CraftStation.Forge,FieldItem.IronIngot,1,Stack(FieldItem.IronOre,2),Stack(FieldItem.Coal,1)),
-            R("forge-iron-pick",CraftStation.Forge,FieldItem.IronPickaxe,1,Stack(FieldItem.IronIngot,3),Stack(FieldItem.Stick,2),Stack(FieldItem.Rope,1)),
-            R("coal-rabbit-lantern",CraftStation.Forge,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.RabbitFur,1)),
-            R("coal-fox-lantern",CraftStation.Forge,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.FoxFur,1)),
-            R("coal-legacy-lantern",CraftStation.Forge,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.Fur,1))
+            R("iron-pick-head",CraftStation.Forge,FieldItem.IronPickHead,1,Stack(FieldItem.IronIngot,3)),
+            R("gun-parts",CraftStation.Forge,FieldItem.GunParts,1,Stack(FieldItem.IronIngot,6)),
+            R("hunting-rifle",CraftStation.Workbench,FieldItem.HuntingRifle,1,Stack(FieldItem.GunParts,1),Stack(FieldItem.Plank,2),Stack(FieldItem.Rope,1)),
+            R("coal-rabbit-lantern",CraftStation.Workbench,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.RabbitFur,1)),
+            R("coal-fox-lantern",CraftStation.Workbench,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.FoxFur,1)),
+            R("coal-legacy-lantern",CraftStation.Workbench,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.Fur,1))
         };
+        public static readonly CraftRecipe[] HandRecipes=Array.FindAll(All,r=>r.Station==CraftStation.Hand);
+        public static readonly CraftRecipe[] WorkbenchRecipes=Array.FindAll(All,r=>r.Station==CraftStation.Workbench);
+        public static readonly CraftRecipe[] FurnaceRecipes=MakeFurnacePage();
         public static readonly CraftRecipe[] ForgeRecipes=Array.FindAll(All,r=>r.Station==CraftStation.Forge);
-        public static readonly CraftRecipe[] ForgePageRecipes=MakeForgePage();
-        private static CraftRecipe[] MakeForgePage()
+        private static CraftRecipe[] MakeFurnacePage()
         {
-            var recipes=new List<CraftRecipe>(ForgeRecipes);
-            foreach(var r in All)if(r.Station==CraftStation.Hand)recipes.Add(r);
-            return recipes.ToArray();
+            var recipes=Array.FindAll(All,r=>r.Station==CraftStation.Furnace);
+            Array.Sort(recipes,(a,b)=>FurnaceOrder(a).CompareTo(FurnaceOrder(b)));return recipes;
         }
-        public static CraftRecipe Find(string id){foreach(var r in All)if(r.Id==id)return r;return null;}
+        private static int FurnaceOrder(CraftRecipe r)=>r.Id=="iron"?0:r.Id=="charcoal"?1:r.Id=="glass"?2:r.Id=="brick"?3:10+(int)r.Costs[0].item;
+        public static CraftRecipe[] ForStation(CraftStation station,bool basic=false)=>basic || station==CraftStation.Hand?HandRecipes:
+            station==CraftStation.Workbench?WorkbenchRecipes:station==CraftStation.Furnace?FurnaceRecipes:station==CraftStation.Forge?ForgeRecipes:new CraftRecipe[0];
+        public static CraftRecipe Find(string id)
+        {
+            // These former instant-craft IDs were not furnace jobs. Resolve to the
+            // new correct station without keeping duplicate recipes in the UI.
+            if(id=="forge-stone-pick")id="stone-pick";
+            else if(id=="forge-iron-pick")id="iron-pick";
+            else if(id=="forge-iron")id="iron";
+            foreach(var r in All)if(r.Id==id)return r;return null;
+        }
         public static string StationName(CraftStation s)=>s==CraftStation.Hand?"徒手":s==CraftStation.Workbench?"工作台":s==CraftStation.Forge?"锻造台":"熔炉";
+        public static string Purpose(CraftStation s)=>s==CraftStation.Workbench?"装备组装：镐、灯笼、猎枪":s==CraftStation.Furnace?"冶炼烧制：铁锭、木炭、玻璃、砖":s==CraftStation.Forge?"金属塑形：铁镐头、枪械铁件":"随身加工：木板、木棍、绳索";
         public static FieldItem StationItem(CraftStation kind)=>kind==CraftStation.Workbench?FieldItem.Workbench:kind==CraftStation.Furnace?FieldItem.Furnace:kind==CraftStation.Forge?FieldItem.Forge:FieldItem.Empty;
         public static CraftStation StationKind(FieldItem item)=>item==FieldItem.Workbench?CraftStation.Workbench:item==FieldItem.Furnace?CraftStation.Furnace:item==FieldItem.Forge?CraftStation.Forge:CraftStation.Hand;
         public static bool IsStation(FieldItem item)=>StationKind(item)!=CraftStation.Hand;

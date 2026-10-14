@@ -18,6 +18,7 @@ namespace BoatAttack.Fishing
         private readonly FishingPressEdge _menu=new FishingPressEdge(),_primary=new FishingPressEdge(),_board=new FishingPressEdge(),_slot=new FishingPressEdge(),_trigger=new FishingPressEdge();
         private LineRenderer _ray;
         private int _page,_offset;
+        private bool _craftBasics;
         public bool StorePage => IsOpen && (_page==4 || _page==5);
         private bool _turnReady;
         private float _nextText,_nextStrike;
@@ -64,7 +65,7 @@ namespace BoatAttack.Fishing
                 _canvas.transform.SetPositionAndRotation(eye.position+forward*1.3f-Vector3.up*.12f,Quaternion.LookRotation(forward,Vector3.up));
                 _c.Hands.ResetInteraction();_c.FieldWorld.ClearToolPresentation();_trigger.Reset();
             }
-            IsOpen=true;_page=page;_offset=0;_canvas.gameObject.SetActive(true);_c.WorkshopWorld.SelectNearby();Refresh();
+            IsOpen=true;_page=page;_offset=0;_craftBasics=false;_canvas.gameObject.SetActive(true);_c.WorkshopWorld.SelectNearby();Refresh();
         }
         public void Close(){IsOpen=false;if(_canvas!=null)_canvas.gameObject.SetActive(false);if(_ray!=null)_ray.enabled=false;_trigger.Reset();_tipSample=false;}
         public void ResetInput(){_menu.Reset();_primary.Reset();_board.Reset();_slot.Reset();_trigger.Reset();_turnReady=false;_tipSample=false;}
@@ -106,15 +107,19 @@ namespace BoatAttack.Fishing
             }
             else if(_page==2)
             {
-                _status.text="制作 · "+FishingRecipes.StationName(_c.WorkshopWorld.Context)+"\n点选制作 1 份 / 熔炉开始烤制\n燃料优先煤、木炭、漂流木、木板\n成品在首页领取；关手册后炉火继续\n"+_c.Message;
-                for(int i=0;i<6;i++)
+                var context=_c.WorkshopWorld.Context;var recipes=FishingRecipes.ForStation(context,_craftBasics);
+                _offset=Mathf.Clamp(_offset,0,Mathf.Max(0,(recipes.Length-1)/5*5));
+                _status.text=FishingRecipes.StationName(context)+" · "+(_craftBasics?"随身加工":"设施配方")+"\n"+FishingRecipes.Purpose(context)+"\n熔炉需燃料，成品在首页领取\n关手册后炉火继续\n"+_c.Message;
+                for(int i=0;i<5;i++)
                 {
-                    int recipe=_offset+i;if(recipe>=FishingRecipes.All.Length)break;var r=FishingRecipes.All[recipe];string costs="";
+                    int recipe=_offset+i;if(recipe>=recipes.Length)break;var r=recipes[recipe];string costs="";
                     foreach(var cost in r.Costs)costs+=FishingBackpack.Name(cost.item)+" "+bag.Count(cost.item)+"/"+cost.count+" ";
                     Set(i,FishingBackpack.Name(r.Output)+" ×"+r.Count+"\n"+costs,()=>Craft(r));
                     Photo(i,FishingV023Art.Icon(r.Output));
                 }
-                Pager(FishingRecipes.All.Length);
+                Set(5,context==CraftStation.Hand?"随身加工\n靠近设施使用对应配方":_craftBasics?"切回设施配方":"切换随身加工",context==CraftStation.Hand?(Action)null:()=>{_craftBasics=!_craftBasics;_offset=0;Refresh();});
+                Set(6,"上一页",_offset>0?(Action)(()=>{_offset-=5;Refresh();}):null);Set(7,"返回首页",()=>Open());
+                Set(8,"下一页",_offset+5<recipes.Length?(Action)(()=>{_offset+=5;Refresh();}):null);
             }
             else if(_page==3)
             {

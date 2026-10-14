@@ -46,34 +46,45 @@ namespace BoatAttack.EditorTools
             Check(c.RequestWorldInteraction(),"E starts real stone collection");
             for(int i=0;i<180 && c.WorldActionBusy;i++)yield return null;
             Check(bag.Count(FieldItem.Stone)==stones+3,"ground stone collection grants forge material");yield return null;
-            bag.TryAdd(FieldItem.Driftwood,1);bag.TryAdd(FieldItem.Fiber,2);
-            Check(!world.Craft("forge-stone-pick"),"world shortcut cannot craft outside the open station UI");
-            bool approach=false;
-            for(int angle=0;angle<360;angle+=30)
-            {
-                var seed=root.position+Quaternion.Euler(0,angle,0)*Vector3.back*1.55f;
-                if(c.Shore.Ground(seed,out ground) && c.Shore.Clearance(ground)){approach=true;break;}
-            }
-            Check(approach,"forge has a standing interaction apron");
-            c.Shore.SetCrouch(false);Feet(c,ground+Vector3.up*.06f,root.position+Vector3.up*.9f);
-            for(int i=0;i<35;i++){c.Shore.Move(Vector2.zero,false,false,false,.02f);c.PresentCharacterFrame();yield return null;}
-            Check(world.OpenStation(forge.id) && c.InventoryOpen && world.Context==CraftStation.Forge,"E station route opens the forge recipe page");
-            Check(System.Array.Exists(FishingRecipes.ForgePageRecipes,r=>r.Id=="sticks") && world.Craft("sticks")
-                && bag.Count(FieldItem.Stick)==4 && bag.Count(FieldItem.Driftwood)==0,"driftwood makes sticks directly in the open forge UI without plank detour");
-            Check(world.Craft("forge-stone-pick") && bag.Count(FieldItem.StonePickaxe)==1 && bag.Count(FieldItem.Stone)==stones,"forge consumes the collected stone and makes an equippable tool");
-            bag.TryAdd(FieldItem.IronOre,2);bag.TryAdd(FieldItem.Coal,1);
-            Check(world.Craft("forge-iron") && bag.Count(FieldItem.IronIngot)==1,"forge converts mined ore and coal to an ingot");
-            Check(!world.Craft("forge-iron"),"repeat click without materials cannot duplicate ingots");
-            c.viewCamera.transform.LookAt(root.position+Vector3.up*.85f);Capture(c,"forge-in-game");
+            bag.TryAdd(FieldItem.Driftwood,1);bag.TryAdd(FieldItem.Fiber,3);
+            Check(!world.Craft("stone-pick"),"closed UI cannot assemble a tool");
+            var visit=Open(c,CraftStation.Workbench);while(visit.MoveNext())yield return visit.Current;
+            Check(world.Craft("sticks") && bag.Count(FieldItem.Stick)==4 && world.Craft("rope"),"workbench basic processing uses gathered driftwood and fibre");
+            Check(world.Craft("stone-pick") && bag.Count(FieldItem.StonePickaxe)==1 && bag.Count(FieldItem.Stone)==stones,"workbench makes the actual starter pick");
+            Check(!world.Craft("iron-pick-head"),"workbench cannot forge a metal head");
+
+            bag.TryAdd(FieldItem.IronOre,9);bag.TryAdd(FieldItem.Coal,3);
+            visit=Open(c,CraftStation.Furnace);while(visit.MoveNext())yield return visit.Current;
+            int furnace=world.SelectedStation;
+            Check(!world.Craft("iron") && world.Smelt("iron",1,FieldItem.Coal),"furnace requires a fuelled timed job, never instant crafting");
+            c.ToggleInventory();
+            for(int i=0;i<2000 && world.State.Station(furnace).remaining>0;i++)yield return null;
+            Check(world.State.Station(furnace).ready==1,"production workshop Update finishes real timed smelting after closing inventory");
+            visit=Open(c,CraftStation.Furnace);while(visit.MoveNext())yield return visit.Current;
+            Check(world.Collect() && !world.Collect() && bag.Count(FieldItem.IronIngot)==1,"furnace ingot can be claimed once");
+            Check(world.Smelt("iron",8,FieldItem.Coal),"furnace reserves remaining ore and exact batch fuel");
+            for(int i=0;i<64;i++)world.State.Tick(1);
+            Check(world.Collect() && bag.Count(FieldItem.IronIngot)==9,"furnace supplies the full iron stock for shaping");
+            Check(!world.Craft("gun-parts"),"furnace cannot forge parts");
+
+            visit=Open(c,CraftStation.Forge);while(visit.MoveNext())yield return visit.Current;
+            Check(!world.Craft("forge-iron") && !world.Craft("stone-pick") && !world.Craft("coal-rabbit-lantern"),"forge rejects smelting, stone assembly and lantern assembly");
+            Check(world.Craft("iron-pick-head") && bag.Count(FieldItem.IronPickHead)==1 && bag.Count(FieldItem.IronIngot)==6,"forge shapes three ingots into the separate iron pick head");
+            Check(world.Craft("gun-parts") && bag.Count(FieldItem.GunParts)==1 && bag.Count(FieldItem.IronIngot)==0,"forge shapes the game rifle metal parts");
+            Check(FishingV023Art.Icon(FieldItem.IronPickHead)!=null && FishingV023Art.Icon(FieldItem.GunParts)!=null,"desktop/XR metal components have no-text pictograms");
+            c.viewCamera.transform.LookAt(world.StationRoot(world.SelectedStation).position+Vector3.up*.85f);Capture(c,"forge-in-game");
             var loaded=FishingSaveStore.Load(c.SavePath,out var warning);
-            Check(warning.Length==0 && loaded.Workshop.Stations.Count(s=>s.kind==CraftStation.Forge && s.permanent)==1 && loaded.Backpack.Count(FieldItem.StonePickaxe)==1,"forge and outputs persist to the isolated save");
-            Check(!world.Remove(),"public forge is protected from dismantling");
+            Check(warning=="" && loaded.Backpack.Count(FieldItem.IronPickHead)==1 && loaded.Backpack.Count(FieldItem.GunParts)==1,"intermediate metal parts survive the real disk save");
+            Check(!world.Remove(),"public forge cannot be dismantled");
             c.ToggleInventory();world.RefreshFromCareer();yield return null;
-            Check(world.State.Stations.Count(s=>s.kind==CraftStation.Forge && s.permanent)==1,"reloading workshop state does not spawn a duplicate forge");
-            root=world.StationRoot(forge.id);var forgeFeet=c.Shore.Position;
-            Check(world.OpenStation(forge.id),"return to forge to make iron pick");
-            bag.TryAdd(FieldItem.IronIngot,2);bag.TryAdd(FieldItem.Stick,2);bag.TryAdd(FieldItem.Rope,1);
-            Check(world.Craft("forge-iron-pick") && bag.Count(FieldItem.IronPickaxe)==1,"iron pick is forged through real station transaction");
+            Check(world.State.Stations.Count(s=>s.kind==CraftStation.Forge && s.permanent)==1,"workshop reload does not duplicate forge");
+
+            visit=Open(c,CraftStation.Workbench);while(visit.MoveNext())yield return visit.Current;
+            bag.TryAdd(FieldItem.Fiber,6);bag.TryAdd(FieldItem.Driftwood,1);
+            Check(world.Craft("rope") && world.Craft("rope") && world.Craft("planks"),"basic processing remains available as a separate crafting category");
+            Check(world.Craft("iron-pick") && bag.Count(FieldItem.IronPickaxe)==1 && bag.Count(FieldItem.IronPickHead)==0,"workbench assembles forged head and real wooden handle");
+            Check(world.Craft("hunting-rifle") && bag.Count(FieldItem.HuntingRifle)==1 && bag.Count(FieldItem.GunParts)==0,"workbench assembles an equippable rifle from the game parts");
+            Check(!world.Craft("hunting-rifle"),"assembly cannot duplicate equipment without inputs");
             c.ToggleInventory();
             var coal=world.Nodes.FirstOrDefault(n=>n.Item==FieldItem.Coal);
             Check(coal!=null && world.MountainWallNearby(coal.Feet) && c.Shore.Clearance(coal.Feet),"coal vein is beside a real mountain wall on walkable footing");
@@ -102,11 +113,9 @@ namespace BoatAttack.EditorTools
                 Check(!c.RequestWorldInteraction(),"mined coal cannot pay again before recovery");
                 for(int i=0;i<90;i++)world.State.Tick(1);
             }
-            c.Shore.SetCrouch(false);Feet(c,forgeFeet+Vector3.up*.02f,root.position+Vector3.up*.9f);
-            for(int i=0;i<20;i++){c.Shore.Move(Vector2.zero,false,false,false,.02f);c.PresentCharacterFrame();yield return null;}
-            Check(world.OpenStation(forge.id),"return from mountain coal to forge");
+            visit=Open(c,CraftStation.Workbench);while(visit.MoveNext())yield return visit.Current;
             bag.TryAdd(FieldItem.RabbitFur,1);int fuel=bag.Count(FieldItem.Coal);
-            Check(world.Craft("coal-rabbit-lantern") && bag.Count(FieldItem.Lantern)==1 && bag.Count(FieldItem.RabbitFur)==0 && bag.Count(FieldItem.Coal)==fuel-2,"mined coal and hunted fur craft the portable lantern");
+            Check(world.Craft("coal-rabbit-lantern") && bag.Count(FieldItem.Lantern)==1 && bag.Count(FieldItem.RabbitFur)==0 && bag.Count(FieldItem.Coal)==fuel-2,"workbench assembles mined coal and hunted fur into the portable lantern");
             c.ToggleInventory();Equip(c,FieldItem.Lantern);
             for(int i=0;i<100;i++){c.PresentCharacterFrame();yield return null;}
             c.UseFieldItem();c.PresentCharacterFrame();
@@ -116,6 +125,23 @@ namespace BoatAttack.EditorTools
             Capture(c,"crafted-lantern");FishingSaveStore.Save(c.SavePath,c.Career);loaded=FishingSaveStore.Load(c.SavePath,out warning);
             Check(warning=="" && loaded.Backpack.Count(FieldItem.Lantern)==1,"mined/crafted portable lantern persists");
             c.UseFieldItem();c.PresentCharacterFrame();Check(!c.LanternOn && !light.enabled,"F also extinguishes the portable lantern");
+        }
+
+        private static IEnumerator Open(FishingPrototype c,CraftStation kind)
+        {
+            if(c.InventoryOpen)c.ToggleInventory();
+            var world=c.WorkshopWorld;var station=world.State.Stations.First(s=>s.kind==kind && s.permanent);var root=world.StationRoot(station.id);
+            bool found=false;Vector3 ground=Vector3.zero;
+            for(int angle=0;angle<360;angle+=30)
+            {
+                var seed=root.position+Quaternion.Euler(0,angle,0)*Vector3.back*1.55f;
+                if(c.Shore.Ground(seed,out ground) && c.Shore.Clearance(ground)){found=true;break;}
+            }
+            Check(found,"walkable interaction apron for "+kind);
+            c.Shore.SetCrouch(false);Feet(c,ground+Vector3.up*.06f,root.position+Vector3.up*.9f);
+            for(int i=0;i<25;i++){c.Shore.Move(Vector2.zero,false,false,false,.02f);c.PresentCharacterFrame();yield return null;}
+            Check(world.OpenStation(station.id) && c.InventoryOpen && world.Context==kind,"production station UI opens "+kind);
+            Check(FishingRecipes.ForStation(kind).All(r=>r.Station==kind),"station UI uses only its own product catalog "+kind);
         }
         private static void Equip(FishingPrototype c,FieldItem item)
         {
