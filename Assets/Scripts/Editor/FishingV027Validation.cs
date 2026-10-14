@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Reflection;
+using System.Linq;
 using BoatAttack.Fishing;
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,6 +29,7 @@ namespace BoatAttack.EditorTools
             }
             Check(triangles<65000,"Island, cottage and lighthouse remain within 65000 triangles");
             Check(c.Home.Origin==new Vector3(-180,2.2f,10),"Existing home and saved station coordinates are retained");
+            ValidateShoreMigration(c);
             foreach(var t in Terrain.activeTerrains)Debug.Log("[V027] TERRAIN: "+t.name+" position="+t.transform.position+" size="+t.terrainData.size);
             if(Physics.Raycast(new Vector3(-146,60,-3),Vector3.down,out var shoreProbe,100,~((1<<5)|(1<<4)),QueryTriggerInteraction.Ignore))
                 Debug.Log("[V027] OLD SHORE: "+Hierarchy(shoreProbe.transform)+" type="+shoreProbe.collider.GetType().Name+" point="+shoreProbe.point);
@@ -79,12 +81,37 @@ namespace BoatAttack.EditorTools
             finally{page.SetValue(notebook,0);offset.SetValue(notebook,0);refresh.Invoke(notebook,null);canvas.gameObject.SetActive(active);notebook.Close();}
             Check(FishingUITheme.WorldMaterial.renderQueue==3200,"All shared world UI stays after the sea guidance");
             Check(FishingUITheme.Heading!=null,"Handwritten Chinese heading font is bundled");
-            BoatAttack.Editor.FishingMapBaker.BakeInitializedScene();
+            var map=BoatAttack.Editor.FishingMapBaker.BakeInitializedScene();
+            Check(map.sources.Any(s=>s.Contains(c.ShopStaticRoot.name)),"Baked map retains the live tackle-shop destination");
             Debug.Log("[V027] EVIDENCE: "+evidence);
         }
 
         private static string Hierarchy(Transform transform)
         {string path=transform.name;while(transform.parent!=null){transform=transform.parent;path=transform.name+"/"+path;}return path;}
+
+        private static void ValidateShoreMigration(FishingPrototype c)
+        {
+            var original=c.Career.Snapshot();
+            try
+            {
+                var fixture=c.Career.Snapshot();fixture.workshop.stations.RemoveAll(s=>!s.permanent);fixture.workshop.nextId=1000;
+                for(int i=0;i<FishingWorkshop.MaxPlayerStations;i++)fixture.workshop.stations.Add(new WorkshopStationData
+                {id=500+i,kind=i==0?CraftStation.Furnace:CraftStation.Workbench,x=-145+i%4*2,y=22,z=-7+i/4*2,
+                    recipe=i==0?"iron":"",remaining=i==0?1:0,ready=i==0?1:0,progress=i==0?.42f:0});
+                c.RestoreShopTestProfile(fixture);
+                var migrate=typeof(FishingHome).GetMethod("RelocateClearedStations",Private|BindingFlags.Public);
+                migrate.Invoke(c.Home,null);
+                var stations=c.WorkshopWorld.State.Stations.Where(s=>s.id>=500).ToArray();
+                Check(stations.Length==FishingWorkshop.MaxPlayerStations,"Shore upgrade preserves every player facility up to the 32-station limit");
+                Check(stations.All(s=>s.y<15 && FishingPrototype.FlatDistance(new Vector3(s.x,s.y,s.z),c.Home.Origin)<40),"Former cliff facilities migrate onto the new island");
+                var furnace=c.WorkshopWorld.State.Station(500);
+                Check(furnace.recipe=="iron" && furnace.remaining==1 && furnace.ready==1 && furnace.progress==.42f,"Relocation preserves reserved material, ready output and processing progress");
+                string first=string.Join(";",stations.Select(s=>s.id+":"+s.x+":"+s.y+":"+s.z));
+                migrate.Invoke(c.Home,null);
+                Check(first==string.Join(";",c.WorkshopWorld.State.Stations.Where(s=>s.id>=500).Select(s=>s.id+":"+s.x+":"+s.y+":"+s.z)),"Reloading the upgraded shore never migrates a supported facility twice");
+            }
+            finally{c.RestoreShopTestProfile(original);}
+        }
 
         private static void Capture(FishingPrototype c,Vector3 position,Vector3 target,string path)
         {

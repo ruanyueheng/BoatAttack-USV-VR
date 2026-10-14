@@ -98,6 +98,13 @@ namespace BoatAttack.Fishing
         public WorkshopStationData Station(int id){var s=Find(id);return s==null?null:s.Copy();}
         private WorkshopStationData Find(int id)=>_data.stations.Find(s=>s.id==id);
         private static bool Finite(float n)=>!float.IsNaN(n)&&!float.IsInfinity(n);
+        public bool Relocate(int id,float x,float y,float z,float yaw)
+        {
+            var station=Find(id);
+            if(station==null || station.permanent || !Finite(x)||!Finite(y)||!Finite(z)||!Finite(yaw)
+                ||Math.Abs(x)>2000||Math.Abs(z)>2000||y<.1f||y>100)return false;
+            station.x=x;station.y=y;station.z=z;station.yaw=yaw;return true;
+        }
         public int Place(FishingBackpack bag,CraftStation kind,float x,float y,float z,float yaw,bool permanent=false)
         {
             if(_data.stations.Count>=MaxStations || _data.nextId>=1000000 || FishingRecipes.StationItem(kind)==FieldItem.Empty

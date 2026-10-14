@@ -179,6 +179,14 @@ namespace BoatAttack.Fishing
         public void SelectNearby(){Sense();SelectedStation=_nearStation;}
         private static bool NeedsPick(FieldItem item)=>item==FieldItem.IronOre || item==FieldItem.Coal;
         public Transform StationRoot(int id)=>_stations.TryGetValue(id,out var root)?root:null;
+        internal bool RelocateAfterShoreChange(int id,Vector3 seed)
+        {
+            var station=State.Station(id);var root=StationRoot(id);
+            if(station==null || station.permanent || root==null || !FitStationFoot(seed,out var feet,station.yaw)
+                || !StationSpaceClear(feet,station.yaw) || BlocksAccess(feet))return false;
+            feet.y+=.02f;if(!State.Relocate(id,feet.x,feet.y,feet.z,station.yaw))return false;
+            root.position=feet;Physics.SyncTransforms();return true;
+        }
         public bool TryInteractionTarget(out int stationId,out ResourceNode resource,bool refresh=true)
         {
             if(refresh)Sense();stationId=StationIsClosest?_nearStation:-1;resource=stationId<0?_nearNode:null;

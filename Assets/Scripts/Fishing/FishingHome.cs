@@ -18,6 +18,7 @@ namespace BoatAttack.Fishing
         private Terrain _shoreTerrain;
         private TerrainData _shoreOriginal,_shoreCopy;
         private GameObject _oldCliff;
+        private static readonly Rect ShoreClearArea=new Rect(-166,-28,42,50);
         private readonly Transform[] _interactables=new Transform[4];
         private readonly Vector3[] _interactionPoints=new Vector3[4];
         private readonly System.Collections.Generic.List<Light> _lamps=new System.Collections.Generic.List<Light>();
@@ -124,16 +125,14 @@ namespace BoatAttack.Fishing
             _fade=go.GetComponent<Canvas>();_fade.sortingOrder=250;_black=go.GetComponent<Image>();_black.color=Color.clear;_black.raycastTarget=false;go.SetActive(false);
             Physics.SyncTransforms();
             _c.WorkshopWorld.EnsureHomeStations();
+            RelocateClearedStations();
             WaterSystem.Water.Instance?.CaptureDepthMap();
         }
 
         private void ClearOldShore()
         {
             var old=GameObject.Find("Island Level/Environment Objects/LargeCliff03");if(old==null)return;
-            var area=new Rect(-166,-28,42,50);
-            // A player-built facility must not lose its supporting land during this visual upgrade.
-            foreach(var station in _c.WorkshopWorld.State.Stations)
-                if(area.Contains(new Vector2(station.x,station.z)))return;
+            var area=ShoreClearArea;
             foreach(var site in _c.Shore.Sites)if(site.Available)
             {
                 if(area.Contains(new Vector2(site.Landing.x,site.Landing.z)))return;
@@ -153,6 +152,29 @@ namespace BoatAttack.Fishing
                 var collider=terrain.GetComponent<TerrainCollider>();if(collider!=null)collider.terrainData=_shoreCopy;terrain.Flush();
                 _oldCliff=old;old.SetActive(false);break;
             }
+        }
+        internal void RelocateClearedStations()
+        {
+            if(_shoreCopy==null)return;
+            var ground=transform.Find("V027 IslandGround").GetComponentInChildren<MeshCollider>();bool moved=false;
+            foreach(var station in _c.WorkshopWorld.State.Stations)
+            {
+                if(station.permanent || !ShoreClearArea.Contains(new Vector2(station.x,station.z)))continue;
+                var previous=new Vector3(station.x,station.y,station.z);
+                if(ground.Raycast(new Ray(previous+Vector3.up*.05f,Vector3.down),out _,.40f))continue;
+                bool placed=false;
+                for(int cell=0;cell<256 && !placed;cell++)
+                {
+                    float x=-24+cell%16*3,z=-15+cell/16*3;
+                    if(Mathf.Abs(x)<8.5f && z>-10 && z<7)continue;
+                    if(!ground.Raycast(new Ray(Origin+new Vector3(x,35,z),Vector3.down),out var hit,50)
+                        ||hit.point.y<.5f||hit.normal.y<.9f)continue;
+                    placed=_c.WorkshopWorld.RelocateAfterShoreChange(station.id,hit.point);
+                }
+                if(!placed)throw new InvalidOperationException("No safe coastal position for saved facility "+station.id);
+                moved=true;
+            }
+            if(moved)_c.Save();
         }
         private void RegisterInteraction(int id,Transform root,Vector3 point){_interactables[id]=root;_interactionPoints[id]=Origin+point;}
         public Transform InteractionRoot(int id)=>id>=0 && id<_interactables.Length?_interactables[id]:null;

@@ -17,10 +17,10 @@ MonoBehaviour:
   worldXZBounds: {x: -500, y: -371.50238, z: 505.98267, w: 249.99994}
   seaLevel: 0
   sourceScene: Assets/scenes/Fishing/fishing_Island.unity
-  bakedUtc: 2026-10-14T19:29:04.0434520Z
+  bakedUtc: 2026-10-14T19:56:25.6062765Z
   includesInitializedScenery: 1
   terrainCount: 2
-  staticRendererCount: 342
+  staticRendererCount: 920
   terrainVertexCount: 526338
   metersPerTexel: {x: 0.49120247, y: 0.4913062}
   captureNotes: "North = +Z; UV origin = SW. One-shot explicit CommandBuffer.DrawMesh,
@@ -33,6 +33,1741 @@ MonoBehaviour:
     boundary. Initialized scenery plus selected static roots captured; verify newly
     added shop/shore roots are selected."
   sources:
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Brass sign fixing | Sphere
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.94,
+    6.67, -82.64), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Brass sign fixing | Sphere
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.94,
+    7.19, -82.64), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Brass sign fixing | Sphere
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.62,
+    6.67, -79.94), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Brass sign fixing | Sphere
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.62,
+    7.19, -79.94), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.98,
+    3.56, -88.90), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.32,
+    3.56, -88.70), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.67,
+    3.56, -88.50), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.02,
+    3.56, -88.30), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.36,
+    3.56, -88.10), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.71,
+    3.56, -87.90), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.06,
+    3.56, -87.70), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.40,
+    3.56, -87.50), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.75,
+    3.56, -87.30), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.09,
+    3.56, -87.10), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.44,
+    3.56, -86.90), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.79,
+    3.56, -86.70), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.13,
+    3.56, -86.50), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.48,
+    3.56, -86.30), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.83,
+    3.56, -86.10), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.17,
+    3.56, -85.90), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.52,
+    3.56, -85.70), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.87,
+    3.56, -85.50), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.21,
+    3.56, -85.30), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.56,
+    3.56, -85.10), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.91,
+    3.56, -84.90), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.25,
+    3.56, -84.70), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.60,
+    3.56, -84.50), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.94,
+    3.56, -84.30), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-43.29,
+    3.56, -84.10), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-43.64,
+    3.56, -83.90), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-43.98,
+    3.56, -83.70), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-44.33,
+    3.56, -83.50), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-44.68,
+    3.56, -83.30), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar floorboard | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.02,
+    3.56, -83.10), Extents: (2.65, 0.01, 4.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar foundation pile
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-32.81, 1.48, -84.84), Extents: (0.22, 1.93, 0.22)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar foundation pile
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.11, 1.48, -88.83), Extents: (0.22, 1.93, 0.22)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar foundation pile
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.41, 1.48, -92.81), Extents: (0.22, 1.93, 0.22)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar foundation pile
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.70, 1.48, -82.02), Extents: (0.22, 1.93, 0.22)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar foundation pile
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.00, 1.48, -86.00), Extents: (0.22, 1.93, 0.22)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar foundation pile
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.30, 1.48, -89.98), Extents: (0.22, 1.93, 0.22)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar foundation pile
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.59, 1.48, -79.19), Extents: (0.22, 1.93, 0.22)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar foundation pile
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.89, 1.48, -83.18), Extents: (0.22, 1.93, 0.22)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Cedar foundation pile
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-47.19, 1.48, -87.16), Extents: (0.22, 1.93, 0.22)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Continuous walkable floor
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.00, 3.40, -86.00), Extents: (7.70, 0.15, 7.33)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Door header - clear height
+    2.9m | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.50, 6.80, -81.67), Extents: (1.44, 0.35, 0.90)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Entry threshold | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.50,
+    3.57, -81.67), Extents: (1.44, 0.03, 0.92)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Exposed roof truss | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.67,
+    7.05, -88.50), Extents: (2.54, 0.05, 4.35)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Exposed roof truss | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.40,
+    7.05, -87.50), Extents: (2.54, 0.05, 4.35)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Exposed roof truss | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.13,
+    7.05, -86.50), Extents: (2.54, 0.05, 4.35)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Exposed roof truss | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.87,
+    7.05, -85.50), Extents: (2.54, 0.05, 4.35)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Exposed roof truss | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.60,
+    7.05, -84.50), Extents: (2.54, 0.05, 4.35)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Exposed roof truss | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-44.33,
+    7.05, -83.50), Extents: (2.54, 0.05, 4.35)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Front frame | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-32.27, 5.35, -84.62), Extents:
+    (0.13, 1.80, 0.15)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Front frame | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.14, 5.35, -83.54), Extents:
+    (0.13, 1.80, 0.15)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Front frame | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.04, 5.35, -82.44), Extents:
+    (0.13, 1.80, 0.15)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Front frame | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.90, 5.35, -80.79), Extents:
+    (0.13, 1.80, 0.15)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Front frame | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.80, 5.35, -79.69), Extents:
+    (0.13, 1.80, 0.15)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Front frame | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.67, 5.35, -78.62), Extents:
+    (0.13, 1.80, 0.15)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Front lower bay | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.17,
+    4.10, -83.59), Extents: (1.92, 0.55, 1.17)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Front lower bay | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.83,
+    4.10, -79.74), Extents: (1.92, 0.55, 1.17)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Front upper bay | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.17,
+    6.80, -83.59), Extents: (1.92, 0.35, 1.17)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Front upper bay | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.83,
+    6.80, -79.74), Extents: (1.92, 0.35, 1.17)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Gable end | Gable | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.80, 7.97, -89.00), Extents:
+    (2.50, 0.83, 4.33)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Gable end | Gable | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.20, 7.97, -83.00), Extents:
+    (2.50, 0.83, 4.33)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Main shop sign backing
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.35, 6.92, -81.40), Extents: (2.59, 0.43, 1.54)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Main shop sign inset |
+    Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.30, 6.92, -81.32), Extents: (2.45, 0.32, 1.42)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rafter | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.29, 7.95, -86.12), Extents:
+    (1.42, 0.89, 2.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rafter | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.03, 7.95, -85.12), Extents:
+    (1.42, 0.89, 2.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rafter | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.04, 7.95, -90.88), Extents:
+    (1.42, 0.89, 2.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rafter | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.76, 7.95, -84.12), Extents:
+    (1.42, 0.89, 2.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rafter | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.78, 7.95, -89.88), Extents:
+    (1.42, 0.89, 2.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rafter | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.49, 7.95, -83.12), Extents:
+    (1.42, 0.89, 2.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rafter | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.51, 7.95, -88.88), Extents:
+    (1.42, 0.89, 2.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rafter | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.22, 7.95, -82.12), Extents:
+    (1.42, 0.89, 2.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rafter | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.24, 7.95, -87.88), Extents:
+    (1.42, 0.89, 2.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rafter | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.96, 7.95, -81.12), Extents:
+    (1.42, 0.89, 2.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rafter | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-43.97, 7.95, -86.88), Extents:
+    (1.42, 0.89, 2.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rafter | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.71, 7.95, -85.88), Extents:
+    (1.42, 0.89, 2.41)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-32.97, 8.14, -86.77), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-33.42, 8.14, -86.51), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-33.87, 8.14, -86.25), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-34.32, 8.14, -85.99), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-34.77, 8.14, -85.73), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.22, 8.14, -85.47), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.67, 8.14, -85.21), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.82, 8.14, -91.70), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.12, 8.14, -84.95), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.27, 8.14, -91.44), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.57, 8.14, -84.69), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.72, 8.14, -91.18), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.02, 8.14, -84.43), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.17, 8.14, -90.92), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.48, 8.14, -84.17), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.62, 8.14, -90.66), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.93, 8.14, -83.91), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-38.07, 8.14, -90.40), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-38.38, 8.14, -83.65), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-38.52, 8.14, -90.14), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-38.83, 8.14, -83.39), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-38.97, 8.14, -89.88), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.28, 8.14, -83.13), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.42, 8.14, -89.62), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.73, 8.14, -82.87), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.87, 8.14, -89.36), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.18, 8.14, -82.61), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.33, 8.14, -89.10), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.63, 8.14, -82.35), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.78, 8.14, -88.84), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.08, 8.14, -82.09), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.23, 8.14, -88.58), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.53, 8.14, -81.83), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.68, 8.14, -88.32), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.98, 8.14, -81.57), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.13, 8.14, -88.06), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.43, 8.14, -81.31), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.58, 8.14, -87.80), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.88, 8.14, -81.05), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.03, 8.14, -87.54), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.33, 8.14, -80.79), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.48, 8.14, -87.28), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.78, 8.14, -80.53), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.93, 8.14, -87.02), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.38, 8.14, -86.76), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.83, 8.14, -86.50), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.28, 8.14, -86.24), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.73, 8.14, -85.98), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-46.18, 8.14, -85.72), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Raised metal roof seam
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-46.63, 8.14, -85.46), Extents: (1.44, 0.94, 2.49)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.97, 3.69, -91.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.97, 3.98, -91.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.97, 4.27, -91.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.97, 4.56, -91.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.97, 4.85, -91.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.97, 5.14, -91.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.97, 5.43, -91.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.97, 5.72, -91.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.97, 6.01, -91.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.97, 6.30, -91.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.97, 6.59, -91.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.97, 6.88, -91.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.16, 3.69, -88.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.16, 3.98, -88.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.16, 4.27, -88.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.16, 4.56, -88.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.16, 4.85, -88.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.16, 5.14, -88.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.16, 5.43, -88.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.16, 5.72, -88.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.16, 6.01, -88.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.16, 6.30, -88.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.16, 6.59, -88.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear painted lap board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.16, 6.88, -88.94), Extents: (2.58, 0.13, 1.50)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Rear wall | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.50, 5.35, -90.33), Extents:
+    (5.34, 1.80, 3.15)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Ridge cap | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.00, 9.03, -86.00), Extents:
+    (5.71, 0.06, 3.36)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side lintel | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.80, 6.80, -89.00), Extents:
+    (2.60, 0.35, 4.39)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side lintel | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.20, 6.80, -83.00), Extents:
+    (2.60, 0.35, 4.39)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side wainscot | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.80,
+    4.10, -89.00), Extents: (2.60, 0.55, 4.39)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side wainscot | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.20,
+    4.10, -83.00), Extents: (2.60, 0.55, 4.39)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side wall bay | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-33.05,
+    5.55, -85.97), Extents: (0.85, 0.90, 1.35)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side wall bay | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.55,
+    5.55, -92.03), Extents: (0.85, 0.90, 1.35)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side wall bay | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-43.45,
+    5.55, -79.97), Extents: (0.85, 0.90, 1.35)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side wall bay | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-46.95,
+    5.55, -86.03), Extents: (0.85, 0.90, 1.35)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side window mullion |
+    Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-33.80, 5.55, -87.27), Extents: (0.13, 0.93, 0.10)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side window mullion |
+    Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-34.80, 5.55, -89.00), Extents: (0.13, 0.93, 0.10)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side window mullion |
+    Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.80, 5.55, -90.73), Extents: (0.13, 0.93, 0.10)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side window mullion |
+    Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.20, 5.55, -81.27), Extents: (0.13, 0.93, 0.10)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side window mullion |
+    Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.20, 5.55, -83.00), Extents: (0.13, 0.93, 0.10)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side window mullion |
+    Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-46.20, 5.55, -84.73), Extents: (0.13, 0.93, 0.10)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side window sill | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.80,
+    4.68, -89.00), Extents: (1.27, 0.07, 1.97)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Side window sill | Cube
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.20,
+    4.68, -83.00), Extents: (1.27, 0.07, 1.97)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-33.17, 8.05, -86.65), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-33.62, 8.05, -86.39), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-34.07, 8.05, -86.13), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-34.52, 8.05, -85.87), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-34.97, 8.05, -85.61), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.42, 8.05, -85.35), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.87, 8.05, -85.09), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.02, 8.05, -91.59), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.32, 8.05, -84.83), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.47, 8.05, -91.33), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.77, 8.05, -84.57), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.92, 8.05, -91.07), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.22, 8.05, -84.31), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.37, 8.05, -90.81), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.67, 8.05, -84.05), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.82, 8.05, -90.55), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-38.12, 8.05, -83.79), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-38.27, 8.05, -90.29), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-38.58, 8.05, -83.53), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-38.72, 8.05, -90.03), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.03, 8.05, -83.27), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.17, 8.05, -89.77), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.48, 8.05, -83.01), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.62, 8.05, -89.51), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.93, 8.05, -82.75), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.07, 8.05, -89.25), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.38, 8.05, -82.49), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.52, 8.05, -88.99), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.83, 8.05, -82.23), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.97, 8.05, -88.73), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.28, 8.05, -81.97), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.43, 8.05, -88.47), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.73, 8.05, -81.71), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.88, 8.05, -88.21), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.18, 8.05, -81.45), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.33, 8.05, -87.95), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.63, 8.05, -81.19), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.78, 8.05, -87.69), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.08, 8.05, -80.93), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.23, 8.05, -87.43), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.53, 8.05, -80.67), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.68, 8.05, -87.17), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.98, 8.05, -80.41), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.13, 8.05, -86.91), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.58, 8.05, -86.65), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.03, 8.05, -86.39), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.48, 8.05, -86.13), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.93, 8.05, -85.87), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-46.38, 8.05, -85.61), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Standing seam roof panel
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-46.83, 8.05, -85.35), Extents: (1.66, 0.98, 2.62)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Window ledge | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.12,
+    4.67, -83.51), Extents: (2.00, 0.06, 1.28)'
+  - 'Mesh BeachTackleShop/01 Architecture - editable shell/Window ledge | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.78,
+    4.67, -79.66), Extents: (2.00, 0.06, 1.28)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Cash register
+    base | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.04, 4.87, -87.46), Extents: (0.40, 0.10, 0.37)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Cork rod handle
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.16, 4.11, -86.15), Extents: (0.06, 0.29, 0.05)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Cork rod handle
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.46, 4.11, -86.68), Extents: (0.06, 0.29, 0.05)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Cork rod handle
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.77, 4.11, -87.21), Extents: (0.06, 0.29, 0.05)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Cork rod handle
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.07, 4.11, -87.74), Extents: (0.06, 0.29, 0.05)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Cork rod handle
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.38, 4.11, -88.27), Extents: (0.06, 0.29, 0.05)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Cork rod handle
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.68, 4.11, -88.80), Extents: (0.06, 0.29, 0.05)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-38.65, 4.09, -89.35), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-38.98, 4.09, -89.16), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.31, 4.09, -88.97), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.64, 4.09, -88.78), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.97, 4.09, -88.59), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.30, 4.09, -88.40), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.63, 4.09, -88.21), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.96, 4.09, -88.02), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.29, 4.09, -87.83), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.61, 4.09, -87.64), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.94, 4.09, -87.45), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.27, 4.09, -87.26), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.60, 4.09, -87.07), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.93, 4.09, -86.88), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.26, 4.09, -86.69), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter fluting
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.59, 4.09, -86.50), Extents: (0.03, 0.50, 0.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Counter kick
+    board | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.11, 3.65, -87.91), Extents: (2.62, 0.07, 1.53)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Countertop |
+    Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.36, 4.70, -88.36), Extents: (3.03, 0.07, 2.09)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Crate handle
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.44, 4.17, -87.36), Extents: (0.13, 0.06, 0.18)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Crate handle
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.44, 4.85, -87.36), Extents: (0.13, 0.06, 0.18)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Crate handle
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.55, 4.17, -86.72), Extents: (0.13, 0.06, 0.18)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Crate handle
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.55, 4.85, -86.72), Extents: (0.13, 0.06, 0.18)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Display rod
+    blank | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.21, 5.11, -86.17), Extents: (0.08, 1.29, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Display rod
+    blank | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.51, 5.11, -86.70), Extents: (0.08, 1.29, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Display rod
+    blank | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.82, 5.11, -87.23), Extents: (0.08, 1.29, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Display rod
+    blank | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.12, 5.11, -87.75), Extents: (0.08, 1.29, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Display rod
+    blank | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.43, 5.11, -88.28), Extents: (0.08, 1.29, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Display rod
+    blank | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.73, 5.11, -88.81), Extents: (0.08, 1.29, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Fish box display
+    plinth | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.99, 3.71, -87.04), Extents: (0.98, 0.16, 1.03)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Fish box lid
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.99, 4.46, -87.04), Extents: (0.91, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Fish box lid
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.99, 5.14, -87.04), Extents: (0.91, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Float stem |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-34.37, 4.87, -84.81), Extents: (0.01, 0.18, 0.01)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Float stem |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-34.78, 4.87, -84.57), Extents: (0.01, 0.18, 0.01)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Float stem |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.20, 4.87, -84.33), Extents: (0.01, 0.18, 0.01)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Float stem |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.95, 4.87, -81.01), Extents: (0.01, 0.18, 0.01)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Float stem |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.37, 4.87, -80.77), Extents: (0.01, 0.18, 0.01)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Float stem |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.78, 4.87, -80.53), Extents: (0.01, 0.18, 0.01)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Insulated fish
+    box | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.99, 4.13, -87.04), Extents: (0.87, 0.29, 0.91)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Insulated fish
+    box | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.99, 4.81, -87.04), Extents: (0.87, 0.29, 0.91)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Line spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.71, 4.17, -81.84), Extents: (0.09, 0.12, 0.12)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Line spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.10, 4.17, -82.51), Extents: (0.09, 0.12, 0.12)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Line spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.49, 4.17, -83.19), Extents: (0.09, 0.12, 0.12)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Line spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.88, 4.17, -83.86), Extents: (0.09, 0.12, 0.12)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Line spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.27, 4.17, -84.54), Extents: (0.09, 0.12, 0.12)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Packaged line
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.91, 4.17, -81.72), Extents: (0.29, 0.20, 0.31)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Packaged line
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.30, 4.17, -82.40), Extents: (0.29, 0.20, 0.31)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Packaged line
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.69, 4.17, -83.07), Extents: (0.29, 0.20, 0.31)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Packaged line
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.08, 4.17, -83.75), Extents: (0.29, 0.20, 0.31)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Packaged line
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.47, 4.17, -84.42), Extents: (0.29, 0.20, 0.31)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Painted fishing
+    float | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-34.37, 4.60, -84.81), Extents: (0.19, 0.23, 0.19)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Painted fishing
+    float | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-34.78, 4.60, -84.57), Extents: (0.19, 0.23, 0.19)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Painted fishing
+    float | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.20, 4.60, -84.33), Extents: (0.19, 0.23, 0.19)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Painted fishing
+    float | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.95, 4.60, -81.01), Extents: (0.19, 0.23, 0.19)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Painted fishing
+    float | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.37, 4.60, -80.77), Extents: (0.19, 0.23, 0.19)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Painted fishing
+    float | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.78, 4.60, -80.53), Extents: (0.19, 0.23, 0.19)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Pendant cord
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.47, 7.30, -87.81), Extents: (0.01, 0.75, 0.01)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Pendant cord
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.15, 7.30, -86.26), Extents: (0.01, 0.75, 0.01)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Pendant cord
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.83, 7.30, -84.71), Extents: (0.01, 0.75, 0.01)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Pendant shade
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.47, 6.52, -87.81), Extents: (0.48, 0.09, 0.48)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Pendant shade
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.15, 6.52, -86.26), Extents: (0.48, 0.09, 0.48)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Pendant shade
+    | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.83, 6.52, -84.71), Extents: (0.48, 0.09, 0.48)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel crank |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.75, 4.79, -81.87), Extents: (0.02, 0.09, 0.07)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel crank |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.75, 5.49, -81.87), Extents: (0.02, 0.09, 0.07)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel crank |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.14, 4.79, -82.55), Extents: (0.02, 0.09, 0.07)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel crank |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.14, 5.49, -82.55), Extents: (0.02, 0.09, 0.07)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel crank |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.53, 4.79, -83.22), Extents: (0.02, 0.09, 0.07)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel crank |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.53, 5.49, -83.22), Extents: (0.02, 0.09, 0.07)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel crank |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.92, 4.79, -83.90), Extents: (0.02, 0.09, 0.07)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel crank |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.92, 5.49, -83.90), Extents: (0.02, 0.09, 0.07)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel crank |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.31, 4.79, -84.57), Extents: (0.02, 0.09, 0.07)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel crank |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.31, 5.49, -84.57), Extents: (0.02, 0.09, 0.07)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.96, 4.87, -81.69), Extents: (0.24, 0.18, 0.24)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.96, 5.57, -81.69), Extents: (0.24, 0.18, 0.24)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.35, 4.87, -82.37), Extents: (0.24, 0.18, 0.24)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.35, 5.57, -82.37), Extents: (0.24, 0.18, 0.24)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.74, 4.87, -83.04), Extents: (0.24, 0.18, 0.24)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.74, 5.57, -83.04), Extents: (0.24, 0.18, 0.24)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.13, 4.87, -83.72), Extents: (0.24, 0.18, 0.24)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.13, 5.57, -83.72), Extents: (0.24, 0.18, 0.24)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.52, 4.87, -84.39), Extents: (0.24, 0.18, 0.24)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Reel spool |
+    Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.52, 5.57, -84.39), Extents: (0.24, 0.18, 0.24)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Register screen
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.08, 5.20, -87.54), Extents: (0.25, 0.18, 0.19)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.30, 4.65, -86.12), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.30, 5.15, -86.12), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.30, 5.65, -86.12), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.30, 6.15, -86.12), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.60, 4.65, -86.64), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.60, 5.15, -86.64), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.60, 5.65, -86.64), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.60, 6.15, -86.64), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.91, 4.65, -87.17), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.91, 5.15, -87.17), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.91, 5.65, -87.17), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-35.91, 6.15, -87.17), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.21, 4.65, -87.70), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.21, 5.15, -87.70), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.21, 5.65, -87.70), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.21, 6.15, -87.70), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.52, 4.65, -88.23), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.52, 5.15, -88.23), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.52, 5.65, -88.23), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.52, 6.15, -88.23), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.82, 4.65, -88.76), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.82, 5.15, -88.76), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.82, 5.65, -88.76), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod line guide
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.82, 6.15, -88.76), Extents: (0.04, 0.03, 0.04)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod reel | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.27,
+    4.39, -86.07), Extents: (0.13, 0.10, 0.13)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod reel | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.58,
+    4.39, -86.60), Extents: (0.13, 0.10, 0.13)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod reel | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.88,
+    4.39, -87.13), Extents: (0.13, 0.10, 0.13)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod reel | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.19,
+    4.39, -87.66), Extents: (0.13, 0.10, 0.13)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod reel | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.49,
+    4.39, -88.19), Extents: (0.13, 0.10, 0.13)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Rod reel | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.80,
+    4.39, -88.71), Extents: (0.13, 0.10, 0.13)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Service counter
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.38, 4.09, -88.38), Extents: (2.85, 0.54, 1.93)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Shelf board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.81, 3.91, -83.11), Extents: (1.46, 0.04, 2.09)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Shelf board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.81, 4.61, -83.11), Extents: (1.46, 0.04, 2.09)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Shelf board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.81, 5.31, -83.11), Extents: (1.46, 0.04, 2.09)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Shelf board
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-43.81, 6.01, -83.11), Extents: (1.46, 0.04, 2.09)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Shelf upright
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.72, 4.80, -81.31), Extents: (0.39, 1.25, 0.26)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Shelf upright
+    | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.82, 4.80, -84.95), Extents: (0.39, 1.25, 0.26)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Tackle shelf
+    backing | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.07, 4.80, -82.96), Extents: (1.16, 1.25, 1.91)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Warm glass diffuser
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.47, 6.38, -87.81), Extents: (0.27, 0.08, 0.27)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Warm glass diffuser
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-40.15, 6.38, -86.26), Extents: (0.27, 0.08, 0.27)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Warm glass diffuser
+    | Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.83, 6.38, -84.71), Extents: (0.27, 0.08, 0.27)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Window display
+    bench | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-34.78, 3.94, -84.57), Extents: (1.34, 0.39, 1.02)'
+  - 'Mesh BeachTackleShop/02 Interior - fixtures and tackle displays/Window display
+    bench | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.37, 3.94, -80.77), Extents: (1.34, 0.39, 1.02)'
+  - 'Mesh BeachTackleShop/03 Reserved NPC spaces - empty markers only/Clerk standing
+    area 1 - 1.4m square/Cashier/FantasyGirl LOD0 | FantasyGirl_LOD0 | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.79, 4.54, -90.16), Extents:
+    (0.48, 0.99, 0.43)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-30.00, 0.77, -68.68), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-30.19, 0.85, -69.01), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-30.38, 0.93, -69.34), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-30.57, 1.01, -69.67), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-30.76, 1.09, -70.00), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-30.96, 1.18, -70.34), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-31.15, 1.26, -70.67), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-31.34, 1.34, -71.00), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-31.53, 1.42, -71.33), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-31.72, 1.51, -71.66), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-31.91, 1.59, -71.99), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-32.10, 1.67, -72.32), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-32.29, 1.75, -72.65), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-32.49, 1.83, -72.98), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-32.68, 1.92, -73.32), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-32.87, 2.00, -73.65), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-33.06, 2.08, -73.98), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-33.25, 2.16, -74.31), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-33.44, 2.25, -74.64), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-33.63, 2.33, -74.97), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-33.82, 2.41, -75.30), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.01, 2.49, -75.63), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.21, 2.57, -75.96), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.40, 2.66, -76.30), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.59, 2.74, -76.63), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.78, 2.82, -76.96), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.97, 2.90, -77.29), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.16, 2.99, -77.62), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.35, 3.07, -77.95), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.54, 3.15, -78.28), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.74, 3.23, -78.61), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.93, 3.31, -78.94), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.12, 3.40, -79.28), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.31, 3.48, -79.61), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.50, 3.56, -79.94), Extents:
+    (1.47, 0.05, 0.95)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Awning teal stripe | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-32.44, 6.51, -83.50), Extents:
+    (0.71, 0.18, 1.03)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Awning teal stripe | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-33.23, 6.51, -83.04), Extents:
+    (0.71, 0.18, 1.03)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Awning teal stripe | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.03, 6.51, -82.58), Extents:
+    (0.71, 0.18, 1.03)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Awning teal stripe | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.83, 6.51, -82.12), Extents:
+    (0.71, 0.18, 1.03)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Awning teal stripe | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.62, 6.51, -81.66), Extents:
+    (0.71, 0.18, 1.03)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Awning teal stripe | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.42, 6.51, -81.20), Extents:
+    (0.71, 0.18, 1.03)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Awning teal stripe | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.63, 6.51, -80.50), Extents:
+    (0.71, 0.18, 1.03)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Awning teal stripe | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.43, 6.51, -80.04), Extents:
+    (0.71, 0.18, 1.03)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Awning teal stripe | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.22, 6.51, -79.58), Extents:
+    (0.71, 0.18, 1.03)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Awning teal stripe | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.02, 6.51, -79.12), Extents:
+    (0.71, 0.18, 1.03)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Awning teal stripe | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.82, 6.51, -78.66), Extents:
+    (0.71, 0.18, 1.03)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Awning teal stripe | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.61, 6.51, -78.20), Extents:
+    (0.71, 0.18, 1.03)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Bench leg | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-32.84, 3.77, -83.20), Extents:
+    (0.16, 0.22, 0.22)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Bench leg | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.23, 3.77, -82.40), Extents:
+    (0.16, 0.22, 0.22)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Bench leg | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.77, 3.77, -79.20), Extents:
+    (0.16, 0.22, 0.22)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Bench leg | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.16, 3.77, -78.40), Extents:
+    (0.16, 0.22, 0.22)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Boardwalk handrail | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-31.91,
+    3.05, -75.08), Extents: (3.27, 1.42, 5.64)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Boardwalk handrail | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.59,
+    3.05, -73.53), Extents: (3.27, 1.42, 5.64)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Boardwalk pile | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-28.66, -0.30, -69.45),
+    Extents: (0.05, 1.95, 0.05)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Boardwalk pile | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-30.28, 0.40, -72.27), Extents:
+    (0.05, 1.95, 0.05)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Boardwalk pile | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-31.34, -0.30, -67.90),
+    Extents: (0.05, 1.95, 0.05)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Boardwalk pile | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-31.91, 1.10, -75.08), Extents:
+    (0.05, 1.95, 0.05)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Boardwalk pile | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-32.97, 0.40, -70.72), Extents:
+    (0.05, 1.95, 0.05)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Boardwalk pile | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-33.53, 1.80, -77.90), Extents:
+    (0.05, 1.95, 0.05)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Boardwalk pile | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.59, 1.10, -73.53), Extents:
+    (0.05, 1.95, 0.05)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Boardwalk pile | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.16, 2.50, -80.71), Extents:
+    (0.05, 1.95, 0.05)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Boardwalk pile | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.22, 1.80, -76.35), Extents:
+    (0.05, 1.95, 0.05)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Boardwalk pile | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.84, 2.50, -79.16), Extents:
+    (0.05, 1.95, 0.05)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Canvas awning | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.43, 6.47, -82.35), Extents:
+    (3.13, 0.20, 2.42)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Canvas awning | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.62, 6.47, -79.35), Extents:
+    (3.13, 0.20, 2.42)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Front porch floor | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.00, 3.40, -80.80), Extents:
+    (5.70, 0.15, 3.87)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Landing deck planks | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-27.28,
+    0.77, -68.52), Extents: (1.01, 0.01, 1.55)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Landing deck planks | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-27.63,
+    0.77, -68.31), Extents: (1.01, 0.01, 1.55)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Landing deck planks | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-27.99,
+    0.77, -68.11), Extents: (1.01, 0.01, 1.55)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Landing deck planks | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-28.35,
+    0.77, -67.90), Extents: (1.01, 0.01, 1.55)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Landing deck planks | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-28.71,
+    0.77, -67.69), Extents: (1.01, 0.01, 1.55)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Landing deck planks | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-29.07,
+    0.77, -67.48), Extents: (1.01, 0.01, 1.55)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Landing deck planks | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-29.43,
+    0.77, -67.28), Extents: (1.01, 0.01, 1.55)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Landing deck planks | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-29.79,
+    0.77, -67.07), Extents: (1.01, 0.01, 1.55)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Landing deck planks | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-30.15,
+    0.77, -66.86), Extents: (1.01, 0.01, 1.55)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Landing deck planks | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-30.51,
+    0.77, -66.65), Extents: (1.01, 0.01, 1.55)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Landing deck planks | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-30.87,
+    0.77, -66.45), Extents: (1.01, 0.01, 1.55)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Landing deck planks | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-31.23,
+    0.77, -66.24), Extents: (1.01, 0.01, 1.55)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Mooring bollard | Cylinder |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-26.83,
+    0.80, -67.39), Extents: (0.09, 0.75, 0.09)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Mooring bollard | Cylinder |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-30.47,
+    0.80, -65.29), Extents: (0.09, 0.75, 0.09)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Mooring brass cap | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-26.83,
+    1.60, -67.39), Extents: (0.23, 0.06, 0.23)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Mooring brass cap | Cylinder
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-30.47,
+    1.60, -65.29), Extents: (0.23, 0.06, 0.23)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch bench seat | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-33.54, 3.99, -82.80), Extents:
+    (1.05, 0.06, 0.76)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch bench seat | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.46, 3.99, -78.80), Extents:
+    (1.05, 0.06, 0.76)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-31.98, 3.56, -83.70), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-32.32, 3.56, -83.50), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-32.67, 3.56, -83.30), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-33.02, 3.56, -83.10), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-33.36, 3.56, -82.90), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-33.71, 3.56, -82.70), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.06, 3.56, -82.50), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.40, 3.56, -82.30), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.75, 3.56, -82.10), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.09, 3.56, -81.90), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.44, 3.56, -81.70), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-35.79, 3.56, -81.50), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.13, 3.56, -81.30), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.48, 3.56, -81.10), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.83, 3.56, -80.90), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.17, 3.56, -80.70), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.52, 3.56, -80.50), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.87, 3.56, -80.30), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.21, 3.56, -80.10), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.56, 3.56, -79.90), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.91, 3.56, -79.70), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.25, 3.56, -79.50), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.60, 3.56, -79.30), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.94, 3.56, -79.10), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.29, 3.56, -78.90), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.64, 3.56, -78.70), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.98, 3.56, -78.50), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.33, 3.56, -78.30), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.68, 3.56, -78.10), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch decking | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.02, 3.56, -77.90), Extents:
+    (0.65, 0.01, 0.94)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch post | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-31.83, 4.60, -83.04), Extents:
+    (0.08, 2.05, 0.08)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Porch post | Cylinder | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.52, 4.60, -77.44), Extents:
+    (0.08, 2.05, 0.08)'
+  - 'Mesh BeachTackleShop/04 Porch and beach access/Shore landing deck | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-29.25, 0.60, -67.38), Extents:
+    (3.02, 0.15, 2.72)'
+  - 'Mesh BeachTackleShop/Shop foundation | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-40.00, 1.00, -86.00), Extents: (7.70,
+    2.40, 7.33)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery | Stocked tackle, tools and marine
+    supplies | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.58, 5.10, -85.26), Extents: (7.40, 1.55, 7.52)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Binoculars/Binoculars(Clone) | GEO-Binoculars
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.25,
+    4.71, -85.86), Extents: (0.23, 0.07, 0.22)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Binoculars/Binoculars(Clone) | GEO-Binoculars
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.97,
+    4.14, -86.00), Extents: (0.20, 0.07, 0.21)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Binoculars/Binoculars(Clone) | GEO-Binoculars
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.45,
+    5.28, -86.83), Extents: (0.21, 0.07, 0.20)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Compass/Compass(Clone) | GEO-Compass
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.25,
+    4.09, -85.86), Extents: (0.17, 0.02, 0.19)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Compass/Compass(Clone) | GEO-Compass
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.73,
+    5.23, -86.69), Extents: (0.21, 0.02, 0.22)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Compass/Compass(Clone) | GEO-Compass
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.45,
+    4.66, -86.83), Extents: (0.16, 0.02, 0.19)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Compass/Compass(Clone) | GEO-Compass
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.45,
+    5.41, -92.03), Extents: (0.15, 0.02, 0.15)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Compass/Compass(Clone) | GEO-Compass
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.69,
+    4.86, -91.89), Extents: (0.15, 0.02, 0.15)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Compass/Compass(Clone) | GEO-Compass
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.93,
+    4.31, -91.75), Extents: (0.15, 0.02, 0.14)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Compass/Compass(Clone) | GEO-Compass
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.03,
+    5.41, -88.23), Extents: (0.15, 0.02, 0.15)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Compass/Compass(Clone) | GEO-Compass
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.27,
+    4.86, -88.09), Extents: (0.15, 0.02, 0.15)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Compass/Compass(Clone) | GEO-Compass
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.52,
+    4.31, -87.95), Extents: (0.15, 0.02, 0.14)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Lantern/Lantern(Clone) | GEO-Lantern
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.49,
+    4.24, -86.27), Extents: (0.13, 0.17, 0.13)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Lantern/Lantern(Clone) | GEO-Lantern
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.97,
+    5.38, -87.10), Extents: (0.10, 0.17, 0.10)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Lantern/Lantern(Clone) | GEO-Lantern
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.69,
+    4.81, -87.24), Extents: (0.13, 0.17, 0.13)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Lantern/Lantern(Clone) | GEO-Lantern
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.93,
+    5.52, -91.75), Extents: (0.09, 0.12, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Lantern/Lantern(Clone) | GEO-Lantern
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.18,
+    4.97, -91.61), Extents: (0.08, 0.12, 0.08)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Lantern/Lantern(Clone) | GEO-Lantern
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.42,
+    4.42, -91.47), Extents: (0.07, 0.12, 0.07)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Lantern/Lantern(Clone) | GEO-Lantern
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.52,
+    5.52, -87.95), Extents: (0.09, 0.12, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Lantern/Lantern(Clone) | GEO-Lantern
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.76,
+    4.97, -87.81), Extents: (0.08, 0.12, 0.08)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Lantern/Lantern(Clone) | GEO-Lantern
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-46.00,
+    4.42, -87.67), Extents: (0.07, 0.12, 0.07)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/RopeCoil/RopeCoil(Clone) | GEO-RopeCoil
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.73,
+    4.10, -85.58), Extents: (0.21, 0.03, 0.19)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/RopeCoil/RopeCoil(Clone) | GEO-RopeCoil
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.21,
+    4.67, -87.52), Extents: (0.19, 0.03, 0.16)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/RopeCoil/RopeCoil(Clone) | GEO-RopeCoil
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.21,
+    5.24, -86.41), Extents: (0.20, 0.03, 0.17)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/RopeCoil/RopeCoil(Clone) | GEO-RopeCoil
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.21,
+    4.32, -92.17), Extents: (0.15, 0.02, 0.14)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/RopeCoil/RopeCoil(Clone) | GEO-RopeCoil
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.42,
+    5.42, -91.47), Extents: (0.09, 0.02, 0.12)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/RopeCoil/RopeCoil(Clone) | GEO-RopeCoil
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.66,
+    4.87, -91.33), Extents: (0.11, 0.02, 0.14)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/RopeCoil/RopeCoil(Clone) | GEO-RopeCoil
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-44.79,
+    4.32, -88.37), Extents: (0.15, 0.02, 0.14)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/RopeCoil/RopeCoil(Clone) | GEO-RopeCoil
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-46.00,
+    5.42, -87.67), Extents: (0.09, 0.02, 0.12)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/RopeCoil/RopeCoil(Clone) | GEO-RopeCoil
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-46.24,
+    4.87, -87.53), Extents: (0.11, 0.02, 0.14)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/StarPrism/StarPrism(Clone) | GEO-StarPrism
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.97,
+    4.81, -87.10), Extents: (0.13, 0.17, 0.13)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/StarPrism/StarPrism(Clone) | GEO-StarPrism
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.97,
+    5.38, -86.00), Extents: (0.13, 0.17, 0.13)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/StarPrism/StarPrism(Clone) | GEO-StarPrism
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.69,
+    4.24, -87.24), Extents: (0.10, 0.17, 0.10)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Telescope/Telescope(Clone) | GEO-Telescope
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-34.23,
+    4.36, -85.11), Extents: (0.28, 0.29, 0.35)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Telescope/Telescope(Clone) | GEO-Telescope
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.73,
+    4.22, -86.69), Extents: (0.17, 0.15, 0.08)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Telescope/Telescope(Clone) | GEO-Telescope
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.73,
+    4.79, -85.58), Extents: (0.18, 0.15, 0.15)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/Telescope/Telescope(Clone) | GEO-Telescope
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.21,
+    5.36, -87.52), Extents: (0.17, 0.15, 0.17)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/WindBell/WindBell(Clone) | GEO-WindBell
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.49,
+    4.81, -86.27), Extents: (0.09, 0.17, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/WindBell/WindBell(Clone) | GEO-WindBell
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.21,
+    4.24, -86.41), Extents: (0.09, 0.17, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/WindBell/WindBell(Clone) | GEO-WindBell
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-37.69,
+    5.38, -87.24), Extents: (0.11, 0.17, 0.11)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/apple/apple(Clone) | GEO-apple |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.69,
+    5.51, -91.89), Extents: (0.17, 0.12, 0.17)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/apple/apple(Clone) | GEO-apple |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.93,
+    4.96, -91.75), Extents: (0.16, 0.12, 0.16)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/apple/apple(Clone) | GEO-apple |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.18,
+    4.41, -91.61), Extents: (0.14, 0.12, 0.14)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/apple/apple(Clone) | GEO-apple |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.75,
+    4.23, -82.68), Extents: (0.23, 0.17, 0.23)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/apple/apple(Clone) | GEO-apple |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.23,
+    4.80, -84.62), Extents: (0.20, 0.17, 0.20)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/apple/apple(Clone) | GEO-apple |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.23,
+    5.37, -83.51), Extents: (0.21, 0.17, 0.21)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/apple/apple(Clone) | GEO-apple |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.27,
+    5.51, -88.09), Extents: (0.17, 0.12, 0.17)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/apple/apple(Clone) | GEO-apple |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.52,
+    4.96, -87.95), Extents: (0.16, 0.12, 0.16)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/apple/apple(Clone) | GEO-apple |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.76,
+    4.41, -87.81), Extents: (0.14, 0.12, 0.14)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bag/bag(Clone) | GEO-bag | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.21, 5.52, -92.17), Extents:
+    (0.08, 0.12, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bag/bag(Clone) | GEO-bag | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.45, 4.97, -92.03), Extents:
+    (0.09, 0.12, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bag/bag(Clone) | GEO-bag | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-38.69, 4.42, -91.89), Extents:
+    (0.09, 0.12, 0.08)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bag/bag(Clone) | GEO-bag | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.51, 4.81, -83.37), Extents:
+    (0.13, 0.17, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bag/bag(Clone) | GEO-bag | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.23, 4.24, -83.51), Extents:
+    (0.13, 0.17, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bag/bag(Clone) | GEO-bag | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.71, 5.38, -84.34), Extents:
+    (0.13, 0.17, 0.11)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bag/bag(Clone) | GEO-bag | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-44.79, 5.52, -88.37), Extents:
+    (0.08, 0.12, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bag/bag(Clone) | GEO-bag | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.03, 4.97, -88.23), Extents:
+    (0.09, 0.12, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bag/bag(Clone) | GEO-bag | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.27, 4.42, -88.09), Extents:
+    (0.09, 0.12, 0.08)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/banana/banana(Clone) | GEO-banana
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.51,
+    4.12, -83.37), Extents: (0.15, 0.05, 0.14)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/banana/banana(Clone) | GEO-banana
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.99,
+    5.26, -84.20), Extents: (0.05, 0.05, 0.17)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/banana/banana(Clone) | GEO-banana
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.71,
+    4.69, -84.34), Extents: (0.12, 0.05, 0.16)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bottle-large/bottle-large(Clone)
+    | GEO-bottle-large | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-38.21, 4.97, -92.17), Extents: (0.09, 0.12, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bottle-large/bottle-large(Clone)
+    | GEO-bottle-large | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-38.45, 4.42, -92.03), Extents: (0.09, 0.12, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bottle-large/bottle-large(Clone)
+    | GEO-bottle-large | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-39.66, 5.52, -91.33), Extents: (0.07, 0.12, 0.07)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bottle-large/bottle-large(Clone)
+    | GEO-bottle-large | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-44.79, 4.97, -88.37), Extents: (0.09, 0.12, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bottle-large/bottle-large(Clone)
+    | GEO-bottle-large | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-45.03, 4.42, -88.23), Extents: (0.09, 0.12, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bottle-large/bottle-large(Clone)
+    | GEO-bottle-large | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-46.24, 5.52, -87.53), Extents: (0.07, 0.12, 0.07)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bottle-oil/bottle-oil(Clone) | GEO-bottle-oil
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.27,
+    5.38, -82.96), Extents: (0.05, 0.17, 0.05)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bottle-oil/bottle-oil(Clone) | GEO-bottle-oil
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.99,
+    4.24, -84.20), Extents: (0.05, 0.17, 0.05)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bottle-oil/bottle-oil(Clone) | GEO-bottle-oil
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.99,
+    4.81, -83.10), Extents: (0.04, 0.17, 0.04)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bottle/bottle(Clone) | GEO-bottle
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.25,
+    5.38, -85.86), Extents: (0.09, 0.17, 0.09)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bottle/bottle(Clone) | GEO-bottle
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.97,
+    4.24, -87.10), Extents: (0.10, 0.17, 0.10)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bottle/bottle(Clone) | GEO-bottle
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-36.97,
+    4.81, -86.00), Extents: (0.08, 0.17, 0.08)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bread/bread(Clone) | GEO-bread |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.18,
+    5.41, -91.61), Extents: (0.12, 0.01, 0.14)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bread/bread(Clone) | GEO-bread |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.42,
+    4.86, -91.47), Extents: (0.10, 0.01, 0.12)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bread/bread(Clone) | GEO-bread |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-39.66,
+    4.31, -91.33), Extents: (0.12, 0.01, 0.14)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bread/bread(Clone) | GEO-bread |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.27,
+    4.08, -82.96), Extents: (0.19, 0.02, 0.17)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bread/bread(Clone) | GEO-bread |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.75,
+    5.22, -83.79), Extents: (0.22, 0.02, 0.21)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bread/bread(Clone) | GEO-bread |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.47,
+    4.65, -83.93), Extents: (0.19, 0.02, 0.16)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bread/bread(Clone) | GEO-bread |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-45.76,
+    5.41, -87.81), Extents: (0.12, 0.01, 0.14)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bread/bread(Clone) | GEO-bread |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-46.00,
+    4.86, -87.67), Extents: (0.10, 0.01, 0.12)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/bread/bread(Clone) | GEO-bread |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-46.24,
+    4.31, -87.53), Extents: (0.12, 0.01, 0.14)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/cheese/cheese(Clone) | GEO-cheese
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.75,
+    4.12, -83.79), Extents: (0.18, 0.05, 0.18)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/cheese/cheese(Clone) | GEO-cheese
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.75,
+    4.69, -82.68), Extents: (0.23, 0.05, 0.23)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/cheese/cheese(Clone) | GEO-cheese
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.23,
+    5.26, -84.62), Extents: (0.24, 0.05, 0.24)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/chest/chest(Clone) | GEO-chest |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.12,
+    4.45, -80.56), Extents: (0.48, 0.37, 0.49)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/crate-bottles/crate-bottles(Clone)
+    | GEO-crate-bottles | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.99, 4.77, -84.20), Extents: (0.20, 0.14, 0.21)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/crate-bottles/crate-bottles(Clone)
+    | GEO-crate-bottles | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-41.99, 5.34, -83.10), Extents: (0.22, 0.14, 0.21)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/crate-bottles/crate-bottles(Clone)
+    | GEO-crate-bottles | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-42.71, 4.20, -84.34), Extents: (0.14, 0.14, 0.17)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/fish/fish(Clone) | GEO-fish | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.27, 4.72, -82.96), Extents:
+    (0.15, 0.09, 0.17)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/fish/fish(Clone) | GEO-fish | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.99, 4.15, -83.10), Extents:
+    (0.18, 0.09, 0.12)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/fish/fish(Clone) | GEO-fish | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.47, 5.29, -83.93), Extents:
+    (0.12, 0.09, 0.18)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/mug/mug(Clone) | GEO-mug | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.75, 4.77, -83.79), Extents:
+    (0.20, 0.14, 0.21)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/mug/mug(Clone) | GEO-mug | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.75, 5.34, -82.68), Extents:
+    (0.14, 0.14, 0.17)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/mug/mug(Clone) | GEO-mug | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.47, 4.20, -83.93), Extents:
+    (0.22, 0.14, 0.21)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/pot/pot(Clone) | GEO-pot | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-41.51, 5.28, -83.37), Extents:
+    (0.20, 0.07, 0.18)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/pot/pot(Clone) | GEO-pot | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.23, 4.14, -84.62), Extents:
+    (0.18, 0.07, 0.20)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/pot/pot(Clone) | GEO-pot | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-42.23, 4.71, -83.51), Extents:
+    (0.22, 0.07, 0.22)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/tool-paddle/tool-paddle(Clone) |
+    GEO-tool-paddle | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.73, 4.81, -86.69), Extents: (0.03, 0.17, 0.05)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/tool-paddle/tool-paddle(Clone) |
+    GEO-tool-paddle | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.73, 5.38, -85.58), Extents: (0.02, 0.17, 0.05)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/tool-paddle/tool-paddle(Clone) |
+    GEO-tool-paddle | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.45, 4.24, -86.83), Extents: (0.05, 0.17, 0.04)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/tool-shovel/tool-shovel(Clone) |
+    GEO-tool-shovel | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-36.49, 5.38, -86.27), Extents: (0.03, 0.17, 0.05)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/tool-shovel/tool-shovel(Clone) |
+    GEO-tool-shovel | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.21, 4.24, -87.52), Extents: (0.05, 0.17, 0.03)'
+  - 'Mesh BeachTackleShop/V018 stocked chandlery/tool-shovel/tool-shovel(Clone) |
+    GEO-tool-shovel | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-37.21, 4.81, -86.41), Extents: (0.05, 0.17, 0.05)'
   - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
     opaqueDraws=1 rendererBounds=Center: (-178.68, 1.50, -11.00), Extents: (0.04,
     0.45, 0.04)'
@@ -923,7 +2658,7 @@ MonoBehaviour:
     rendererBounds=Center: (118.24, 7.53, -66.63), Extents: (6.59, 12.61, 4.65)'
   - 'Mesh Island Level/Environment Objects/Props_Floating/KayakRoot (2)/Geo_Props_Kayak
     (4) | Geo_Props_Kayak | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-83.76, -0.16, -41.82), Extents: (0.77, 0.42, 2.09)'
+    (-83.76, -0.16, -41.82), Extents: (0.77, 0.42, 2.08)'
   - 'Mesh Island Level/Environment Objects/Props_Floating/KayakRoot/Geo_Props_Kayak
     (4) | Geo_Props_Kayak | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-84.71, -0.16, -44.55), Extents: (0.83, 0.43, 2.10)'

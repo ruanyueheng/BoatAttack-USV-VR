@@ -38,6 +38,7 @@ namespace BoatAttack.Editor
                 || controller.GetComponent<FishingScenery>() == null)
                 throw new InvalidOperationException("Enter the initialized fishing scene first. Do not call Generate. For base-only geometry use the separate base menu.");
             var runtimeRoots = new List<Transform>();
+            if(controller.ShopStaticRoot!=null)runtimeRoots.Add(controller.ShopStaticRoot);
             if(controller.Home!=null)
             {
                 runtimeRoots.Add(controller.Home.House);
