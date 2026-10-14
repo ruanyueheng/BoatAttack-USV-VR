@@ -30,6 +30,21 @@ namespace BoatAttack.EditorTools
             Check(pick!=null && pick.bounds.max.y>.33f && pick.bounds.min.y<-.25f && pick.bounds.size.x>.54f && pick.bounds.size.x<.65f,"Imported pick retains exact metre grip and contact axes");
             foreach(FieldItem item in Enum.GetValues(typeof(FieldItem)))
             {
+                // Appended hunting/forge items use the supplied textured rifle and
+                // code-native pictograms, not the v0.23 photographed asset catalog.
+                if((int)item>=(int)FieldItem.HuntingRifle)
+                {
+                    Check(FishingItemIcons.Get(item)!=null,"Pictogram for appended hunting/forge item "+item);
+                    if(item==FieldItem.HuntingRifle)
+                        Check(c.RifleHunting!=null && c.RifleHunting.Rifle!=null,"Supplied textured rifle resolves outside vertex-colour catalog");
+                    if(item==FieldItem.Forge)
+                    {
+                        var forgeMesh=FishingWorkshopArt.Make(item);
+                        Check(forgeMesh.vertexCount>20 && forgeMesh.colors32.Length==forgeMesh.vertexCount,"Code-native forge geometry and palette");
+                        Object.Destroy(forgeMesh);
+                    }
+                    continue;
+                }
                 if(item==FieldItem.Empty)continue;var mesh=FishingV023Art.ItemMesh(item);var photo=FishingV023Art.Icon(item);
                 Check(mesh!=null && mesh.vertexCount>20 && mesh.colors32.Length==mesh.vertexCount,"Real vertex-colour item geometry "+item);
                 Check(photo!=null && photo.width==256 && photo.height==256,"Matching actual model photograph "+item);

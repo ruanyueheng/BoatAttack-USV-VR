@@ -16,3 +16,7 @@
 自己制作的锻造台可放进快捷栏，岸上按 F 放置，空闲时可回收。公共锻造台不能拆除。设施类型和位置、背包材料及产物均随存档保存，旧存档加载后只补一座公共锻造台。满背包或材料不足不会吞材料。
 
 验证入口：`Tools/Run-UnityValidation.ps1 -Suite FishingForge`。本机可添加 `-DisableBurst` 临时绕过原生 Burst 缓存加载失败；不修改全局设置。测试覆盖真实岸上采石、打开锻造台、制作、保存与防重复生成。场景预览输出 `Logs/Forge/forge-in-game.png`。
+
+已兼容主线 v0.23（b726e38）新的物品模型、握持接口及 v12 存档；Unity 2022.3.62f1 狩猎与锻造专项通过。石料采集测试使用新模型实际可达位置，不绕过臂长判定。
+
+![锻造台实拍](Images/HuntingForge/forge-in-game.png)
