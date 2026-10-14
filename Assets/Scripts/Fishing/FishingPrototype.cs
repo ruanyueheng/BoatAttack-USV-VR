@@ -579,6 +579,14 @@ namespace BoatAttack.Fishing
             if(Paused || target<0 || target>=NavigationCount)return;
             NavigationTarget=target;Notice("航点："+NavigationName,3f);
         }
+        public bool NavigateHome()
+        {
+            if(Paused || StoryBlocksGameplay || Home==null || Home.House==null || !Home.House.gameObject.activeInHierarchy)return false;
+            SelectNavigation(HomeNavigationIndex);ChartExpanded=true;
+            if(!Ashore && FlatDistance(ExplorerPosition,Home.Origin)>ChartRangeMeters)ChartRangeMeters=320;
+            Notice("回潮渔屋在港口西侧独立泊位 · 沿航点前往，低速 G 下船后走栈道入屋。",7);
+            return NavigationTarget==HomeNavigationIndex;
+        }
         public void ToggleDetails() { if(Paused)return;ShowDetails=!ShowDetails;if(ShowDetails){HarborDeskOpen=false;CancelWorldAction();} }
         public void ToggleChart() { if(!Paused)ChartExpanded=!ChartExpanded; }
         public void CycleChartRange() { if(!Paused)ChartRangeMeters=Ashore?(ChartRangeMeters==20?40:ChartRangeMeters==40?80:20):(ChartRangeMeters==80?160:ChartRangeMeters==160?320:80); }

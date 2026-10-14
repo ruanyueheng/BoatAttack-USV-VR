@@ -24,6 +24,7 @@ internal static class ForgeTests
         var full=new FishingBackpack(false);full.TryAdd(FieldItem.Stone,4);full.TryAdd(FieldItem.Stick,3);full.TryAdd(FieldItem.Fiber,3);full.TryAdd(FieldItem.Shell,33*64);
         check(!FishingRecipes.Craft(full,"forge-stone-pick",CraftStation.Forge) && full.Count(FieldItem.Stone)==4 && full.Count(FieldItem.Fiber)==3,"Forge full output bag rolls back all inputs");
         check(FishingRecipes.ForgeRecipes.Length==6 && FishingRecipes.ForgeRecipes.All(r=>r.Station==CraftStation.Forge),"Forge exposes tools and three compatible coal/fur lantern recipes");
+        check(FishingRecipes.ForgePageRecipes.Any(r=>r.Id=="sticks") && FishingRecipes.ForgePageRecipes.All(r=>r.Station==CraftStation.Forge || r.Station==CraftStation.Hand),"Forge page also shows hand crafting so gathered driftwood can supply sticks on site");
         foreach(var pair in new[]{new[]{"coal-rabbit-lantern",FieldItem.RabbitFur.ToString()},new[]{"coal-fox-lantern",FieldItem.FoxFur.ToString()},new[]{"coal-legacy-lantern",FieldItem.Fur.ToString()}})
         {
             var fur=(FieldItem)Enum.Parse(typeof(FieldItem),pair[1]);var lampBag=new FishingBackpack(false);

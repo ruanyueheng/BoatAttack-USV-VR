@@ -6,6 +6,13 @@ internal static class CraftingTests
     public static void Run(Action<bool,string> check)
     {
         var bag=new FishingBackpack(false);bag.TryAdd(FieldItem.Driftwood,8);
+        var rawWood=new FishingBackpack(false);rawWood.TryAdd(FieldItem.Driftwood,1);
+        check(FishingRecipes.Craft(rawWood,"sticks",CraftStation.Hand) && rawWood.Count(FieldItem.Stick)==4 && rawWood.Count(FieldItem.Driftwood)==0,"Single collected driftwood directly makes four sticks without a station or planks");
+        check(!FishingRecipes.Craft(rawWood,"sticks",CraftStation.Hand) && rawWood.Count(FieldItem.Stick)==4,"No driftwood means no duplicate free sticks");
+        var plankWood=new FishingBackpack(false);plankWood.TryAdd(FieldItem.Plank,2);
+        check(FishingRecipes.Craft(plankWood,"sticks-from-planks",CraftStation.Hand) && plankWood.Count(FieldItem.Stick)==4 && plankWood.Count(FieldItem.Plank)==0,"Previously prepared planks retain an alternate stick recipe");
+        var fullSticks=new FishingBackpack(false);fullSticks.TryAdd(FieldItem.Driftwood,2);fullSticks.TryAdd(FieldItem.Shell,35*64);
+        check(!FishingRecipes.Craft(fullSticks,"sticks",CraftStation.Hand) && fullSticks.Count(FieldItem.Driftwood)==2,"Direct stick crafting never consumes driftwood if the bag is full");
         check(FishingRecipes.Craft(bag,"planks",CraftStation.Hand) && bag.Count(FieldItem.Driftwood)==7 && bag.Count(FieldItem.Plank)==4,"Craft planks consumes one log and makes four planks");
         check(FishingRecipes.Craft(bag,"bench",CraftStation.Hand) && bag.Count(FieldItem.Workbench)==1,"Hand crafts workbench");
         check(!FishingRecipes.Craft(bag,"furnace",CraftStation.Hand),"Furnace recipe is not hand-craftable");

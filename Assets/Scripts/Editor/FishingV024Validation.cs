@@ -18,6 +18,9 @@ namespace BoatAttack.EditorTools
             for(int i=0;i<35;i++)yield return null;
             var home=c.Home;var shop=c.TackleShop;var market=c.transform.Find("Tide and Fin floating fish market");
             Check(FishingPrototype.Version=="0.24.0" && home!=null && shop!=null && market!=null,"V024 production home, shop and harbor market exist");
+            Check(home.House.gameObject.activeInHierarchy && home.House.GetComponentInChildren<MeshRenderer>().enabled,"home shell exists and its renderer is enabled in Game play");
+            var chart=new FishingHUD.FocusLayout(900,false,CatchPhase.Idle).Chart;var homeButton=FishingHUD.HomeChartButton(chart);
+            Check(homeButton.x>=chart.x+80 && homeButton.xMax<=chart.xMax-60 && homeButton.yMin>=chart.yMin && homeButton.yMax<=chart.yMax,"persistent home navigation button fits chart and pointer blocking bounds");
             Check(FishingPrototype.FlatDistance(home.Origin,c.harbor)>40 && FishingPrototype.FlatDistance(home.Origin,shop.Position)>40,"Home is separated from both shops");
             foreach(var spot in c.fishingSpots)Check(FishingPrototype.FlatDistance(home.Origin,spot)>45,"Home leaves fishing ground clearance");
             var homeColliders=new System.Collections.Generic.List<Collider>(home.House.GetComponentsInChildren<Collider>());
@@ -34,7 +37,7 @@ namespace BoatAttack.EditorTools
                         if(Physics.ComputePenetration(col,col.transform.position,col.transform.rotation,other,other.transform.position,other.transform.rotation,out _,out _))shopClear=false;
             }
             Check(marketClear && shopClear,"House, porch, boardwalk, rails and landing do not intersect either shop");
-            c.SelectNavigation(c.HomeNavigationIndex);
+            Check(c.NavigateHome() && c.NavigationTarget==c.HomeNavigationIndex && c.ChartExpanded,"visible home button handler selects dedicated house berth without teleporting");
             bool planned=c.WaterRoute.Plan();
             Debug.Log("[V024] ROUTE: "+c.NavigationName+" target="+c.NavigationPosition+" berth="+home.Berth+" start="+c.Player.transform.position+" clearGoal="+c.WaterRoute.ClearPoint(home.Berth)+" failure="+c.WaterRoute.Failure);
             Check(c.NavigationName=="回潮渔屋" && c.NavigationPosition==home.Berth && planned,"Home marker target resolves to reachable dedicated berth");
@@ -82,6 +85,14 @@ namespace BoatAttack.EditorTools
                 Check(!c.Shore.Swimming && FishingPrototype.FlatDistance(c.Shore.Position,approach)<.75f,"Actual character walks home route / "+approach);
             }
             Check(c.Shore.Relocate(home.WakePoint,Quaternion.identity) && home.CanSleep,"Home bedroom remains reachable");
+            Check(c.Shore.Relocate(home.Entry,Quaternion.identity),"Game view home entrance uses actual player footing");
+            c.View.ResetLook();if(!c.FirstPerson)c.ToggleView();
+            for(int i=0;i<5;i++){c.PresentCharacterFrame();yield return null;}
+            var planes=GeometryUtility.CalculateFrustumPlanes(c.viewCamera);int visibleHomeMeshes=0;
+            foreach(var renderer in home.House.GetComponentsInChildren<MeshRenderer>())
+                if(renderer.enabled && renderer.gameObject.activeInHierarchy && (c.viewCamera.cullingMask & (1<<renderer.gameObject.layer))!=0 && GeometryUtility.TestPlanesAABB(planes,renderer.bounds))visibleHomeMeshes++;
+            Check(visibleHomeMeshes>5,"actual first-person home camera includes visible shell and furnishings");
+            FishingV016Validation.Capture(c,evidence,"home-game-entrance");
             c.viewCamera.transform.SetPositionAndRotation(home.Origin+new Vector3(24,28,-32),Quaternion.LookRotation(home.Origin-(home.Origin+new Vector3(24,28,-32))));
             FishingV016Validation.Capture(c,evidence,"home-layout");
             Check(c.Shore.Relocate(market.TransformPoint(new Vector3(-1,.62f,-1.7f)),Quaternion.identity),"Market pedestrian deck keeps real footing and clearance");

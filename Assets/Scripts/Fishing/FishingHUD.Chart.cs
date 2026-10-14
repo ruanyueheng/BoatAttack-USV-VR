@@ -15,7 +15,8 @@ namespace BoatAttack.Fishing
                 return;
             }
             var r = Layout.Chart;
-            if (Button(new Rect(r.x, r.y, 156, 28), "M 收起航海图", true, false, 14)) c.ToggleChart();
+            if (Button(new Rect(r.x, r.y, 80, 28), "M 收起", true, false, 14)) c.ToggleChart();
+            if (Button(HomeChartButton(r), "回潮渔屋", c.Home!=null, c.NavigationTarget==c.HomeNavigationIndex, 13)) c.NavigateHome();
             if (Button(new Rect(r.xMax - 60, r.y, 60, 28), c.ChartRangeMeters + "m", true, false, 13)) c.CycleChartRange();
             var center = new Vector2(r.center.x, r.y + 130);
             const float radius = TerrainMapRadius;
@@ -43,8 +44,6 @@ namespace BoatAttack.Fishing
                         c.fishingSpots.Length+1+i,MapShoreColor);
             if(c.TackleShop!=null && c.TackleShop.Available)
                 ChartMarker(c.Ashore?c.TackleShop.Position:c.TackleShop.mooringPoint.position,center,"店",c.ShopNavigationIndex,MapShoreColor);
-            if(c.Home!=null)
-                ChartMarker(c.Home.Origin,center,"家",c.HomeNavigationIndex,Gold);
             for(int i=0;i<FishingAdventure.Count;i++)
                 ChartMarker(c.Ashore?FishingIslandWorld.Center(i):FishingIslandWorld.Berth(i),center,((char)('E'+i)).ToString(),c.IslandNavigationIndex(i),c.Career.Adventure.Restored(i)?Gold:MapShoreColor);
             if(c.Ashore)
@@ -66,6 +65,8 @@ namespace BoatAttack.Fishing
                 Segment(hint,badge,Sky,1.5f);Disc(badge,9,MapSurface);
                 Label(new Rect(badge.x-10,badge.y-11,20,22),"★",16,Color.white,true,TextAnchor.MiddleCenter);
             }
+            // The home badge must not be painted over by overlapping/off-range island markers.
+            if(c.Home!=null)ChartMarker(c.Home.Origin,center,"家",c.HomeNavigationIndex,Gold);
             Disc(center,12,MapSurface);
             DrawArrow(center,c.Ashore?c.viewCamera.transform.eulerAngles.y:c.Player.transform.eulerAngles.y,Color.white,10);
             DrawTerrainMapGuide(center,radius,new Rect(r.x,center.y+radius+12,r.width,36));
@@ -75,6 +76,7 @@ namespace BoatAttack.Fishing
                 Label(new Rect(tip.x+8,tip.y+4,tip.width-16,tip.height-8),GUI.tooltip,12,Color.white);
             }
         }
+        public static Rect HomeChartButton(Rect chart)=>new Rect(chart.x+84,chart.y,100,28);
         private void DrawWorkshopMarkers(Vector2 center)
         {
             var c=Controller;if(c.WorkshopWorld==null)return;

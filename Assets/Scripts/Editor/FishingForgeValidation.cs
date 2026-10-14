@@ -46,7 +46,7 @@ namespace BoatAttack.EditorTools
             Check(c.RequestWorldInteraction(),"E starts real stone collection");
             for(int i=0;i<180 && c.WorldActionBusy;i++)yield return null;
             Check(bag.Count(FieldItem.Stone)==stones+3,"ground stone collection grants forge material");yield return null;
-            bag.TryAdd(FieldItem.Stick,2);bag.TryAdd(FieldItem.Fiber,2);
+            bag.TryAdd(FieldItem.Driftwood,1);bag.TryAdd(FieldItem.Fiber,2);
             Check(!world.Craft("forge-stone-pick"),"world shortcut cannot craft outside the open station UI");
             bool approach=false;
             for(int angle=0;angle<360;angle+=30)
@@ -58,6 +58,8 @@ namespace BoatAttack.EditorTools
             c.Shore.SetCrouch(false);Feet(c,ground+Vector3.up*.06f,root.position+Vector3.up*.9f);
             for(int i=0;i<35;i++){c.Shore.Move(Vector2.zero,false,false,false,.02f);c.PresentCharacterFrame();yield return null;}
             Check(world.OpenStation(forge.id) && c.InventoryOpen && world.Context==CraftStation.Forge,"E station route opens the forge recipe page");
+            Check(System.Array.Exists(FishingRecipes.ForgePageRecipes,r=>r.Id=="sticks") && world.Craft("sticks")
+                && bag.Count(FieldItem.Stick)==4 && bag.Count(FieldItem.Driftwood)==0,"driftwood makes sticks directly in the open forge UI without plank detour");
             Check(world.Craft("forge-stone-pick") && bag.Count(FieldItem.StonePickaxe)==1 && bag.Count(FieldItem.Stone)==stones,"forge consumes the collected stone and makes an equippable tool");
             bag.TryAdd(FieldItem.IronOre,2);bag.TryAdd(FieldItem.Coal,1);
             Check(world.Craft("forge-iron") && bag.Count(FieldItem.IronIngot)==1,"forge converts mined ore and coal to an ingot");

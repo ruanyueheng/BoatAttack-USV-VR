@@ -23,7 +23,8 @@ namespace BoatAttack.Fishing
             R("hunting-spear",CraftStation.Workbench,FieldItem.HuntingSpear,1,Stack(FieldItem.Stick,3),Stack(FieldItem.Stone,2),Stack(FieldItem.Rope,1)),
             R("roast-meat",CraftStation.Furnace,FieldItem.CookedMeat,1,Stack(FieldItem.RawMeat,1)),
             R("planks",CraftStation.Hand,FieldItem.Plank,4,Stack(FieldItem.Driftwood,1)),
-            R("sticks",CraftStation.Hand,FieldItem.Stick,4,Stack(FieldItem.Plank,2)),
+            R("sticks",CraftStation.Hand,FieldItem.Stick,4,Stack(FieldItem.Driftwood,1)),
+            R("sticks-from-planks",CraftStation.Hand,FieldItem.Stick,4,Stack(FieldItem.Plank,2)),
             R("rope",CraftStation.Hand,FieldItem.Rope,1,Stack(FieldItem.Fiber,3)),
             R("bench",CraftStation.Hand,FieldItem.Workbench,1,Stack(FieldItem.Plank,4)),
             R("furnace",CraftStation.Workbench,FieldItem.Furnace,1,Stack(FieldItem.Stone,8)),
@@ -51,6 +52,13 @@ namespace BoatAttack.Fishing
             R("coal-legacy-lantern",CraftStation.Forge,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.Fur,1))
         };
         public static readonly CraftRecipe[] ForgeRecipes=Array.FindAll(All,r=>r.Station==CraftStation.Forge);
+        public static readonly CraftRecipe[] ForgePageRecipes=MakeForgePage();
+        private static CraftRecipe[] MakeForgePage()
+        {
+            var recipes=new List<CraftRecipe>(ForgeRecipes);
+            foreach(var r in All)if(r.Station==CraftStation.Hand)recipes.Add(r);
+            return recipes.ToArray();
+        }
         public static CraftRecipe Find(string id){foreach(var r in All)if(r.Id==id)return r;return null;}
         public static string StationName(CraftStation s)=>s==CraftStation.Hand?"徒手":s==CraftStation.Workbench?"工作台":s==CraftStation.Forge?"锻造台":"熔炉";
         public static FieldItem StationItem(CraftStation kind)=>kind==CraftStation.Workbench?FieldItem.Workbench:kind==CraftStation.Furnace?FieldItem.Furnace:kind==CraftStation.Forge?FieldItem.Forge:FieldItem.Empty;
