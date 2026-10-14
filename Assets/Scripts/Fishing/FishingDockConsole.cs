@@ -19,24 +19,27 @@ namespace BoatAttack.Fishing
         public void Show(){_requested=true;_pendingDismissed=false;Present();}
         public void Hide(){_requested=false;_pendingDismissed=_c.HasPendingCatch;_hover=null;_pointerHeld=false;_edge.Reset();ClearOffer();if(_ray!=null)_ray.enabled=false;Present();}
         public void PreviewForValidation(){if(!_c.Automated)throw new InvalidOperationException("Isolated validation only");_preview=true;Present();}
-        public Vector3 ButtonPosition(FishingDockAction action)=>_buttons[action].transform.TransformPoint(new Vector3(112.5f,-24.5f,0));
+        public Vector3 ButtonPosition(FishingDockAction action)=>_buttons[action].transform.TransformPoint(_buttons[action].GetComponent<BoxCollider>().center);
         public bool BlocksGameplay=>XRSettings.isDeviceActive && ((_hover!=null && _pointerHeld) || _offer.HasValue);
         public int ButtonCount=>_buttons.Count;
         public void Build(FishingPrototype c)
         {
             _c=c;var root=new GameObject("XR dock and catch console",typeof(RectTransform),typeof(Canvas));root.layer=5;root.transform.SetParent(transform,false);
             _canvas=root.GetComponent<Canvas>();_canvas.renderMode=RenderMode.WorldSpace;_canvas.worldCamera=c.viewCamera;
-            var rect=root.GetComponent<RectTransform>();rect.sizeDelta=new Vector2(500,618);rect.localScale=Vector3.one*.002f;
-            var panel=root.AddComponent<Image>();panel.color=new Color(.985f,.977f,.945f,.98f);panel.raycastTarget=false;
-            _status=Label(root.transform,new Vector2(18,-16),new Vector2(464,234),21);
-            _message=Label(root.transform,new Vector2(18,-548),new Vector2(464,58),19);
+            var rect=root.GetComponent<RectTransform>();rect.sizeDelta=new Vector2(680,820);rect.localScale=Vector3.one*.0015f;
+            root.AddComponent<CanvasScaler>().dynamicPixelsPerUnit=3;
+            var panel=root.AddComponent<Image>();panel.color=FishingUITheme.Paper;panel.sprite=FishingUITheme.PaperSprite;panel.type=Image.Type.Sliced;panel.material=FishingUITheme.WorldMaterial;panel.raycastTarget=false;
+            var title=Label(root.transform,new Vector2(26,-18),new Vector2(628,60),40);title.text="码头事务";title.font=FishingUITheme.Heading;
+            _status=Label(root.transform,new Vector2(26,-85),new Vector2(628,250),21);
+            _message=Label(root.transform,new Vector2(26,-704),new Vector2(628,76),21);
+            Label(root.transform,new Vector2(26,-786),new Vector2(628,32),20).text="B 收起  ·  右手指向  ·  扳机选择";
             int i=0;foreach(FishingDockAction action in Enum.GetValues(typeof(FishingDockAction)))
             {
                 var go=new GameObject(action.ToString(),typeof(RectTransform),typeof(Image));go.layer=5;go.transform.SetParent(root.transform,false);
-                var rt=go.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(0,1);rt.pivot=new Vector2(0,1);rt.anchoredPosition=new Vector2(18+(i%2)*239,-250-(i/2)*57);rt.sizeDelta=new Vector2(225,49);
-                var image=go.GetComponent<Image>();image.raycastTarget=false;_buttons.Add(action,image);
-                var label=Label(go.transform,new Vector2(8,-8),new Vector2(210,34),20);label.text=Name(action);
-                var collider=go.AddComponent<BoxCollider>();collider.size=new Vector3(225,49,4);collider.center=new Vector3(112.5f,-24.5f,0);collider.isTrigger=true;
+                var rt=go.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(0,1);rt.pivot=new Vector2(0,1);rt.anchoredPosition=new Vector2(26+(i%2)*322,-350-(i/2)*70);rt.sizeDelta=new Vector2(306,58);
+                var image=go.GetComponent<Image>();image.sprite=FishingUITheme.PaperSprite;image.type=Image.Type.Sliced;image.material=FishingUITheme.WorldMaterial;image.raycastTarget=false;_buttons.Add(action,image);
+                var label=Label(go.transform,new Vector2(14,-9),new Vector2(278,42),21);label.text=Name(action);
+                var collider=go.AddComponent<BoxCollider>();collider.size=new Vector3(306,58,4);collider.center=new Vector3(153,-29,0);collider.isTrigger=true;
                 var command=go.AddComponent<FishingDockButton>();command.Owner=this;command.Action=action;i++;
             }
             _ray=FishingArt.Line("XR controller action ray",transform,c.lineMaterial,.006f);_ray.positionCount=2;_ray.enabled=false;
@@ -51,7 +54,7 @@ namespace BoatAttack.Fishing
         {
             var go=new GameObject("Chinese command label",typeof(RectTransform),typeof(Text));go.layer=5;go.transform.SetParent(parent,false);
             var rt=go.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(0,1);rt.pivot=new Vector2(0,1);rt.anchoredPosition=position;rt.sizeDelta=size;
-            var text=go.GetComponent<Text>();text.font=FishingUIFont.Font;text.fontSize=fontSize;text.color=new Color(.07f,.16f,.17f);text.raycastTarget=false;return text;
+            var text=go.GetComponent<Text>();text.font=FishingUIFont.Font;text.fontSize=fontSize;text.color=FishingUITheme.Ink;text.material=FishingUITheme.WorldMaterial;text.raycastTarget=false;return text;
         }
         public bool Allowed(FishingDockAction action)
         {
@@ -139,14 +142,13 @@ namespace BoatAttack.Fishing
             float height=_c.XRSeat.Ready?_c.XRSeat.Origin.transform.position.y+1.3f:boat.y+1.55f;
             _canvas.transform.SetPositionAndRotation(new Vector3(boat.x,height,boat.z)+yaw*new Vector3(-.75f,0,2),yaw);
             for(int i=0;i<_rings.Length;i++)_rings[i].gameObject.SetActive(_c.Career.LineLevel>i);
-            foreach(var p in _buttons)p.Value.color=_hover!=null && _hover.Action==p.Key && Allowed(p.Key)?new Color(.66f,.85f,.74f):Allowed(p.Key)?new Color(.86f,.93f,.87f):new Color(.87f,.88f,.85f);
+            foreach(var p in _buttons)p.Value.color=!Allowed(p.Key)?FishingUITheme.Disabled:_offer==p.Key?FishingUITheme.Selected:_hover!=null && _hover.Action==p.Key?(_pointerHeld?FishingUITheme.Selected:Color.white):FishingUITheme.Light;
             string state=_c.HasPendingCatch?"待处理："+FishingSpecies.Name(_c.Career.PendingCatch.fish.kind)+" "+FishingText.Weight(_c.Career.PendingCatch.fish.grams)+(_c.Career.PendingCatch.measured?"（已测量）":""):_c.Anchored?"驻钓中":"航行："+(_c.Speed*3.6f).ToString("0")+" 千米/时";
             _status.text="潮汐渔港  ·  "+state+"\n金币 "+_c.Career.Coins+"    鱼箱 "+_c.Career.Count+"/"+_c.Career.Capacity+"    鱼线 "+_c.Career.LineLevel+" 级\n委托「"+_c.Career.CurrentOrder.Name+"」"+(_c.Career.OrderReady?" · 可交付":"")+"\n";
             for(int i=0;i<_c.Career.CurrentOrder.LineCount;i++){var line=_c.Career.CurrentOrder.Line(i);_status.text+=FishingSpecies.Name(line.Kind)+" ×"+line.Count+(line.Rare?" 珍珠":"")+"  ";}
             _status.text+="\n"+(!_c.Anchored?"动力温度 "+(_c.Boost.Heat*100).ToString("0")+"%"+(_c.Boost.Overheated?" · 冷却至 25%":"")
                 :_c.Session.Phase==CatchPhase.Fighting?"鱼线张力 "+(_c.Session.Tension*100).ToString("0")+"% · "+(_c.Session.Beat==FishBeat.Rest?"回气时转轮收线":"冲刺或跃水时松开左握把")
                 :_c.Session.Phase==CatchPhase.Landing?"抄网："+_c.Session.Remaining.ToString("0.0")+" 秒 · 套住后举起":"抄网套住举起 · 鱼箱轻放 / 缓慢倾倒");
-            _status.text+="\nB 收起 · 右手射线 + 扳机选择";
             var delta=_c.NavigationPosition-_c.Player.transform.position;
             float bearing=Mathf.DeltaAngle(_c.Player.transform.eulerAngles.y,Mathf.Atan2(delta.x,delta.z)*Mathf.Rad2Deg);
             string turn=Mathf.Abs(bearing)<12?"正前方":(bearing<0?"向左 ":"向右 ")+Mathf.Abs(bearing).ToString("0")+"°";

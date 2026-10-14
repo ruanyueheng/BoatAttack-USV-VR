@@ -16,7 +16,7 @@ namespace BoatAttack.EditorTools
             string evidence=Path.GetFullPath("Logs/v023-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(evidence);
             for(int i=0;i<35;i++)yield return null;
             Check(c.Home!=null && c.Home.House!=null && c.Home.Bed!=null && c.Prologue!=null,"Furnished home and opening cinema exist in production scene");
-            Check(c.Home.House.GetComponentsInChildren<MeshFilter>().Length>=29,"At least 29 actual furniture and shell instances");
+            Check(c.Home.House.GetComponentsInChildren<MeshFilter>().Length>=26,"Furnished shell and three accessible home workshop instances");
             Check(c.Home.House.GetComponentsInChildren<BoxCollider>().Length>=25,"Home has structural and furniture collisions");
             foreach(var mesh in c.Home.House.GetComponentsInChildren<MeshFilter>())
                 Check(mesh.GetComponent<Renderer>().sharedMaterial.shader==c.PaletteShader,"Furnished prefab preserves actual vertex palette: "+mesh.name);

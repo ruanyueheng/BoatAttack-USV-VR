@@ -46,6 +46,7 @@ namespace BoatAttack.Fishing
             var c = Controller;
             if (c == null || c.Career == null || c.Player == null || XRSettings.isDeviceActive) return;
             if(c.Prologue.Open || c.Home.Sleeping)return;
+            if(Event.current.rawType==EventType.MouseDown)_pressedButton=default;
             DrawOpticalView();
             _scale = LayoutScale(Screen.width, Screen.height);
             _height = Screen.height / _scale;

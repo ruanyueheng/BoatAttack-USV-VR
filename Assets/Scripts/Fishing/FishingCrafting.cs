@@ -89,7 +89,7 @@ namespace BoatAttack.Fishing
     /// in the furnace until explicitly collected. Pausing/offline never advances simulation.</summary>
     public sealed class FishingWorkshop
     {
-        public const int MaxStations=32,ResourceCount=64;
+        public const int MaxPlayerStations=32,MaxPermanentStations=6,MaxStations=MaxPlayerStations+MaxPermanentStations,ResourceCount=64;
         private WorkshopData _data=new WorkshopData();
         public FishingWorkshop(){for(int i=0;i<ResourceCount;i++)_data.resourceCooldowns.Add(0);}
         public bool Initialized=>_data.initialized;
@@ -102,6 +102,7 @@ namespace BoatAttack.Fishing
         {
             if(_data.stations.Count>=MaxStations || _data.nextId>=1000000 || FishingRecipes.StationItem(kind)==FieldItem.Empty
                 || !Finite(x)||!Finite(y)||!Finite(z)||!Finite(yaw)||Math.Abs(x)>2000||Math.Abs(z)>2000||y<.1f||y>100)return -1;
+            if(_data.stations.FindAll(s=>s.permanent==permanent).Count>=(permanent?MaxPermanentStations:MaxPlayerStations))return -1;
             var item=FishingRecipes.StationItem(kind);
             if(!permanent && (bag==null || !bag.Exchange(new[]{FishingRecipes.Stack(item,1)},FieldItem.Empty,0)))return -1;
             int id=_data.nextId++;_data.stations.Add(new WorkshopStationData{id=id,kind=kind,x=x,y=y,z=z,yaw=yaw,permanent=permanent});return id;
@@ -162,12 +163,13 @@ namespace BoatAttack.Fishing
                 if(s==null || s.id<1 || s.id>=data.nextId || !ids.Add(s.id) || FishingRecipes.StationItem(s.kind)==FieldItem.Empty
                     || !Finite(s.x)||!Finite(s.y)||!Finite(s.z)||!Finite(s.yaw)||Math.Abs(s.x)>2000||Math.Abs(s.z)>2000||s.y<.1f||s.y>100
                     || s.remaining<0||s.remaining>8||s.ready<0||s.ready>8||s.remaining+s.ready>8||!Finite(s.progress)||s.progress<0||s.progress>=8)return false;
-                if(s.permanent && ++permanent>3)return false;
+                if(s.permanent && ++permanent>MaxPermanentStations)return false;
                 bool active=s.remaining>0 || s.ready>0;
                 var r=FishingRecipes.Find(s.recipe);
                 if(active?(s.kind!=CraftStation.Furnace || r==null || r.Station!=CraftStation.Furnace):!string.IsNullOrEmpty(s.recipe))return false;
                 if(s.remaining==0 && s.progress!=0)return false;
             }
+            if(data.stations.Count-permanent>MaxPlayerStations)return false;
             var result=new FishingWorkshop();result._data=data;result._data=result.Snapshot();workshop=result;return true;
         }
     }

@@ -55,32 +55,19 @@ namespace BoatAttack.Fishing
         {
             foreach(var station in _stations.Values){station.gameObject.SetActive(false);Destroy(station.gameObject);}
             _stations.Clear();_fires.Clear();SelectedStation=-1;_nearStation=-1;_nearNode=null;
-            if(!State.Initialized)
-            {
-                var site=_c.Shore.Sites[0];
-                if(site.Available)
-                {
-                    foreach(var kind in new[]{CraftStation.Workbench,CraftStation.Furnace})
-                        for(int attempt=0;attempt<48;attempt++)
-                        {
-                            if(!_c.FieldWorld.TryLocation(site.Landing,5+attempt/4,(kind==CraftStation.Workbench?125:235)+attempt*47,out var feet))continue;
-                            if(!FitStationFoot(feet,out feet) || BlocksAccess(feet) || !_c.Shore.SafeCoastalFooting(feet) || !StationSpaceClear(feet))continue;
-                            int id=State.Place(null,kind,feet.x,feet.y+.02f,feet.z,0,true);
-                            if(id>=0)Spawn(State.Station(id));Physics.SyncTransforms();break;
-                        }
-                    State.FinishInitialization();
-                }
-            }
             foreach(var station in State.Stations)if(!_stations.ContainsKey(station.id))Spawn(station);
             Physics.SyncTransforms();
-            EnsurePublicForge();
+            foreach(var kind in new[]{CraftStation.Workbench,CraftStation.Furnace,CraftStation.Forge})EnsurePublicStation(kind);
+            if(_c.Shore.Sites[0].Available && new[]{CraftStation.Workbench,CraftStation.Furnace,CraftStation.Forge}.All(HasPublicStation))State.FinishInitialization();
+            EnsureHomeStations();
         }
-        private void EnsurePublicForge()
+        private bool HasPublicStation(CraftStation kind)=>State.Stations.Any(s=>s.kind==kind && s.permanent
+            && FishingPrototype.FlatDistance(new Vector3(s.x,s.y,s.z),_c.Shore.Sites[0].Landing)<45f);
+        private void EnsurePublicStation(CraftStation kind)
         {
-            if(State.Stations.Any(s=>s.kind==CraftStation.Forge && s.permanent) || !_c.Shore.Sites[0].Available)return;
+            if(!_c.Shore.Sites[0].Available || HasPublicStation(kind))return;
             var landing=_c.Shore.Sites[0].Landing;
-            // Scan actual shore heights, rather than constraining the forge to the
-            // landing's narrow height band. This also leaves each old station's apron clear.
+            // Retry each missing facility on every load; old initialization could commit after a failed search.
             for(int ring=2;ring<=24;ring+=2)for(int step=0;step<36;step++)
             {
                 var probe=landing+Quaternion.Euler(0,step*10,0)*Vector3.forward*ring;probe.y=0;
@@ -88,10 +75,26 @@ namespace BoatAttack.Fishing
                 if(_c.Shore.Sites.Any(s=>s.Available && FishingPrototype.FlatDistance(feet,s.Berth)<6f))continue;
                 if(State.Stations.Any(s=>s.permanent && FishingPrototype.FlatDistance(feet,new Vector3(s.x,s.y,s.z))<3.5f))continue;
                 if(!FitStationFoot(feet,out feet) || BlocksAccess(feet) || !_c.Shore.SafeCoastalFooting(feet) || !StationSpaceClear(feet))continue;
-                int id=State.Place(null,CraftStation.Forge,feet.x,feet.y+.02f,feet.z,0,true);
+                if(_nodes.Any(n=>FishingPrototype.FlatDistance(feet,n.Feet)<3f))continue;
+                if(!_c.Shore.Ground(feet+Vector3.back*1.25f,out var apron) || Mathf.Abs(apron.y-feet.y)>.4f || !_c.Shore.Clearance(apron))continue;
+                int id=State.Place(null,kind,feet.x,feet.y+.02f,feet.z,0,true);
                 if(id<0)return;Spawn(State.Station(id));Physics.SyncTransforms();return;
             }
-            Debug.LogWarning("[FORGE] No safe public forge footing found; the craftable forge is still available at the workbench.");
+            Debug.LogWarning("[WORKSHOP] No safe public "+kind+" footing found; placement will retry on the next load.");
+        }
+        public void EnsureHomeStations()
+        {
+            if(_c.Home==null || _c.Home.House==null)return;
+            foreach(var kind in new[]{CraftStation.Workbench,CraftStation.Furnace,CraftStation.Forge})
+            {
+                var feet=_c.Home.StationPosition(kind);
+                var existing=State.Stations.FirstOrDefault(s=>s.kind==kind && s.permanent && Vector3.Distance(new Vector3(s.x,s.y,s.z),feet)<.2f);
+                if(existing!=null){var root=StationRoot(existing.id);if(root!=null)root.SetParent(_c.Home.House,true);continue;}
+                int id=State.Place(null,kind,feet.x,feet.y,feet.z,0,true);
+                if(id<0){Debug.LogWarning("[WORKSHOP] Could not install home "+kind);continue;}
+                Spawn(State.Station(id));
+            }
+            Physics.SyncTransforms();
         }
         private bool FindResourceFoot(Vector3 seed,int index,out Vector3 feet)
         {
@@ -119,6 +122,7 @@ namespace BoatAttack.Fishing
         {
             var root=MeshObject(FishingRecipes.StationName(s.kind)+" #"+s.id,FishingRecipes.StationItem(s.kind));
             root.SetPositionAndRotation(new Vector3(s.x,s.y,s.z),Quaternion.Euler(0,s.yaw,0));
+            if(_c.Home!=null && s.permanent && Vector3.Distance(root.position,_c.Home.StationPosition(s.kind))<.2f)root.SetParent(_c.Home.House,true);
             var collider=root.gameObject.AddComponent<BoxCollider>();collider.center=Vector3.up*.5f;collider.size=new Vector3(1.3f,1,.95f);
             _stations.Add(s.id,root);
             if(s.kind==CraftStation.Forge)
@@ -275,7 +279,7 @@ namespace BoatAttack.Fishing
             if(_c.Paused || !_c.Ashore || _c.Career.Backpack.Equipped!=expectedItem || !FishingRecipes.IsStation(expectedItem))return false;
             if(!_c.Shore.Ground(feet,out var ground) || !ValidPlacement(ground,yaw,out var checkedFeet) || Vector3.Distance(checkedFeet,feet)>.1f)return false;
             int id=State.Place(_c.Career.Backpack,FishingRecipes.StationKind(expectedItem),feet.x,feet.y+.02f,feet.z,yaw);
-            if(id<0){_c.Notice("无法放置：设施已达 32 个上限或物品不足。",3);return false;}
+            if(id<0){_c.Notice("无法放置：自建设施已达 "+FishingWorkshop.MaxPlayerStations+" 个上限或物品不足。",3);return false;}
             Spawn(State.Station(id));Physics.SyncTransforms();_c.Save();_c.Notice("已放置"+FishingBackpack.Name(expectedItem)+(UnityEngine.XR.XRSettings.isDeviceActive?" · 靠近按 A 使用":" · 靠近按 E 使用"),4);return true;
         }
         public bool PlaceEquipped()=>TryPlacement(1.02f,out var feet,out var yaw) && PlaceAt(feet,yaw,_c.Career.Backpack.Equipped);

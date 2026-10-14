@@ -25,13 +25,10 @@ namespace BoatAttack.Fishing
         {
             var region=Controller.Regions;if(region==null || region.Alpha<=.001f || Controller.Realms.Transitioning)return;
             float previous=_fade;_fade=region.Alpha;
-            float y=_height*.23f+(1-Mathf.SmoothStep(0,1,Mathf.Clamp01(region.Age/1.1f)))*18;
-            Rounded(new Rect(430,y-24,740,146),new Color(.016f,.035f,.06f,.46f),28);
-            Segment(new Vector2(500,y+18),new Vector2(645,y+18),Gold*new Color(1,1,1,.6f));
-            Segment(new Vector2(955,y+18),new Vector2(1100,y+18),Gold*new Color(1,1,1,.6f));
-            Label(new Rect(630,y-14,340,30),"—  潮 汐 航 路  —",14,Gold,false,TextAnchor.MiddleCenter);
-            Label(new Rect(442,y+20,716,56),region.Title,40,Color.white,true,TextAnchor.MiddleCenter);
-            Label(new Rect(470,y+83,660,42),region.Subtitle,16,new Color(.88f,.85f,.73f),false,TextAnchor.UpperCenter);
+            float y=_height*.16f+(1-Mathf.SmoothStep(0,1,Mathf.Clamp01(region.Age/1.1f)))*8;
+            Rounded(new Rect(600,y-8,400,90),Ink,12);Outline(new Rect(600,y-8,400,90),Hairline,12);
+            Label(new Rect(616,y+2,368,44),region.Title,30,Color.white,true,TextAnchor.MiddleCenter);
+            Label(new Rect(616,y+52,368,26),region.Subtitle,13,Muted,false,TextAnchor.UpperCenter);
             _fade=previous;
         }
         private void DrawDialogue()

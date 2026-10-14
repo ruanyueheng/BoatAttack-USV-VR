@@ -1,0 +1,29 @@
+{
+  "models": [
+    {
+      "name": "IslandGround",
+      "vertices": 3151,
+      "triangles": 6048
+    },
+    {
+      "name": "HouseShell",
+      "vertices": 6401,
+      "triangles": 6687
+    },
+    {
+      "name": "IslandDetails",
+      "vertices": 7718,
+      "triangles": 13464
+    }
+  ],
+  "total_triangles": 26199,
+  "views": [
+    "front",
+    "side",
+    "back",
+    "top"
+  ],
+  "lighthouse_base_local_y": 3.6801291030967143,
+  "ground_height_house_origin": 0.0,
+  "single_image_assumptions": true
+}

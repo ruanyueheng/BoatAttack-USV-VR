@@ -6,7 +6,7 @@ namespace BoatAttack.Fishing
 {
     public sealed class FishingNotebookButton : MonoBehaviour { public FishingXRNotebook Owner; public int Index; }
     /// <summary>World-locked, ray-selectable notebook; all mutations use the existing inventory/workshop transactions.</summary>
-    public sealed class FishingXRNotebook : MonoBehaviour
+    public sealed partial class FishingXRNotebook : MonoBehaviour
     {
         private FishingPrototype _c;
         private Canvas _canvas;
@@ -21,6 +21,8 @@ namespace BoatAttack.Fishing
         private readonly FishingPressEdge _menu=new FishingPressEdge(),_primary=new FishingPressEdge(),_board=new FishingPressEdge(),_slot=new FishingPressEdge(),_trigger=new FishingPressEdge();
         private LineRenderer _ray;
         private int _page,_offset;
+        private int _presentedPage=-1;
+        private float _pageOpenedAt;
         private int _guideLesson,_guidePracticed;
         private Canvas _feedback;
         private Text _feedbackText;
@@ -66,16 +68,18 @@ namespace BoatAttack.Fishing
                 var collider=go.AddComponent<BoxCollider>();collider.isTrigger=true;collider.size=new Vector3(170,114,3);collider.center=new Vector3(85,-57,0);
                 var button=go.AddComponent<FishingNotebookButton>();button.Owner=this;button.Index=i;
             }
+            BuildNotebookHome();
             _ray=FishingArt.Line("Notebook controller ray",transform,c.lineMaterial,.003f);_ray.positionCount=2;Close();
             var toast=new GameObject("Transient Chinese XR feedback",typeof(RectTransform),typeof(Canvas));toast.layer=5;toast.transform.SetParent(transform,false);
             _feedback=toast.GetComponent<Canvas>();_feedback.renderMode=RenderMode.WorldSpace;_feedback.worldCamera=c.viewCamera;
             var toastRect=toast.GetComponent<RectTransform>();toastRect.sizeDelta=new Vector2(560,144);toastRect.localScale=Vector3.one*.0016f;
-            var toastPlate=toast.AddComponent<Image>();toastPlate.color=new Color(.025f,.048f,.082f,.93f);toastPlate.raycastTarget=false;
+            var toastPlate=toast.AddComponent<Image>();toastPlate.color=FishingUITheme.Paper;toastPlate.sprite=FishingUITheme.PaperSprite;toastPlate.type=Image.Type.Sliced;toastPlate.material=FishingUITheme.WorldMaterial;toastPlate.raycastTarget=false;
             _feedbackText=Label(toast.transform,new Vector2(18,-14),new Vector2(524,116),21);toast.SetActive(false);
         }
         private void LateUpdate()
         {
             if(_c==null || _feedback==null)return;
+            if(IsOpen && !_c.Automated)_canvas.transform.localScale=Vector3.one*.00105f*Mathf.Lerp(.985f,1,Mathf.SmoothStep(0,1,(Time.unscaledTime-_pageOpenedAt)/.12f));
             var message=_c.VisibleMessage;
             bool visible=XRSettings.isDeviceActive && _c.XRSeat.Ready && Application.isFocused && !IsOpen
                 && !_c.Paused && !_c.StoryBlocksGameplay && !_c.DockConsole.Visible && !string.IsNullOrEmpty(message);
@@ -94,7 +98,7 @@ namespace BoatAttack.Fishing
         {
             var go=new GameObject("Notebook label",typeof(RectTransform),typeof(Text));go.layer=5;go.transform.SetParent(parent,false);
             var rt=go.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(0,1);rt.pivot=new Vector2(0,1);rt.anchoredPosition=position;rt.sizeDelta=size;
-            var text=go.GetComponent<Text>();text.font=FishingUIFont.Font;text.fontSize=fontSize;text.color=new Color(.90f,.95f,.92f);text.raycastTarget=false;return text;
+            var text=go.GetComponent<Text>();text.font=FishingUIFont.Font;text.fontSize=fontSize;text.color=FishingUITheme.Ink;text.material=FishingUITheme.WorldMaterial;text.raycastTarget=false;return text;
         }
         private static RectTransform MapMarker(Transform parent,string mark,Color color)
         {var text=Label(parent,Vector2.zero,new Vector2(36,36),18);text.text=mark;text.color=color;text.alignment=TextAnchor.MiddleCenter;var shadow=text.gameObject.AddComponent<Shadow>();shadow.effectColor=Color.black;shadow.effectDistance=new Vector2(1,-1);return text.rectTransform;}
@@ -114,7 +118,7 @@ namespace BoatAttack.Fishing
             _canvas.gameObject.SetActive(true);_c.WorkshopWorld.SelectNearby();Refresh();
         }
         public void Close(){IsOpen=false;if(_canvas!=null)_canvas.gameObject.SetActive(false);if(_ray!=null)_ray.enabled=false;ResetInput();_c?.Hands?.ResetInteraction();}
-        public void ResetInput(){_menu.Reset();_primary.Reset();_board.Reset();_slot.Reset();_trigger.Reset();_turnReady=false;_tipSample=false;MotionReady=false;_guideLeftTrigger.Reset();_guideLeftGrip.Reset();_guideRightGrip.Reset();_guideBoost.Reset();}
+        public void ResetInput(){_menu.Reset();_primary.Reset();_board.Reset();_slot.Reset();_trigger.Reset();_turnReady=false;_tipSample=false;MotionReady=false;_guideLeftTrigger.Reset();_guideLeftGrip.Reset();_guideRightGrip.Reset();_guideBoost.Reset();if(_homeDecor!=null)UpdateHomePointer(-1,false);}
         private bool ReArmMotion(Vector2 leftAxis,Vector2 rightAxis,bool boost)
         {
             if(!MotionReady && leftAxis.sqrMagnitude<.18f*.18f && rightAxis.sqrMagnitude<.18f*.18f && !boost)MotionReady=true;
@@ -123,7 +127,8 @@ namespace BoatAttack.Fishing
         private void Set(int index,string label,Action action)
         {
             _icons[index].gameObject.SetActive(false);_labels[index].rectTransform.anchoredPosition=new Vector2(10,-10);_labels[index].rectTransform.sizeDelta=new Vector2(150,94);_labels[index].fontSize=21;
-            _labels[index].text=label;_actions[index]=action;_plates[index].color=action==null?new Color(.09f,.13f,.14f):new Color(.12f,.27f,.25f);
+            _labels[index].text=label;_pageContent[index]=label;_actions[index]=action;
+            if(_homeDecor==null)_plates[index].color=action==null?new Color(.09f,.13f,.14f):new Color(.12f,.27f,.25f);
         }
         private void Photo(int index,Texture2D texture)
         {
@@ -135,8 +140,7 @@ namespace BoatAttack.Fishing
             _status.fontSize=23;
             _map.gameObject.SetActive(_page==12 && _map.texture!=null);
             var day=_c.Career.Calendar;var bag=_c.Career.Backpack;
-            _status.text="潮汐手册  ·  "+day.DateLabel+"  "+day.TimeLabel+"\n"+BayClimate.Name(_c.Weather.Climate.Current)+"   金币 "+_c.Career.Coins+
-                "\n装备："+FishingBackpack.Name(bag.Equipped)+"\n船：左摇杆前后 · 右摇杆转向\nB 关闭 · 右手射线 + 扳机选择\n"+_c.VisibleMessage;
+            _status.text=BayClimate.Name(_c.Weather.Climate.Current)+"\n金币 "+_c.Career.Coins+"\n行囊 "+bag.UsedSlots+" / 36\n装备："+FishingBackpack.Name(bag.Equipped)+"\n"+_c.VisibleMessage;
             for(int i=0;i<9;i++)Set(i,"—",null);
             if(_page==0)
             {
@@ -308,6 +312,8 @@ namespace BoatAttack.Fishing
                 Set(6,"购买探索用品",()=>Open(5));
                 Set(7,_c.TackleShop.NearCounter?"店员介绍 / 故事":"返回首页",_c.TackleShop.NearCounter?(Action)(()=>_c.Residents.Talk(4)):(Action)(()=>Open()));Set(8,"关闭",Close);
             }
+            PresentNotebookHome();
+            if(_presentedPage!=_page){_presentedPage=_page;_pageOpenedAt=Time.unscaledTime;}
         }
         private string NavigationLabel(int target)=>target==_c.HomeNavigationIndex?"回潮渔屋":target>_c.ShopNavigationIndex?FishingAdventure.Name(target-_c.ShopNavigationIndex-1):target==_c.ShopNavigationIndex?_c.ShopName:target==0?"潮汐渔港":target<=_c.fishingSpots.Length?FishingGrounds.Name(target-1):FishingExploration.SiteName(target-_c.fishingSpots.Length-1);
         private void PlaceMapMarker(RectTransform marker,Vector3 world)
@@ -394,15 +400,18 @@ namespace BoatAttack.Fishing
                 FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out var origin,out var rotation,true);var direction=rotation*Vector3.forward;
                 _ray.enabled=true;_ray.SetPosition(0,origin);_ray.SetPosition(1,origin+direction*2);
                 if(Time.unscaledTime>=_nextText){Refresh();_nextText=Time.unscaledTime+.2f;}
+                int homeHover=-1;
                 if(Physics.Raycast(origin,direction,out var hit,3,1<<5,QueryTriggerInteraction.Collide))
                 {
                     var button=hit.collider.GetComponent<FishingNotebookButton>();
                     if(button!=null && button.Owner==this && _c.Shore.ClearSight(origin,hit.point))
                     {
-                        _ray.SetPosition(1,hit.point);_plates[button.Index].color=new Color(.65f,.82f,.70f);
-                        if(click){_actions[button.Index]?.Invoke();if(IsOpen)Refresh();}
+                        _ray.SetPosition(1,hit.point);
+                        homeHover=button.Index;
+                        if(click){if(_page==0 && _actions[button.Index]!=null)_homeSelected=button.Index;_actions[button.Index]?.Invoke();if(IsOpen)Refresh();}
                     }
                 }
+                UpdateHomePointer(homeHover,trigger);
                 return true;
             }
             left.TryGetFeatureValue(CommonUsages.primary2DAxis,out var leftAxis);
@@ -453,6 +462,7 @@ namespace BoatAttack.Fishing
         private void InteractTracked()
         {
             if(!_c.Ashore){_c.Interact();return;}
+            if(_c.HomeInteractionTargetSelected){_c.RequestWorldInteraction();return;}
             if(_c.Realms.TryTarget(out _,out _)){_c.Realms.Interact();return;}
             if(_c.Residents.TryNearby(out int npc)){_c.Residents.Talk(npc);return;}
             if(_c.Shore.TryClimb())return;

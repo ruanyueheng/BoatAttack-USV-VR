@@ -5,21 +5,22 @@ namespace BoatAttack.Fishing
     /// <summary>Drawing primitives for the desktop HUD: one palette, rounded cards and custom buttons.</summary>
     public sealed partial class FishingHUD
     {
-        private static readonly Color Ink = new Color(.025f, .048f, .082f, .96f);
-        private static readonly Color InkRaised = new Color(.055f, .10f, .15f, .82f);
-        private static readonly Color Hairline = new Color(.64f, .77f, .75f, .16f);
+        private static readonly Color Ink = FishingUITheme.Paper;
+        private static readonly Color InkRaised = FishingUITheme.Light;
+        private static readonly Color Hairline = new Color(.65f,.48f,.29f,.38f);
         private static readonly Color CardShadow = new Color(.08f, .18f, .19f, .16f);
-        private static readonly Color Muted = new Color(.70f, .80f, .79f);
-        private static readonly Color Faint = new Color(.56f, .68f, .68f);
-        private static readonly Color Mint = new Color(.38f, .84f, .71f);
-        private static readonly Color Gold = new Color(.96f, .72f, .35f);
-        private static readonly Color Danger = new Color(1f, .46f, .37f);
-        private static readonly Color Sky = new Color(.47f, .76f, .96f);
-        private static readonly Color Track = new Color(.15f, .24f, .25f);
-        private static readonly Color ButtonFill = new Color(.09f, .17f, .18f, .85f);
-        private static readonly Color ButtonHover = new Color(.13f, .28f, .27f);
-        private static readonly Color ButtonOff = new Color(.09f, .13f, .14f, .8f);
-        private static readonly Color InkText = new Color(.92f, .96f, .93f);
+        private static readonly Color Muted = FishingUITheme.Muted;
+        private static readonly Color Faint = new Color(.36f,.41f,.35f);
+        private static readonly Color Mint = FishingUITheme.Sage;
+        private static readonly Color Gold = FishingUITheme.Gold;
+        private static readonly Color Danger = new Color(.71f,.28f,.18f);
+        private static readonly Color Sky = new Color(.21f,.42f,.42f);
+        private static readonly Color Track = new Color(.76f,.77f,.65f);
+        private static readonly Color ButtonFill = FishingUITheme.Light;
+        private static readonly Color ButtonHover = new Color(.88f,.93f,.82f);
+        private static readonly Color ButtonOff = FishingUITheme.Disabled;
+        private static readonly Color InkText = FishingUITheme.Ink;
+        private Rect _pressedButton;
 
         // Opacity multiplier for everything drawn through this kit (used by fading cards).
         private float _fade = 1f;
@@ -51,9 +52,10 @@ namespace BoatAttack.Fishing
         /// <summary>Raised card: soft drop shadow, warm ivory body, hairline edge and an accent tick.</summary>
         private void Card(Rect r, Color accent)
         {
-            Rounded(new Rect(r.x-3, r.y+5, r.width+6, r.height), new Color(0,0,0,.3f), 10);
+            Rounded(new Rect(r.x, r.y+3, r.width, r.height), new Color(.20f,.17f,.10f,.14f), 10);
             Rounded(r, Ink, 10);
-            Outline(r, accent*new Color(1,1,1,.35f), 10);
+            Outline(r, Gold*new Color(1,1,1,.65f), 10);
+            Outline(new Rect(r.x+4,r.y+4,r.width-8,r.height-8), Hairline*.45f, 8);
             Fill(r.x+24,r.y,Mathf.Min(84,r.width-48),2,accent);
             foreach(float x in new[]{r.x+9,r.xMax-9})Disc(new Vector2(x,r.y+9),1.5f,accent*new Color(1,1,1,.5f));
         }
@@ -61,9 +63,10 @@ namespace BoatAttack.Fishing
         private void Label(Rect r, string text, int size, Color color, bool bold = false, TextAnchor align = TextAnchor.UpperLeft)
         {
             _label.fontSize = size;
+            _label.font=bold && size>=25?FishingUITheme.Heading:_font;
             // The bundled face is Medium; synthetic bold distorts small Chinese counters.
             _label.fontStyle = FontStyle.Normal;
-            _label.normal.textColor = Faded(color == Color.white ? InkText : color);
+            _label.normal.textColor = Faded(color==Color.white?InkText:color==Gold?new Color(.48f,.32f,.15f):color==Mint?new Color(.20f,.39f,.30f):color);
             _label.alignment = align;
             GUI.Label(r, text, _label);
         }
@@ -78,10 +81,12 @@ namespace BoatAttack.Fishing
         private bool Button(Rect r, string text, bool enabled = true, bool primary = false, int size = 17)
         {
             bool hover = enabled && r.Contains(Event.current.mousePosition);
-            Color fill = !enabled ? ButtonOff : primary ? (hover ? new Color(.20f, .48f, .40f) : new Color(.12f, .34f, .29f)) : hover ? ButtonHover : ButtonFill;
+            if(Event.current.rawType==EventType.MouseDown && Event.current.button==0 && hover)_pressedButton=r;
+            bool pressed=enabled && _pressedButton==r && GUIUtility.hotControl!=0;
+            Color fill = !enabled ? ButtonOff : pressed?FishingUITheme.Selected:primary?FishingUITheme.Selected:hover?ButtonHover:ButtonFill;
             Rounded(r, fill, 6);
-            Outline(r,!enabled?Hairline:primary?Mint*new Color(1,1,1,.55f):hover?Gold*new Color(1,1,1,.55f):Hairline,6);
-            Color ink = !enabled ? Faint : primary ? Mint : Color.white;
+            Outline(r,!enabled?Hairline:pressed?InkText:primary||hover?Mint:Hairline,6,pressed||primary?2:1);
+            Color ink = !enabled ? Faint : Color.white;
             Label(r, text, size, ink, true, TextAnchor.MiddleCenter);
             return GUI.Button(r, GUIContent.none, GUIStyle.none) && enabled;
         }
@@ -101,6 +106,7 @@ namespace BoatAttack.Fishing
         /// <summary>Pill-shaped tag; returns its width so callers can lay out a row.</summary>
         private float Chip(float x, float y, string text, Color color, bool filled = false, int size = 13)
         {
+            _label.font=_font;
             _label.fontSize = size;
             _label.fontStyle = FontStyle.Normal;
             float width = _label.CalcSize(new GUIContent(text)).x + 18;

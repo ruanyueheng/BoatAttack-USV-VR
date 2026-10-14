@@ -73,22 +73,23 @@ namespace BoatAttack.Fishing
             _motion.Exert(sprint && axes.sqrMagnitude > .01f, axes.sqrMagnitude < .01f, dt);
             float speed = UnityEngine.XR.XRSettings.isDeviceActive ? 1.2f : sprint && Stamina > .08f ? 2.7f : 1.45f;
             var velocity = heading * new Vector3(axes.x, 0, axes.y) * speed;
-            var next = Position + velocity * dt; float water = WaterHeight();
+            float water = WaterHeight();
             var grab=Position+Vector3.ProjectOnPlane(velocity,Vector3.up).normalized*.9f;
             if ((jump || UnityEngine.XR.XRSettings.isDeviceActive) && axes.sqrMagnitude>.01f && GroundBelow(grab, water + 1.7f, 2.6f, out var shore) && shore.y <= water + 1.35f && SafeCoastalFooting(shore) && Clearance(shore)
                 && ClearSight(Position+Vector3.up*1.55f,shore+Vector3.up*1.55f))
             {
                 if (Relocate(shore, Actor.rotation)) { Controller.View.ResetLook(); Controller.Notice("已攀上低岸 · 继续探索。", 3); return; }
             }
-            float vertical = Mathf.Clamp((water - .65f - Actor.position.y) * 4, -2.4f, 1.8f);
+            float eyeHeight = UnityEngine.XR.XRSettings.isDeviceActive ? FishingXRSeat.EyeHeight : _character.EyePosition.y - Actor.position.y;
+            float vertical = Mathf.Clamp((water + .24f - eyeHeight - Actor.position.y) * 4, -2.4f, 1.8f);
             var previous = Position; Body.Move((velocity + Vector3.up * vertical) * dt);
             WalkSpeed = Vector3.ProjectOnPlane(Position - previous, Vector3.up).magnitude / dt;
             if (velocity.sqrMagnitude > .01f) Actor.rotation = Quaternion.LookRotation(velocity);
         }
         public void ApplyTraversalPose()
         {
-            if (!Ashore || (!Swimming && !Climbing) || Controller.Paused) return;
-            _character.ApplyTraversalPose(Swimming, Climbing, WalkSpeed, UnityEngine.XR.XRSettings.isDeviceActive);
+            if (!Ashore || (!Swimming && !Climbing)) return;
+            _character.ApplyTraversalPose(Swimming, Climbing, WalkSpeed, UnityEngine.XR.XRSettings.isDeviceActive, Controller.Paused);
         }
         public bool EatRation()
         {

@@ -79,7 +79,7 @@ namespace BoatAttack.EditorTools
             Check(skinned.All(r=>r.sharedMaterials.All(m=>m!=null && m.shader.name=="Universal Render Pipeline/Lit")),"all character materials converted to URP");
             var tray=c.Player.transform.Find("Safe catch inspection tray");c.CatchRig.Apply(.02f);Check(tray!=null && !tray.gameObject.activeSelf,"idle inspection tray is stowed");
             Check(world.Nodes.Count>=40,"at least forty usable renewable resource nodes");
-            Check(world.State.Stations.Count()==3 && world.State.Stations.Count(s=>s.kind==CraftStation.Forge)==1,"public workbench, furnace and forge spawn once");
+            Check(world.State.Stations.Count(s=>s.permanent)==6 && world.State.Stations.Count(s=>s.kind==CraftStation.Forge)==2,"shore and home workbench, furnace and forge spawn once at each location");
             // Real terrain, away from every named berth. Scan only to choose fixture coordinates,
             // then exercise production TryDisembark with the discovered geometry.
             bool natural=false;Vector3 coast=Vector3.zero;

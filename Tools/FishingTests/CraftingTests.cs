@@ -45,6 +45,21 @@ internal static class CraftingTests
         check(!loaded.Remove(bag,furnace) && bag.Count(FieldItem.Furnace)==1,"Dismantled item cannot be duplicated");
         int publicId=loaded.Place(null,CraftStation.Workbench,2,1,2,0,true);
         check(publicId>0 && !loaded.Remove(bag,publicId),"Public facilities cannot be taken");
+        var crowded=new FishingWorkshop();var builder=new FishingBackpack(false);builder.TryAdd(FieldItem.Workbench,33);
+        for(int i=0;i<FishingWorkshop.MaxPlayerStations;i++)check(crowded.Place(builder,CraftStation.Workbench,i,1,5,0)>0,"Owned station slot "+i);
+        check(crowded.Place(builder,CraftStation.Workbench,40,1,5,0)<0 && builder.Count(FieldItem.Workbench)==1,"Owned facility cap leaves rejected item in the bag");
+        int homeFurnace=-1;
+        for(int i=0;i<6;i++)
+        {
+            int id=crowded.Place(null,(CraftStation)(1+i%3),i,1,10,0,true);
+            check(id>0,"Full owned collection reserves independent fixed facility slot "+i);if(i==4)homeFurnace=id;
+        }
+        crowded.FinishInitialization();builder.TryAdd(FieldItem.IronOre,2);builder.TryAdd(FieldItem.Coal,1);
+        check(crowded.Start(builder,homeFurnace,"iron",2,FieldItem.Coal),"Home furnace uses the same reserved-input queue");crowded.Tick(1);
+        check(crowded.Place(null,CraftStation.Forge,0,1,0,0,true)<0,"Only six fixed facilities can be installed");
+        check(FishingWorkshop.TryRestore(crowded.Snapshot(),out var crowdedRestored) && crowdedRestored.Initialized
+            && crowdedRestored.Stations.Count()==FishingWorkshop.MaxStations && crowdedRestored.Station(homeFurnace).remaining==2
+            && crowdedRestored.Station(homeFurnace).progress==1,"Full save restores all owned and fixed stations without losing the home smelting queue");
         check(state.Harvest(bag,0,FieldItem.Stone,3) && !state.Harvest(bag,0,FieldItem.Stone,3),"Resource harvest enters cooldown once");
         check(!state.Harvest(full,1,FieldItem.Stone,3) && state.ResourceReady(1),"Full bag does not deplete resource node");
         check(!state.Harvest(bag,64,FieldItem.Stone,3) && !state.Harvest(bag,1,FieldItem.IronIngot,3),"Unknown nodes and non-natural yields rejected");

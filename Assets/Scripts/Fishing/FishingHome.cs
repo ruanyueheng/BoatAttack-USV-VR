@@ -15,7 +15,13 @@ namespace BoatAttack.Fishing
         private bool _committed;
         private Transform _walk;
         private Material _walkMaterial;
+        private Terrain _shoreTerrain;
+        private TerrainData _shoreOriginal,_shoreCopy;
+        private GameObject _oldCliff;
+        private readonly Transform[] _interactables=new Transform[4];
+        private readonly Vector3[] _interactionPoints=new Vector3[4];
         private readonly System.Collections.Generic.List<Light> _lamps=new System.Collections.Generic.List<Light>();
+        public bool LightsOn { get; private set; }=true;
         public Transform House { get; private set; }
         public Transform Bed { get; private set; }
         public Vector3 Origin { get; private set; }
@@ -23,6 +29,7 @@ namespace BoatAttack.Fishing
         public Vector3 WakePoint => Origin+new Vector3(-1.6f,.22f,2.5f);
         public Vector3 Berth => new Vector3(Origin.x+3,0,Origin.z-26);
         public Vector3 BoardwalkStart => new Vector3(Origin.x,1.05f,Origin.z-21);
+        public Vector3 StationPosition(CraftStation kind)=>Origin+new Vector3(kind==CraftStation.Workbench?1.95f:kind==CraftStation.Furnace?3.55f:5.12f,.22f,.65f);
         public Vector3 ApproachPosition
         {
             get
@@ -34,20 +41,27 @@ namespace BoatAttack.Fishing
         }
         public bool Inside => _c.Ashore && Mathf.Abs(_c.Shore.Position.x-Origin.x)<5.9f && Mathf.Abs(_c.Shore.Position.z-Origin.z)<4.9f && Mathf.Abs(_c.Shore.Position.y-Origin.y-.20f)<.6f;
         public bool Sleeping { get; private set; }
-        public bool NearBed => _c.Ashore && !_c.Shore.Swimming && !_c.Shore.Climbing
-            && FishingPrototype.FlatDistance(_c.Shore.Position,WakePoint)<2.2f && Mathf.Abs(_c.Shore.Position.y-WakePoint.y)<.6f;
+        public bool NearBed => ReachInteraction(0);
         public bool CanSleep => NearBed && !_c.Paused && !_c.StoryBlocksGameplay && !_c.WorldActionBusy && !_c.HasPendingCatch
             && !_c.ShopBlocksGameplay && !_c.InventoryOpen && !_c.JournalOpen && _c.Career.Calendar.Day<FishingCalendar.MaxDay;
         public void Build(FishingPrototype c)
         {
             _c=c;
+            ClearOldShore();
             // Surveyed open water west of the harbor leaves shops and fishing grounds clear.
             Origin=new Vector3(-180,2.2f,10);
             House=new GameObject("回潮渔屋").transform;House.SetParent(transform,false);House.position=Origin;
             // The authored shell is already in metres; preserve its exact floor and door coordinates.
-            var shell=Resources.Load<GameObject>("FishingV023/Home/HouseShellView");
-            if(shell==null)throw new InvalidOperationException("Missing V023 home art; run FishingV023Assets.Build.");
+            var shell=Resources.Load<GameObject>("FishingV027/Home/HouseShellView");
+            if(shell==null)throw new InvalidOperationException("Missing V027 home art; run FishingV027Assets.Prepare.");
             UnityEngine.Object.Instantiate(shell,House,false);
+            foreach(string name in new[]{"IslandGround","IslandDetails"})
+            {
+                var source=Resources.Load<GameObject>("FishingV027/Home/"+name+"View");
+                if(source==null)throw new InvalidOperationException("Missing V027 island model: "+name);
+                var island=UnityEngine.Object.Instantiate(source,transform,false);island.name="V027 "+name;island.transform.position=Origin;
+                if(name=="IslandGround")foreach(var filter in island.GetComponentsInChildren<MeshFilter>())filter.gameObject.layer=10;
+            }
             Solid("Home floor",new Vector3(0,.10f,0),new Vector3(12,.20f,10));
             Solid("Porch floor",new Vector3(0,.10f,-6.5f),new Vector3(13,.20f,3));
             foreach(float side in new[]{-1f,1f})
@@ -62,18 +76,28 @@ namespace BoatAttack.Fishing
             Place("bookcaseOpen",-5.20f,4.2f,2.2f,90);Place("books",-4.6f,4.2f,.6f,0,.20f,false);
             Place("loungeSofa",-3.2f,-1.8f,3.1f,180);Place("loungeChair",-5.1f,-3.3f,1.45f,100);
             Place("rugRectangle",-3.0f,-3.25f,3.4f,0,.203f,false);Place("tableCoffee",-3.0f,-3.2f,1.5f);
-            Place("radio",-3.0f,-3.2f,.34f,0,.82f,false);Place("lampRoundFloor",-5.2f,-.5f,1.75f);
+            Furnish("radio",new Vector3(-3,.82f,-3.2f),.34f,0,false,out var radio);
+            Furnish("lampRoundFloor",new Vector3(-5.2f,.20f,-.5f),1.75f,0,true,out var lightSwitch);
             Place("kitchenCabinetDrawer",2.0f,4.2f,1.55f);Place("kitchenSink",3.55f,4.2f,1.55f);
             Place("kitchenStove",5.0f,4.2f,1.55f);Place("kitchenFridgeSmall",5.12f,2.35f,1.5f);
-            Place("tableRound",2.7f,1.2f,1.6f);Place("chair",1.5f,1.2f,1.0f,90);Place("chair",3.8f,1.2f,1.0f,-90);
-            Place("desk",3.65f,-3.9f,2.15f);Place("chairDesk",3.65f,-2.65f,1.18f,180);
+            Furnish("desk",new Vector3(3.65f,.20f,-3.9f),2.15f,0,true,out var chartDesk);
             Place("books",3.2f,-3.9f,.65f,0,1.0f,false);Place("lampRoundTable",4.3f,-3.9f,.60f,0,1.0f,false);
             Place("pottedPlant",5.05f,-3.6f,1.6f);Place("pottedPlant",-5.1f,-6.5f,1.3f);
-            Place("coatRackStanding",1.0f,-4.1f,1.8f);Place("bathroomSink",5.1f,.0f,1.15f,90);Place("toilet",5.1f,-1.1f,1.0f,90);
+            Place("coatRackStanding",1.0f,-4.1f,1.8f);
             // A tall bookcase divides the sleeping area without an impassable doorway.
             Place("bookcaseOpen",-.8f,3.1f,2.1f,90);
-            FishingV019Art.Sign("回潮渔屋\n灯会为归来的人亮着",House,new Vector3(0,2.66f,-5.20f),.023f,new Color(.96f,.86f,.58f));
+            FishingArt.Shape("Cottage name board",PrimitiveType.Cube,House,new Vector3(0,3.55f,-5.23f),new Vector3(3.2f,.70f,.08f),c.dark);
+            FishingV019Art.Sign("回潮渔屋\n灯会为归来的人亮着",House,new Vector3(0,3.55f,-5.29f),.023f,FishingUITheme.Light);
             FishingV019Art.Sign("E 躺下休息至清晨",House,new Vector3(-3.3f,1.5f,2.7f),.014f,Color.white);
+            RegisterInteraction(0,Bed,new Vector3(-1.6f,.85f,2.5f));
+            RegisterInteraction(1,radio,new Vector3(-3,1.0f,-3.2f));
+            RegisterInteraction(2,chartDesk,new Vector3(3.65f,1.15f,-3.9f));
+            RegisterInteraction(3,lightSwitch,new Vector3(-5.2f,1.3f,-.5f));
+            FishingV019Art.Sign("天气收音机",House,new Vector3(-3,1.42f,-3.2f),.012f,Color.white);
+            FishingV019Art.Sign("航线书桌 · 查看海图",House,new Vector3(3.65f,1.65f,-3.9f),.012f,Color.white);
+            FishingV019Art.Sign("室内灯 · 开关",House,new Vector3(-5.2f,2.05f,-.5f),.012f,Color.white);
+            foreach(var kind in new[]{CraftStation.Workbench,CraftStation.Furnace,CraftStation.Forge})
+                FishingV019Art.Sign(FishingRecipes.StationName(kind),House,StationPosition(kind)-Origin+Vector3.up*1.6f,.014f,new Color(.96f,.86f,.58f));
             var start=BoardwalkStart;var end=Origin+new Vector3(0,.20f,-8);
             _walkMaterial=new Material(c.PaletteShader){name="V023 boardwalk cedar"};_walkMaterial.SetColor("_BaseColor",new Color(.54f,.34f,.18f));_walkMaterial.SetFloat("_Gloss",.05f);
             FishingArt.Shape("Home foundation",PrimitiveType.Cube,House,new Vector3(0,-1.15f,0),new Vector3(12,2.5f,10),_walkMaterial,true);
@@ -99,6 +123,89 @@ namespace BoatAttack.Fishing
             var go=new GameObject("Sleep fade",typeof(RectTransform),typeof(Canvas),typeof(Image));go.transform.SetParent(transform,false);
             _fade=go.GetComponent<Canvas>();_fade.sortingOrder=250;_black=go.GetComponent<Image>();_black.color=Color.clear;_black.raycastTarget=false;go.SetActive(false);
             Physics.SyncTransforms();
+            _c.WorkshopWorld.EnsureHomeStations();
+            WaterSystem.Water.Instance?.CaptureDepthMap();
+        }
+
+        private void ClearOldShore()
+        {
+            var old=GameObject.Find("Island Level/Environment Objects/LargeCliff03");if(old==null)return;
+            var area=new Rect(-166,-28,42,50);
+            // A player-built facility must not lose its supporting land during this visual upgrade.
+            foreach(var station in _c.WorkshopWorld.State.Stations)
+                if(area.Contains(new Vector2(station.x,station.z)))return;
+            foreach(var site in _c.Shore.Sites)if(site.Available)
+            {
+                if(area.Contains(new Vector2(site.Landing.x,site.Landing.z)))return;
+                foreach(var task in site.Tasks)if(area.Contains(new Vector2(task.x,task.z)))return;
+            }
+            foreach(var terrain in Terrain.activeTerrains)
+            {
+                var p=terrain.transform.position;var size=terrain.terrainData.size;
+                if(area.xMin<p.x || area.xMax>p.x+size.x || area.yMin<p.z || area.yMax>p.z+size.z)continue;
+                _shoreTerrain=terrain;_shoreOriginal=terrain.terrainData;_shoreCopy=Instantiate(_shoreOriginal);_shoreCopy.name="V027 local shore clearance";
+                int resolution=_shoreCopy.heightmapResolution-1;
+                int x=Mathf.FloorToInt((area.xMin-p.x)/size.x*resolution),z=Mathf.FloorToInt((area.yMin-p.z)/size.z*resolution);
+                int width=Mathf.CeilToInt(area.width/size.x*resolution)+2,depth=Mathf.CeilToInt(area.height/size.z*resolution)+2;
+                var heights=_shoreCopy.GetHeights(x,z,width,depth);float seabed=Mathf.Clamp01((-4.5f-p.y)/size.y);
+                for(int row=0;row<depth;row++)for(int col=0;col<width;col++)heights[row,col]=Mathf.Min(heights[row,col],seabed);
+                _shoreCopy.SetHeights(x,z,heights);terrain.terrainData=_shoreCopy;
+                var collider=terrain.GetComponent<TerrainCollider>();if(collider!=null)collider.terrainData=_shoreCopy;terrain.Flush();
+                _oldCliff=old;old.SetActive(false);break;
+            }
+        }
+        private void RegisterInteraction(int id,Transform root,Vector3 point){_interactables[id]=root;_interactionPoints[id]=Origin+point;}
+        public Transform InteractionRoot(int id)=>id>=0 && id<_interactables.Length?_interactables[id]:null;
+        public Vector3 InteractionPoint(int id)=>_interactionPoints[id];
+        public bool ReachInteraction(int id)
+        {
+            var root=InteractionRoot(id);
+            if(_c==null || root==null || !root.gameObject.activeInHierarchy || !_c.Ashore || _c.Shore.Swimming || _c.Shore.Climbing)return false;
+            var point=_interactionPoints[id];
+            if(FishingPrototype.FlatDistance(_c.Shore.Position,point)>2.2f || Mathf.Abs(_c.Shore.Position.y-Origin.y-.20f)>.6f)return false;
+            var from=_c.Shore.Position+Vector3.up*_c.Shore.EyeHeight;var delta=point-from;
+            foreach(var hit in Physics.RaycastAll(from,delta.normalized,delta.magnitude,~(1<<4),QueryTriggerInteraction.Ignore))
+                if(!FishingShore.NonSolidSurface(hit.collider) && hit.collider!=_c.Shore.Body && !hit.transform.IsChildOf(root)
+                    && !hit.transform.IsChildOf(_c.Player.transform))return false;
+            return true;
+        }
+        public bool TryTarget(out int id,out Transform root)
+        {
+            id=-1;root=null;float nearest=float.MaxValue;
+            for(int i=0;i<_interactables.Length;i++)if(ReachInteraction(i))
+            {
+                float distance=FishingPrototype.FlatDistance(_c.Shore.Position,_interactionPoints[i]);
+                if(distance<nearest){nearest=distance;id=i;root=_interactables[i];}
+            }
+            return id>=0;
+        }
+        public string InteractionTitle(int id)
+        {
+            string key=XRSettings.isDeviceActive?"A ":"E ";
+            switch(id)
+            {
+                case 0:return _c.HasPendingCatch?"请先结算鱼获，再回床休息":key+"躺下休息至清晨";
+                case 1:return key+"收听今明两天天气";
+                case 2:return key+"在航线书桌查看海图";
+                case 3:return key+(LightsOn?"关闭":"打开")+"室内灯";
+                default:return null;
+            }
+        }
+        public bool InteractAt(int id)
+        {
+            if(!ReachInteraction(id) || _c.Paused || _c.StoryBlocksGameplay || _c.ShopBlocksGameplay || _c.InventoryOpen || _c.JournalOpen || _c.WorldActionBlocksGameplay)return false;
+            switch(id)
+            {
+                case 0:return Sleep();
+                case 1:
+                    _c.Notice("回潮天气台 · 现在："+BayClimate.Name(_c.Career.Calendar.Weather)+"；明日白昼："+BayClimate.Name(FishingCalendar.Forecast(_c.Career.Calendar.Day+1)),8);return true;
+                case 2:
+                    if(XRSettings.isDeviceActive)_c.XRNotebook.Open(12);else if(!_c.ChartExpanded)_c.ToggleChart();
+                    _c.Notice("航海图已展开 · 选择目的地规划下一次出航。",5);return true;
+                case 3:
+                    LightsOn=!LightsOn;UpdateLights();_c.Notice(LightsOn?"渔屋灯光已打开":"渔屋灯光已关闭",3);return true;
+                default:return false;
+            }
         }
         private void Solid(string name,Vector3 p,Vector3 size)
         {var go=new GameObject(name);go.transform.SetParent(House,false);go.transform.localPosition=p;go.AddComponent<BoxCollider>().size=size;}
@@ -146,7 +253,14 @@ namespace BoatAttack.Fishing
             _c.View.ResetLook();
         }
         private void OnDisable()=>CancelSleep();
-        private void Update(){foreach(var lamp in _lamps)lamp.intensity=Mathf.Lerp(.45f,1.3f,1-_c.Career.Calendar.Daylight);}
-        private void OnDestroy(){if(_walkMaterial!=null)Destroy(_walkMaterial);}
+        private void UpdateLights(){foreach(var lamp in _lamps)lamp.intensity=LightsOn?Mathf.Lerp(.45f,1.3f,1-_c.Career.Calendar.Daylight):0;}
+        private void Update(){if(_c!=null)UpdateLights();}
+        private void OnDestroy()
+        {
+            if(_walkMaterial!=null)Destroy(_walkMaterial);
+            if(_shoreTerrain!=null && _shoreTerrain.terrainData==_shoreCopy)
+            {_shoreTerrain.terrainData=_shoreOriginal;var collider=_shoreTerrain.GetComponent<TerrainCollider>();if(collider!=null)collider.terrainData=_shoreOriginal;}
+            if(_shoreCopy!=null)Destroy(_shoreCopy);if(_oldCliff!=null)_oldCliff.SetActive(true);
+        }
     }
 }

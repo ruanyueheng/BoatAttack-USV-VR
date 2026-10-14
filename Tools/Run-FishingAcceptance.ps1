@@ -27,7 +27,7 @@ $log = Join-Path $output 'player.log'
 $arguments = '-fishing-acceptance -fishing-acceptance-session ' + $Session + ' -logFile "' + $log + '" -screen-fullscreen 0 -screen-width ' + $Width + ' -screen-height ' + $Height
 if ($Mode -eq 'Smoke') { $arguments += ' -batchmode -nographics -fishing-acceptance-smoke' }
 if ($Mode -eq 'Capture') { $arguments += ' -fishing-acceptance-capture -fishing-acceptance-output "' + $output + '"' }
-# Capture/Manual explicitly request a visible interactive player. Smoke stays hidden.
+# Capture/Manual require a visible player; request permission before automated desktop capture.
 $style = if ($Mode -eq 'Smoke') { 'Hidden' } else { 'Normal' }
 $p = Start-Process -FilePath $Player -ArgumentList $arguments -WorkingDirectory $repo -WindowStyle $style -PassThru
 Write-Output "Acceptance $Mode ($Width x $Height), PID $($p.Id), evidence: $output"

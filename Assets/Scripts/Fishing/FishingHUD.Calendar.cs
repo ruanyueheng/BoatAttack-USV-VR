@@ -13,7 +13,7 @@ namespace BoatAttack.Fishing
             for(int i=0;i<28;i++)
             {
                 var cell=new Rect(r.x+32+(i%7)*132,r.y+240+(i/7)*72,122,62);
-                bool today=i+1==day.Date; Rounded(cell,today?new Color(.12f,.30f,.25f):InkRaised,6);
+                bool today=i+1==day.Date; Rounded(cell,today?FishingUITheme.Selected:InkRaised,6);
                 Label(cell.x+12,cell.y+7,100,27,(i+1).ToString(),22,today?Mint:InkText,today);
                 Label(cell.x+12,cell.y+36,100,20,today?"今天":(i==0?"季节开始":i==27?"季末":""),12,Muted);
             }

@@ -58,7 +58,7 @@ namespace BoatAttack.Fishing
         }
         private static bool IsPick(FieldItem item)=>item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe;
 
-        private enum WorldTargetKind { None,Expedition,Station,Resource,Pickup,Survey,Island,Carcass }
+        private enum WorldTargetKind { None,Expedition,Station,Resource,Pickup,Survey,Island,Carcass,Home }
         private struct WorldTarget
         {
             public WorldTargetKind Kind;public int Id;public Transform Root;
@@ -89,6 +89,7 @@ namespace BoatAttack.Fishing
                 }
                 else if(resource!=null)Offer(new WorldTarget{Kind=WorldTargetKind.Resource,Id=resource.Id,Root=resource.Root,Resource=resource},resource.Feet);
             }
+            if(Home!=null && Home.TryTarget(out int homeItem,out var homeRoot))Offer(new WorldTarget{Kind=WorldTargetKind.Home,Id=homeItem,Root=homeRoot},Home.InteractionPoint(homeItem));
             if(FieldWorld.TryPickupTarget(out var pickup,refresh))Offer(new WorldTarget{Kind=WorldTargetKind.Pickup,Id=pickup.Id,Root=pickup.Root,Pickup=pickup},pickup.Feet);
             if(RifleHunting!=null && RifleHunting.TryLootTarget(out var carcass))Offer(new WorldTarget{Kind=WorldTargetKind.Carcass,Id=carcass.Id,Root=carcass.Root},carcass.Feet);
             if(refresh)Shore.UpdateProximity();int task=Shore.NearbyTask;var marker=Shore.SurveyMarker(task);
@@ -120,10 +121,10 @@ namespace BoatAttack.Fishing
             bool shop=TackleShop!=null && TackleShop.NearCounter;
             trace.Append(" shopNear=").Append(shop).Append(" frame=").Append(Time.frameCount);
             InteractionPreflight check;
-            if(shop || target.Kind==WorldTargetKind.None || target.Kind==WorldTargetKind.Station || target.Root==null)
+            if(shop || target.Kind==WorldTargetKind.None || target.Kind==WorldTargetKind.Station || target.Kind==WorldTargetKind.Home || target.Root==null)
             {
-                check=new InteractionPreflight{TargetId=shop?"shop":target.Kind==WorldTargetKind.Station?"station:"+target.Id:"none",
-                    Reason=shop || target.Kind==WorldTargetKind.Station?"当前候选是即时 UI，不是接触动作":"没有有效接触候选",
+                check=new InteractionPreflight{TargetId=shop?"shop":target.Kind==WorldTargetKind.Station?"station:"+target.Id:target.Kind==WorldTargetKind.Home?"home:"+target.Id:"none",
+                    Reason=shop || target.Kind==WorldTargetKind.Station || target.Kind==WorldTargetKind.Home?"当前候选是即时交互，不是接触动作":"没有有效接触候选",
                     Actor=ExplorerPosition,RootPosition=target.Root==null?Vector3.zero:target.Root.position,
                     Shoulder=Shore.Character.ShoulderPosition(false),ArmReach=Shore.Character.ArmReach(false),Grounded=Shore.Grounded,Crouched=Shore.Crouched};
                 check.BaseShoulder=check.Shoulder-Shore.Character.AppliedInteractionLean;check.GeometryReason=check.Reason;
@@ -198,7 +199,6 @@ namespace BoatAttack.Fishing
                 if(WorldActionBusy)return "动作进行中 · "+Mathf.RoundToInt(Actions.Progress*100)+"% · Esc 取消";
                 if(Shore.Swimming)return "游泳 · 朝低岸移动并按空格上岸 · 靠近船边G上船";
                 if(Shore.Climbing)return Shore.ClimbHint;
-                if(Home!=null && Home.NearBed)return HasPendingCatch?"请先结算鱼获，再回床休息":"E 躺下休息至清晨";
                 if(Realms!=null && Realms.NearbyHint!=null)return Realms.NearbyHint;
                 if(Residents!=null && Residents.TryNearby(out int resident))return resident==4?"E 与汐禾交谈 · Tab 查看商品":"E 与"+FishingLore.ResidentName(resident)+"交谈";
                 if(Shore.ClimbHint!=null)return Shore.ClimbHint;
@@ -206,6 +206,7 @@ namespace BoatAttack.Fishing
                 var target=ResolveWorldTarget(false);
                 switch(target.Kind)
                 {
+                    case WorldTargetKind.Home:return Home.InteractionTitle(target.Id);
                     case WorldTargetKind.Expedition:return "E "+Expedition.InteractionLabel(target.Id);
                     case WorldTargetKind.Station:
                         var station=Career.Workshop.Station(target.Id);return station==null?null:"E 打开"+FishingRecipes.StationName(station.kind);
@@ -219,18 +220,19 @@ namespace BoatAttack.Fishing
             }
         }
         /// <summary>真实输入与 HUD 使用同一候选选择；接触阶段只提交已经锁定的目标。</summary>
+        internal bool HomeInteractionTargetSelected=>Home!=null && ResolveWorldTarget(true).Kind==WorldTargetKind.Home;
         public bool RequestWorldInteraction()
         {
             if(Paused || InventoryOpen || JournalOpen || ShopBlocksGameplay || StoryBlocksGameplay || WorldActionBlocksGameplay)return false;
             if(!Ashore){Interact();return true;}
             if(Shore.Swimming || Shore.Climbing)return false;
-            if(Home.NearBed)return Home.Sleep();
             if(Realms.TryTarget(out _,out _))return Realms.Interact();
             if(Residents.TryNearby(out int resident))return Residents.Talk(resident);
             if(Shore.TryClimb())return true;
             if(TackleShop!=null && TackleShop.NearCounter)return ToggleShop();
             var target=ResolveWorldTarget(true);
             if(target.Kind==WorldTargetKind.None){Notice("靠近可互动对象后按 E；低处物品可蹲下触及。",3);return false;}
+            if(target.Kind==WorldTargetKind.Home)return Home.InteractAt(target.Id);
             if(target.Kind==WorldTargetKind.Station)return WorkshopWorld.OpenStation(target.Id);
             if(target.Kind==WorldTargetKind.Resource)return RequestHarvest(target.Resource);
             var point=FishingContactGeometry.ClosestPoint(target.Root,Shore.Character.ShoulderPosition(false));int id=target.Id;
