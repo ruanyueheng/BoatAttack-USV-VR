@@ -16,3 +16,5 @@
 本机原生 Burst 缓存存在 DLL 加载问题，运行时专项临时使用 `-DisableBurst`，未修改永久 Burst 设置。上述检查不等同于人工手感、头显或发布构建验收。猎枪暂为桌面单发、无限弹药；锻造暂为即时配方，未加入敲击小游戏。
 
 预览见 [狩猎说明](HUNTING_RIFLE.md) 与 [锻造说明](FORGE_PROTOTYPE.md)。收银员增大与肩肘姿势修改保留在 `FishingCashier/FantasyGirl` 模型和 `FishingShopCashier.cs` 中。
+
+后续山脚煤矿/毛皮灯笼/活动时间刷新更新：3593 项规则断言通过，最终 Hunting 与 Forge 专项再次通过。新增内容见 [煤矿、灯笼与刷新说明](COAL_LANTERN_WILDLIFE.md)。

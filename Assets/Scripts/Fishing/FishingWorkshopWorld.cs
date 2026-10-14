@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 namespace BoatAttack.Fishing
 {
-    public sealed class FishingWorkshopWorld : MonoBehaviour
+    public sealed partial class FishingWorkshopWorld : MonoBehaviour
     {
         public sealed class ResourceNode {public int Id;public FieldItem Item;public Transform Root;public Vector3 Feet;}
         private FishingPrototype _c;
@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
             {
                 if(StationIsClosest){var s=State.Station(_nearStation);return "E 打开"+FishingRecipes.StationName(s.kind)+(s.ready>0?" · 有成品待领取":"");}
                 if(_nearNode==null)return null;
-                return State.ResourceReady(_nearNode.Id)?"E 采集 "+FishingBackpack.Name(_nearNode.Item)+(NeedsPick(_nearNode.Item)?" · 需手持石镐 / 铁镐":"")
+                return State.ResourceReady(_nearNode.Id)?(_nearNode.Item==FieldItem.Coal?"E 开采山脚煤矿":"E 采集 "+FishingBackpack.Name(_nearNode.Item))+(NeedsPick(_nearNode.Item)?" · 需手持石镐 / 铁镐":"")
                     :FishingBackpack.Name(_nearNode.Item)+" · "+State.ResourceWait(_nearNode.Id).ToString("0")+" 秒后恢复";
             }
         }
@@ -41,8 +41,11 @@ namespace BoatAttack.Fishing
                 for(int j=0;j<16;j++)
                 {
                     int id=site*16+j;var item=types[j%8];
-                    if(!FindResourceFoot(c.Shore.Sites[site].Landing,j,out var feet))continue;
-                    var root=MeshObject("Resource "+id+" / "+FishingBackpack.Name(item),item);root.position=feet;
+                    Vector3 feet;
+                    if(item==FieldItem.Coal)
+                    {if(!FindCoalFoot(c.Shore.Sites[site].Landing,j,out feet)){Debug.LogWarning("[COAL] No safe mountain-edge vein at site "+site+" slot "+j);continue;}}
+                    else if(!FindResourceFoot(c.Shore.Sites[site].Landing,j,out feet))continue;
+                    var root=MeshObject("Resource "+id+" / "+(item==FieldItem.Coal?"山脚煤矿":FishingBackpack.Name(item)),item);root.position=feet;
                     root.localRotation=Quaternion.Euler(0,id*47,0);_nodes.Add(new ResourceNode{Id=id,Item=item,Feet=feet,Root=root});
                 }
             }

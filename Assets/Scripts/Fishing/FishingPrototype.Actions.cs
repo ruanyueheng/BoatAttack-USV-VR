@@ -209,7 +209,7 @@ namespace BoatAttack.Fishing
                     case WorldTargetKind.Expedition:return "E "+Expedition.InteractionLabel(target.Id);
                     case WorldTargetKind.Station:
                         var station=Career.Workshop.Station(target.Id);return station==null?null:"E 打开"+FishingRecipes.StationName(station.kind);
-                    case WorldTargetKind.Resource:return "E 采集 "+FishingBackpack.Name(target.Resource.Item);
+                    case WorldTargetKind.Resource:return target.Resource.Item==FieldItem.Coal?"E 开采山脚煤矿 · 需手持石镐 / 铁镐":"E 采集 "+FishingBackpack.Name(target.Resource.Item);
                     case WorldTargetKind.Pickup:return "E 拾取 "+FishingBackpack.Name(target.Pickup.Item)+" ×"+target.Pickup.Count;
                     case WorldTargetKind.Carcass:return "E 收取猎物 · "+FishingAnimalLoot.Description(Career.HuntedAnimal(target.Id).kind);
                     case WorldTargetKind.Survey:return "E "+FishingExploration.TaskName(target.Id);

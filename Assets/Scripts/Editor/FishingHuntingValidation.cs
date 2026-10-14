@@ -134,6 +134,19 @@ namespace BoatAttack.EditorTools
             Capture(c,"gull-remains");
             Check(c.RifleHunting.CollectAnimal(gull.Id) && c.Career.Backpack.Count(FieldItem.GullMeat)==1 && c.Career.Backpack.Count(FieldItem.GullFeather)==1,"gull yields separately named meat and feathers once");
             saved=FishingSaveStore.Load(c.SavePath,out warning);Check(saved.HuntedAnimal(gull.Id).collected && saved.Backpack.Count(FieldItem.GullFeather)==1,"gull corpse and feather claim survive disk reload");
+            Check(!gull.Root.gameObject.activeSelf && !gull.Hitbox.enabled,"pickup immediately clears corpse visual and hit collider");
+            double remaining=c.Career.HuntedAnimal(gull.Id).respawnSeconds;
+            Check(remaining>299 && remaining<=FishingAnimalLoot.RespawnSeconds,"respawn countdown starts at pickup rather than at death");
+            c.Career.Calendar.RestUntilMorning();c.Career.TickHuntedRespawns(1,true);c.RifleHunting.RefreshAnimals();
+            Check(!gull.Root.gameObject.activeSelf && c.Career.HuntedAnimal(gull.Id).respawnSeconds==remaining,"sleep and pause do not respawn the collected gull");
+            for(int i=0;i<299;i++)c.Career.TickHuntedRespawns(1);c.RifleHunting.RefreshAnimals();
+            Check(!gull.Root.gameObject.activeSelf,"gull is not recycled early");
+            c.Career.TickHuntedRespawns(1);c.RifleHunting.RefreshAnimals();
+            Check(gull.Root.gameObject.activeSelf && gull.Hitbox.enabled && !gull.Dead && !c.RifleHunting.CollectAnimal(gull.Id),"new living gull returns without stale corpse loot");
+            gull.Root.GetComponent<Renderer>().GetPropertyBlock(props);
+            Check(props.GetVector("_FinMotion").sqrMagnitude>0,"respawned gull restores wing animation");
+            FishingSaveStore.Save(c.SavePath,c.Career);saved=FishingSaveStore.Load(c.SavePath,out warning);
+            Check(warning=="" && saved.HuntedAnimal(gull.Id)==null,"finished respawn persists without reviving old receipts");
             c.FieldWorld.enabled=true;
         }
         private static void ValidateIcons()

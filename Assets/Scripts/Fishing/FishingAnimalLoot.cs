@@ -5,6 +5,7 @@ namespace BoatAttack.Fishing
     public static class FishingAnimalLoot
     {
         public const int GullStart=8, GullCount=3, SeaTurtleId=11, TargetCount=12;
+        public const double RespawnSeconds=300;
         public static bool Valid(int id,LandAnimalKind kind)=>id>=0 && id<8?(int)kind==id%3:
             id>=GullStart && id<GullStart+GullCount?kind==LandAnimalKind.Gull:id==SeaTurtleId && kind==LandAnimalKind.SeaTurtle;
         public static FieldStack[] Drops(LandAnimalKind kind,bool spear=false)
@@ -32,6 +33,8 @@ namespace BoatAttack.Fishing
     {
         public int id;public LandAnimalKind kind;public float x,y,z,yaw;public bool collected;
         public double respawnAt;
+        public bool activeRecovery;
+        public double respawnSeconds;
         public HuntedAnimalData Copy()=>(HuntedAnimalData)MemberwiseClone();
     }
     public sealed partial class FishingCareer
@@ -46,7 +49,7 @@ namespace BoatAttack.Fishing
         public HuntedAnimalData HuntedAnimal(int id)
         {
             var a=_huntedAnimals.Find(entry=>entry.id==id);
-            return a==null || (a.collected && a.respawnAt>0 && Calendar.TotalMinutes>=a.respawnAt)?null:a.Copy();
+            return a==null || (a.collected && (a.activeRecovery?a.respawnSeconds<=0:a.respawnAt>0 && Calendar.TotalMinutes>=a.respawnAt))?null:a.Copy();
         }
         public bool KillLandAnimal(int id,LandAnimalKind kind,float x,float y,float z,float yaw)
         {
@@ -59,11 +62,27 @@ namespace BoatAttack.Fishing
         {
             var entry=_huntedAnimals.Find(a=>a.id==id);
             if(entry==null || entry.collected || !Backpack.TryAddBundle(FishingAnimalLoot.Drops(entry.kind)))return false;
-            entry.collected=true;return true;
+            entry.collected=true;entry.activeRecovery=true;entry.respawnSeconds=FishingAnimalLoot.RespawnSeconds;
+            entry.respawnAt=Calendar.TotalMinutes+FishingHunting.RecoveryMinutes;return true;
+        }
+        // Only active simulation consumes this saved timer; sleeping/changing the
+        // calendar or reopening the game cannot instantly respawn a new kill.
+        public bool TickHuntedRespawns(float seconds,bool paused=false)
+        {
+            if(paused || float.IsNaN(seconds) || float.IsInfinity(seconds) || seconds<=0)return false;
+            double step=Math.Min(seconds,1);bool ready=false;
+            foreach(var a in _huntedAnimals)
+            {
+                if(!a.collected || !a.activeRecovery || a.respawnSeconds<=0)continue;
+                a.respawnSeconds=Math.Max(0,a.respawnSeconds-step);ready |= a.respawnSeconds==0;
+            }
+            return ready;
         }
         private static bool ValidHuntedAnimal(HuntedAnimalData a)=>a!=null && FishingAnimalLoot.Valid(a.id,a.kind)
             && FiniteHunt(a.x) && FiniteHunt(a.y) && FiniteHunt(a.z) && FiniteHunt(a.yaw)
-            && !double.IsNaN(a.respawnAt) && !double.IsInfinity(a.respawnAt) && a.respawnAt>=0 && a.respawnAt<=(FishingCalendar.MaxDay+1d)*1440;
+            && !double.IsNaN(a.respawnAt) && !double.IsInfinity(a.respawnAt) && a.respawnAt>=0 && a.respawnAt<=(FishingCalendar.MaxDay+1d)*1440
+            && !double.IsNaN(a.respawnSeconds) && !double.IsInfinity(a.respawnSeconds) && a.respawnSeconds>=0 && a.respawnSeconds<=FishingAnimalLoot.RespawnSeconds
+            && (!a.activeRecovery || a.collected);
         private static bool FiniteHunt(float value)=>!float.IsNaN(value) && !float.IsInfinity(value) && Math.Abs(value)<=10000;
     }
 }

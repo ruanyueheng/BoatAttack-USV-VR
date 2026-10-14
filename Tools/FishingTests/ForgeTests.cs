@@ -23,6 +23,18 @@ internal static class ForgeTests
         check(!restored.Remove(bag,publicId),"Public forge cannot be dismantled");
         var full=new FishingBackpack(false);full.TryAdd(FieldItem.Stone,4);full.TryAdd(FieldItem.Stick,3);full.TryAdd(FieldItem.Fiber,3);full.TryAdd(FieldItem.Shell,33*64);
         check(!FishingRecipes.Craft(full,"forge-stone-pick",CraftStation.Forge) && full.Count(FieldItem.Stone)==4 && full.Count(FieldItem.Fiber)==3,"Forge full output bag rolls back all inputs");
-        check(FishingRecipes.ForgeRecipes.Length==3 && FishingRecipes.ForgeRecipes.All(r=>r.Station==CraftStation.Forge),"Forge prototype has three focused recipes");
+        check(FishingRecipes.ForgeRecipes.Length==6 && FishingRecipes.ForgeRecipes.All(r=>r.Station==CraftStation.Forge),"Forge exposes tools and three compatible coal/fur lantern recipes");
+        foreach(var pair in new[]{new[]{"coal-rabbit-lantern",FieldItem.RabbitFur.ToString()},new[]{"coal-fox-lantern",FieldItem.FoxFur.ToString()},new[]{"coal-legacy-lantern",FieldItem.Fur.ToString()}})
+        {
+            var fur=(FieldItem)Enum.Parse(typeof(FieldItem),pair[1]);var lampBag=new FishingBackpack(false);
+            lampBag.TryAdd(FieldItem.Coal,2);lampBag.TryAdd(fur,1);
+            check(!FishingRecipes.Craft(lampBag,pair[0],CraftStation.Hand) && lampBag.Count(FieldItem.Coal)==2,"Lantern requires forge without spending "+fur);
+            check(FishingRecipes.Craft(lampBag,pair[0],CraftStation.Forge) && lampBag.Count(FieldItem.Lantern)==1 && lampBag.Count(FieldItem.Coal)==0 && lampBag.Count(fur)==0,"Coal and species fur produce held lantern "+fur);
+            check(!FishingRecipes.Craft(lampBag,pair[0],CraftStation.Forge),"Lantern missing materials cannot duplicate "+fur);
+        }
+        var fullLamp=new FishingBackpack(false);fullLamp.TryAdd(FieldItem.Coal,3);fullLamp.TryAdd(FieldItem.RabbitFur,2);fullLamp.TryAdd(FieldItem.Shell,34*64);
+        check(!FishingRecipes.Craft(fullLamp,"coal-rabbit-lantern",CraftStation.Forge) && fullLamp.Count(FieldItem.Coal)==3 && fullLamp.Count(FieldItem.RabbitFur)==2,"Full lantern bag returns every coal and fur input");
+        var notFur=new FishingBackpack(false);notFur.TryAdd(FieldItem.Coal,2);notFur.TryAdd(FieldItem.GullFeather,1);notFur.TryAdd(FieldItem.TurtleShell,1);
+        check(!FishingRecipes.Craft(notFur,"coal-rabbit-lantern",CraftStation.Forge),"Feathers and shells are not silently consumed as fur");
     }
 }

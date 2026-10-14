@@ -68,6 +68,60 @@ namespace BoatAttack.EditorTools
             Check(!world.Remove(),"public forge is protected from dismantling");
             c.ToggleInventory();world.RefreshFromCareer();yield return null;
             Check(world.State.Stations.Count(s=>s.kind==CraftStation.Forge && s.permanent)==1,"reloading workshop state does not spawn a duplicate forge");
+            root=world.StationRoot(forge.id);var forgeFeet=c.Shore.Position;
+            Check(world.OpenStation(forge.id),"return to forge to make iron pick");
+            bag.TryAdd(FieldItem.IronIngot,2);bag.TryAdd(FieldItem.Stick,2);bag.TryAdd(FieldItem.Rope,1);
+            Check(world.Craft("forge-iron-pick") && bag.Count(FieldItem.IronPickaxe)==1,"iron pick is forged through real station transaction");
+            c.ToggleInventory();
+            var coal=world.Nodes.FirstOrDefault(n=>n.Item==FieldItem.Coal);
+            Check(coal!=null && world.MountainWallNearby(coal.Feet) && c.Shore.Clearance(coal.Feet),"coal vein is beside a real mountain wall on walkable footing");
+            foreach(var tool in new[]{FieldItem.StonePickaxe,FieldItem.IronPickaxe})
+            {
+                Equip(c,tool);c.Shore.SetCrouch(true);bool miningApproach=false;
+                foreach(float radius in new[]{.3f,.45f,.6f})
+                {
+                    for(int angle=0;angle<360;angle+=30)
+                    {
+                        var seed=coal.Feet+Quaternion.Euler(0,angle,0)*Vector3.back*radius;
+                        if(!c.Shore.Ground(seed,out ground) || !c.Shore.Clearance(ground))continue;
+                        Feet(c,ground+Vector3.up*.06f,coal.Root.position+Vector3.up*.2f);
+                        for(int i=0;i<8;i++){c.Shore.Move(Vector2.zero,false,false,true,.02f);c.PresentCharacterFrame();yield return null;}
+                        world.Sense();c.FieldWorld.Sense();var preflight=c.InspectWorldInteractionStart();
+                        if(preflight.TargetId=="resource:"+coal.Id && preflight.CanBegin){miningApproach=true;break;}
+                    }
+                    if(miningApproach)break;
+                }
+                Check(miningApproach,"safe real pick contact exists for mountain coal "+tool);
+                Capture(c,"mountain-coal");int before=bag.Count(FieldItem.Coal);
+                c.SelectFieldSlot(0);Check(!c.RequestHarvest() && bag.Count(FieldItem.Coal)==before,"bare hands cannot mine coal");Equip(c,tool);
+                Check(c.RequestWorldInteraction(),"E starts actual pick mining "+tool);
+                for(int i=0;i<180 && c.WorldActionBusy;i++)yield return null;
+                Check(bag.Count(FieldItem.Coal)==before+(tool==FieldItem.IronPickaxe?4:3),"mountain coal yields tool-specific amount "+tool);
+                Check(!c.RequestWorldInteraction(),"mined coal cannot pay again before recovery");
+                for(int i=0;i<90;i++)world.State.Tick(1);
+            }
+            c.Shore.SetCrouch(false);Feet(c,forgeFeet+Vector3.up*.02f,root.position+Vector3.up*.9f);
+            for(int i=0;i<20;i++){c.Shore.Move(Vector2.zero,false,false,false,.02f);c.PresentCharacterFrame();yield return null;}
+            Check(world.OpenStation(forge.id),"return from mountain coal to forge");
+            bag.TryAdd(FieldItem.RabbitFur,1);int fuel=bag.Count(FieldItem.Coal);
+            Check(world.Craft("coal-rabbit-lantern") && bag.Count(FieldItem.Lantern)==1 && bag.Count(FieldItem.RabbitFur)==0 && bag.Count(FieldItem.Coal)==fuel-2,"mined coal and hunted fur craft the portable lantern");
+            c.ToggleInventory();Equip(c,FieldItem.Lantern);
+            for(int i=0;i<100;i++){c.PresentCharacterFrame();yield return null;}
+            c.UseFieldItem();c.PresentCharacterFrame();
+            var light=c.FieldWorld.GetComponentsInChildren<Light>(true).Single(l=>l.name=="Field lantern light");
+            Check(c.FieldWorld.PresentedItem==FieldItem.Lantern && c.LanternOn && light.enabled && light.intensity>0,"crafted lantern is held and F lights the scene");
+            Check(Vector3.Distance(c.Shore.Character.PalmPosition(false),c.Hands.Right.Palm.position)<.035f,"crafted lantern uses the calibrated real hand socket");
+            Capture(c,"crafted-lantern");FishingSaveStore.Save(c.SavePath,c.Career);loaded=FishingSaveStore.Load(c.SavePath,out warning);
+            Check(warning=="" && loaded.Backpack.Count(FieldItem.Lantern)==1,"mined/crafted portable lantern persists");
+            c.UseFieldItem();c.PresentCharacterFrame();Check(!c.LanternOn && !light.enabled,"F also extinguishes the portable lantern");
+        }
+        private static void Equip(FishingPrototype c,FieldItem item)
+        {
+            var bag=c.Career.Backpack;int found=-1;
+            for(int i=0;i<FishingBackpack.SlotCount;i++)if(bag.At(i).count>0 && bag.At(i).item==item){found=i;break;}
+            Check(found>=0,"inventory contains crafted tool "+item);
+            if(found!=1)Check(bag.Move(found,1),"equip crafted tool "+item);
+            c.SelectFieldSlot(1);c.FieldWorld.ClearToolPresentation();c.PresentCharacterFrame();
         }
     }
 }

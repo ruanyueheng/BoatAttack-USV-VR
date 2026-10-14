@@ -57,9 +57,21 @@ internal static class HuntingTests
         check(hunter.Backpack.Count(FieldItem.TurtleShell)==2 && hunter.Backpack.Count(FieldItem.GullFeather)==1,"Turtle shells and gull feathers are not generic fur");
         check(!hunter.KillLandAnimal(9,LandAnimalKind.Fox,0,1,0,0) && !hunter.KillLandAnimal(12,LandAnimalKind.Gull,0,1,0,0),"Target IDs cannot change species or exceed population");
         check(FishingCareer.TryRestore(hunter.Snapshot(),out var allLoaded) && allLoaded.HuntedAnimal(8).collected && allLoaded.Backpack.Count(FieldItem.GullMeat)==1,"Gull and sea turtle loot persist");
-        double due=hunter.HuntedAnimal(8).respawnAt;
-        while(hunter.Calendar.TotalMinutes<due)hunter.Calendar.Tick(1,false);
-        check(hunter.HuntedAnimal(8)==null && hunter.KillLandAnimal(8,LandAnimalKind.Gull,2,1,3,0),"Collected wildlife can return only after the saved recovery clock");
+        double remaining=hunter.HuntedAnimal(8).respawnSeconds;
+        hunter.Calendar.RestUntilMorning();hunter.TickHuntedRespawns(1,true);hunter.TickHuntedRespawns(float.NaN);hunter.TickHuntedRespawns(float.PositiveInfinity);
+        check(hunter.HuntedAnimal(8)!=null && hunter.HuntedAnimal(8).respawnSeconds==remaining,"Paused, invalid ticks and calendar jumps never skip active respawn delay");
+        for(int i=0;i<299;i++)hunter.TickHuntedRespawns(1);
+        check(hunter.HuntedAnimal(8)!=null && !hunter.KillLandAnimal(8,LandAnimalKind.Gull,2,1,3,0),"Collected wildlife stays absent for the full delay");
+        check(FishingCareer.TryRestore(hunter.Snapshot(),out var countdownLoaded) && countdownLoaded.HuntedAnimal(8).respawnSeconds==1,"Remaining one-second respawn timer survives save round trip");
+        hunter.TickHuntedRespawns(1);
+        check(hunter.HuntedAnimal(8)==null && hunter.KillLandAnimal(8,LandAnimalKind.Gull,2,1,3,0),"Collected wildlife returns after five active minutes");
+        for(int i=0;i<600;i++)hunter.TickHuntedRespawns(1);
+        check(hunter.HuntedAnimal(8)!=null && !hunter.HuntedAnimal(8).collected,"Unclaimed corpse never disappears or starts an active timer");
+        check(hunter.CollectHuntedAnimal(8) && hunter.HuntedAnimal(8).respawnSeconds==FishingAnimalLoot.RespawnSeconds,"Picking up a delayed corpse starts a fresh full cooldown");
+        var legacyReceipt=hunter.Snapshot();legacyReceipt.huntedAnimals[0].activeRecovery=false;legacyReceipt.huntedAnimals[0].respawnSeconds=0;legacyReceipt.huntedAnimals[0].respawnAt=0;
+        check(FishingCareer.TryRestore(legacyReceipt,out var oldReceipt) && oldReceipt.HuntedAnimal(2)!=null,"Legacy collected receipt with no timer remains loadable");
+        var badTimer=hunter.Snapshot();badTimer.huntedAnimals[0].respawnSeconds=double.NaN;
+        check(!FishingCareer.TryRestore(badTimer,out _),"Invalid persisted respawn timer rejected");
         foreach(var meat in new[]{FieldItem.RabbitMeat,FieldItem.FoxMeat,FieldItem.TurtleMeat,FieldItem.GullMeat})
             check(Array.Exists(FishingRecipes.All,r=>r.Output==FieldItem.CookedMeat && r.Costs[0].item==meat),"Categorized meat retains furnace compatibility "+meat);
     }

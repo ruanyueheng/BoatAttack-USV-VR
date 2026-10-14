@@ -65,12 +65,13 @@ namespace BoatAttack.Fishing
                 animal.Hitbox.enabled=!animal.Dead;
                 if(receipt!=null)
                 {
+                    if(receipt.collected){animal.Root.gameObject.SetActive(false);continue;}
                     animal.Feet=new Vector3(receipt.x,receipt.y,receipt.z);animal.Target=animal.Feet;animal.Fleeing=false;
                     animal.Root.SetPositionAndRotation(animal.Feet+Vector3.up*.12f,Quaternion.Euler(0,receipt.yaw,animal.Id>=8?8:85));
                     var renderer=animal.Root.GetComponent<Renderer>();
                     animal.Root.position+=Vector3.up*Mathf.Max(0,animal.Feet.y+.02f-renderer.bounds.min.y);
                     if(!wasDead){var motion=new MaterialPropertyBlock();renderer.GetPropertyBlock(motion);motion.SetVector("_FinMotion",Vector4.zero);renderer.SetPropertyBlock(motion);}
-                    animal.Root.gameObject.SetActive(!receipt.collected);
+                    animal.Root.gameObject.SetActive(true);
                 }
                 else if(wasDead)
                 {animal.Feet=animal.Home;animal.Target=animal.Home;animal.Root.SetPositionAndRotation(animal.Home,Quaternion.identity);animal.Root.gameObject.SetActive(true);
@@ -84,6 +85,11 @@ namespace BoatAttack.Fishing
             box.center=bounds.center;box.size=bounds.size;box.isTrigger=true;animal.Hitbox=box;
             _targets.Add(animal);
             var properties=new MaterialPropertyBlock();animal.Root.GetComponent<Renderer>().GetPropertyBlock(properties);_finMotion[animal.Root]=properties.GetVector("_FinMotion");
+        }
+        private void Update()
+        {
+            if(_c==null || _c.Paused || (!_c.Automated && !Application.isFocused) || _c.StoryBlocksGameplay || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen))return;
+            if(_c.Career.TickHuntedRespawns(Time.deltaTime)){RefreshAnimals();_c.Save();}
         }
         public void RegisterMarine(MarineKind kind,int index,Transform root)
         {

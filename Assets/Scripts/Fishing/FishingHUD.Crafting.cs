@@ -20,7 +20,7 @@ namespace BoatAttack.Fishing
             for(int i=0;i<recipes.Length;i++)
             {
                 var recipe=recipes[i];
-                string ingredient=recipe.Output==FieldItem.CookedMeat?"（"+FishingBackpack.Name(recipe.Costs[0].item)+"）":"";
+                string ingredient=recipe.Output==FieldItem.CookedMeat?"（"+FishingBackpack.Name(recipe.Costs[0].item)+"）":recipe.Id.StartsWith("coal-")?"（"+FishingBackpack.Name(recipe.Costs[1].item)+"）":"";
                 if(Button(new Rect(3,i*45,350,39),FishingBackpack.Name(recipe.Output)+ingredient+" ×"+recipe.Count+"   ·   "+FishingRecipes.StationName(recipe.Station),true,_recipeIndex==i,15))_recipeIndex=i;
             }
             GUI.EndScrollView();
@@ -60,7 +60,7 @@ namespace BoatAttack.Fishing
                 Label(746,632,522,34,"背包打开时世界暂停；退出后继续烧制。离开岸边也会加工。",14,Muted);
                 if(current.ready>0 && !smelt && Button(new Rect(746,671,230,34),"领取炉内成品",true,false,15))world.Collect();
             }
-            else Label(746,599,514,70,"木堆 / 草丛 / 石料：靠近按 E 采集。\n煤和铁矿：手持石镐或铁镐后采集。\n资源 90 秒恢复；铁镐提高石矿采集量。",15,Muted);
+            else Label(746,599,514,70,"木堆 / 草丛 / 石料：靠近按 E 采集。\n山脚煤矿：手持镐按 E；煤 + 兔毛 / 狐皮可制灯笼。\n资源 90 秒恢复；铁镐提高石矿采集量。",15,Muted);
             if(context!=CraftStation.Hand && current!=null && !current.permanent)
                 if(Button(new Rect(1034,681,234,34),"收回此设施",current.remaining==0 && current.ready==0,false,15))world.Remove();
             Label(320,737,950,24,"设施与炉内物品独立保存 · 满包不吞材料 · 公共工坊位于西侧初始登岸点附近",14,Faint);

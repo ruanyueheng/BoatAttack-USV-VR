@@ -45,7 +45,10 @@ namespace BoatAttack.Fishing
             R("forge",CraftStation.Workbench,FieldItem.Forge,1,Stack(FieldItem.Stone,8),Stack(FieldItem.Clay,4),Stack(FieldItem.Plank,4)),
             R("forge-stone-pick",CraftStation.Forge,FieldItem.StonePickaxe,1,Stack(FieldItem.Stone,3),Stack(FieldItem.Stick,2),Stack(FieldItem.Fiber,2)),
             R("forge-iron",CraftStation.Forge,FieldItem.IronIngot,1,Stack(FieldItem.IronOre,2),Stack(FieldItem.Coal,1)),
-            R("forge-iron-pick",CraftStation.Forge,FieldItem.IronPickaxe,1,Stack(FieldItem.IronIngot,3),Stack(FieldItem.Stick,2),Stack(FieldItem.Rope,1))
+            R("forge-iron-pick",CraftStation.Forge,FieldItem.IronPickaxe,1,Stack(FieldItem.IronIngot,3),Stack(FieldItem.Stick,2),Stack(FieldItem.Rope,1)),
+            R("coal-rabbit-lantern",CraftStation.Forge,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.RabbitFur,1)),
+            R("coal-fox-lantern",CraftStation.Forge,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.FoxFur,1)),
+            R("coal-legacy-lantern",CraftStation.Forge,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.Fur,1))
         };
         public static readonly CraftRecipe[] ForgeRecipes=Array.FindAll(All,r=>r.Station==CraftStation.Forge);
         public static CraftRecipe Find(string id){foreach(var r in All)if(r.Id==id)return r;return null;}
