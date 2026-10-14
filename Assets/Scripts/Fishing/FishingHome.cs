@@ -21,8 +21,8 @@ namespace BoatAttack.Fishing
         public Vector3 Origin { get; private set; }
         public Vector3 Entry => Origin+new Vector3(0,.22f,-6.5f);
         public Vector3 WakePoint => Origin+new Vector3(-1.6f,.22f,2.5f);
-        public Vector3 Berth => _c.Shore.Sites[0].Berth+new Vector3(3,0,-7);
-        public Vector3 BoardwalkStart => _c.Shore.Sites[0].Berth+new Vector3(0,1.05f,-4);
+        public Vector3 Berth => new Vector3(Origin.x+3,0,Origin.z-26);
+        public Vector3 BoardwalkStart => new Vector3(Origin.x,1.05f,Origin.z-21);
         public Vector3 ApproachPosition
         {
             get
@@ -41,9 +41,9 @@ namespace BoatAttack.Fishing
         public void Build(FishingPrototype c)
         {
             _c=c;
-            // The original island has tall canopy colliders. A fixed clear-water plot avoids treating tree crowns as foundations.
-            Origin=c.Shore.Sites[0].Berth+new Vector3(-18,2.2f,22);
-            House=new GameObject("V023 · 回潮渔屋").transform;House.SetParent(transform,false);House.position=Origin;
+            // Surveyed open water west of the harbor leaves shops and fishing grounds clear.
+            Origin=new Vector3(-180,2.2f,10);
+            House=new GameObject("回潮渔屋").transform;House.SetParent(transform,false);House.position=Origin;
             // The authored shell is already in metres; preserve its exact floor and door coordinates.
             var shell=Resources.Load<GameObject>("FishingV023/Home/HouseShellView");
             if(shell==null)throw new InvalidOperationException("Missing V023 home art; run FishingV023Assets.Build.");
@@ -76,10 +76,15 @@ namespace BoatAttack.Fishing
             FishingV019Art.Sign("E 躺下休息至清晨",House,new Vector3(-3.3f,1.5f,2.7f),.014f,Color.white);
             var start=BoardwalkStart;var end=Origin+new Vector3(0,.20f,-8);
             _walkMaterial=new Material(c.PaletteShader){name="V023 boardwalk cedar"};_walkMaterial.SetColor("_BaseColor",new Color(.54f,.34f,.18f));_walkMaterial.SetFloat("_Gloss",.05f);
+            FishingArt.Shape("Home foundation",PrimitiveType.Cube,House,new Vector3(0,-1.15f,0),new Vector3(12,2.5f,10),_walkMaterial,true);
+            FishingArt.Shape("Porch foundation",PrimitiveType.Cube,House,new Vector3(0,-1.15f,-6.5f),new Vector3(13,2.5f,3),_walkMaterial,true);
+            FishingArt.Shape("Home landing foundation",PrimitiveType.Cube,transform,BoardwalkStart-Vector3.up*.73f,new Vector3(4,1.3f,3),_walkMaterial,true);
             FishingArt.Shape("Home boarding platform",PrimitiveType.Cube,transform,BoardwalkStart-Vector3.up*.08f,new Vector3(4,.16f,3),_walkMaterial,true);
             var delta=end-start;var walk=FishingArt.Shape("Home boardwalk",PrimitiveType.Cube,transform,(start+end)*.5f,new Vector3(2.6f,.14f,delta.magnitude+.2f),_walkMaterial,true);
             walk.transform.rotation=Quaternion.LookRotation(delta,Vector3.up);
             _walk=walk.transform;
+            var support=FishingArt.Shape("Boardwalk foundation",PrimitiveType.Cube,transform,walk.transform.position-walk.transform.up*1.27f,new Vector3(2.6f,2.4f,delta.magnitude+.2f),_walkMaterial,true);
+            support.transform.rotation=walk.transform.rotation;
             foreach(float side in new[]{-1f,1f})
             {
                 var rail=FishingArt.Shape("Boardwalk handrail",PrimitiveType.Cube,transform,(start+end)*.5f+walk.transform.right*(side*1.32f)+Vector3.up*.90f,new Vector3(.09f,.10f,delta.magnitude),_walkMaterial,true);rail.transform.rotation=walk.transform.rotation;

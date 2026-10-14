@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BoatAttack.Fishing
 {
-    /// <summary>使用同学分支原模型的静态店员，仅负责外观；全部交易仍由原商店处理。</summary>
+    /// <summary>使用原美女店员模型，交谈由居民系统处理，交易由原商店处理。</summary>
     public sealed class FishingShopCashier : MonoBehaviour
     {
         public const string ResourcePath = "FishingCashier/FantasyGirl/Cashier";

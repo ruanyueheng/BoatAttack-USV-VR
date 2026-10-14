@@ -59,7 +59,7 @@ namespace BoatAttack.Fishing
             id = -1; float best = float.MaxValue;
             for (int i = 0; i < 6; i++)
             {
-                if (i == 4 || !InRange(i)) continue;
+                if (!InRange(i)) continue;
                 float distance = Vector3.Distance(_c.ExplorerPosition, _people[i].position);
                 if (distance < best) { best = distance; id = i; }
             }
@@ -67,7 +67,8 @@ namespace BoatAttack.Fishing
         }
         public bool Talk(int id)
         {
-            if (_c.Paused || _c.InventoryOpen || _c.JournalOpen || _c.HasPendingCatch || _c.WorldActionBusy || _c.Realms.Transitioning || !InRange(id)) return false;
+            if (_c.Paused || _c.StoryBlocksGameplay || _c.InventoryOpen || _c.JournalOpen || _c.HasPendingCatch || _c.WorldActionBusy
+                || _c.Shore.Swimming || _c.Shore.Climbing || _c.Realms.Transitioning || !InRange(id)) return false;
             if (_c.ShopOpen && id != 4) return false;
             _c.TackleShop.Close(); _c.Career.Lore.Meet(id); _c.Save();
             ActiveId = id; _c.StoryModalChanged(); Say(Greeting(id));
@@ -90,7 +91,7 @@ namespace BoatAttack.Fishing
                         : _c.Career.Lore.Finale ? "你的航记已经记在港口的名册上。海面上还有鱼群、宝箱和旧航标。去走走吧，回家的灯会一直亮着。"
                         : "你带回了 " + _c.Career.Lore.ClearCount + " / 4 段回响。每座探索岛都有一扇刻着潮纹的门。把四段记忆带回这里，我们再一起连起航路。");
                 }
-                else Say(id == 4 ? "左侧陈列航海器材：罗盘、绳索、望远镜和提灯。右侧有食物与制作材料。\n\n船舶升级会立即装到船上；工具进背包后，按I移入快捷栏，再按F使用。金币不足或背包满时不会扣款。" : FishingLore.TrialHint(id) + "\n\n岛上潮纹石门通向" + FishingLore.ShrineName(id) + "。机关答错不收费，随时可以从入口返回。");
+                else Say(id == 4 ? "这里可以买钓竿、鱼线和卷线器升级，也能升级船舱、载重和操舵。\n\n探索用品有镐、猎矛、望远镜、提灯和绳索；制作材料与远航口粮在补给分类里。船舶升级立即生效，工具购入背包后按I装备、F使用。\n\n点“查看商品”可看价格。金币不足或背包满时不会扣款。" : FishingLore.TrialHint(id) + "\n\n岛上潮纹石门通向" + FishingLore.ShrineName(id) + "。机关答错不收费，随时可以从入口返回。");
             }
             else Say(id == 0 ? "风铃岛的瞭望绳梯可以攀登。靠近绳梯按E，W/S控制上下，空格离开。登高后能看见那片月牙海湾。"
                 : id == 1 ? "离岸可以游泳，Shift加速会消耗体力。靠近低岸，朝岸边走并按空格就能上岸；体力不足会变慢，停下就会恢复。"

@@ -43,6 +43,8 @@ namespace BoatAttack.Fishing
                         c.fishingSpots.Length+1+i,MapShoreColor);
             if(c.TackleShop!=null && c.TackleShop.Available)
                 ChartMarker(c.Ashore?c.TackleShop.Position:c.TackleShop.mooringPoint.position,center,"店",c.ShopNavigationIndex,MapShoreColor);
+            if(c.Home!=null)
+                ChartMarker(c.Home.Origin,center,"家",c.HomeNavigationIndex,Gold);
             for(int i=0;i<FishingAdventure.Count;i++)
                 ChartMarker(c.Ashore?FishingIslandWorld.Center(i):FishingIslandWorld.Berth(i),center,((char)('E'+i)).ToString(),c.IslandNavigationIndex(i),c.Career.Adventure.Restored(i)?Gold:MapShoreColor);
             if(c.Ashore)
@@ -110,8 +112,8 @@ namespace BoatAttack.Fishing
             if(selected)Outline(new Rect(p.x-17,p.y-17,34,34),Gold,17,2);
             Disc(p,12,MapSurface);Outline(new Rect(p.x-12,p.y-12,24,24),color,12,1.5f);
             Label(new Rect(p.x-12,p.y-12,24,24),text,14,Color.white,true,TextAnchor.MiddleCenter);
-            string name=target==c.ShopNavigationIndex?c.ShopName:target==0?"潮汐渔港":target<=c.fishingSpots.Length
-                ?FishingGrounds.Name(target-1):FishingExploration.SiteName(target-c.fishingSpots.Length-1);
+            string name=target==c.HomeNavigationIndex?"回潮渔屋":target==c.ShopNavigationIndex?c.ShopName:target==0?"潮汐渔港":target<=c.fishingSpots.Length
+                ?FishingGrounds.Name(target-1):target>c.ShopNavigationIndex?FishingAdventure.Name(target-c.ShopNavigationIndex-1):FishingExploration.SiteName(target-c.fishingSpots.Length-1);
             string tip=name+" · "+metres.ToString("0")+" m"+(offRange?"（屏外方位）":"");
             if(GUI.Button(new Rect(p.x-16,p.y-16,32,32),new GUIContent("",tip),GUIStyle.none))c.SelectNavigation(target);
         }

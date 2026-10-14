@@ -63,7 +63,10 @@ namespace BoatAttack.Fishing
         public static void Market(FishingPrototype c,List<Object> owned)
         {
             var dock=new GameObject("Tide and Fin floating fish market").transform;dock.SetParent(c.transform);dock.position=c.harbor;
-            FishingArt.Shape("Dock collision",PrimitiveType.Cube,dock,new Vector3(0,0.43f,0),new Vector3(8,0.38f,6),c.wood,true);
+            FishingArt.Shape("Dock collision",PrimitiveType.Cube,dock,new Vector3(0,-.18f,0),new Vector3(8,1.6f,6),c.wood,true);
+            // A low floating deck can launch the bow over it; the stall envelope stops boats while pedestrians use the actual deck.
+            var barrier=new GameObject("Boat building barrier");barrier.transform.SetParent(dock,false);barrier.transform.localPosition=Vector3.up*1.1f;
+            barrier.AddComponent<BoxCollider>().size=new Vector3(8,4.2f,6);
             for(int i=0;i<21;i++)FishingArt.Shape("Deck plank",PrimitiveType.Cube,dock,new Vector3(-3.8f+i*0.38f,0.65f,0),new Vector3(0.35f,0.09f,5.9f),i%3==0?c.wood:c.cream);
             foreach(float x in new[]{-3f,3f})foreach(float z in new[]{-2.4f,2.4f})
             {
@@ -81,8 +84,8 @@ namespace BoatAttack.Fishing
                 strip.transform.localRotation=Quaternion.Euler(slope*13f,0,0);
                 FishingArt.Shape("Awning valance",PrimitiveType.Cube,dock,new Vector3(-3.15f+i*0.57f,3.20f,slope*2.13f),new Vector3(0.56f,0.25f,0.06f),i%2==0?c.orange:c.cream);
             }
-            FishingArt.Shape("Counter base",PrimitiveType.Cube,dock,new Vector3(0,1.22f,0.55f),new Vector3(5.6f,1.05f,1.1f),c.teal);
-            FishingArt.Shape("Counter top",PrimitiveType.Cube,dock,new Vector3(0,1.80f,0.55f),new Vector3(5.8f,0.12f,1.25f),c.wood);
+            FishingArt.Shape("Counter base",PrimitiveType.Cube,dock,new Vector3(0,1.22f,0.55f),new Vector3(5.6f,1.05f,1.1f),c.teal,true);
+            FishingArt.Shape("Counter top",PrimitiveType.Cube,dock,new Vector3(0,1.80f,0.55f),new Vector3(5.8f,0.12f,1.25f),c.wood,true);
             for(int i=0;i<3;i++)
             {
                 var tray=Crate(dock,new Vector3(i*1.8f-1.8f,1.90f,0.55f),c.wood,c.teal,c.dark);tray.localScale=Vector3.one*0.9f;
