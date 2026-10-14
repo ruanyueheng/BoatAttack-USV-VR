@@ -121,9 +121,14 @@ namespace BoatAttack.Fishing
                 case FishingAcceptanceCase.LuxuryBoat: ToggleView();break;
                 case FishingAcceptanceCase.IslandJournal: _hud.JournalPage=5;ToggleJournal();break;
                 case FishingAcceptanceCase.IslandLanding:
-                    Teleport(FishingIslandWorld.Berth(0),Quaternion.Euler(0,180,0));
+                case FishingAcceptanceCase.ForestIslandLanding:
+                case FishingAcceptanceCase.WreckIslandLanding:
+                case FishingAcceptanceCase.StarIslandLanding:
+                    int landingIsland=selected==FishingAcceptanceCase.ForestIslandLanding?1:selected==FishingAcceptanceCase.WreckIslandLanding?2:selected==FishingAcceptanceCase.StarIslandLanding?3:0;
+                    Teleport(FishingIslandWorld.Berth(landingIsland),Quaternion.Euler(0,180,0));
                     if(!Shore.TryDisembark())throw new InvalidOperationException("Island fixture failed to disembark.");
-                    ToggleView();View.ApplyShoreLookDelta(new Vector2(900,0));NavigationTarget=IslandNavigationIndex(0);break;
+                    ToggleView();View.ResetLook();NavigationTarget=IslandNavigationIndex(landingIsland);
+                    Regions.Show(FishingAdventure.Name(landingIsland),FishingLore.Subtitle(landingIsland),landingIsland);break;
                 case FishingAcceptanceCase.ShopSupplies: PrepareAcceptanceShore(selected);_hud.ShopCategory=2;break;
                 case FishingAcceptanceCase.Settings: TogglePause(); break;
                 case FishingAcceptanceCase.ShoreFirstPerson:

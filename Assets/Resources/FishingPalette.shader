@@ -10,6 +10,7 @@ Shader "BoatAttack/FishingPalette"
         _Unlit("Unlit", Range(0,1)) = 0
         _Gloss("Gloss", Range(0,1)) = 0
         _Rim("Rim light", Range(0,1)) = 0
+        _Shadows("Coastal shadows", Range(0,1)) = 0
     }
     SubShader
     {
@@ -23,6 +24,8 @@ Shader "BoatAttack/FishingPalette"
             #pragma multi_compile_instancing
             #pragma multi_compile_fog
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             CBUFFER_START(UnityPerMaterial)
@@ -33,6 +36,7 @@ Shader "BoatAttack/FishingPalette"
             half _Unlit;
             half _Gloss;
             half _Rim;
+            half _Shadows;
             CBUFFER_END
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
             struct Attributes { float4 positionOS:POSITION; float3 normalOS:NORMAL; half4 color:COLOR; float2 uv:TEXCOORD0; UNITY_VERTEX_INPUT_INSTANCE_ID };
@@ -56,8 +60,8 @@ Shader "BoatAttack/FishingPalette"
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                 half3 albedo=input.color.rgb;
                 if(_Textured>.5h)albedo*=SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,input.uv).rgb;
-                half3 normal=normalize(input.normalWS);Light light=GetMainLight();
-                half diffuse=saturate(dot(normal,light.direction))*.7h+.22h;
+                half3 normal=normalize(input.normalWS);Light light=GetMainLight(TransformWorldToShadowCoord(input.positionWS));
+                half diffuse=saturate(dot(normal,light.direction))*.7h*lerp(1.0h,light.shadowAttenuation,_Shadows)+.22h;
                 half3 ambient=SampleSH(normal);
                 half3 color=albedo*(light.color*diffuse+ambient*.35h);
                 #if defined(_ADDITIONAL_LIGHTS) || defined(_ADDITIONAL_LIGHTS_VERTEX)
@@ -76,6 +80,52 @@ Shader "BoatAttack/FishingPalette"
                 color=lerp(color,albedo,_Unlit);
                 return half4(MixFog(color,input.fog),1);
             }
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags { "LightMode"="ShadowCaster" }
+            ZWrite On ZTest LEqual ColorMask 0 Cull Off
+            HLSLPROGRAM
+            #pragma vertex ShadowVert
+            #pragma fragment ShadowFrag
+            #pragma multi_compile_instancing
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
+            CBUFFER_START(UnityPerMaterial)
+            half4 _BaseColor;
+            half _Textured;
+            float4 _FinMotion;
+            float4 _TailMotion;
+            half _Unlit;
+            half _Gloss;
+            half _Rim;
+            half _Shadows;
+            CBUFFER_END
+            float3 _LightDirection;
+            float3 _LightPosition;
+            struct ShadowInput { float3 positionOS:POSITION; float3 normalOS:NORMAL; UNITY_VERTEX_INPUT_INSTANCE_ID };
+            float4 ShadowVert(ShadowInput input):SV_POSITION
+            {
+                UNITY_SETUP_INSTANCE_ID(input);
+                float3 p=TransformObjectToWorld(input.positionOS), n=TransformObjectToWorldNormal(input.normalOS);
+                #if defined(_CASTING_PUNCTUAL_LIGHT_SHADOW)
+                float3 direction=normalize(_LightPosition-p);
+                #else
+                float3 direction=_LightDirection;
+                #endif
+                float4 clipPos=TransformWorldToHClip(ApplyShadowBias(p,n,direction));
+                #if UNITY_REVERSED_Z
+                clipPos.z=min(clipPos.z,UNITY_NEAR_CLIP_VALUE);
+                #else
+                clipPos.z=max(clipPos.z,UNITY_NEAR_CLIP_VALUE);
+                #endif
+                return clipPos;
+            }
+            half4 ShadowFrag():SV_Target { clip(_Shadows-.5h);return 0; }
             ENDHLSL
         }
     }

@@ -39,6 +39,24 @@ namespace BoatAttack.Fishing
                 b.Tube(new Vector3(-.32f,.99f,-.1f),new Vector3(.06f,.99f,.1f),.028f,.028f,Wood,8);
                 b.Box(new Vector3(.06f,1,.1f),new Vector3(.1f,.08f,.21f),Iron);
             }
+            else if(item==FieldItem.Forge)
+            {
+                b.Box(new Vector3(0,.08f,0),new Vector3(1.25f,.16f,.9f),Rock);
+                foreach(float x in new[]{-.46f,.46f})foreach(float z in new[]{-.28f,.28f})b.Box(new Vector3(x,.4f,z),new Vector3(.16f,.66f,.16f),Wood);
+                b.Box(new Vector3(0,.72f,0),new Vector3(1.25f,.17f,.9f),Rock*.8f);
+                // Anvil base, waist, face and tapered horn form a clear silhouette.
+                b.Box(new Vector3(-.18f,.84f,0),new Vector3(.54f,.09f,.35f),Iron);
+                b.Box(new Vector3(-.16f,.97f,0),new Vector3(.2f,.21f,.21f),Iron);
+                b.Box(new Vector3(-.15f,1.1f,0),new Vector3(.65f,.1f,.30f),new Color(.47f,.57f,.6f));
+                b.Tube(new Vector3(-.47f,1.08f,0),new Vector3(-.64f,1.09f,0),.09f,.008f,Iron,6);
+                b.Ellipsoid(new Vector3(.41f,.84f,.10f),new Vector3(.18f,.07f,.22f),Iron,10,4);
+                for(int i=0;i<6;i++)b.Box(new Vector3(.33f+(i%3)*.07f,.89f,.03f+(i/3)*.12f),new Vector3(.055f,.045f,.07f),i%2==0?new Color(.9f,.22f,.035f):new Color(1,.52f,.1f));
+                b.Box(new Vector3(.46f,1.12f,.33f),new Vector3(.16f,.58f,.16f),Rock*.7f);
+                b.Box(new Vector3(.46f,1.415f,.33f),new Vector3(.10f,.015f,.10f),Color.black);
+                b.Tube(new Vector3(-.24f,.84f,-.32f),new Vector3(.11f,.84f,-.24f),.024f,.024f,Wood,8);
+                b.Box(new Vector3(.10f,.86f,-.24f),new Vector3(.12f,.09f,.22f),Iron);
+                b.Tube(new Vector3(.26f,.83f,-.31f),new Vector3(.51f,.83f,-.2f),.012f,.012f,Iron,6);
+            }
             else if(item==FieldItem.Furnace)
             {
                 b.Box(new Vector3(0,.08f,0),new Vector3(1.08f,.16f,1.02f),Rock);

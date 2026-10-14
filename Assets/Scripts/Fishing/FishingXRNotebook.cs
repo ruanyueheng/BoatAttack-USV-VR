@@ -68,7 +68,7 @@ namespace BoatAttack.Fishing
             _status.fontSize=23;
             var day=_c.Career.Calendar;var bag=_c.Career.Backpack;
             _status.text="潮汐手册  ·  "+day.DateLabel+"  "+day.TimeLabel+"\n"+BayClimate.Name(_c.Weather.Climate.Current)+"   金币 "+_c.Career.Coins+
-                "\n装备："+FishingBackpack.Name(bag.Equipped)+"\nB 关闭 · 右手射线 + 扳机选择\n"+_c.Message;
+                "\n装备："+FishingBackpack.Name(bag.Equipped)+"\n航行：推左摇杆并按下加速 · 左扳机刹车\nB 关闭 · 右手射线 + 扳机选择\n"+_c.Message;
             for(int i=0;i<9;i++)Set(i,"—",null);
             if(_page==0)
             {
@@ -233,7 +233,7 @@ namespace BoatAttack.Fishing
         private void UseTrackedTool()
         {
             var item=_c.Career.Backpack.Equipped;
-            if(item==FieldItem.Workbench || item==FieldItem.Furnace){_c.WorkshopWorld.PlaceEquipped();return;}
+            if(FishingRecipes.IsStation(item)){_c.WorkshopWorld.PlaceEquipped();return;}
             if(item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe){TryStrike();return;}
             _c.UseFieldItem();
         }

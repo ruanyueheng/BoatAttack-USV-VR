@@ -14,6 +14,9 @@ namespace BoatAttack.Fishing
             var p=new Painter();
             switch(item)
             {
+                case FieldItem.Forge:
+                    p.Rect(13,49,38,7,Wood);p.Poly(Steel,7,17,53,17,57,23,39,32,36,45,19,45,22,29,7,26);p.Line(13,19,47,19,3,Light);
+                    p.Line(44,8,57,36,4,Wood);p.Rect(38,4,16,8,Steel);p.Circle(52,47,5,Red);break;
                 case FieldItem.FieldGuide:
                     p.Poly(Green,10,9,48,6,54,52,15,57);p.Poly(Light,17,13,44,10,48,47,20,51);p.Line(14,11,18,53,4,Wood);p.Line(24,21,41,18,2,Wood);p.Line(25,29,42,26,2,Wood);break;
                 case FieldItem.Binoculars:

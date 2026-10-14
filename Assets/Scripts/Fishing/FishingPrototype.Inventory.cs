@@ -59,7 +59,7 @@ namespace BoatAttack.Fishing
                 case FieldItem.HuntingRifle:RifleHunting.TryFire();break;
                 case FieldItem.CookedMeat:if(!Shore.EatRation())Notice("体力充足时不消耗口粮；快跑、游泳或攀登后可食用。",3);break;
                 case FieldItem.HuntingSpear:FieldWorld.BeginHunt();break;
-                case FieldItem.Workbench:case FieldItem.Furnace:RequestPlaceEquipped();break;
+                case FieldItem.Workbench:case FieldItem.Furnace:case FieldItem.Forge:RequestPlaceEquipped();break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:RequestHarvest();break;
                 case FieldItem.FieldGuide: FieldWorld.Observe();break;
                 case FieldItem.Binoculars:

@@ -8,21 +8,23 @@ namespace BoatAttack.Fishing
         private Vector2 _recipeScroll;
         private int _recipeIndex,_batch=1,_fuelIndex;
         private readonly FieldItem[] _fuels={FieldItem.Driftwood,FieldItem.Plank,FieldItem.Charcoal,FieldItem.Coal};
-        public void OpenCraftingPage(){_craftPage=true;_moveFrom=-1;}
+        public void OpenCraftingPage(){_craftPage=true;_moveFrom=-1;if(Controller.WorkshopWorld.Context==CraftStation.Forge){_recipeIndex=0;_recipeScroll=Vector2.zero;}}
         private void DrawCraftingContents()
         {
             var world=Controller.WorkshopWorld;var bag=Controller.Career.Backpack;var context=world.Context;
-            Label(320,240,890,28,"当前设施："+FishingRecipes.StationName(context)+"  ·  工作台 / 熔炉：装入快捷栏，岸上按 F 放置",17,Mint,true);
+            var recipes=context==CraftStation.Forge?FishingRecipes.ForgeRecipes:FishingRecipes.All;
+            _recipeIndex=Mathf.Clamp(_recipeIndex,0,recipes.Length-1);
+            Label(320,240,890,28,"当前设施："+FishingRecipes.StationName(context)+"  ·  工作台 / 熔炉 / 锻造台：快捷栏 F 放置",17,Mint,true);
             Rounded(new Rect(320,280,395,435),InkRaised,8);
-            _recipeScroll=GUI.BeginScrollView(new Rect(326,286,384,423),_recipeScroll,new Rect(0,0,359,FishingRecipes.All.Length*45));
-            for(int i=0;i<FishingRecipes.All.Length;i++)
+            _recipeScroll=GUI.BeginScrollView(new Rect(326,286,384,423),_recipeScroll,new Rect(0,0,359,recipes.Length*45));
+            for(int i=0;i<recipes.Length;i++)
             {
-                var recipe=FishingRecipes.All[i];
+                var recipe=recipes[i];
                 string ingredient=recipe.Output==FieldItem.CookedMeat?"（"+FishingBackpack.Name(recipe.Costs[0].item)+"）":"";
                 if(Button(new Rect(3,i*45,350,39),FishingBackpack.Name(recipe.Output)+ingredient+" ×"+recipe.Count+"   ·   "+FishingRecipes.StationName(recipe.Station),true,_recipeIndex==i,15))_recipeIndex=i;
             }
             GUI.EndScrollView();
-            var r=FishingRecipes.All[_recipeIndex];bool smelt=r.Station==CraftStation.Furnace;
+            var r=recipes[_recipeIndex];bool smelt=r.Station==CraftStation.Furnace;
             FieldIcon(new Rect(743,291,38,40),r.Output);
             Label(797,286,425,38,FishingBackpack.Name(r.Output)+" ×"+r.Count,25,Color.white,true);
             Label(744,335,490,24,"需要："+FishingRecipes.StationName(r.Station)+(smelt?"  ·  每份 8 秒，关背包后继续":"  ·  材料齐全后立即制作"),15,Muted);
@@ -48,7 +50,7 @@ namespace BoatAttack.Fishing
             else
             {
                 bool station=context==r.Station || r.Station==CraftStation.Hand;
-                if(Button(new Rect(746,500,522,45),station?"制作  "+FishingBackpack.Name(r.Output):"靠近工作台按 E 后制作",station && enough,false,18))world.Craft(r.Id);
+                if(Button(new Rect(746,500,522,45),station?(context==CraftStation.Forge?"锻造  ":"制作  ")+FishingBackpack.Name(r.Output):"靠近"+FishingRecipes.StationName(r.Station)+"按 E 后制作",station && enough,false,18))world.Craft(r.Id);
             }
             var current=world.State.Station(world.SelectedStation);
             if(context==CraftStation.Furnace && current!=null)

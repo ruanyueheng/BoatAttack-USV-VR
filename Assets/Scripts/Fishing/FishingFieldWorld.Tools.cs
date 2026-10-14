@@ -32,7 +32,7 @@ namespace BoatAttack.Fishing
             bool preview=_previewUntil>Time.time && !_c.WorldActionBusy;
             if(preview)item=_previewItem;
             bool pick=item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe;
-            bool facility=item==FieldItem.Workbench || item==FieldItem.Furnace;
+            bool facility=FishingRecipes.IsStation(item);
             bool tool=pick || facility || item==FieldItem.HuntingSpear || item==FieldItem.FieldGuide || item==FieldItem.Binoculars || item==FieldItem.Lantern || preview;
             bool visible=_c.Ashore && !_c.Shore.Swimming && !_c.Shore.Climbing && (_c.XRNotebook==null || !_c.XRNotebook.IsOpen) && _c.Hands.CanPresentTools && !_c.ShopBlocksGameplay && !_c.Hands.HasGesture && !_c.Hands.PresentingPickup && !_c.Expedition.Aligning && !_c.ActionSuppressesHeldTool && tool;
             _held.gameObject.SetActive(visible);_lamp.enabled=false;
@@ -83,7 +83,7 @@ namespace BoatAttack.Fishing
                         position=Vector3.Lerp(position,desired,Mathf.Sin(Mathf.Clamp01(_thrust/.48f)*Mathf.PI));
                     }
                     break;
-                case FieldItem.Workbench:case FieldItem.Furnace:
+                case FieldItem.Workbench:case FieldItem.Furnace:case FieldItem.Forge:
                     twoHands=true;scale=.35f;leftPalm=new Vector3(-.52f,.6f,-.3f);rightPalm=new Vector3(.52f,.6f,-.3f);
                     position=eye+frame*new Vector3(0,-.46f,.35f);leftRotation=rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.down);break;
                 default:

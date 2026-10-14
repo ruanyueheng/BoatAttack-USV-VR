@@ -35,7 +35,7 @@ namespace BoatAttack
             if (_input == null || engine == null) return;
             var state = _input.Current;
             // Signed thrust: S/negative axis moves astern; braking remains independent.
-            engine.Accelerate(state.throttle);
+            engine.Accelerate(state.throttle, state.boost);
             engine.Turn(state.steering);
             if (engine.RB != null && state.brake > 0f)
             {

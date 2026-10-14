@@ -64,7 +64,7 @@ namespace BoatAttack
             if (!stableHull || RB == null) return;
             // Rotation constraints use inertia axes; the asymmetric hull otherwise couples yaw into roll.
             RB.inertiaTensorRotation = Quaternion.identity;
-            RB.maxAngularVelocity = 1.8f;
+            RB.maxAngularVelocity = 2.5f;
         }
 
         private void FixedUpdate()
@@ -106,17 +106,18 @@ namespace BoatAttack
         /// Controls the acceleration of the boat
         /// </summary>
         /// <param name="modifier">Signed throttle: forward 0..1, reverse -1..0</param>
-        public void Accelerate(float modifier)
+        public void Accelerate(float modifier, bool boost = false)
         {
             if (RB != null && InWater)
             {
                 modifier = BoatAttack.VR.USVPropulsion.Thrust(modifier, Vector3.Dot(RB.velocity, Vector3.ProjectOnPlane(RB.transform.forward, Vector3.up).normalized));
+                boost = boost && stableHull && modifier > 0f;
                 var forward = RB.transform.forward;
                 forward.y = 0f;
                 forward.Normalize();
                 if (stableHull && modifier > 0f)
-                    modifier *= Mathf.Clamp01(1f - Vector3.Dot(RB.velocity, forward) / Mathf.Max(1f, forwardSpeedLimit));
-                RB.AddForce(horsePower * modifier * forward, ForceMode.Acceleration); // add force forward based on input and horsepower
+                    modifier *= Mathf.Clamp01(1f - Vector3.Dot(RB.velocity, forward) / Mathf.Max(1f, forwardSpeedLimit * (boost ? 1.35f : 1f)));
+                RB.AddForce(horsePower * (boost ? 1.65f : 1f) * modifier * forward, ForceMode.Acceleration);
                 if (!stableHull) RB.AddRelativeTorque(-Vector3.right * modifier, ForceMode.Acceleration);
             }
         }
@@ -132,8 +133,12 @@ namespace BoatAttack
                 modifier = Mathf.Clamp(modifier, -1f, 1f); // clamp for reasonable values
                 if (stableHull)
                 {
-                    float rate = Mathf.Lerp(60f, 38f, Mathf.Clamp01(Mathf.Sqrt(VelocityMag) / forwardSpeedLimit)) * rudderResponse * Mathf.Deg2Rad;
-                    RB.AddTorque(Vector3.up * (modifier * rate - RB.angularVelocity.y) * 4.8f * rudderResponse, ForceMode.Acceleration);
+                    float rate = Mathf.Lerp(84f, 54f, Mathf.Clamp01(Mathf.Sqrt(VelocityMag) / Mathf.Max(1f, forwardSpeedLimit))) * rudderResponse * Mathf.Deg2Rad;
+                    // Set yaw response independently of hull inertia and delayed voxel damping.
+                    var angular = RB.angularVelocity;
+                    angular.y = Mathf.Lerp(angular.y, modifier * rate, 1f - Mathf.Exp(-6.6f * rudderResponse * Time.fixedDeltaTime));
+                    RB.angularVelocity = angular;
+                    RB.maxAngularVelocity = rate;
                 }
                 else RB.AddRelativeTorque(new Vector3(0f, steeringTorque, -steeringTorque * 0.5f) * modifier, ForceMode.Acceleration);
             }

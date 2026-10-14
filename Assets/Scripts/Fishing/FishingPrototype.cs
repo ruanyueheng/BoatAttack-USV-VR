@@ -24,7 +24,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.19.0";
+        public const string Version = "0.20.0";
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
@@ -42,6 +42,9 @@ namespace BoatAttack.Fishing
         public FishingCareer Career { get; private set; }
         public CatchSession Session { get; } = new CatchSession();
         public bool Anchored { get; private set; }
+        public bool Boosting => _initialized && !Paused && !Ashore && !Anchored && !HasPendingCatch
+            && !InventoryOpen && !JournalOpen && !DockConsole.BlocksGameplay && !XRNotebook.IsOpen
+            && !ShopBlocksGameplay && !StoryBlocksGameplay && _input.Current.boost;
         public bool Paused { get; private set; }
         public bool Automated { get; private set; }
         public FishingViewRig View { get; private set; }
@@ -352,10 +355,10 @@ namespace BoatAttack.Fishing
                 rb.MoveRotation(Quaternion.Slerp(rb.rotation,yaw,Time.fixedDeltaTime*2f));
                 return;
             }
-            if(HasPendingCatch || DockConsole.BlocksGameplay || XRNotebook.IsOpen || ShopBlocksGameplay || StoryBlocksGameplay)return;
+            if(HasPendingCatch || InventoryOpen || JournalOpen || DockConsole.BlocksGameplay || XRNotebook.IsOpen || ShopBlocksGameplay || StoryBlocksGameplay)return;
             var state=_input.Current;
             float comfort=ComfortMode?0.65f:1f;
-            Player.engine.Accelerate(state.throttle*comfort);Player.engine.Turn(state.steering*comfort);
+            Player.engine.Accelerate(state.throttle*comfort, state.boost);Player.engine.Turn(state.steering*comfort);
             float braking=state.brake; // S is reverse thrust; only Shift/explicit brake decelerates velocity.
             if(braking>0f)
             {

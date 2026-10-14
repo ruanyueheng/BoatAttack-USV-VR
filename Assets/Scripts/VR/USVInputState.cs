@@ -9,6 +9,7 @@ namespace BoatAttack.VR
     public struct USVInputState
     {
         public float throttle, steering, brake;
+        public bool boost;
         // Sources return held buttons; the processor converts them to one-frame presses.
         public bool reset, pause, interact, map;
     }

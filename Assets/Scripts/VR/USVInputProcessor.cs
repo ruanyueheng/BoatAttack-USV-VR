@@ -25,6 +25,7 @@ namespace BoatAttack.VR
             state.throttle = Axis(raw.throttle, deadzone);
             state.steering = Axis(raw.steering, deadzone);
             state.brake = Math.Max(0f, Math.Min(1f, Finite(raw.brake)));
+            state.boost = raw.boost && state.throttle > 0f && state.brake == 0f;
             state.reset = raw.reset && !_previous.reset;
             state.pause = raw.pause && !_previous.pause;
             state.interact = raw.interact && !_previous.interact;

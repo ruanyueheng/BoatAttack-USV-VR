@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 namespace BoatAttack.Fishing
 {
@@ -69,6 +70,25 @@ namespace BoatAttack.Fishing
             }
             foreach(var station in State.Stations)if(!_stations.ContainsKey(station.id))Spawn(station);
             Physics.SyncTransforms();
+            EnsurePublicForge();
+        }
+        private void EnsurePublicForge()
+        {
+            if(State.Stations.Any(s=>s.kind==CraftStation.Forge && s.permanent) || !_c.Shore.Sites[0].Available)return;
+            var landing=_c.Shore.Sites[0].Landing;
+            // Scan actual shore heights, rather than constraining the forge to the
+            // landing's narrow height band. This also leaves each old station's apron clear.
+            for(int ring=2;ring<=24;ring+=2)for(int step=0;step<36;step++)
+            {
+                var probe=landing+Quaternion.Euler(0,step*10,0)*Vector3.forward*ring;probe.y=0;
+                if(!_c.Shore.Ground(probe,out var feet) || Mathf.Abs(feet.y-landing.y)>3f || !_c.Shore.Clearance(feet))continue;
+                if(_c.Shore.Sites.Any(s=>s.Available && FishingPrototype.FlatDistance(feet,s.Berth)<6f))continue;
+                if(State.Stations.Any(s=>s.permanent && FishingPrototype.FlatDistance(feet,new Vector3(s.x,s.y,s.z))<3.5f))continue;
+                if(!FitStationFoot(feet,out feet) || BlocksAccess(feet) || !_c.Shore.SafeCoastalFooting(feet) || !StationSpaceClear(feet))continue;
+                int id=State.Place(null,CraftStation.Forge,feet.x,feet.y+.02f,feet.z,0,true);
+                if(id<0)return;Spawn(State.Station(id));Physics.SyncTransforms();return;
+            }
+            Debug.LogWarning("[FORGE] No safe public forge footing found; the craftable forge is still available at the workbench.");
         }
         private bool FindResourceFoot(Vector3 seed,int index,out Vector3 feet)
         {
@@ -94,10 +114,16 @@ namespace BoatAttack.Fishing
         }
         private void Spawn(WorkshopStationData s)
         {
-            var root=MeshObject(FishingRecipes.StationName(s.kind)+" #"+s.id,s.kind==CraftStation.Workbench?FieldItem.Workbench:FieldItem.Furnace);
+            var root=MeshObject(FishingRecipes.StationName(s.kind)+" #"+s.id,FishingRecipes.StationItem(s.kind));
             root.SetPositionAndRotation(new Vector3(s.x,s.y,s.z),Quaternion.Euler(0,s.yaw,0));
             var collider=root.gameObject.AddComponent<BoxCollider>();collider.center=Vector3.up*.5f;collider.size=new Vector3(1.3f,1,.95f);
             _stations.Add(s.id,root);
+            if(s.kind==CraftStation.Forge)
+            {
+                collider.center=Vector3.up*.65f;collider.size=new Vector3(1.3f,1.3f,.95f);
+                var ember=new GameObject("Forge ember glow",typeof(Light)).GetComponent<Light>();ember.transform.SetParent(root,false);
+                ember.transform.localPosition=new Vector3(.42f,.92f,.08f);ember.type=LightType.Point;ember.color=new Color(1,.34f,.08f);ember.range=1.6f;ember.intensity=.45f;ember.shadows=LightShadows.None;
+            }
             if(s.kind==CraftStation.Furnace)
             {
                 var light=new GameObject("Furnace embers",typeof(Light)).GetComponent<Light>();light.transform.SetParent(root,false);light.transform.localPosition=new Vector3(0,.35f,-.45f);
@@ -225,7 +251,7 @@ namespace BoatAttack.Fishing
         public bool TryPlacement(float forwardDistance,out Vector3 feet,out float yaw)
         {
             feet=Vector3.zero;yaw=0;if(_c.Paused || !_c.Ashore)return false;
-            var item=_c.Career.Backpack.Equipped;if(item!=FieldItem.Workbench && item!=FieldItem.Furnace)return false;
+            var item=_c.Career.Backpack.Equipped;if(!FishingRecipes.IsStation(item))return false;
             var forward=Vector3.ProjectOnPlane(_c.viewCamera.transform.forward,Vector3.up).normalized;
             yaw=Mathf.Atan2(forward.x,forward.z)*Mathf.Rad2Deg;
             var seed=_c.Shore.Actor.position+forward*forwardDistance;
@@ -243,9 +269,9 @@ namespace BoatAttack.Fishing
         }
         public bool PlaceAt(Vector3 feet,float yaw,FieldItem expectedItem)
         {
-            if(_c.Paused || !_c.Ashore || _c.Career.Backpack.Equipped!=expectedItem || (expectedItem!=FieldItem.Workbench && expectedItem!=FieldItem.Furnace))return false;
+            if(_c.Paused || !_c.Ashore || _c.Career.Backpack.Equipped!=expectedItem || !FishingRecipes.IsStation(expectedItem))return false;
             if(!_c.Shore.Ground(feet,out var ground) || !ValidPlacement(ground,yaw,out var checkedFeet) || Vector3.Distance(checkedFeet,feet)>.1f)return false;
-            int id=State.Place(_c.Career.Backpack,expectedItem==FieldItem.Workbench?CraftStation.Workbench:CraftStation.Furnace,feet.x,feet.y+.02f,feet.z,yaw);
+            int id=State.Place(_c.Career.Backpack,FishingRecipes.StationKind(expectedItem),feet.x,feet.y+.02f,feet.z,yaw);
             if(id<0){_c.Notice("无法放置：设施已达 32 个上限或物品不足。",3);return false;}
             Spawn(State.Station(id));Physics.SyncTransforms();_c.Save();_c.Notice("已放置"+FishingBackpack.Name(expectedItem)+" · 靠近按 E 使用",4);return true;
         }
@@ -253,7 +279,7 @@ namespace BoatAttack.Fishing
         public bool Craft(string recipe)
         {
             if(!(_c.InventoryOpen || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen)))return false;
-            bool ok=FishingRecipes.Craft(_c.Career.Backpack,recipe,Context);if(ok){_c.Save();_c.NotifyWorkshopTransaction();}else _c.Notice("材料不足、背包已满，或需要靠近工作台。",4);return ok;
+            bool ok=FishingRecipes.Craft(_c.Career.Backpack,recipe,Context);if(ok){_c.Save();_c.NotifyWorkshopTransaction();_c.Notice("已制作 "+FishingBackpack.Name(FishingRecipes.Find(recipe).Output),3);}else _c.Notice("材料不足、背包已满，或需要靠近对应的制作设施。",4);return ok;
         }
         public bool Smelt(string recipe,int count,FieldItem fuel)
         {
