@@ -103,8 +103,8 @@ namespace BoatAttack.EditorTools
             c.Shore.SetCrouch(false);Feet(c,forgeFeet+Vector3.up*.02f,root.position+Vector3.up*.9f);
             for(int i=0;i<20;i++){c.Shore.Move(Vector2.zero,false,false,false,.02f);c.PresentCharacterFrame();yield return null;}
             Check(world.OpenStation(forge.id),"return from mountain coal to forge");
-            bag.TryAdd(FieldItem.RabbitFur,1);int fuel=bag.Count(FieldItem.Coal);
-            Check(world.Craft("coal-rabbit-lantern") && bag.Count(FieldItem.Lantern)==1 && bag.Count(FieldItem.RabbitFur)==0 && bag.Count(FieldItem.Coal)==fuel-2,"mined coal and hunted fur craft the portable lantern");
+            Check(bag.TryAdd(FieldItem.RabbitFur,1),"lantern fixture adds one fur without overflowing the backpack");int fuel=bag.Count(FieldItem.Coal),fur=bag.Count(FieldItem.RabbitFur),lanterns=bag.Count(FieldItem.Lantern);
+            Check(world.Craft("coal-rabbit-lantern") && bag.Count(FieldItem.Lantern)==lanterns+1 && bag.Count(FieldItem.RabbitFur)==fur-1 && bag.Count(FieldItem.Coal)==fuel-2,"mined coal and hunted fur craft the portable lantern");
             c.ToggleInventory();Equip(c,FieldItem.Lantern);
             for(int i=0;i<100;i++){c.PresentCharacterFrame();yield return null;}
             c.UseFieldItem();c.PresentCharacterFrame();

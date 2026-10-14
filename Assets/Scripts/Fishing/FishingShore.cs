@@ -204,7 +204,7 @@ namespace BoatAttack.Fishing
         public void Tick(bool allowInput,float dt)
         {
             if(!Ashore){_motion.Exert(false,true,Controller.Paused?0:dt);UpdateProximity();return;}
-            if(Controller.Paused || Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || Controller.WorldActionBlocksGameplay || Controller.InventoryOpen || Controller.ShowDetails || !allowInput || (Controller.XRNotebook!=null && Controller.XRNotebook.IsOpen))
+            if(Controller.Paused || Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || Controller.WorldActionBlocksGameplay || Controller.InventoryOpen || Controller.ShowDetails || !allowInput || (Controller.XRNotebook!=null && Controller.XRNotebook.BlocksGameplay))
             {WalkSpeed=0;ResetMoveInput();return;}
             var k=Keyboard.current;Vector2 input=Vector2.zero;bool sprint=false,jump=false,crouch=false;
             if(k!=null)
@@ -236,7 +236,7 @@ namespace BoatAttack.Fishing
 
         public void Move(Vector2 input,bool sprint,bool jump,bool crouch,float deltaTime)
         {
-            if(!Ashore || Controller.Paused || Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || Controller.WorldActionBlocksGameplay || Controller.InventoryOpen || Controller.ShowDetails || (Controller.Expedition!=null && Controller.Expedition.Aligning) || (Controller.XRNotebook!=null && Controller.XRNotebook.IsOpen))
+            if(!Ashore || Controller.Paused || Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || Controller.WorldActionBlocksGameplay || Controller.InventoryOpen || Controller.ShowDetails || (Controller.Expedition!=null && Controller.Expedition.Aligning) || (Controller.XRNotebook!=null && Controller.XRNotebook.BlocksGameplay))
             {ResetMoveInput();return;}
             if(float.IsNaN(deltaTime) || float.IsInfinity(deltaTime) || deltaTime<=0 || float.IsNaN(input.x) || float.IsNaN(input.y) || float.IsInfinity(input.x) || float.IsInfinity(input.y))return;
             float dt=Mathf.Min(deltaTime,.05f);

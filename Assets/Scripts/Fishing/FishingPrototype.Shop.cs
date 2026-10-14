@@ -28,7 +28,7 @@ namespace BoatAttack.Fishing
         {
             if(Paused || InventoryOpen || JournalOpen || HasPendingCatch || (!AtHarbor && (TackleShop==null || !TackleShop.CanPurchase)))return false;
             bool ok=Career.BuySupply(product);
-            if(ok){Save();Notice("购入 "+FishingBackpack.Name(FishingSupplies.Items[product])+" ×"+FishingSupplies.Quantity(product)+" · 已放入背包，I 查看并装备。",5);}
+            if(ok){Save();Notice("购入 "+FishingBackpack.Name(FishingSupplies.Items[product])+" ×"+FishingSupplies.Quantity(product)+(UnityEngine.XR.XRSettings.isDeviceActive?" · B 打开背包，点选换入快捷位；Y 换装备。":" · 已放入背包，I 查看并装备。"),5);}
             else Notice("无法购买：请检查金币余额和背包空位。",4);
             return ok;
         }

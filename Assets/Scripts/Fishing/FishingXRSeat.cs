@@ -4,19 +4,36 @@ using UnityEngine.InputSystem.XR;
 using UnityEngine.XR;
 using UnityEngine.UI;
 using Unity.XR.CoreUtils;
+using CommonUsages=UnityEngine.XR.CommonUsages;
 namespace BoatAttack.Fishing
 {
     /// <summary>Stable vessel frame only. The tracked pose driver exclusively owns HMD local pose.</summary>
     public sealed class FishingXRSeat : MonoBehaviour
     {
         private FishingPrototype _c;private Transform _originalParent,_offset;private TrackedPoseDriver _driver;
-        private InputAction _position,_rotation,_tracking;private bool _active,_wasAshore;private float _height,_velocity,_shoreYaw,_eyeOffset;
-        public bool PhysicallyCrouched=>_active && _c.viewCamera.transform.localPosition.y+_eyeOffset<1.3f;
+        private WaterSystem.Water _water;private WaterSystem.BuoyantObject _buoyancy;
+        private InputAction _position,_rotation,_tracking;private bool _active,_wasAshore,_eyeCalibrated;private float _height,_boatHeight,_velocity,_shoreYaw,_eyeOffset;
+        private Vector3 _lastBoatPosition;
+        private TrackingOriginModeFlags _trackingOrigin;
+        public const float EyeHeight=1.65f;
+        public bool Ready=>_active && _eyeCalibrated;
+        public float WaterlineHeight=>(_water!=null?_water.transform.position.y:0)+(_buoyancy!=null?_buoyancy.waterLevelOffset:0);
+        public static float ComfortableBoatHeight(float restHeight,float boatHeight)=>restHeight+Mathf.Clamp((boatHeight-restHeight)*.08f,-.03f,.03f);
+        public bool PhysicallyCrouched=>_active && _eyeCalibrated && _c.viewCamera.transform.localPosition.y+_eyeOffset<1.3f;
         public void Recenter()
         {
             if(!_active)return;
-            _eyeOffset=1.65f-_c.viewCamera.transform.localPosition.y;
+            if(!CalibrateEye()){_c.Notice("请等待头显恢复追踪后再校准眼高。",3);return;}
             _c.Notice("视线高度已校准为 1.65 米；可以坐姿或站姿游玩。",4);
+        }
+        private bool CalibrateEye()
+        {
+            if(!Application.isFocused)return false;
+            var head=InputDevices.GetDeviceAtXRNode(XRNode.Head);
+            if(head.TryGetFeatureValue(CommonUsages.userPresence,out bool worn) && !worn)return false;
+            if(!head.isValid || !head.TryGetFeatureValue(CommonUsages.isTracked,out bool tracked) || !tracked
+                || !head.TryGetFeatureValue(CommonUsages.devicePosition,out var position) || float.IsNaN(position.y) || float.IsInfinity(position.y))return false;
+            _eyeOffset=EyeHeight-position.y;_eyeCalibrated=true;return true;
         }
         public void SnapTurn(float degrees)
         {
@@ -49,6 +66,7 @@ namespace BoatAttack.Fishing
         public void Build(FishingPrototype c)
         {
             _c=c;_originalParent=c.viewCamera.transform.parent;
+            _water=WaterSystem.Water.Instance;_buoyancy=c.Player.GetComponent<WaterSystem.BuoyantObject>();
             var root=new GameObject("Fishing XR stable vessel origin");root.transform.SetParent(transform,false);Origin=root.AddComponent<XROrigin>();
             _offset=new GameObject("Device-space eye height").transform;_offset.SetParent(root.transform,false);
             Origin.Camera=c.viewCamera;Origin.CameraFloorOffsetObject=_offset.gameObject;Origin.RequestedTrackingOriginMode=XROrigin.TrackingOriginMode.Floor;Origin.CameraYOffset=0;
@@ -69,7 +87,7 @@ namespace BoatAttack.Fishing
                 _active=active;_c.CatchRig.Recover();
                 if(active)
                 {
-                    _height=_c.Player.transform.position.y;_velocity=0;
+                    ResetVesselHeight();_lastBoatPosition=_c.Player.transform.position;_eyeCalibrated=false;_wasAshore=false;
                     _c.viewCamera.nearClipPlane=.04f;
                     _c.viewCamera.transform.SetParent(_offset,false);_c.viewCamera.transform.localPosition=Vector3.zero;_c.viewCamera.transform.localRotation=Quaternion.identity;
                     Origin.enabled=true;_position.Enable();_rotation.Enable();_tracking.Enable();_driver.enabled=true;
@@ -81,6 +99,8 @@ namespace BoatAttack.Fishing
                 }
             }
             if(!active){if(_headFade!=null)_headFade.gameObject.SetActive(false);HeadBlocked=false;return;}
+            if(_trackingOrigin!=Origin.CurrentTrackingOriginMode){_trackingOrigin=Origin.CurrentTrackingOriginMode;_eyeCalibrated=false;}
+            if(!_eyeCalibrated && _trackingOrigin!=TrackingOriginModeFlags.Unknown)CalibrateEye();
             _offset.localPosition=Vector3.up*_eyeOffset;
             if(_c.Ashore)
             {
@@ -92,11 +112,19 @@ namespace BoatAttack.Fishing
                 if(!_c.Paused && !_c.XRNotebook.IsOpen && room.magnitude>.015f)_roomCorrection-=_c.Shore.RoomStep(Vector3.ClampMagnitude(room,.08f));
                 Origin.transform.SetPositionAndRotation(_c.Shore.Position+_roomCorrection,shoreRotation);GuardHead();return;
             }
-            _wasAshore=false;
             var boat=_c.Player.transform;
-            if(Time.deltaTime>0)_height=Mathf.SmoothDamp(_height,boat.position.y,ref _velocity,1.5f);
+            if(_wasAshore || Vector3.Distance(boat.position,_lastBoatPosition)>12f)ResetVesselHeight();
+            _wasAshore=false;_lastBoatPosition=boat.position;
+            // Vessel heave is visual motion; retain physical head movement at full scale.
+            float target=_c.ComfortMode?ComfortableBoatHeight(_boatHeight,boat.position.y):boat.position.y;
+            if(Time.deltaTime>0)_height=Mathf.SmoothDamp(_height,target,ref _velocity,_c.ComfortMode?2.5f:1.5f);
             var yaw=Quaternion.Euler(0,boat.eulerAngles.y,0);
             Origin.transform.SetPositionAndRotation(new Vector3(boat.position.x,_height+.25f,boat.position.z)+yaw*new Vector3(0,0,-.25f),yaw);GuardHead();
+        }
+        private void ResetVesselHeight()
+        {
+            // Spawn and rescue lift the hull before buoyancy settles; use the ocean's rest plane.
+            _boatHeight=WaterlineHeight;_height=_c.ComfortMode?_boatHeight:_c.Player.transform.position.y;_velocity=0;
         }
         private void OnDestroy(){if(_driver!=null)_driver.enabled=false;_position?.Dispose();_rotation?.Dispose();_tracking?.Dispose();}
     }

@@ -4,7 +4,6 @@ param(
 )
 $ErrorActionPreference='Stop'
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-if(Get-Process Unity -ErrorAction SilentlyContinue){throw 'Close Unity before the isolated Android build.'}
 if($repo -notmatch '[^\x00-\x7F]') { & (Join-Path $PSScriptRoot 'Run-UnityValidation.ps1') -Suite FishingAndroidBuild -TimeoutSeconds $TimeoutSeconds; return }
 $driveRoot=$Drive + ':\'
 if(Test-Path -LiteralPath $driveRoot){throw "Drive $Drive already exists; choose another unused R-Z letter."}

@@ -5,7 +5,7 @@ using UnityEngine.XR;
 
 namespace BoatAttack.Fishing
 {
-    /// <summary>Desktop hunting uses actual aim, muzzle clearance and persistent per-animal receipts.</summary>
+    /// <summary>Desktop and tracked hunting use muzzle clearance and persistent per-animal receipts.</summary>
     public sealed class FishingRifleHunting : MonoBehaviour
     {
         public const float Range=45f, ShotInterval=.65f;
@@ -33,10 +33,13 @@ namespace BoatAttack.Fishing
         public Transform Rifle=>_rifle;
         public Vector3 Muzzle=>_rifle.TransformPoint(MuzzleLocal);
         public bool Equipped=>_c!=null && _c.Career.Backpack.Equipped==FieldItem.HuntingRifle;
+        private Vector3 Eye=>XRSettings.isDeviceActive?_c.viewCamera.transform.position:_c.Shore.Character.EyePosition;
         private bool Context=>Equipped && _c.Ashore && !_c.Paused && !_c.InventoryOpen && !_c.JournalOpen
             && !_c.ShopBlocksGameplay && !_c.StoryBlocksGameplay && !_c.Shore.Swimming && !_c.Shore.Climbing
             && !_c.WorldActionBlocksGameplay && !_c.HasPendingCatch && !_c.Expedition.Aligning
-            && !_c.DockConsole.BlocksGameplay && !XRSettings.isDeviceActive && _c.Hands.CanPresentTools;
+            && !_c.DockConsole.BlocksGameplay && (_c.XRNotebook==null || !_c.XRNotebook.BlocksGameplay) && _c.Hands.CanPresentTools
+            && (!XRSettings.isDeviceActive || (!_c.XRSeat.HeadBlocked && Application.isFocused
+                && _c.Hands.TryControllerPalm(false,out _,out _)));
 
         public void Build(FishingPrototype controller)
         {
@@ -53,7 +56,7 @@ namespace BoatAttack.Fishing
             for(int i=0;i<samples.Length;i++){float t=i/44100f;samples[i]=(float)((random.NextDouble()*2-1)*Math.Exp(-t*45)+.3*Math.Sin(t*1050)*Math.Exp(-t*25));}
             _shot.SetData(samples,0);
             _trace=new GameObject("Hunting shot trace").AddComponent<LineRenderer>();_trace.transform.SetParent(transform,false);
-            _traceMaterial=new Material(Shader.Find("Universal Render Pipeline/Unlit"));_traceMaterial.SetColor("_BaseColor",new Color(1,.78f,.32f));
+            _traceMaterial=new Material(_c.PaletteShader);_traceMaterial.SetFloat("_Unlit",1);_traceMaterial.SetColor("_BaseColor",new Color(1,.78f,.32f));
             _trace.sharedMaterial=_traceMaterial;_trace.positionCount=2;_trace.startWidth=.012f;_trace.endWidth=.003f;_trace.enabled=false;
             RefreshAnimals();
         }
@@ -88,7 +91,11 @@ namespace BoatAttack.Fishing
         }
         private void Update()
         {
-            if(_c==null || _c.Paused || (!_c.Automated && !Application.isFocused) || _c.StoryBlocksGameplay || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen))return;
+            if(_c==null || _c.Paused || (!_c.Automated && !Application.isFocused) || _c.StoryBlocksGameplay || _c.ShopBlocksGameplay
+                || (_c.XRNotebook!=null && _c.XRNotebook.BlocksGameplay))return;
+            if(XRSettings.isDeviceActive && (!Application.isFocused || _c.XRSeat.HeadBlocked
+                || !FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out _,out _)
+                || !FishingXRTracking.TryPose(_c.viewCamera,XRNode.LeftHand,out _,out _)))return;
             if(_c.Career.TickHuntedRespawns(Time.deltaTime)){RefreshAnimals();_c.Save();}
         }
         public void RegisterMarine(MarineKind kind,int index,Transform root)
@@ -133,7 +140,7 @@ namespace BoatAttack.Fishing
         }
         private bool ClearModel()
         {
-            var eye=_c.Shore.Character.EyePosition;
+            var eye=Eye;
             if(SolidSegment(eye,Muzzle,.045f)){ObstructionReason="muzzle clearance";return false;}
             var b=_mesh.sharedMesh.bounds;
             for(int i=0;i<8;i++)
@@ -143,7 +150,7 @@ namespace BoatAttack.Fishing
             }
             // Inspect the actual mesh, not empty AABB corners above the stock.
             var meshToCamera=_c.viewCamera.worldToCameraMatrix*_mesh.transform.localToWorldMatrix;
-            if(_c.FirstPerson)foreach(var vertex in _vertices)
+            if(_c.FirstPerson || XRSettings.isDeviceActive)foreach(var vertex in _vertices)
             {
                 var p=meshToCamera.MultiplyPoint3x4(vertex);p.z=-p.z;
                 if(p.z<_c.viewCamera.nearClipPlane+.008f && Mathf.Abs(p.x)<.06f && Mathf.Abs(p.y)<.06f){ObstructionReason="eye clearance";return false;}
@@ -156,25 +163,42 @@ namespace BoatAttack.Fishing
             if(_rifle==null)return;
             bool visible=Context && !_c.Hands.HasGesture && !_c.Hands.PresentingPickup;
             _rifle.gameObject.SetActive(visible);Obstructed=false;ObstructionReason="";if(!visible)return;
+            bool tracked=XRSettings.isDeviceActive;
             _c.Hands.GetToolFrame(out _,out var frame);
-            var eye=_c.Shore.Character.EyePosition;
+            var eye=Eye;
             // Keep the rear grip at chest height while aiming. Rotating the entire
             // eye-to-grip offset upward pushed the stock through the face.
             var holdFrame=Quaternion.Euler(0,frame.eulerAngles.y,0);
             _rifle.SetPositionAndRotation(eye+holdFrame*new Vector3(.13f,-.17f,.32f),frame*Quaternion.Euler(0,-14,5));
             var leftRotation=Quaternion.LookRotation(Vector3.right,Vector3.down);
             var rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.right);
-            bool fit=_c.Hands.FitToolPose(_rifle,LeftGrip,RightGrip,leftRotation,rightRotation);
+            bool leftHeld=true;
+            if(tracked)
+            {
+                if(!_c.Hands.TryControllerPalm(false,out var palm,out var palmFrame)){_rifle.gameObject.SetActive(false);return;}
+                var rotation=palmFrame*Quaternion.Inverse(rightRotation);
+                _rifle.SetPositionAndRotation(palm-rotation*Vector3.Scale(RightGrip,_rifle.localScale),rotation);
+                leftHeld=InputDevices.GetDeviceAtXRNode(XRNode.LeftHand).TryGetFeatureValue(CommonUsages.grip,out float grip) && grip>.55f
+                    && _c.Hands.TryControllerPalm(true,out var leftPalm,out _)
+                    && Vector3.Distance(leftPalm,_rifle.TransformPoint(LeftGrip))<.18f;
+            }
+            bool fit=tracked || _c.Hands.FitToolPose(_rifle,LeftGrip,RightGrip,leftRotation,rightRotation);
             if(!fit)ObstructionReason="hand reach";
             Obstructed=!fit || !ClearModel();
             if(Obstructed)
             {
+                // A tracked weapon cannot be moved away from its physical controller to clear a wall.
+                if(tracked){_rifle.gameObject.SetActive(false);return;}
                 _rifle.SetPositionAndRotation(eye+frame*new Vector3(.025f,-.24f,.25f),frame*Quaternion.Euler(55,0,0));
                 if(!_c.Hands.FitToolPose(_rifle,LeftGrip,RightGrip,leftRotation,rightRotation) || !ClearModel())
                 {_rifle.gameObject.SetActive(false);_c.Hands.RestHand(true);_c.Hands.RestHand(false);return;}
             }
             _c.Hands.SetToolTarget(false,_rifle,RightGrip,Quaternion.LookRotation(Vector3.forward,Vector3.right),.72f,fingers:new FishingFingerPose(.25f,.8f,.82f,.85f,.62f));
-            _c.Hands.SetToolTarget(true,_rifle,LeftGrip,Quaternion.LookRotation(Vector3.right,Vector3.down),.45f,fingers:new FishingFingerPose(.4f,.45f,.5f,.55f,.5f));
+            if(leftHeld)
+            {
+                if(tracked)_c.Hands.Left.SetFingers(new FishingFingerPose(.4f,.45f,.5f,.55f,.5f));
+                else _c.Hands.SetToolTarget(true,_rifle,LeftGrip,Quaternion.LookRotation(Vector3.right,Vector3.down),.45f,fingers:new FishingFingerPose(.4f,.45f,.5f,.55f,.5f));
+            }
         }
         private bool FirstHit(Vector3 start,Vector3 direction,float distance,out RaycastHit closest)
         {
@@ -191,12 +215,19 @@ namespace BoatAttack.Fishing
         public bool TryFire()
         {
             if(!Context || Time.time<_nextShot)return false;
+            bool tracked=XRSettings.isDeviceActive;
+            var device=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+            if(tracked && (!device.TryGetFeatureValue(CommonUsages.triggerButton,out bool held) || !held))return false;
             Present();
             if(!Presented || Obstructed){_c.Notice("枪口前空间不足，请离开障碍物后再射击。",2);return false;}
-            var camera=_c.viewCamera.transform;var direction=camera.forward;var aim=camera.position+direction*Range;
-            if(FirstHit(camera.position,direction,Range,out var aimHit))aim=aimHit.point;
+            var camera=_c.viewCamera.transform;var direction=camera.forward;var aim=Muzzle+_rifle.forward*Range;
+            if(!tracked)
+            {
+                aim=camera.position+direction*Range;
+                if(FirstHit(camera.position,direction,Range,out var aimHit))aim=aimHit.point;
+            }
             // The player's body/eye must also see the target in third person.
-            var eye=_c.Shore.Character.EyePosition;
+            var eye=Eye;
             if(SolidSegment(eye,Muzzle,.035f))return false;
             _nextShot=Time.time+ShotInterval;ShotsFired++;_flashUntil=Time.time+.06f;
             var delta=aim-Muzzle;var end=Muzzle+delta.normalized*Mathf.Min(Range,delta.magnitude);
@@ -209,12 +240,13 @@ namespace BoatAttack.Fishing
                     {
                         var landing=LandingFor(animal);
                         killed=_c.Career.KillLandAnimal(animal.Id,animal.Kind,landing.x,landing.y,landing.z,animal.Root.eulerAngles.y);
-                        if(killed){_c.Save();RefreshAnimals();_c.Notice("击倒 "+FishingBackpack.AnimalName(animal.Kind)+" · "+(animal.Id>=8?"附近岸边":"靠近后")+" E 收取 "+FishingAnimalLoot.Description(animal.Kind),5);}
+                        if(killed){_c.Save();RefreshAnimals();_c.Notice("击倒 "+FishingBackpack.AnimalName(animal.Kind)+" · "+(animal.Id>=8?"附近岸边":"靠近后")+(tracked?" A 收取 ":" E 收取 ")+FishingAnimalLoot.Description(animal.Kind),5);}
                         break;
                     }
             }
             _trace.SetPosition(0,Muzzle);_trace.SetPosition(1,end);_trace.enabled=true;
             if(!_c.QuietMode)_audio.PlayOneShot(_shot);
+            if(tracked && device.TryGetHapticCapabilities(out var capabilities) && capabilities.supportsImpulse)device.SendHapticImpulse(0,.25f,.06f);
             if(!killed)_c.Notice("未命中动物",1);
             return true;
         }
@@ -226,7 +258,7 @@ namespace BoatAttack.Fishing
                 if(!a.Dead || !a.Root.gameObject.activeInHierarchy)continue;
                 float distance=Vector3.Distance(_c.ExplorerPosition,a.Feet);
                 if(distance<nearest && Vector3.Dot(_c.viewCamera.transform.forward,(a.Root.position-_c.viewCamera.transform.position).normalized)>.15f
-                    && _c.Shore.ClearSight(_c.Shore.Character.EyePosition,a.Root.position+Vector3.up*.1f))
+                    && _c.Shore.ClearSight(Eye,a.Root.position+Vector3.up*.1f))
                 {nearest=distance;target=a;}
             }
             return target!=null;
@@ -236,8 +268,8 @@ namespace BoatAttack.Fishing
             if(_c.Paused || !_c.Ashore || _c.ShopBlocksGameplay || _c.StoryBlocksGameplay)return false;
             FishingFieldWorld.Animal animal=null;foreach(var a in _targets)if(a.Id==id){animal=a;break;}
             if(animal==null || !animal.Dead || !animal.Root.gameObject.activeInHierarchy || Vector3.Distance(_c.ExplorerPosition,animal.Feet)>2.2f
-                || !_c.Shore.ClearSight(_c.Shore.Character.EyePosition,animal.Root.position+Vector3.up*.1f))return false;
-            if(!_c.Career.CollectHuntedAnimal(id)){_c.Notice("背包空间不足，猎物保留在地上；I 整理背包后再收取。",4);return false;}
+                || !_c.Shore.ClearSight(Eye,animal.Root.position+Vector3.up*.1f))return false;
+            if(!_c.Career.CollectHuntedAnimal(id)){_c.Notice(XRSettings.isDeviceActive?"背包空间不足，猎物保留在地上；B 打开背包整理后再收取。":"背包空间不足，猎物保留在地上；I 整理背包后再收取。",4);return false;}
             _c.Save();RefreshAnimals();_c.Notice("已收取 "+FishingAnimalLoot.Description(animal.Kind),4);return true;
         }
         private void OnDestroy(){if(_shot!=null)Destroy(_shot);if(_traceMaterial!=null)Destroy(_traceMaterial);}

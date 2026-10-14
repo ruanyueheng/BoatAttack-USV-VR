@@ -18,6 +18,8 @@ namespace BoatAttack.Fishing
         private AudioSource _music;
         private AudioClip _score;
         private readonly FishingPressEdge _skip=new FishingPressEdge();
+        private bool _screenXR,_xrIntroOffered;
+        private int _headReadyFrames;
         public bool Open { get; private set; }
         public float Age { get; private set; }
         public int Shot => Mathf.Min(ShotCount-1,(int)(Age/ShotSeconds));
@@ -37,7 +39,8 @@ namespace BoatAttack.Fishing
         {
             _c=c;var go=new GameObject("V023 CG camera",typeof(Camera));go.transform.SetParent(transform,false);
             _camera=go.GetComponent<Camera>();_camera.CopyFrom(c.viewCamera);_camera.enabled=false;_camera.cullingMask&=~(1<<5);_camera.fieldOfView=48;_camera.stereoTargetEye=StereoTargetEyeMask.None;
-            _film=new RenderTexture(XRSettings.isDeviceActive?896:1280,XRSettings.isDeviceActive?504:720,24){name="V023 opening CG"};_film.Create();_camera.targetTexture=_film;
+            bool mobile=Application.platform==RuntimePlatform.Android;
+            _film=new RenderTexture(mobile?896:1280,mobile?504:720,24){name="Returning tide opening CG"};_film.Create();_camera.targetTexture=_film;
             var root=new GameObject("V023 cinema screen",typeof(RectTransform),typeof(Canvas),typeof(CanvasScaler));root.layer=5;root.transform.SetParent(transform,false);
             var scaler=root.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1280,720);scaler.matchWidthOrHeight=.5f;
             _canvas=root.GetComponent<Canvas>();_canvas.sortingOrder=200;_canvas.worldCamera=c.viewCamera;
@@ -60,6 +63,15 @@ namespace BoatAttack.Fishing
             }
             _score=AudioClip.Create("Original V023 returning tide score",samples.Length,1,rate,false);_score.SetData(samples,0);_music.clip=_score;
         }
+        private void Update()
+        {
+            if(_c==null || _c.Automated || _c.HasIsolatedProfile || !Application.isFocused || !XRSettings.isDeviceActive || FishingXRNotebook.GuideCompleted || _xrIntroOffered)return;
+            if(!_c.XRSeat.Ready || !FishingXRTracking.TryPose(_c.viewCamera,XRNode.Head,out _,out _)){_headReadyFrames=0;return;}
+            if(++_headReadyFrames<2)return;
+            if(Open){_xrIntroOffered=true;return;}
+            // Existing saves may have marked the old invisible opening as seen; the headset lesson has its own versioned receipt.
+            if(!_c.Paused && !_c.XRNotebook.IsOpen && !_c.Expedition.Aligning && Begin())_xrIntroOffered=true;
+        }
         private static void Stretch(RectTransform rect){rect.anchorMin=Vector2.zero;rect.anchorMax=Vector2.one;rect.offsetMin=rect.offsetMax=Vector2.zero;}
         private static void Band(Transform root,string name,Vector2 min,Vector2 max,Vector2 low,Vector2 high)
         {
@@ -74,21 +86,20 @@ namespace BoatAttack.Fishing
         public bool Begin()
         {
             if(!CanBegin)return false;
+            if(XRSettings.isDeviceActive && (!_c.XRSeat.Ready || !FishingXRTracking.TryPose(_c.viewCamera,XRNode.Head,out _,out _)))return false;
             if(_c.JournalOpen)_c.ToggleJournal();
             if(_c.Paused)return false;
             _c.XRNotebook.Close();_c.CloseBoatPanels();Open=true;Age=0;_skip.Reset();_c.StoryModalChanged();
-            _canvas.renderMode=XRSettings.isDeviceActive?RenderMode.WorldSpace:RenderMode.ScreenSpaceOverlay;
-            if(XRSettings.isDeviceActive)
-            {
-                var eye=_c.viewCamera.transform;var forward=Vector3.ProjectOnPlane(eye.forward,Vector3.up).normalized;
-                if(forward.sqrMagnitude<.1f)forward=_c.Shore.Actor.forward;
-                _canvas.transform.localScale=Vector3.one*.0016f;_canvas.transform.SetPositionAndRotation(eye.position+forward*2.1f,Quaternion.LookRotation(forward));
-            }
+            ConfigureScreen(XRSettings.isDeviceActive);
             _canvas.gameObject.SetActive(true);_camera.enabled=true;_music.mute=_c.QuietMode;_music.Play();Present();return true;
         }
         public void Tick(float seconds,bool tracked)
         {
             if(!Open || float.IsNaN(seconds) || float.IsInfinity(seconds) || seconds<0)return;
+            if(tracked && (!_c.XRSeat.Ready || !FishingXRTracking.TryPose(_c.viewCamera,XRNode.Head,out _,out _)))
+            {_canvas.gameObject.SetActive(false);_music.Pause();_skip.Reset();return;}
+            if(_screenXR!=tracked)ConfigureScreen(tracked);
+            _canvas.gameObject.SetActive(true);_music.UnPause();
             Age=Mathf.Min(ShotCount*ShotSeconds,Age+Mathf.Min(seconds,.25f));
             if(tracked)
             {
@@ -112,13 +123,25 @@ namespace BoatAttack.Fishing
                 default:focus=_c.Player.transform.position+Vector3.up*.8f;from=focus+new Vector3(-6,3,-7);to=focus+new Vector3(-3,1.4f,-4);break;
             }
             _camera.transform.position=Vector3.Lerp(from,to,u);_camera.transform.rotation=Quaternion.LookRotation(focus-_camera.transform.position);
-            _title.text=Titles[shot];_subtitle.text=Captions[shot];_hint.text=(shot+1)+" / "+ShotCount+"     ·     "+(XRSettings.isDeviceActive?"右手 A 跳过":"E / 空格 / Esc 跳过")+"     ·     序章可在日历页重看";
+            _title.text=Titles[shot];_subtitle.text=Captions[shot];_hint.text=(shot+1)+" / "+ShotCount+"     ·     "+(XRSettings.isDeviceActive?"右手 A 跳过并学习手柄":"E / 空格 / Esc 跳过")+"     ·     设置页可重看序章与教学";
             _fade.color=new Color(.01f,.02f,.03f,Mathf.Max(1-Mathf.Clamp01(t/.6f),Mathf.Clamp01((t-5.4f)/.6f)));
+        }
+        private void ConfigureScreen(bool xr)
+        {
+            _screenXR=xr;_canvas.renderMode=xr?RenderMode.WorldSpace:RenderMode.ScreenSpaceOverlay;
+            _canvas.transform.localScale=xr?Vector3.one*.0016f:Vector3.one;
+            if(!xr)return;
+            _xrIntroOffered=true;
+            var eye=_c.viewCamera.transform;var forward=Vector3.ProjectOnPlane(eye.forward,Vector3.up).normalized;
+            if(forward.sqrMagnitude<.1f)forward=_c.Shore.Actor.forward;
+            _canvas.transform.SetPositionAndRotation(eye.position+forward*2.1f,Quaternion.LookRotation(forward,Vector3.up));
         }
         public void Finish()
         {
             if(!Open)return;Open=false;_camera.enabled=false;_canvas.gameObject.SetActive(false);_music.Stop();
-            _c.Career.FinishPrologue();_c.Save();_c.StoryModalChanged();_c.Notice("欢迎回家。旧港西岸的木栈道通往渔屋；J 查看海湾图鉴与旅程。",9);
+            _c.Career.FinishPrologue();_c.Save();_c.StoryModalChanged();
+            if(XRSettings.isDeviceActive){_c.XRNotebook.BeginGuide();_c.Notice("欢迎回家。先安全练习手柄；B 可随时打开潮汐手册。",9);}
+            else _c.Notice("欢迎回家。旧港西岸的木栈道通往渔屋；J 查看海湾图鉴与旅程。",9);
         }
         public void Suspend()
         {if(!Open)return;Open=false;_camera.enabled=false;_canvas.gameObject.SetActive(false);_music.Stop();_c.StoryModalChanged();}

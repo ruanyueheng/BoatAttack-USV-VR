@@ -29,6 +29,8 @@ namespace BoatAttack.EditorTools
         public static IEnumerator Checks(FishingPrototype c)
         {
             Check(c.RifleHunting!=null && c.RifleHunting.Rifle!=null,"supplied rifle prefab resolves");
+            var trace=(LineRenderer)typeof(FishingRifleHunting).GetField("_trace",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(c.RifleHunting);
+            Check(trace.sharedMaterial.shader==c.PaletteShader,"Shot trace reuses the packaged palette shader instead of a stripped string-only shader");
             ValidateIcons();
             for(int i=0;i<8;i++)c.Career.CompleteShoreTask(i);c.Career.ClaimShoreRewards();
             int coins=c.Career.Coins;
@@ -77,6 +79,9 @@ namespace BoatAttack.EditorTools
             Feet(c,c.Shore.Position,animal.Hitbox.bounds.center);for(int i=0;i<6;i++)yield return null;c.PresentCharacterFrame();
             Capture(c,"first-person-rifle");
             c.TogglePause();Check(!c.RifleHunting.TryFire(),"pause blocks shooting");c.TogglePause();yield return null;
+            typeof(FishingXRNotebook).GetProperty("IsOpen").SetValue(c.XRNotebook,true);
+            try{Check(!c.RifleHunting.TryFire(),"notebook blocks shooting even through a direct tool call");}
+            finally{c.XRNotebook.Close();}
             // Place an ordinary solid wall on the eye/target segment. Target must survive.
             var wall=GameObject.CreatePrimitive(PrimitiveType.Cube);wall.name="Hunting validation wall";
             var eye=c.Shore.Character.EyePosition;var target=animal.Hitbox.bounds.center;
@@ -132,7 +137,14 @@ namespace BoatAttack.EditorTools
             Check(c.Shore.Ground(gull.Feet+Vector3.back*.5f,out ground),"gull remains approach exists");Feet(c,ground+Vector3.up*.06f,gull.Root.GetComponent<Renderer>().bounds.center);
             for(int i=0;i<25;i++){c.Shore.Move(Vector2.zero,false,false,false,.02f);c.PresentCharacterFrame();yield return null;}
             Capture(c,"gull-remains");
-            Check(c.RifleHunting.CollectAnimal(gull.Id) && c.Career.Backpack.Count(FieldItem.GullMeat)==1 && c.Career.Backpack.Count(FieldItem.GullFeather)==1,"gull yields separately named meat and feathers once");
+            var collectCarcass=typeof(FishingXRNotebook).GetMethod("CollectCarcass",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);
+            var contactPalm=FishingContactGeometry.ClosestPoint(gull.Root,gull.Root.GetComponent<Renderer>().bounds.center+Vector3.up*10)+Vector3.up*.08f;
+            Check(!(bool)collectCarcass.Invoke(c.XRNotebook,new object[]{contactPalm+Vector3.up}),"XR carcass pickup rejects a distant palm without consuming remains");
+            typeof(FishingXRNotebook).GetProperty("IsOpen").SetValue(c.XRNotebook,true);
+            try{Check(!(bool)collectCarcass.Invoke(c.XRNotebook,new object[]{contactPalm}),"XR carcass pickup cannot leak through an open menu");}
+            finally{c.XRNotebook.Close();}
+            Check((bool)collectCarcass.Invoke(c.XRNotebook,new object[]{contactPalm}) && c.Career.Backpack.Count(FieldItem.GullMeat)==1 && c.Career.Backpack.Count(FieldItem.GullFeather)==1,"XR near-palm corpse contact yields separately named meat and feathers once");
+            Check(!(bool)collectCarcass.Invoke(c.XRNotebook,new object[]{contactPalm}) && c.Career.Backpack.Count(FieldItem.GullMeat)==1,"XR corpse contact cannot grant the same loot twice");
             saved=FishingSaveStore.Load(c.SavePath,out warning);Check(saved.HuntedAnimal(gull.Id).collected && saved.Backpack.Count(FieldItem.GullFeather)==1,"gull corpse and feather claim survive disk reload");
             Check(!gull.Root.gameObject.activeSelf && !gull.Hitbox.enabled,"pickup immediately clears corpse visual and hit collider");
             double remaining=c.Career.HuntedAnimal(gull.Id).respawnSeconds;
@@ -147,7 +159,61 @@ namespace BoatAttack.EditorTools
             Check(props.GetVector("_FinMotion").sqrMagnitude>0,"respawned gull restores wing animation");
             FishingSaveStore.Save(c.SavePath,c.Career);saved=FishingSaveStore.Load(c.SavePath,out warning);
             Check(warning=="" && saved.HuntedAnimal(gull.Id)==null,"finished respawn persists without reviving old receipts");
+            ValidateSuspendedRecovery(c,gull);
             c.FieldWorld.enabled=true;
+            ValidateNotebookIcons(c);
+        }
+        private static void ValidateSuspendedRecovery(FishingPrototype c,FishingFieldWorld.Animal animal)
+        {
+            Check(c.Automated && c.HasIsolatedProfile && c.SavePath.StartsWith(Application.temporaryCachePath),"suspend recovery test only touches an isolated save");
+            var original=c.Career;var careerProperty=typeof(FishingPrototype).GetProperty("Career");
+            var automatedProperty=typeof(FishingPrototype).GetProperty("Automated");
+            const System.Reflection.BindingFlags flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+            try
+            {
+                Check(FishingCareer.TryRestore(original.Snapshot(),out var fixture),"suspend recovery fixture restores current career");
+                careerProperty.SetValue(c,fixture);
+                Check(fixture.KillLandAnimal(animal.Id,animal.Kind,animal.Feet.x,animal.Feet.y,animal.Feet.z,0)
+                    && fixture.CollectHuntedAnimal(animal.Id),"suspend fixture starts a new claimed corpse timer");
+                for(int i=0;i<250;i++)fixture.TickHuntedRespawns(1);
+                automatedProperty.SetValue(c,false);
+                typeof(FishingPrototype).GetMethod("OnApplicationFocus",flags).Invoke(c,new object[]{false});
+                var saved=FishingSaveStore.Load(c.SavePath,out var warning);
+                Check(warning=="" && saved.HuntedAnimal(animal.Id).respawnSeconds==50,"focus loss saves the remaining 50 seconds without another transaction");
+            }
+            finally
+            {
+                automatedProperty.SetValue(c,true);careerProperty.SetValue(c,original);
+                FishingSaveStore.Save(c.SavePath,original);c.RifleHunting.RefreshAnimals();
+            }
+        }
+        private static void ValidateNotebookIcons(FishingPrototype c)
+        {
+            // Exercise the real notebook UI without claiming headset tracking coverage.
+            var notebook=c.XRNotebook;
+            const System.Reflection.BindingFlags flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+            var page=typeof(FishingXRNotebook).GetField("_page",flags);
+            var offset=typeof(FishingXRNotebook).GetField("_offset",flags);
+            var refresh=typeof(FishingXRNotebook).GetMethod("Refresh",flags);
+            var icons=(UnityEngine.UI.RawImage[])typeof(FishingXRNotebook).GetField("_icons",flags).GetValue(notebook);
+            try
+            {
+                foreach(int number in new[]{1,2})
+                {
+                    page.SetValue(notebook,number);
+                    var items=number==1?c.Career.Backpack.Snapshot().Select(s=>s.item).ToArray():FishingRecipes.All.Select(r=>r.Output).ToArray();
+                    for(int first=0;first<items.Length;first+=6)
+                    {
+                        offset.SetValue(notebook,first);refresh.Invoke(notebook,null);
+                        for(int i=0;i<6 && first+i<items.Length;i++)
+                        {
+                            var item=items[first+i];if(item==FieldItem.Empty)continue;
+                            Check(icons[i].gameObject.activeSelf && icons[i].texture==(FishingV023Art.Icon(item) ?? FishingItemIcons.Get(item)),"XR notebook page "+number+" displays actual item icon "+item);
+                        }
+                    }
+                }
+            }
+            finally { page.SetValue(notebook,0);offset.SetValue(notebook,0);notebook.Close(); }
         }
         private static void ValidateIcons()
         {

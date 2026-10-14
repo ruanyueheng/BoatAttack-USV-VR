@@ -5,6 +5,7 @@ namespace BoatAttack.Fishing
     {
         private void DrawHuntingAim()
         {
+            if(UnityEngine.XR.XRSettings.isDeviceActive)return;
             var hunt=Controller.RifleHunting;
             if(hunt==null || !hunt.Equipped || !Controller.Ashore || Controller.ShopBlocksGameplay || Controller.StoryBlocksGameplay || Controller.WorldActionBlocksGameplay)return;
             float x=800,y=_height*.5f;var color=hunt.Obstructed?Danger:Mint;
