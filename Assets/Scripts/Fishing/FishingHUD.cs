@@ -45,6 +45,7 @@ namespace BoatAttack.Fishing
         {
             var c = Controller;
             if (c == null || c.Career == null || c.Player == null || XRSettings.isDeviceActive) return;
+            if(c.Prologue.Open || c.Home.Sleeping)return;
             DrawOpticalView();
             _scale = LayoutScale(Screen.width, Screen.height);
             _height = Screen.height / _scale;
@@ -56,7 +57,8 @@ namespace BoatAttack.Fishing
                 GUI.matrix = Matrix4x4.TRS(new Vector3(_offset, 0, 0), Quaternion.identity, new Vector3(_scale, _scale, 1));
                 if (_label == null) _label = new GUIStyle(GUI.skin.label) { font = _font, wordWrap = true, richText = false, padding = new RectOffset() };
                 _fade = 1f;
-                if (c.DialogueOpen) DrawDialogue();
+                if (c.Letter.Open) DrawLetter();
+                else if (c.DialogueOpen) DrawDialogue();
                 else if (c.ShopOpen) DrawTackleShop();
                 else if (c.InventoryOpen) { DrawInventory(); DrawInventoryNotice(); }
                 else if (c.JournalOpen) DrawJournal();

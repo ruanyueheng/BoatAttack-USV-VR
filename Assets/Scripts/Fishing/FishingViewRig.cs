@@ -46,7 +46,7 @@ namespace BoatAttack.Fishing
         private void OnDisable() { ReleaseCursor();BinocularBlend=0; }
         public void ApplyShoreLookDelta(Vector2 delta)
         {
-            if(Controller==null || !Controller.Ashore || Controller.Paused || Controller.ShopBlocksGameplay || !OwnsCamera || Controller.Expedition.Aligning)return;
+            if(Controller==null || !Controller.Ashore || Controller.Paused || Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || !OwnsCamera || Controller.Expedition.Aligning)return;
             if(float.IsNaN(delta.x) || float.IsInfinity(delta.x) || float.IsNaN(delta.y) || float.IsInfinity(delta.y))return;
             _lookYaw=Mathf.Repeat(_lookYaw+delta.x*.12f+180,360)-180;
             _lookPitch=Mathf.Clamp(_lookPitch-delta.y*.12f,-65,65);
@@ -56,7 +56,7 @@ namespace BoatAttack.Fishing
         {
             var c=Controller;
             bool available=OwnsCamera && c!=null && c.Ashore && c.Career!=null
-                && c.Career.Backpack.Equipped==FieldItem.Binoculars && !c.Paused && !c.InventoryOpen && !c.ShopBlocksGameplay;
+                && c.Career.Backpack.Equipped==FieldItem.Binoculars && !c.Paused && !c.InventoryOpen && !c.StoryBlocksGameplay && !c.ShopBlocksGameplay;
             if(!available)
             {
                 bool hadOptics=BinocularBlend>0;

@@ -1,0 +1,57 @@
+[
+  {
+    "id": 0,
+    "head": "Female",
+    "outfit": "Female_Peasant",
+    "variant": "",
+    "height": 1.7,
+    "lod0_triangles": 21814,
+    "lod1_triangles": 5499,
+    "materials_per_lod": 1,
+    "atlas": 2048
+  },
+  {
+    "id": 1,
+    "head": "Female",
+    "outfit": "Female_Ranger",
+    "variant": "",
+    "height": 1.7,
+    "lod0_triangles": 22993,
+    "lod1_triangles": 5499,
+    "materials_per_lod": 1,
+    "atlas": 2048
+  },
+  {
+    "id": 2,
+    "head": "Male",
+    "outfit": "Male_Peasant",
+    "variant": "_2",
+    "height": 1.78,
+    "lod0_triangles": 18372,
+    "lod1_triangles": 5498,
+    "materials_per_lod": 1,
+    "atlas": 2048
+  },
+  {
+    "id": 3,
+    "head": "Male",
+    "outfit": "Male_Ranger",
+    "variant": "_3",
+    "height": 1.78,
+    "lod0_triangles": 22993,
+    "lod1_triangles": 5499,
+    "materials_per_lod": 1,
+    "atlas": 2048
+  },
+  {
+    "id": 5,
+    "head": "Male",
+    "outfit": "Male_Peasant",
+    "variant": "",
+    "height": 1.78,
+    "lod0_triangles": 18576,
+    "lod1_triangles": 5500,
+    "materials_per_lod": 1,
+    "atlas": 2048
+  }
+]

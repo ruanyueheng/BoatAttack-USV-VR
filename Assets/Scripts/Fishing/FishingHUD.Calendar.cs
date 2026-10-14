@@ -25,6 +25,8 @@ namespace BoatAttack.Fishing
             if(Button(new Rect(side.x+162,side.y+232,128,40),"夜晚 21:00",Controller.CanSetTime,day.Night,16))Controller.SetDayNight(true);
             if(Button(new Rect(side.x+20,side.y+284,270,40),day.Automatic?"自动流逝 · 点击固定":"时间固定 · 点击自动",Controller.CanSetTime,!day.Automatic,16))Controller.ToggleClock();
             if(Button(new Rect(r.x+32,r.y+553,340,45),"在安全岸边休息至清晨",Controller.CanRest,false,17))Controller.RestUntilMorning();
+            if(Button(new Rect(side.x+20,side.y+350,270,40),"重看序章 · 潮汐回响",Controller.Prologue.CanBegin,false,16))Controller.Prologue.Begin();
+            if(Button(new Rect(side.x+20,side.y+399,270,40),"导航回潮渔屋",true,false,16)){Controller.ToggleJournal();Controller.SelectNavigation(Controller.HomeNavigationIndex);}
             Label(r.x+398,r.y+558,850,36,"动物在 5 分钟有效游玩后恢复；休息会推进恢复，暂停与重载保留进度。",15,Muted);
         }
     }

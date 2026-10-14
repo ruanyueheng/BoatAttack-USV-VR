@@ -156,13 +156,15 @@ namespace BoatAttack.Fishing
             // eye-to-grip offset upward pushed the stock through the face.
             var holdFrame=Quaternion.Euler(0,frame.eulerAngles.y,0);
             _rifle.SetPositionAndRotation(eye+holdFrame*new Vector3(.13f,-.17f,.32f),frame*Quaternion.Euler(0,-14,5));
-            bool fit=_c.Hands.FitToolPose(_rifle,LeftGrip,RightGrip);
+            var leftRotation=Quaternion.LookRotation(Vector3.right,Vector3.down);
+            var rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.right);
+            bool fit=_c.Hands.FitToolPose(_rifle,LeftGrip,RightGrip,leftRotation,rightRotation);
             if(!fit)ObstructionReason="hand reach";
             Obstructed=!fit || !ClearModel();
             if(Obstructed)
             {
                 _rifle.SetPositionAndRotation(eye+frame*new Vector3(.025f,-.24f,.25f),frame*Quaternion.Euler(55,0,0));
-                if(!_c.Hands.FitToolPose(_rifle,LeftGrip,RightGrip) || !ClearModel())
+                if(!_c.Hands.FitToolPose(_rifle,LeftGrip,RightGrip,leftRotation,rightRotation) || !ClearModel())
                 {_rifle.gameObject.SetActive(false);_c.Hands.RestHand(true);_c.Hands.RestHand(false);return;}
             }
             _c.Hands.SetToolTarget(false,_rifle,RightGrip,Quaternion.LookRotation(Vector3.forward,Vector3.right),.72f,fingers:new FishingFingerPose(.25f,.8f,.82f,.85f,.62f));

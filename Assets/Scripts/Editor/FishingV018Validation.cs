@@ -14,7 +14,7 @@ namespace BoatAttack.EditorTools
         public static IEnumerator Checks(FishingPrototype c)
         {
             string evidence=Path.GetFullPath("Logs/v018-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(evidence);
-            Check(c.Islands.WorldRoot.childCount==4 && c.NavigationCount==14,"Four islands integrated into navigation");
+            Check(c.Islands.WorldRoot.childCount==4 && c.NavigationCount==15 && c.HomeNavigationIndex==14,"Four islands and the home integrated into navigation");
             c.ReturnToHarbor();c.Weather.Climate.Select(BayWeather.Clear,true);
             for(int i=0;i<4;i++)
             {
@@ -28,6 +28,7 @@ namespace BoatAttack.EditorTools
                 Check(c.Islands.TryTarget(out int id,out _) && id==i*3,"Letter reachable by continuous walk "+i);
                 var action=Contact(c,letter);while(action.MoveNext())yield return null;
                 Check(c.Career.Adventure.Visited(i),"Island letter discovery through real hand action "+i);
+                c.Letter.Reveal();c.Letter.Close();yield return null;yield return null;
                 var treasure=root.Find("Hidden treasure");walk=Walk(c,treasure.position+new Vector3(0,0,-.38f));while(walk.MoveNext())yield return null;
                 Check(c.Islands.TryTarget(out id,out _) && id==i*3+1,"Treasure target reachable "+i);
                 action=Contact(c,treasure);while(action.MoveNext())yield return null;

@@ -17,6 +17,8 @@ namespace BoatAttack.Fishing
         private static readonly Color Wood=new Color(.43f,.24f,.1f),Edge=new Color(.7f,.48f,.22f),Iron=new Color(.13f,.19f,.21f),Rock=new Color(.39f,.43f,.43f);
         public static Mesh Make(FieldItem item)
         {
+            var imported=FishingV023Art.ItemMesh(item);
+            if(imported!=null)return Object.Instantiate(imported);
             var b=new FishingMeshBuilder();
             if(item==FieldItem.HuntingSpear)
             {

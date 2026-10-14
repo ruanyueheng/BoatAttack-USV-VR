@@ -43,13 +43,13 @@ namespace BoatAttack.Fishing
     /// <summary>The single source of species numbers; prices and saves are validated against this table.</summary>
     public static class FishingSpecies
     {
-        public const int Count = 12;
+        public const int Count = 20;
         // Fishing areas 0-2 each hold one common species. The legend shares area 1.
         public const int AreaCount = 3;
         public const int LegendArea = 1;
         // Discovery bits: common normal 0-2, common pearl 3-5 (the v2 layout), legend 6.
         public const int LegendDiscoveryBit = 6;
-        public const int DiscoveryMaskLimit = (1 << 23) - 1;
+        public const long DiscoveryMaskLimit = (1L << (Count * 2 - 1)) - 1;
 
         private static readonly FishSpecies[] Table =
         {
@@ -65,10 +65,18 @@ namespace BoatAttack.Fishing
             new FishSpecies(FishKind.Tuna, "蓝鳍鲔", "航标水道 · 夏秋白昼 · 急速冲刺", 45, 2000, 7000, 3.1f, 18, .51f, 4.1f, 1.8f, 100, false),
             new FishSpecies(FishKind.Lanternfish, "星灯鱼", "各海域 · 仅夜间 · 腹部星斑", 28, 100, 450, 2.4f, 11, .38f, 5.8f, 1.5f, 80, false),
             new FishSpecies(FishKind.Lionfish, "赤羽狮子鱼", "鼓鼓礁 · 夜间 / 夏季 · 羽扇胸鳍", 36, 400, 1500, 3, 14, .48f, 6.4f, 1.75f, 90, false),
+            new FishSpecies(FishKind.SeaTurtle, "青背海湾龟", "珊瑚浅湾 · 白昼 · 宽鳍与九片背甲", 38, 1800, 6500, 3.6f, 15, .39f, 7.2f, 1.5f, 95, false),
+            new FishSpecies(FishKind.Octopus, "玫瑰八腕章鱼", "鼓鼓礁 · 夜间 / 薄雾 · 八腕吸盘", 35, 500, 2400, 3.1f, 11, .45f, 5.9f, 1.65f, 90, false),
+            new FishSpecies(FishKind.Crab, "赤钳沙蟹", "珊瑚浅湾 · 落潮 · 横行的红色双钳", 16, 180, 800, 2.7f, 12, .33f, 6.1f, 1.4f, 75, false),
+            new FishSpecies(FishKind.Lobster, "绯壳岩龙虾", "鼓鼓礁 · 夜间 / 秋冬 · 长触须与分节尾", 42, 600, 2200, 3.2f, 12, .46f, 5.7f, 1.6f, 90, false),
+            new FishSpecies(FishKind.Seahorse, "琥珀冠海马", "珊瑚浅湾 · 春夏 · 卷尾与冠状背脊", 24, 30, 130, 2.8f, 14, .28f, 6.8f, 1.35f, 75, false),
+            new FishSpecies(FishKind.Stingray, "蓝斑燕鳐", "飞梭水道 · 涨潮 · 菱形双翼与细长尾", 48, 1600, 5800, 3.4f, 19, .48f, 5.8f, 1.75f, 100, false),
+            new FishSpecies(FishKind.Jellyfish, "月伞水母", "各海域 · 夜间 · 珍珠蓝伞与十二条触须", 18, 100, 600, 2.4f, 15, .27f, 7.3f, 1.3f, 75, false),
+            new FishSpecies(FishKind.Cuttlefish, "翡翠纹乌贼", "飞梭水道 · 春秋 / 薄雾 · 波浪裙鳍", 29, 250, 1300, 2.9f, 13, .43f, 4.8f, 1.55f, 85, false),
         };
         private static readonly string[] Areas = { "珊瑚浅湾", "飞梭水道", "鼓鼓礁" };
 
-        private static readonly float[] Lengths = { .24f, .32f, .21f, .82f, .29f, .27f, .17f, .35f, .20f, .38f, .18f, .26f };
+        private static readonly float[] Lengths = { .24f, .32f, .21f, .82f, .29f, .27f, .17f, .35f, .20f, .38f, .18f, .26f, .62f, .54f, .49f, .65f, .46f, .78f, .41f, .50f };
         public static float LengthMeters(FishKind kind) => IsDefined(kind) ? Lengths[(int)kind] : .3f;
         public static float SizeScale(FishKind kind, int grams) => .85f + .3f * SizePermille(kind, grams) / 1000f;
         public static bool InHabitat(FishKind kind, int area, FishingCalendar calendar, BayWeather weather)
@@ -85,6 +93,14 @@ namespace BoatAttack.Fishing
                 case FishKind.Tuna: return zone == 1 && !night && (season == 1 || season == 2);
                 case FishKind.Lanternfish: return night;
                 case FishKind.Lionfish: return zone == 2 && (night || season == 1);
+                case FishKind.SeaTurtle: return zone == 0 && !night;
+                case FishKind.Octopus: return zone == 2 && (night || weather == BayWeather.Mist);
+                case FishKind.Crab: return zone == 0 && !calendar.RisingTide;
+                case FishKind.Lobster: return zone == 2 && (night || season >= 2);
+                case FishKind.Seahorse: return zone == 0 && season < 2;
+                case FishKind.Stingray: return zone == 1 && calendar.RisingTide;
+                case FishKind.Jellyfish: return night;
+                case FishKind.Cuttlefish: return zone == 1 && (season == 0 || season == 2 || weather == BayWeather.Mist);
                 default: return kind == AreaSpecies(zone);
             }
         }

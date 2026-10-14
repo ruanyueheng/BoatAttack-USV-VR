@@ -37,7 +37,7 @@ namespace BoatAttack.EditorTools
             c.ReturnToHarbor();var rb=c.Player.engine.RB;rb.position=c.Shore.Sites[0].Berth+Vector3.up;rb.velocity=rb.angularVelocity=Vector3.zero;c.Player.transform.position=rb.position;Physics.SyncTransforms();
             Check(c.Shore.TryDisembark(),"land through production control");
             var node=world.Nodes.First(n=>n.Item==FieldItem.Stone);
-            Check(c.Shore.Ground(node.Feet+Vector3.back*.45f,out var ground),"stone collection approach exists");
+            Check(c.Shore.Ground(node.Feet+Vector3.back*.30f,out var ground),"stone collection approach exists");
             c.Shore.SetCrouch(true);
             Feet(c,ground+Vector3.up*.06f,node.Root.position+Vector3.up*.2f);
             for(int i=0;i<35;i++){c.Shore.Move(Vector2.zero,false,false,true,.02f);c.PresentCharacterFrame();yield return null;}

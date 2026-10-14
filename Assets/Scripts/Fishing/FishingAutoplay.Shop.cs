@@ -31,7 +31,7 @@ namespace BoatAttack.Fishing
 #endif
                 InputSystem.settings=fixtureInputSettings;
                 InputSystem.EnableDevice(keyboard);
-                RequireShop(c.NavigationCount == 14 && c.ShopNavigationIndex == 9 && c.Shore.Sites.Length == 4, "fourteen waypoints, original four survey sites");
+                RequireShop(c.NavigationCount == 15 && c.ShopNavigationIndex == 9 && c.Shore.Sites.Length == 4, "fifteen waypoints including the home, original four survey sites");
                 for (int i = 0; i < c.NavigationCount; i++)
                 {
                     c.SelectNavigation(i); var p = c.NavigationPosition;
@@ -86,7 +86,7 @@ namespace BoatAttack.Fishing
                     RequireShop(c.Career.Level(track) == 1 && c.Career.Coins == before - price && bag.Selected == 2, "exact price/effect without hotbar leak " + track);
                 }
                 var reloaded = FishingSaveStore.Load(c.SavePath, out var warning);
-                RequireShop(warning.Length == 0 && reloaded.Snapshot().version == 11 && reloaded.Coins == c.Career.Coins
+                RequireShop(warning.Length == 0 && reloaded.Snapshot().version == 12 && reloaded.Coins == c.Career.Coins
                     && reloaded.LineLevel == 1 && reloaded.ReelLevel == 1 && reloaded.HoldLevel == 1, "v9 upgrade save round trip");
                 RequireShop(reloaded.ShoreTaskMask == 1 && reloaded.Backpack.Collected(0) && reloaded.Backpack.Seen(LandAnimalKind.Fox)
                     && reloaded.Backpack.Selected == 2 && reloaded.Backpack.Count(FieldItem.Plank) == bag.Count(FieldItem.Plank), "survey, pickup, animal, hotbar and crafted materials survive shopping");

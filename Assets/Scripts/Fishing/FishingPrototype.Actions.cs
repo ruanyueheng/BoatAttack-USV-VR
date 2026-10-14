@@ -198,6 +198,7 @@ namespace BoatAttack.Fishing
                 if(WorldActionBusy)return "动作进行中 · "+Mathf.RoundToInt(Actions.Progress*100)+"% · Esc 取消";
                 if(Shore.Swimming)return "游泳 · 朝低岸移动并按空格上岸 · 靠近船边G上船";
                 if(Shore.Climbing)return Shore.ClimbHint;
+                if(Home!=null && Home.NearBed)return HasPendingCatch?"请先结算鱼获，再回床休息":"E 躺下休息至清晨";
                 if(Realms!=null && Realms.NearbyHint!=null)return Realms.NearbyHint;
                 if(Residents!=null && Residents.TryNearby(out int resident))return "E 与"+FishingLore.ResidentName(resident)+"交谈";
                 if(Shore.ClimbHint!=null)return Shore.ClimbHint;
@@ -223,6 +224,7 @@ namespace BoatAttack.Fishing
             if(Paused || InventoryOpen || JournalOpen || ShopBlocksGameplay || StoryBlocksGameplay || WorldActionBlocksGameplay)return false;
             if(!Ashore){Interact();return true;}
             if(Shore.Swimming || Shore.Climbing)return false;
+            if(Home.NearBed)return Home.Sleep();
             if(Realms.TryTarget(out _,out _))return Realms.Interact();
             if(Residents.TryNearby(out int resident))return Residents.Talk(resident);
             if(Shore.TryClimb())return true;
@@ -288,7 +290,7 @@ namespace BoatAttack.Fishing
             if(FishingSpecies.Of(Career.PendingCatch.fish.kind).Legendary){CatchRig.PrepareHandAction();return MeasureCatch();}
             Shore.SyncRider();
             Hands.GetToolFrame(out var origin,out var frame);
-            var contact=CatchRig.InspectionCenter(frame)+(frame*Quaternion.Euler(0,-90,0))*Vector3.Scale(CatchRig.FishPalmLocal(false),ActiveFish.lossyScale);
+            var contact=CatchRig.InspectionCenter(frame)+(frame*CatchRig.InspectionRotation)*Vector3.Scale(CatchRig.FishPalmLocal(false),ActiveFish.lossyScale);
             string id=Career.PendingCatch.fish.id;
             bool began=BeginWorldAction(FishingActionKind.Inspect,"fish:"+id,null,contact,frame,
                 ()=>HasPendingCatch && Career.PendingCatch.fish.id==id && MeasureCatch(),true);

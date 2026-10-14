@@ -34,7 +34,7 @@ namespace BoatAttack.Fishing
             bool pick=item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe;
             bool facility=FishingRecipes.IsStation(item);
             bool tool=pick || facility || item==FieldItem.HuntingSpear || item==FieldItem.FieldGuide || item==FieldItem.Binoculars || item==FieldItem.Lantern || preview;
-            bool visible=_c.Ashore && !_c.Shore.Swimming && !_c.Shore.Climbing && (_c.XRNotebook==null || !_c.XRNotebook.IsOpen) && _c.Hands.CanPresentTools && !_c.ShopBlocksGameplay && !_c.Hands.HasGesture && !_c.Hands.PresentingPickup && !_c.Expedition.Aligning && !_c.ActionSuppressesHeldTool && tool;
+            bool visible=_c.Ashore && !_c.StoryBlocksGameplay && !_c.Shore.Swimming && !_c.Shore.Climbing && (_c.XRNotebook==null || !_c.XRNotebook.IsOpen) && _c.Hands.CanPresentTools && !_c.ShopBlocksGameplay && !_c.Hands.HasGesture && !_c.Hands.PresentingPickup && !_c.Expedition.Aligning && !_c.ActionSuppressesHeldTool && tool;
             _held.gameObject.SetActive(visible);_lamp.enabled=false;
             PresentedItem=visible?item:FieldItem.Empty;
             if(!visible)return;
@@ -64,7 +64,7 @@ namespace BoatAttack.Fishing
                     leftRotation=Quaternion.LookRotation(Vector3.up,Vector3.left);rightRotation=Quaternion.LookRotation(Vector3.up,Vector3.right);break;
                 case FieldItem.Lantern:
                     scale=.7f;fingers=FishingFingerPose.Lantern;
-                    rightPalm=new Vector3(0,.65f,0);rightRotation=Quaternion.LookRotation(Vector3.right,Vector3.up);
+                    rightPalm=new Vector3(0,.666f,0);rightRotation=Quaternion.LookRotation(Vector3.right,Vector3.up);
                     position=eye+frame*new Vector3(.20f,-.06f,.34f)-rotation*(rightPalm*scale);break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:
                     scale=PickScale;rightPalm=PickPalm;curl=.94f;fingers=FishingFingerPose.Handle;
@@ -83,11 +83,28 @@ namespace BoatAttack.Fishing
                         position=Vector3.Lerp(position,desired,Mathf.Sin(Mathf.Clamp01(_thrust/.48f)*Mathf.PI));
                     }
                     break;
-                case FieldItem.Workbench:case FieldItem.Furnace:case FieldItem.Forge:
+                case FieldItem.Workbench:
+                    twoHands=true;scale=.35f;leftPalm=new Vector3(-.68f,.88f,0);rightPalm=new Vector3(.68f,.88f,0);
+                    fingers=FishingFingerPose.Book;
+
+                    position=eye+frame*new Vector3(0,-.46f,.35f);leftRotation=rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.down);break;
+                case FieldItem.Forge:
                     twoHands=true;scale=.35f;leftPalm=new Vector3(-.52f,.6f,-.3f);rightPalm=new Vector3(.52f,.6f,-.3f);
                     position=eye+frame*new Vector3(0,-.46f,.35f);leftRotation=rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.down);break;
+                case FieldItem.Furnace:
+                    twoHands=true;scale=.30f;leftPalm=new Vector3(-.56f,.43f,0);rightPalm=new Vector3(.56f,.43f,0);
+                    fingers=FishingFingerPose.Book;
+                    position=eye+frame*new Vector3(0,-.37f,.38f);leftRotation=rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.down);break;
+                case FieldItem.Plank:case FieldItem.Driftwood:
+                    twoHands=true;scale=.65f;leftPalm=new Vector3(-.20f,-.025f,0);rightPalm=new Vector3(.20f,-.025f,0);
+                    fingers=FishingFingerPose.Book;
+                    position=eye+frame*new Vector3(0,-.24f,.36f);leftRotation=rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.down);break;
+                case FieldItem.IronIngot:case FieldItem.Brick:case FieldItem.Glass:case FieldItem.Rope:
+                    rightPalm=new Vector3(0,-.025f,0);rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.down);
+                    fingers=FishingFingerPose.Book;break;
                 default:
-                    rightPalm=new Vector3(0,-.035f,0);rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.down);break;
+                    rightPalm=new Vector3(0,-.035f,0);rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.down);
+                    fingers=FishingFingerPose.Book;break;
             }
             _held.localScale=Vector3.one*scale;_held.SetPositionAndRotation(position,rotation);
             bool tracked=XRSettings.isDeviceActive;
@@ -98,7 +115,7 @@ namespace BoatAttack.Fishing
                 _held.position=palm-_held.rotation*(rightPalm*scale);
                 twoHands=twoHands && _c.Hands.Left.Visible && Vector3.Distance(_c.Hands.Left.Palm.position,_held.TransformPoint(leftPalm))<.18f;
             }
-            if(!tracked && !_c.Hands.FitToolPose(_held,leftPalm,rightPalm,twoHands,true)){_held.gameObject.SetActive(false);PresentedItem=FieldItem.Empty;return;}
+            if(!tracked && !_c.Hands.FitToolPose(_held,leftPalm,rightPalm,leftRotation,rightRotation,twoHands,true)){_held.gameObject.SetActive(false);PresentedItem=FieldItem.Empty;return;}
             if(_c.ActionUsesHeldTool && pick)
             {
                 // 镐尖与接触许可使用同一个目标，不能先夹短手臂再让远处矿石扣减。

@@ -57,7 +57,7 @@ namespace BoatAttack.Fishing
                 var species=(FishKind)kind;
                 for(int i=0;i<3;i++)
                 {
-                    int zone=species==FishKind.Mackerel || species==FishKind.Tuna?1:species==FishKind.Grouper || species==FishKind.Lionfish?2:species==FishKind.Sardine || species==FishKind.Lanternfish?i:0;
+                    int zone=species==FishKind.Mackerel || species==FishKind.Tuna || species==FishKind.Stingray || species==FishKind.Cuttlefish?1:species==FishKind.Grouper || species==FishKind.Lionfish || species==FishKind.Octopus || species==FishKind.Lobster?2:species==FishKind.Sardine || species==FishKind.Lanternfish || species==FishKind.Jellyfish?i:0;
                     var fish=FishingArt.Fish(transform,_owned,Controller.PaletteShader,species);
                     _shoal.Add(new ShoalFish{root=fish.transform,kind=species,zone=zone,phase=kind*.7f+i*.4f});
                 }

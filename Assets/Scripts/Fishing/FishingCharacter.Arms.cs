@@ -63,6 +63,12 @@ namespace BoatAttack.Fishing
         {
             var arm=left?_leftArm:_rightArm;return arm.Wrist.rotation*arm.WristToPalm;
         }
+        public Vector3 WristForPalm(bool left,Vector3 position,Quaternion rotation)
+        {
+            var arm=left?_leftArm:_rightArm;
+            var offset=Quaternion.Inverse(arm.Wrist.rotation)*arm.Wrist.TransformVector(arm.PalmOffset);
+            return position-rotation*Quaternion.Inverse(arm.WristToPalm)*offset;
+        }
         private void BuildArms()
         {
             var bones=new Dictionary<string,Transform>();
@@ -192,8 +198,7 @@ namespace BoatAttack.Fishing
             if(_armsPaused || _armBaseFrame!=Time.frameCount || target==null || !target.Visible || target.IsLeft!=left)return;
             var desiredRotation=target.Palm.rotation*Quaternion.Inverse(arm.WristToPalm);
             // Preserve the sampled rig's actual segment scales; only rotations are solved.
-            var offset=Quaternion.Inverse(arm.Wrist.rotation)*arm.Wrist.TransformVector(arm.PalmOffset);
-            var wristTarget=target.Palm.position-desiredRotation*offset;
+            var wristTarget=WristForPalm(left,target.Palm.position,target.Palm.rotation);
             var outward=arm.Upper.position-HandReferencePosition;
             var pole=outward.normalized*.65f-transform.up*.8f-transform.forward*.15f;
             SolveArm(arm,wristTarget,pole);

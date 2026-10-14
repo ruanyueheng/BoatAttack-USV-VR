@@ -12,6 +12,13 @@ namespace BoatAttack.Fishing
         private bool FindLanding(out Vector3 feet,out bool namedSite,out int surveySite,out bool shopLanding)
         {
             feet=Vector3.zero;namedSite=false;surveySite=-1;shopLanding=false;
+            var home=Controller.Home;
+            if(home!=null && Controller.NavigationTarget==Controller.HomeNavigationIndex && FishingPrototype.FlatDistance(Controller.Player.transform.position,home.Berth)<=9)
+            {
+                var landing=home.BoardwalkStart;
+                if(Ground(landing,out feet) && Mathf.Abs(feet.y-landing.y)<.35f && Clearance(feet) && SafeCoastalFooting(feet) && ClearTransfer(feet))
+                {namedSite=true;surveySite=0;return true;}
+            }
             var shop=Controller.TackleShop;
             if(shop!=null && shop.Available && FishingPrototype.FlatDistance(Controller.Player.transform.position,shop.mooringPoint.position)<=9f)
             {
