@@ -13,6 +13,12 @@ namespace BoatAttack.Fishing
         public static readonly Vector3 BinocularLeftPalm=new Vector3(-.31f,0,-.055f);
         public static readonly Vector3 BinocularRightPalm=new Vector3(.31f,0,-.055f);
         public const float PickScale=.85f;
+        public const float LanternScale=.75f;
+        public static readonly Vector3 LanternPalm=new Vector3(.10844688f,.3941854f,-.017f);
+        public static readonly Vector3 LanternLightPoint=new Vector3(0,.14f,0);
+        private Material[] _plainToolMaterials;
+        private MaterialPropertyBlock _lanternGlow;
+        private bool _lanternGlowApplied;
         public const float BinocularScale=.52f;
         private Renderer _heldRenderer;
         private FieldItem _previewItem;
@@ -48,7 +54,9 @@ namespace BoatAttack.Fishing
             if(_heldRenderer==null)_heldRenderer=_held.GetComponent<Renderer>();
             _heldRenderer.enabled=!(item==FieldItem.Binoculars && _c.View.OpticalView);
             _heldMesh.sharedMesh=ToolMesh(item);
-            _heldRenderer.sharedMaterial=FishingUserTools.Material(item) ?? _palette;
+            if(_lanternGlowApplied){_heldRenderer.SetPropertyBlock(null,1);_lanternGlowApplied=false;}
+            if(_plainToolMaterials==null)_plainToolMaterials=new[]{_palette};
+            _heldRenderer.sharedMaterials=FishingUserTools.Materials(item) ?? _plainToolMaterials;
             _c.Hands.GetToolFrame(out var shoulderFrame,out var frame);
             var bodyFrame=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0);
             var eye=_c.Shore.Character.EyePosition;
@@ -72,9 +80,9 @@ namespace BoatAttack.Fishing
                     leftPalm=BinocularLeftPalm;rightPalm=BinocularRightPalm;
                     leftRotation=Quaternion.LookRotation(Vector3.up,Vector3.left);rightRotation=Quaternion.LookRotation(Vector3.up,Vector3.right);break;
                 case FieldItem.Lantern:
-                    scale=.7f;fingers=FishingFingerPose.Lantern;
-                    rightPalm=new Vector3(0,.666f,0);rightRotation=Quaternion.LookRotation(Vector3.right,Vector3.up);
-                    position=eye+frame*new Vector3(.20f,-.06f,.34f)-rotation*(rightPalm*scale);break;
+                    scale=LanternScale;fingers=FishingFingerPose.Handle;
+                    rotation=bodyFrame;rightPalm=LanternPalm;rightRotation=Quaternion.Euler(-50,0,0);
+                    position=shoulderFrame+bodyFrame*new Vector3(_c.Shore.Character.HandSide(false)*.15f,.23f,.42f)-rotation*(rightPalm*scale);break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:
                     scale=PickScale;rightPalm=PickPalm;curl=.94f;fingers=FishingFingerPose.Handle;
                     // Keep the wrist beside the chest, not beside the eye. Palm orientation
@@ -139,9 +147,15 @@ namespace BoatAttack.Fishing
             if(twoHands)_c.Hands.SetToolTarget(true,_held,leftPalm,leftRotation,curl,fingers:fingers);
             else if(!tracked)_c.Hands.RestHand(true);
             _c.Hands.SetToolTarget(false,_held,rightPalm,rightRotation,curl,fingers:fingers);
-            if(pick)_c.Hands.Right.SetForearmRoll(.65f);
+            if(pick || item==FieldItem.Lantern)_c.Hands.Right.SetForearmRoll(.65f);
             _lamp.enabled=item==FieldItem.Lantern && _c.LanternOn;
-            _lamp.transform.position=_held.TransformPoint(Vector3.up*.27f);
+            _lamp.transform.position=_held.TransformPoint(LanternLightPoint);
+            if(item==FieldItem.Lantern)
+            {
+                if(_lanternGlow==null)_lanternGlow=new MaterialPropertyBlock();
+                _lanternGlow.Clear();_lanternGlow.SetColor("_EmissionColor",_c.LanternOn?new Color(1,.55f,.16f)*3.5f:Color.black);
+                _heldRenderer.SetPropertyBlock(_lanternGlow,1);_lanternGlowApplied=true;
+            }
             if(item==FieldItem.HuntingSpear)CheckSpearContact(tracked);
         }
     }

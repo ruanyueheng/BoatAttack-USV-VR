@@ -10,4 +10,4 @@ Unity `FishingPickaxe`、`FishingForge`、`FishingHunting` 专项通过；3600 �
 
 最终材质/姿态/主线兼容检查日志：Pickaxe `Logs/usv-validation-04383be9124140668ef87183717f6b58.log`；V023 `Logs/usv-validation-02cbd9acdc244e8e8e5e5fc9849c45fa.log`。木纹 UV 的实际采样通过，不仅检查材质有没有绑定。
 
-导入命令：`Tools/Run-UnityValidation.ps1 -Suite FishingUserToolsInstall`；握持验证：`-Suite FishingPickaxe`。参考图在 `Logs/UserPickaxe`，本次只处理镐子，提灯仍待新的模型附件。
+导入命令：`Tools/Run-UnityValidation.ps1 -Suite FishingUserToolsInstall`；握持验证：`-Suite FishingPickaxe`。参考图在 `Logs/UserPickaxe`。后续提灯模型替换见 [灯笼说明](USER_LANTERN.md)。

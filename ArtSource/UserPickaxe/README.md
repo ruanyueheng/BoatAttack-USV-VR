@@ -6,6 +6,6 @@
 
 保留原木纹及金属材质，烘焙 Base Color、Metallic/Smoothness、Tangent Normal 图集，并提供与实际模型相同的缩略图。UV 层删除前复制图集坐标、删除后回写，避免 Unity 显示整柄单色金属。
 
-资源位于 `Assets/Resources/FishingUserTools`。导入配置由 `FishingUserToolAssets.Build` 生成；石镐和铁镐共用这份用户提供外观，原游戏名称、配方、产量及存档物品编号不变。提灯不在本次替换范围，等待用户重新提供可导入模型。
+资源位于 `Assets/Resources/FishingUserTools`。导入配置由 `FishingUserToolAssets.Build` 生成；石镐和铁镐共用这份用户提供外观，原游戏名称、配方、产量及存档物品编号不变。后续提供的提灯另存于 `ArtSource/UserLantern`，两个来源文件均保持原样。
 
 来源和使用许可由用户确认，本项目不擅自为该第三方模型新增授权声明。

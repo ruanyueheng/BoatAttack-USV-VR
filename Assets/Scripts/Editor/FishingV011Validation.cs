@@ -177,6 +177,10 @@ namespace BoatAttack.EditorTools
             {
                 var run=FishingFirstPersonValidation.Checks(c);while(run.MoveNext())yield return null;
             }
+            else if(suite=="LANTERN")
+            {
+                var lantern=FishingLanternValidation.Checks(c);while(lantern.MoveNext())yield return lantern.Current;
+            }
             else if(suite=="PICKAXE")
             {
                 var pick=FishingPickaxeValidation.Checks(c);while(pick.MoveNext())yield return pick.Current;

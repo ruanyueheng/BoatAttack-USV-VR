@@ -1,6 +1,6 @@
 param(
     [string]$EditorRoot,
-    [ValidateSet("FishingPickaxe", "FishingUserToolsInstall", "FishingV024", "FishingV023Art", "FishingV023", "FishingV022Art", "FishingV022", "FishingV021", "FishingV020Install", "FishingV020", "FishingV019Install", "FishingV019", "FishingV018Install", "FishingV018", "FishingSkiffBuild", "FishingV017", "FishingV016", "FishingLivingCoast", "Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild", "FishingWorkshop", "FishingTerrain", "FishingShopInstall", "FishingShop", "FishingMap", "FishingCharacter", "FishingInteraction", "FishingPlayer", "FishingPlayerBoundary", "FishingFirstPerson", "FishingCashierBuild", "FishingCashier", "FishingHunting", "FishingForge")]
+    [ValidateSet("FishingLantern", "FishingUserLanternInstall", "FishingPickaxe", "FishingUserToolsInstall", "FishingV024", "FishingV023Art", "FishingV023", "FishingV022Art", "FishingV022", "FishingV021", "FishingV020Install", "FishingV020", "FishingV019Install", "FishingV019", "FishingV018Install", "FishingV018", "FishingSkiffBuild", "FishingV017", "FishingV016", "FishingLivingCoast", "Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild", "FishingWorkshop", "FishingTerrain", "FishingShopInstall", "FishingShop", "FishingMap", "FishingCharacter", "FishingInteraction", "FishingPlayer", "FishingPlayerBoundary", "FishingFirstPerson", "FishingCashierBuild", "FishingCashier", "FishingHunting", "FishingForge")]
 
 
 
@@ -36,6 +36,8 @@ $logDirectory = Join-Path $repo 'Logs'
 # Unique logs cannot accidentally satisfy this run with a previous PASS marker.
 $log = Join-Path $logDirectory ("usv-validation-" + [Guid]::NewGuid().ToString('N') + '.log')
 $method = switch ($Suite) {
+    'FishingLantern' { 'BoatAttack.EditorTools.FishingLanternValidation.Run' }
+    'FishingUserLanternInstall' { 'BoatAttack.EditorTools.FishingUserLanternAssets.Build' }
     'FishingPickaxe' { 'BoatAttack.EditorTools.FishingPickaxeValidation.Run' }
     'FishingUserToolsInstall' { 'BoatAttack.EditorTools.FishingUserToolAssets.Build' }
     'FishingV024' { 'BoatAttack.EditorTools.FishingV024Validation.Run' }
@@ -86,6 +88,8 @@ $method = switch ($Suite) {
     'FishingExpeditionCapture' { 'BoatAttack.EditorTools.FishingExpeditionValidation.Capture' }
 }
 $marker = switch ($Suite) {
+    'FishingLantern' { '[LANTERN]' }
+    'FishingUserLanternInstall' { '[USER-LANTERN-ASSETS]' }
     'FishingPickaxe' { '[PICKAXE]' }
     'FishingUserToolsInstall' { '[USER-TOOLS]' }
     'FishingV024' { '[V024]' }
@@ -136,7 +140,7 @@ $marker = switch ($Suite) {
     'FishingExpeditionCapture' { '[EXPEDITION]' }
 }
 $arguments = '-batchmode -nographics -buildTarget StandaloneWindows64 -projectPath "' + $repo.Replace('\', '/') + '" -executeMethod ' + $method + ' -logFile "' + $log + '"'
-if ($Suite -in @('FishingPickaxe', 'FishingV022Art', 'FishingV022', 'FishingV021', 'FishingHunting', 'FishingForge', 'FishingV020Install', 'FishingV020', 'FishingV019Install', 'FishingV019', 'FishingV018', 'FishingV017', 'FishingV016', 'FishingCatch', 'FishingLivingCoast', 'FishingFirstPerson', 'FishingPlayerBoundary', 'FishingPlayer', 'FishingMap', 'FishingCharacter', 'FishingInteraction', 'FishingShop', 'FishingShore', 'FishingField', 'FishingExpedition', 'FishingSmoke', 'FishingWorkshop', 'FishingExpeditionCapture', 'FishingFieldCapture', 'FishingCatchCapture')) { $arguments = $arguments.Replace(' -nographics', '') }
+if ($Suite -in @('FishingLantern', 'FishingPickaxe', 'FishingV022Art', 'FishingV022', 'FishingV021', 'FishingHunting', 'FishingForge', 'FishingV020Install', 'FishingV020', 'FishingV019Install', 'FishingV019', 'FishingV018', 'FishingV017', 'FishingV016', 'FishingCatch', 'FishingLivingCoast', 'FishingFirstPerson', 'FishingPlayerBoundary', 'FishingPlayer', 'FishingMap', 'FishingCharacter', 'FishingInteraction', 'FishingShop', 'FishingShore', 'FishingField', 'FishingExpedition', 'FishingSmoke', 'FishingWorkshop', 'FishingExpeditionCapture', 'FishingFieldCapture', 'FishingCatchCapture')) { $arguments = $arguments.Replace(' -nographics', '') }
 if ($Suite -in @('FishingV023','FishingV024')) { $arguments = $arguments.Replace(' -nographics', '') + ' -screen-width 1600 -screen-height 900' }
 if ($DisableBurst) { $arguments += ' --burst-disable-compilation' }
 
