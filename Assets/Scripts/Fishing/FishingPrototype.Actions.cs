@@ -270,7 +270,7 @@ namespace BoatAttack.Fishing
         {
             contact=FishingContactGeometry.ClosestPoint(node.Root,Shore.Character.ShoulderPosition(false));
             var heading=Vector3.ProjectOnPlane(contact-Shore.Position,Vector3.up);
-            rotation=(heading.sqrMagnitude>.001f?Quaternion.LookRotation(heading):Shore.Actor.rotation)*Quaternion.Euler(0,0,-110);
+            rotation=FishingFieldWorld.PickContactRotation(heading.sqrMagnitude>.001f?heading:Shore.Actor.forward);
         }
         public bool RequestPlaceEquipped()
         {

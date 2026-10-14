@@ -21,13 +21,13 @@ namespace BoatAttack.EditorTools
             foreach(var mesh in c.Home.House.GetComponentsInChildren<MeshFilter>())
                 Check(mesh.GetComponent<Renderer>().sharedMaterial.shader==c.PaletteShader,"Furnished prefab preserves actual vertex palette: "+mesh.name);
             var pick=FishingV023Art.ItemMesh(FieldItem.IronPickaxe);
-            var sourcePick=Resources.Load<GameObject>("FishingV023/Items/IronPickaxe");var sourceFilter=sourcePick.GetComponentInChildren<MeshFilter>();
+            var sourcePick=Resources.Load<GameObject>("FishingUserTools/Pickaxe");var sourceFilter=sourcePick.GetComponentInChildren<MeshFilter>();
             Debug.Log("[V023] AXES: "+pick.bounds+" min="+pick.bounds.min+" max="+pick.bounds.max+" scale="+sourceFilter.transform.lossyScale+" rotation="+sourceFilter.transform.eulerAngles);
             Debug.Log("[V023] SHELL AXES: "+Resources.Load<GameObject>("FishingV023/Home/HouseShellView").GetComponentInChildren<MeshFilter>().sharedMesh.bounds);
             Debug.Log("[V023] SPEAR AXES: "+FishingV023Art.ItemMesh(FieldItem.HuntingSpear).bounds);
             Check(FishingV023Art.ItemMesh(FieldItem.HuntingSpear).bounds.max.z>.91f,"Spear's visible tip shares the positive-Z gameplay contact axis");
             Check(Resources.Load<GameObject>("FishingV023/Home/HouseShellView").GetComponentInChildren<MeshFilter>().sharedMesh.bounds.min.z<-7.9f,"Visible porch shares the negative-Z entrance and floor colliders");
-            Check(pick!=null && pick.bounds.max.y>.33f && pick.bounds.min.y<-.25f && pick.bounds.size.x>.54f && pick.bounds.size.x<.65f,"Imported pick retains exact metre grip and contact axes");
+            Check(pick!=null && Mathf.Abs(pick.bounds.size.y-.58f)<.01f && pick.bounds.Contains(FishingFieldWorld.PickTip) && pick.bounds.Contains(FishingFieldWorld.PickPalm),"Supplied pick retains real metre grip and contact axes");
             foreach(FieldItem item in Enum.GetValues(typeof(FieldItem)))
             {
                 // Appended hunting/forge items use the supplied textured rifle and

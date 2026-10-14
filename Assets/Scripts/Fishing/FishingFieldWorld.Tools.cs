@@ -8,11 +8,11 @@ namespace BoatAttack.Fishing
         public Transform HeldTool=>_held;
         public Renderer HeldToolRenderer=>_heldRenderer;
         public FieldItem PresentedItem { get; private set; }
-        public static readonly Vector3 PickPalm=new Vector3(.067f,-.09f,.005f);
-        public static readonly Vector3 PickTip=new Vector3(.28f,.26f,0);
+        public static readonly Vector3 PickPalm=new Vector3(.034f,0,0);
+        public static readonly Vector3 PickTip=new Vector3(.1531086f,.39003575f,.02396736f);
         public static readonly Vector3 BinocularLeftPalm=new Vector3(-.31f,0,-.055f);
         public static readonly Vector3 BinocularRightPalm=new Vector3(.31f,0,-.055f);
-        public const float PickScale=.9f;
+        public const float PickScale=.85f;
         public const float BinocularScale=.52f;
         private Renderer _heldRenderer;
         private FieldItem _previewItem;
@@ -20,6 +20,13 @@ namespace BoatAttack.Fishing
         public void ShowPickupPreview(FieldItem item){_previewItem=item;_previewUntil=Time.time+1.4f;}
         public void ClearToolPresentation(){_previewUntil=0;CancelHunt();PresentedItem=FieldItem.Empty;if(_held!=null)_held.gameObject.SetActive(false);if(_lamp!=null)_lamp.enabled=false;}
         public static Vector3 PickContactPalm(Vector3 contact,Quaternion rotation)=>contact+rotation*((PickPalm-PickTip)*PickScale);
+        public static Quaternion PickContactRotation(Vector3 heading)=>Quaternion.LookRotation(heading)*Quaternion.FromToRotation(PickTip-PickPalm,new Vector3(0,-.24f,.30f));
+        private static Quaternion PickHandRotation(Quaternion tool,Quaternion frame)
+        {
+            var shaft=tool*Vector3.up;var fingers=Vector3.ProjectOnPlane(frame*Vector3.forward,shaft).normalized;
+            if(fingers.sqrMagnitude<.1f)fingers=tool*Vector3.forward;
+            return Quaternion.Inverse(tool)*Quaternion.LookRotation(fingers,Vector3.Cross(shaft,fingers));
+        }
         private Mesh ToolMesh(FieldItem item)
         {
             if(_tools.TryGetValue(item,out var mesh))return mesh;
@@ -41,7 +48,9 @@ namespace BoatAttack.Fishing
             if(_heldRenderer==null)_heldRenderer=_held.GetComponent<Renderer>();
             _heldRenderer.enabled=!(item==FieldItem.Binoculars && _c.View.OpticalView);
             _heldMesh.sharedMesh=ToolMesh(item);
-            _c.Hands.GetToolFrame(out _,out var frame);
+            _heldRenderer.sharedMaterial=FishingUserTools.Material(item) ?? _palette;
+            _c.Hands.GetToolFrame(out var shoulderFrame,out var frame);
+            var bodyFrame=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0);
             var eye=_c.Shore.Character.EyePosition;
             Vector3 leftPalm=Vector3.zero,rightPalm=Vector3.zero;
             Quaternion leftRotation=Quaternion.identity,rightRotation=Quaternion.identity;
@@ -68,10 +77,11 @@ namespace BoatAttack.Fishing
                     position=eye+frame*new Vector3(.20f,-.06f,.34f)-rotation*(rightPalm*scale);break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:
                     scale=PickScale;rightPalm=PickPalm;curl=.94f;fingers=FishingFingerPose.Handle;
-                    // 镐柄轴为 +Y；掌背向外，指向 +Z，不能复用沿 +Z 的钓竿手势。
-                    rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.right);
-                    rotation=frame*Quaternion.Euler(25,-20,14);
-                    position=eye+frame*new Vector3(.19f,-.14f,.35f)-rotation*(rightPalm*scale);break;
+                    // Keep the wrist beside the chest, not beside the eye. Palm orientation
+                    // follows the real shaft while fingers remain forward instead of rolled inward.
+                    rotation=bodyFrame*Quaternion.Euler(5,-45,0);
+                    rightRotation=PickHandRotation(rotation,bodyFrame);
+                    position=shoulderFrame+bodyFrame*new Vector3(_c.Shore.Character.HandSide(false)*.12f,-.10f,.39f)-rotation*(rightPalm*scale);break;
                 case FieldItem.HuntingSpear:
                     scale=1;rightPalm=SpearPalm;rightRotation=Quaternion.LookRotation(Vector3.up,Vector3.right);
                     fingers=FishingFingerPose.Handle;position=eye+frame*new Vector3(.20f,-.32f,.35f);
@@ -125,9 +135,11 @@ namespace BoatAttack.Fishing
                 _held.rotation=Quaternion.Slerp(rotation,contactRotation,_c.ActionContactBlend);
                 _held.position=palm-_held.rotation*(rightPalm*scale);
             }
+            if(pick && !tracked)rightRotation=PickHandRotation(_held.rotation,bodyFrame);
             if(twoHands)_c.Hands.SetToolTarget(true,_held,leftPalm,leftRotation,curl,fingers:fingers);
             else if(!tracked)_c.Hands.RestHand(true);
             _c.Hands.SetToolTarget(false,_held,rightPalm,rightRotation,curl,fingers:fingers);
+            if(pick)_c.Hands.Right.SetForearmRoll(.65f);
             _lamp.enabled=item==FieldItem.Lantern && _c.LanternOn;
             _lamp.transform.position=_held.TransformPoint(Vector3.up*.27f);
             if(item==FieldItem.HuntingSpear)CheckSpearContact(tracked);

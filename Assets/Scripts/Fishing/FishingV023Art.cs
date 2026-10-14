@@ -9,11 +9,13 @@ namespace BoatAttack.Fishing
         private static readonly Dictionary<FieldItem,Texture2D> Icons=new Dictionary<FieldItem,Texture2D>();
         public static Mesh ItemMesh(FieldItem item)
         {
+            var supplied=FishingUserTools.Mesh(item);if(supplied!=null)return supplied;
             var source=Resources.Load<GameObject>("FishingV023/Items/"+item);
             return source==null?null:source.GetComponentInChildren<MeshFilter>().sharedMesh;
         }
         public static Texture2D Icon(FieldItem item)
         {
+            var supplied=FishingUserTools.Icon(item);if(supplied!=null)return supplied;
             if(!Icons.TryGetValue(item,out var texture))
             {texture=Resources.Load<Texture2D>("FishingV023/Items/"+item+"Thumbnail");Icons.Add(item,texture);}
             return texture;
