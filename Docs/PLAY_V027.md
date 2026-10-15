@@ -20,18 +20,18 @@
 
 原独立岩壁 LargeCliff03 与新岛东侧挤在一起，已在游戏运行时定向清理，并将对应的一小块旧地形底座降至海面以下。使用 TerrainData 运行时副本，原始场景与地形资产没有被破坏；退出时恢复。
 
-如果该区域存在玩家放置的设施或已命名的登陆/调查点，保留其支撑地形，避免视觉更新让旧设施悬空。主岛、商店、其他钓场、登陆点和调查进度保留。水深和航海图均同步新增岛屿与清理结果。
+该区域原有的玩家设施会迁到新岛的平整空地，保留设施编号、已预付材料、待领成品和加工进度；已经站在新岛上的设施不会反复迁移。清理区域继续避开命名的登陆/调查点。主岛、商店、其他钓场、登陆点和调查进度保留。水深和航海图均同步新增岛屿与清理结果，地图包含钓具店。
 
 ## 试玩文件
 
-Windows：`Builds/FishingPrototype-v0.27.0/FishingPrototype.exe`，便携包目标为 `Builds/FishingPrototype-v0.27.0-Windows.zip`。
+Windows：[本机便携包](../Builds/FishingPrototype-v0.27.0-Windows.zip)，完整解压后运行 `FishingPrototype.exe`；也可直接运行 `Builds/FishingPrototype-v0.27.0/FishingPrototype.exe`。
 
-PICO：目标文件为 `Builds/FishingPrototype-v0.27.0-Android/FishingPrototype.apk`。是否完成构建、签名和归档验证，以本版最终验证记录和校验信息为准。
+PICO：[本机 APK](../Builds/FishingPrototype-v0.27.0-Android/FishingPrototype.apk)。ARM64、版本 0.27.0 / code 27、v2 签名及更新证书检查已通过；目前未进行头显安装与佩戴实测。两个安装包均包含最终山墙、旧设施边界及提示排版修复；[校验值与完整验证](VALIDATION_V027.md)。
 
 旧存档可继续向前读取。本版保留第26版的六个固定工坊数据；已保存的新进度不应拿回第25版及更早版本打开。正常存档与自动验收存档保持隔离。
 
 ## 模型与证据
 
-模型本体：`ArtSource/V027/Coastal-home-v027.glb`；可编辑工程：`ArtSource/V027/Coastal-home-v027.blend`。Unity 使用 `Assets/Resources/FishingV027/Home/` 的 FBX 与预制体。完整模型由三个网格组成，共 26199 三角面；GLB 已重新导入，验证网格和顶点配色完整。
+模型本体：[GLB](../ArtSource/V027/Coastal-home-v027.glb)；可编辑工程：[Blender 源文件](../ArtSource/V027/Coastal-home-v027.blend)。Unity 使用 `Assets/Resources/FishingV027/Home/` 的 FBX 与预制体。完整模型由三个网格组成，共 26269 三角面；GLB 已重新导入，验证网格和顶点配色完整。
 
 Unity 实景与 UI 图放在 `Docs/Images/V027/`；最终测试与 PR 状态见 [第27版验证记录](VALIDATION_V027.md)。编辑器/桌面截图不能代替 PICO 双眼画面、真实手柄和佩戴舒适度的验收。
