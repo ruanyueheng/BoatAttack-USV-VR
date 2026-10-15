@@ -233,7 +233,7 @@ namespace BoatAttack.Fishing
             }
             return false;
         }
-        private bool FitStationFoot(Vector3 seed,out Vector3 feet,float yaw=0)
+        internal bool FitStationFoot(Vector3 seed,out Vector3 feet,float yaw=0)
         {
             feet=seed;float low=seed.y,high=seed.y;
             foreach(var offset in new[]{new Vector3(-.7f,0,-.55f),new Vector3(.7f,0,-.55f),new Vector3(-.7f,0,.55f),new Vector3(.7f,0,.55f)})

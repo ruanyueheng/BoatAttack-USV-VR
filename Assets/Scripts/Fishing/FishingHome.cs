@@ -19,6 +19,7 @@ namespace BoatAttack.Fishing
         private TerrainData _shoreOriginal,_shoreCopy;
         private GameObject _oldCliff;
         private static readonly Rect ShoreClearArea=new Rect(-166,-28,42,50);
+        private Rect _changedShoreArea;
         private readonly Transform[] _interactables=new Transform[4];
         private readonly Vector3[] _interactionPoints=new Vector3[4];
         private readonly System.Collections.Generic.List<Light> _lamps=new System.Collections.Generic.List<Light>();
@@ -146,6 +147,15 @@ namespace BoatAttack.Fishing
                 int resolution=_shoreCopy.heightmapResolution-1;
                 int x=Mathf.FloorToInt((area.xMin-p.x)/size.x*resolution),z=Mathf.FloorToInt((area.yMin-p.z)/size.z*resolution);
                 int width=Mathf.CeilToInt(area.width/size.x*resolution)+2,depth=Mathf.CeilToInt(area.height/size.z*resolution)+2;
+                // The cells beside an edited sample also change through terrain interpolation.
+                _changedShoreArea=Rect.MinMaxRect(p.x+(x-1)*size.x/resolution,p.z+(z-1)*size.z/resolution,
+                    p.x+(x+width)*size.x/resolution,p.z+(z+depth)*size.z/resolution);
+                foreach(var removed in old.GetComponentsInChildren<Collider>())
+                {
+                    var bounds=removed.bounds;
+                    _changedShoreArea.xMin=Mathf.Min(_changedShoreArea.xMin,bounds.min.x);_changedShoreArea.xMax=Mathf.Max(_changedShoreArea.xMax,bounds.max.x);
+                    _changedShoreArea.yMin=Mathf.Min(_changedShoreArea.yMin,bounds.min.z);_changedShoreArea.yMax=Mathf.Max(_changedShoreArea.yMax,bounds.max.z);
+                }
                 var heights=_shoreCopy.GetHeights(x,z,width,depth);float seabed=Mathf.Clamp01((-4.5f-p.y)/size.y);
                 for(int row=0;row<depth;row++)for(int col=0;col<width;col++)heights[row,col]=Mathf.Min(heights[row,col],seabed);
                 _shoreCopy.SetHeights(x,z,heights);terrain.terrainData=_shoreCopy;
@@ -159,9 +169,10 @@ namespace BoatAttack.Fishing
             var ground=transform.Find("V027 IslandGround").GetComponentInChildren<MeshCollider>();bool moved=false;
             foreach(var station in _c.WorkshopWorld.State.Stations)
             {
-                if(station.permanent || !ShoreClearArea.Contains(new Vector2(station.x,station.z)))continue;
+                // A rotated 0.7 by 0.55 metre half-footprint fits inside this 0.9 metre radius.
+                if(station.permanent || !_changedShoreArea.Overlaps(new Rect(station.x-.9f,station.z-.9f,1.8f,1.8f)))continue;
                 var previous=new Vector3(station.x,station.y,station.z);
-                if(ground.Raycast(new Ray(previous+Vector3.up*.05f,Vector3.down),out _,.40f))continue;
+                if(_c.WorkshopWorld.FitStationFoot(previous,out var support,station.yaw) && support.y<=previous.y+.03f)continue;
                 bool placed=false;
                 for(int cell=0;cell<256 && !placed;cell++)
                 {

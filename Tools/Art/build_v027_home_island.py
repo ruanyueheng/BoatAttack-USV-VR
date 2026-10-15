@@ -181,8 +181,10 @@ def house():
         for col in range(57):
             shade=rng.uniform(.94,1.05)
             box('Vertical aged rear plank',(-5.88+col*.21,1.75,5.105),(.19,2.99,.038),tuple(v*shade for v in WOOD))
-    for z in [-5.13,5.13]:
-        mesh('Cream gable',[(-6,3.3,z),(6,3.3,z),(0,5.9,z)],[(0,1,2) if z<0 else (2,1,0)],WOOD_LIGHT)
+    for z in [-5.06,5.06]:
+        points=[(x,y,depth) for depth in [z-.08,z+.08] for x,y in [(-6.4,3.2),(6.4,3.2),(0,5.98)]]
+        gable=mesh('Solid cream gable',points,[(0,1,2),(5,4,3),(0,3,4,1),(1,4,5,2),(2,5,3,0)],WOOD_LIGHT)
+        assert gable.data.polygons[0].normal.y<-.99 and gable.data.polygons[1].normal.y>.99,'Gable must close the cottage from inside and outside'
     roof('Main terracotta roof',0,-5.5,5.5,6.4,3.32,5.98,ROOF)
     for sign in [-1,1]:
         for z in [-5.18,5.18]: box('Cream corner trim',(sign*6.04,1.78,z),(.16,3.24,.18),CREAM)

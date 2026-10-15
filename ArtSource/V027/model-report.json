@@ -7,16 +7,16 @@
     },
     {
       "name": "HouseShell",
-      "vertices": 6401,
-      "triangles": 6687
+      "vertices": 6407,
+      "triangles": 6701
     },
     {
       "name": "IslandDetails",
-      "vertices": 7718,
-      "triangles": 13464
+      "vertices": 7754,
+      "triangles": 13520
     }
   ],
-  "total_triangles": 26199,
+  "total_triangles": 26269,
   "views": [
     "front",
     "side",
