@@ -30,6 +30,7 @@ namespace BoatAttack.Fishing
         }
         private void CheckSpearContact(bool tracked)
         {
+            if(_c.XRNotebook!=null && _c.XRNotebook.BlocksGameplay){CancelHunt();return;}
             var tip=_held.TransformPoint(SpearTip);
             float dt=Time.deltaTime;
             // Tracking-space motion excludes locomotion and snap-turns from weapon strikes.

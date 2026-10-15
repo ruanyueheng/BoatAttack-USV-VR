@@ -114,8 +114,9 @@ namespace BoatAttack.EditorTools
                 for(int i=0;i<90;i++)world.State.Tick(1);
             }
             visit=Open(c,CraftStation.Workbench);while(visit.MoveNext())yield return visit.Current;
-            bag.TryAdd(FieldItem.RabbitFur,1);int fuel=bag.Count(FieldItem.Coal);
-            Check(world.Craft("coal-rabbit-lantern") && bag.Count(FieldItem.Lantern)==1 && bag.Count(FieldItem.RabbitFur)==0 && bag.Count(FieldItem.Coal)==fuel-2,"workbench assembles mined coal and hunted fur into the portable lantern");
+            Check(bag.TryAdd(FieldItem.RabbitFur,1),"lantern fixture adds fur");int fuel=bag.Count(FieldItem.Coal),fur=bag.Count(FieldItem.RabbitFur),lanterns=bag.Count(FieldItem.Lantern);
+            Check(world.Craft("coal-rabbit-lantern") && bag.Count(FieldItem.Lantern)==lanterns+1 && bag.Count(FieldItem.RabbitFur)==fur-1 && bag.Count(FieldItem.Coal)==fuel-2,"workbench assembles mined coal and hunted fur into the portable lantern");
+
             c.ToggleInventory();Equip(c,FieldItem.Lantern);
             for(int i=0;i<100;i++){c.PresentCharacterFrame();yield return null;}
             c.UseFieldItem();c.PresentCharacterFrame();

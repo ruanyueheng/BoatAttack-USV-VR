@@ -8,6 +8,11 @@ namespace BoatAttack.Fishing
         private FishingPrototype _c;
         private readonly Transform[] _people = new Transform[6];
         private float _spokenAt;
+        private readonly FishingCashierConversation _cashier=new FishingCashierConversation();
+        private int _homeNavigationFrame=-1;
+        public int ChoiceCount=>ActiveId==4?_cashier.ChoiceCount:3;
+        public CashierTopic CashierTopic=>_cashier.Topic;
+        public string TopicTitle=>ActiveId==4?_cashier.Title:"回潮海的故事";
         public int ActiveId { get; private set; } = -1;
         public bool Open => ActiveId >= 0;
         public string Speech { get; private set; } = "";
@@ -70,16 +75,25 @@ namespace BoatAttack.Fishing
             if (_c.Paused || _c.StoryBlocksGameplay || _c.InventoryOpen || _c.JournalOpen || _c.HasPendingCatch || _c.WorldActionBusy
                 || _c.Shore.Swimming || _c.Shore.Climbing || _c.Realms.Transitioning || !InRange(id)) return false;
             if (_c.ShopOpen && id != 4) return false;
+            bool first=!_c.Career.Lore.Met(id);
             _c.TackleShop.Close(); _c.Career.Lore.Meet(id); _c.Save();
-            ActiveId = id; _c.StoryModalChanged(); Say(Greeting(id));
+            ActiveId = id; _c.StoryModalChanged();
+            if(id==4){_cashier.Begin(first);Say(_cashier.Speech(_c.Career,XRSettings.isDeviceActive));}else Say(Greeting(id));
             if (XRSettings.isDeviceActive) _c.XRNotebook.Open(8);
             return true;
         }
-        public string Choice(int choice) => choice == 0 ? "聊聊这里的故事" : choice == 1 ? (ActiveId == 5 ? "汇报四段潮汐回响" : ActiveId == 4 ? "介绍商品与装备" : "询问秘境线索") : "航海与探索建议";
+        public string Choice(int choice) => ActiveId==4?_cashier.Choice(choice):choice == 0 ? "聊聊这里的故事" : choice == 1 ? (ActiveId == 5 ? "汇报四段潮汐回响" : "询问秘境线索") : "航海与探索建议";
         public void Choose(int choice)
         {
-            if (!Open || choice < 0 || choice > 2 || !_c.Ashore || _c.Paused || !InRange(ActiveId)) return;
-            int id = ActiveId;
+            if (!Open || choice < 0 || choice >= ChoiceCount || !_c.Ashore || _c.Paused || !InRange(ActiveId)) return;
+            if(ActiveId==4)
+            {
+                var action=_cashier.Choose(choice);
+                if(action==CashierConversationAction.BrowseGoods){BrowseCashierGoods();return;}
+                if(action==CashierConversationAction.NavigateHome){Close();_homeNavigationFrame=Time.frameCount;return;}
+                Say(_cashier.Speech(_c.Career,XRSettings.isDeviceActive));return;
+            }
+            int id = ActiveId;bool xr=XRSettings.isDeviceActive;
             if (choice == 0) Say(Story(id));
             else if (choice == 1)
             {
@@ -91,16 +105,23 @@ namespace BoatAttack.Fishing
                         : _c.Career.Lore.Finale ? "你的航记已经记在港口的名册上。海面上还有鱼群、宝箱和旧航标。去走走吧，回家的灯会一直亮着。"
                         : "你带回了 " + _c.Career.Lore.ClearCount + " / 4 段回响。每座探索岛都有一扇刻着潮纹的门。把四段记忆带回这里，我们再一起连起航路。");
                 }
-                else Say(id == 4 ? "这里可以买钓竿、鱼线和卷线器升级，也能升级船舱、载重和操舵。\n\n探索用品有镐、猎矛、望远镜、提灯和绳索；制作材料与远航口粮在补给分类里。船舶升级立即生效，工具购入背包后按I装备、F使用。\n\n点“查看商品”可看价格。金币不足或背包满时不会扣款。" : FishingLore.TrialHint(id) + "\n\n岛上潮纹石门通向" + FishingLore.ShrineName(id) + "。机关答错不收费，随时可以从入口返回。");
+                else Say(id == 4 ? "这里可以买钓竿、鱼线和卷线器升级，也能升级船舱、载重和操舵。\n\n探索用品有镐、猎矛、望远镜、提灯和绳索；制作材料与远航口粮在补给分类里。船舶升级立即生效，工具购入背包后"+(xr?"用B查看，点选换入快捷位；Y换装备，右扳机使用。":"按I装备、F使用。")+"\n\n点“查看商品”可看价格。金币不足或背包满时不会扣款。" : FishingLore.TrialHint(id) + "\n\n岛上潮纹石门通向" + FishingLore.ShrineName(id) + "。机关答错不收费，随时可以从入口返回。");
             }
-            else Say(id == 0 ? "风铃岛的瞭望绳梯可以攀登。靠近绳梯按E，W/S控制上下，空格离开。登高后能看见那片月牙海湾。"
-                : id == 1 ? "离岸可以游泳，Shift加速会消耗体力。靠近低岸，朝岸边走并按空格就能上岸；体力不足会变慢，停下就会恢复。"
+            else Say(id == 0 ? "风铃岛的瞭望绳梯可以攀登。"+(xr?"靠近按A，左摇杆前后控制上下，到顶或到底后离开。":"靠近绳梯按E，W/S控制上下，空格离开。")+"登高后能看见那片月牙海湾。"
+                : id == 1 ? (xr?"离岸后用左摇杆游动，靠近低岸继续向前可上岸；体力不足会变慢，停下就会恢复。":"离岸可以游泳，Shift加速会消耗体力。靠近低岸，朝岸边走并按空格就能上岸；体力不足会变慢，停下就会恢复。")
                 : id == 2 ? "打捞台的绳梯通往高处。沉潮机库里那只货箱有三处位置：起点、中间、承重台。别把它推过头。"
-                : id == 3 ? "星轨圣所的方向是绝对方位。初始朝北，每按一次E顺时针转90度。朝向正确的星盘会亮起青光。"
-                : id == 4 ? "先升级操舵会让靠岸更轻松。Shift刹车，S倒航；G下船前先把航速降到5.4公里每小时以下。J日志能直接设置四岛航点。"
+                : id == 3 ? "星轨圣所的方向是绝对方位。初始朝北，每按一次"+(xr?"A":"E")+"顺时针转90度。朝向正确的星盘会亮起青光。"
+                : id == 4 ? (xr?"先升级操舵会让靠岸更轻松。左扳机制动，左摇杆后拉倒航；按X下船前先降至5.4公里每小时以下。B → 地图可以设置四岛航点。":"先升级操舵会让靠岸更轻松。Shift刹车，S倒航；G下船前先把航速降到5.4公里每小时以下。J日志能直接设置四岛航点。")
                 : "捕鱼、委托、旧航标与秘境共享金币。你可以按任意顺序探索；R随时救援回港，鱼获和已完成的故事会保留。");
         }
         private void Say(string text) { Speech = text; _spokenAt = Time.unscaledTime; }
+        public bool BrowseCashierGoods()
+        {
+            if(!Open || ActiveId!=4 || _c.Paused || !InRange(4))return false;
+            Close();
+            if(XRSettings.isDeviceActive){_c.XRNotebook.Open(4);return _c.XRNotebook.StorePage;}
+            return _c.ToggleShop();
+        }
         public void Reveal() { if (Open) _spokenAt = Time.unscaledTime - 100; }
         public void Close()
         {
@@ -121,6 +142,11 @@ namespace BoatAttack.Fishing
             : "这片海叫回潮海。很久以前，四位守望者分别守护风、林、潮与星，把彼此的灯连成航路。\n\n风暴毁了灯，却没毁掉岛上的人。取回四段潮汐回响，新的故事就从你开始。";
         private void LateUpdate()
         {
+            if(_homeNavigationFrame>=0 && Time.frameCount>_homeNavigationFrame)
+            {
+                _homeNavigationFrame=-1;
+                if(_c!=null && !_c.Paused && !_c.StoryBlocksGameplay && !_c.InventoryOpen)_c.NavigateHome();
+            }
             if (_c == null || _c.Paused) return;
             for (int i = 0; i < 6; i++)
             {

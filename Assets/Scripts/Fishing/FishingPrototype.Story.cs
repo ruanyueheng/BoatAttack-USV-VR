@@ -66,6 +66,7 @@ namespace BoatAttack.Fishing
                     else if (keyboard.digit1Key.wasPressedThisFrame) Residents.Choose(0);
                     else if (keyboard.digit2Key.wasPressedThisFrame) Residents.Choose(1);
                     else if (keyboard.digit3Key.wasPressedThisFrame) Residents.Choose(2);
+                    else if (keyboard.digit4Key.wasPressedThisFrame) Residents.Choose(3);
                 }
                 return true;
             }

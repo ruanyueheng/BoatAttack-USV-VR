@@ -7,6 +7,7 @@ namespace BoatAttack.Fishing
     {
         private readonly Dictionary<string,Texture2D> _artIcons=new Dictionary<string,Texture2D>();
         private int _loreIsland;
+        private GUIStyle _dialogueMeasure;
         private void ArtIllustration(Rect rect,string name)
         {
             if(!_artIcons.TryGetValue(name,out var image))_artIcons[name]=image=Resources.Load<Texture2D>((name.StartsWith("Resident")?"FishingV022":"FishingV019")+"/Thumbnails/"+name);
@@ -42,16 +43,18 @@ namespace BoatAttack.Fishing
             if(id!=4)ArtIllustration(new Rect(r.x+28,r.y+26,74,88),"Resident"+id);
             else ArtIllustration(new Rect(r.x+30,r.y+25,70,80),"Lantern");
             Label(r.x+120,r.y+22,510,38,FishingLore.ResidentName(id),27,Gold,true);
-            Label(r.x+122,r.y+64,590,23,FishingLore.ResidentRole(id)+"  /  回潮海的居民",14,Muted);
+            Label(r.x+122,r.y+64,590,23,FishingLore.ResidentRole(id)+"  /  "+resident.TopicTitle,14,Muted);
             Fill(r.x+30,r.y+115,716,1,Hairline);
-            Label(r.x+34,r.y+136,712,176,resident.VisibleSpeech,21,Color.white);
-            for(int i=0;i<3;i++)if(Button(new Rect(r.x+778,r.y+30+i*57,310,47),(i+1)+"  "+resident.Choice(i),true,false,16))resident.Choose(i);
-            if(id==4 && Button(new Rect(r.x+778,r.y+207,310,40),"查看商品",true,true,16))
-            {resident.Close();c.ToggleShop();}
-            if(Button(new Rect(r.x+778,r.y+278,310,42),"Esc  结束交谈",true,false,16))resident.Close();
+            if(_dialogueMeasure==null)_dialogueMeasure=new GUIStyle(GUIStyle.none){font=FishingUIFont.Font,wordWrap=true};
+            _dialogueMeasure.fontSize=21;
+            while(_dialogueMeasure.fontSize>15 && _dialogueMeasure.CalcHeight(new GUIContent(resident.Speech),712)>176)_dialogueMeasure.fontSize--;
+            Label(r.x+34,r.y+136,712,176,resident.VisibleSpeech,_dialogueMeasure.fontSize,Color.white);
+            for(int i=0;i<resident.ChoiceCount;i++)if(Button(new Rect(r.x+778,r.y+24+i*50,310,42),(i+1)+"  "+resident.Choice(i),true,false,16))resident.Choose(i);
+            if(id==4 && Button(new Rect(r.x+778,r.y+237,310,36),"查看商品",true,true,16))resident.BrowseCashierGoods();
+            if(Button(new Rect(r.x+778,r.y+286,310,42),"Esc  结束交谈",true,false,16))resident.Close();
             if(resident.VisibleSpeech.Length<resident.Speech.Length)
             {if(Button(new Rect(r.x+34,r.y+314,230,24),"E 显示完整对话",true,false,13))resident.Reveal();}
-            else Label(r.x+34,r.y+320,640,20,"1 / 2 / 3选择话题 · 线索在J日志“世界与秘境”",13,Faint);
+            else Label(r.x+34,r.y+320,640,20,id==4?"1–4 选择话题 · E 显示完整文本 · Esc 结束交谈":"1 / 2 / 3选择话题 · 线索在J日志“世界与秘境”",13,Faint);
         }
         private void DrawExplorationStatus()
         {

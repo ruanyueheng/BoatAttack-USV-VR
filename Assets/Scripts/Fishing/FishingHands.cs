@@ -23,10 +23,11 @@ namespace BoatAttack.Fishing
         // Source wrist axes are calibrated separately from actual knuckles by FishingCharacter.
         [SerializeField] private Vector3 _leftControllerPalmOffset=new Vector3(-.025f,0,-.02f);
         [SerializeField] private Vector3 _rightControllerPalmOffset=new Vector3(.025f,0,-.02f);
-        [SerializeField] private Vector3 _leftControllerPalmEuler=new Vector3(-90,90,0);
-        [SerializeField] private Vector3 _rightControllerPalmEuler=new Vector3(-90,-90,0);
+        [SerializeField] private Vector3 _leftControllerPalmEuler=new Vector3(0,0,90);
+        [SerializeField] private Vector3 _rightControllerPalmEuler=new Vector3(0,0,-90);
         private static readonly Vector3 RodPalm=new Vector3(.058f,.012f,-.045f);
         private static readonly Quaternion RodPalmRotation=Quaternion.LookRotation(Vector3.up,Vector3.right);
+        public static readonly Vector3 XRRestRodPosition=new Vector3(.32f,1.1f,.4f);
         public bool HoldingRod=>_input.Holding;
         public bool XRReeling=>_input.Reeling;
         public FishingHandTarget Left=>_left;
@@ -38,10 +39,10 @@ namespace BoatAttack.Fishing
         public bool HasGesture=>_gesture>0;
         public bool PresentingPickup=>_pickup!=null && _pickup.activeSelf;
         public bool TrackedPresentation { get; private set; }
-        // An explicitly isolated desktop batch fixture has no focused Game view. Real
+        // An explicitly isolated desktop capture fixture may have no focused Game view. Real
         // desktop/XR sessions still release every goal on focus loss; XR never bypasses it.
         private bool CanPresent=>_c!=null && !_c.Paused && (Application.isFocused
-            || (Application.isBatchMode && _c.HasIsolatedProfile && _c.Automated && !XRSettings.isDeviceActive));
+            || (_c.HasIsolatedProfile && _c.Automated && !XRSettings.isDeviceActive));
         public void Build(FishingPrototype c,Transform tip,Transform crank,Transform net)
         {
             _c=c;_rod=tip.parent;_crank=crank;_net=net;
@@ -70,7 +71,8 @@ namespace BoatAttack.Fishing
         public void ReadXRTools()
         {
             bool available=XRSettings.isDeviceActive && _c.Anchored && !_c.Paused && !_c.HasPendingCatch
-                && !_c.XRSeat.HeadBlocked && _c.Session.Phase!=CatchPhase.Landing && Application.isFocused;
+                && !_c.XRSeat.HeadBlocked && !_c.XRNotebook.BlocksGameplay && !_c.StoryBlocksGameplay
+                && _c.Session.Phase!=CatchPhase.Landing && Application.isFocused;
             if(!available){_input.Update(false,0,false,false,0,false,0);_castGesture.Reset();_castSample=false;return;}
             // Read fresh controller poses, not previous-frame palm targets or solved bones.
             bool rightTracked=FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out var rp,out _);
@@ -170,16 +172,15 @@ namespace BoatAttack.Fishing
             _gesture=Mathf.Max(0,_gesture-step);_hook=Mathf.Max(0,_hook-step);
             if(xr)
             {
-                bool leftTracked=Track(_left,XRNode.LeftHand,out _,out _);
-                bool rightTracked=Track(_right,XRNode.RightHand,out var rp,out var rq);
+                bool leftTracked=Track(_left,XRNode.LeftHand);
+                bool rightTracked=Track(_right,XRNode.RightHand);
                 if(!leftTracked || !rightTracked)_input.Update(false,0,false,false,0,false,0);
                 StowRod();
                 if((HoldingRod || _c.Session.Phase==CatchPhase.Landing) && rightTracked && _c.Anchored && !_c.HasPendingCatch)
                 {
                     _rod.gameObject.SetActive(true);
-                    TryControllerPalm(false,out var palm,out var palmFrame);
-                    var rotation=palmFrame*Quaternion.Inverse(RodPalmRotation);
-                    _rod.SetPositionAndRotation(palm-rotation*RodPalm,rotation);
+                    var rotation=_right.Palm.rotation*Quaternion.Inverse(RodPalmRotation);
+                    _rod.SetPositionAndRotation(_right.Palm.position-rotation*RodPalm,rotation);
                     _right.SetFromGrip(_rod,RodPalm,RodPalmRotation,.86f);
                 }
                 return;
@@ -231,23 +232,28 @@ namespace BoatAttack.Fishing
         }
         private void StowRod()
         {
-            _rod.gameObject.SetActive(XRSettings.isDeviceActive && _c.Anchored && !_c.Ashore && !_c.HasPendingCatch);
+            bool xr=XRSettings.isDeviceActive;
+            _rod.gameObject.SetActive(xr && _c.Anchored && !_c.Ashore && !_c.HasPendingCatch);
+            if(xr && _c.XRSeat.Origin!=null)
+            {
+                var origin=_c.XRSeat.Origin.transform;
+                _rod.SetPositionAndRotation(origin.TransformPoint(XRRestRodPosition),origin.rotation*Quaternion.LookRotation(new Vector3(.25f,1,.2f)));return;
+            }
             _rod.localPosition=new Vector3(.8f,.72f,.25f);
             _rod.localRotation=Quaternion.LookRotation(new Vector3(.25f,1,.2f));
         }
         public bool TryControllerPalm(bool left,out Vector3 position,out Quaternion rotation)
         {
+            position=Vector3.zero;rotation=Quaternion.identity;
+            if(_c==null)return false;
             if(!FishingXRTracking.TryPose(_c.viewCamera,left?XRNode.LeftHand:XRNode.RightHand,out position,out rotation))return false;
             position+=rotation*(left?_leftControllerPalmOffset:_rightControllerPalmOffset);
             rotation*=Quaternion.Euler(left?_leftControllerPalmEuler:_rightControllerPalmEuler);return true;
         }
-        private bool Track(FishingHandTarget hand,XRNode node,out Vector3 position,out Quaternion rotation)
+        private bool Track(FishingHandTarget hand,XRNode node)
         {
-            position=Vector3.zero;rotation=Quaternion.identity;
-            if(!FishingXRTracking.TryPose(_c.viewCamera,node,out position,out rotation)){hand.Disable();return false;}
+            if(!TryControllerPalm(node==XRNode.LeftHand,out var palm,out var palmFrame)){hand.Disable();return false;}
             var device=InputDevices.GetDeviceAtXRNode(node);device.TryGetFeatureValue(CommonUsages.grip,out float grip);
-            bool left=node==XRNode.LeftHand;
-            TryControllerPalm(left,out var palm,out var palmFrame);
             hand.SetPose(palm,palmFrame,grip);
             return hand.Visible;
         }

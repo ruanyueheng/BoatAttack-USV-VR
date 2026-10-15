@@ -232,7 +232,7 @@ namespace BoatAttack.Fishing
             Vector3 lp=Vector3.zero;Quaternion lq=Quaternion.identity;
             bool valid=Application.isFocused && FishingXRTracking.TryPose(_c.viewCamera,XRNode.LeftHand,out lp,out lq)
                 && FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out _,out _);
-            if(!valid || _c.DockConsole.BlocksGameplay){Recover();return;}
+            if(!valid || _c.DockConsole.BlocksGameplay || _c.XRNotebook.BlocksGameplay || _c.StoryBlocksGameplay || _c.XRSeat.HeadBlocked){Recover();return;}
             bool lg=Grip(left),rg=Grip(right);
             bool grabNet=_left.Step(true,lg),grabFish=_right.Step(true,rg);
             if(grabNet && _c.Anchored && (_c.Session.Phase==CatchPhase.Landing || _c.HasPendingCatch) && Vector3.Distance(lp,_c.LandingNet.position)<.35f)_netHeld=true;

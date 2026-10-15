@@ -47,7 +47,7 @@ namespace BoatAttack.Fishing
             bool pick=item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe;
             bool facility=FishingRecipes.IsStation(item);
             bool tool=pick || facility || item==FieldItem.HuntingSpear || item==FieldItem.FieldGuide || item==FieldItem.Binoculars || item==FieldItem.Lantern || preview;
-            bool visible=_c.Ashore && !_c.StoryBlocksGameplay && !_c.Shore.Swimming && !_c.Shore.Climbing && (_c.XRNotebook==null || !_c.XRNotebook.IsOpen) && _c.Hands.CanPresentTools && !_c.ShopBlocksGameplay && !_c.Hands.HasGesture && !_c.Hands.PresentingPickup && !_c.Expedition.Aligning && !_c.ActionSuppressesHeldTool && tool;
+            bool visible=_c.Ashore && !_c.StoryBlocksGameplay && !_c.Shore.Swimming && !_c.Shore.Climbing && (_c.XRNotebook==null || !_c.XRNotebook.BlocksGameplay) && _c.Hands.CanPresentTools && !_c.ShopBlocksGameplay && !_c.Hands.HasGesture && !_c.Hands.PresentingPickup && !_c.Expedition.Aligning && !_c.ActionSuppressesHeldTool && tool;
             _held.gameObject.SetActive(visible);_lamp.enabled=false;
             PresentedItem=visible?item:FieldItem.Empty;
             if(!visible)return;

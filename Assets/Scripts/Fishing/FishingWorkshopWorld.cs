@@ -192,14 +192,14 @@ namespace BoatAttack.Fishing
             ResourceNode node=null;foreach(var candidate in _nodes)if(candidate.Id==id){node=candidate;break;}
             if(node==null || node.Item!=expectedItem || node.Root==null || !node.Root.gameObject.activeInHierarchy || !Reach(node.Feet))return false;
             bool pick=expectedTool==FieldItem.StonePickaxe || expectedTool==FieldItem.IronPickaxe;
-            if(NeedsPick(node.Item) && !pick){_c.Notice("矿石需要手持石镐或铁镐：I 查看配方，1–9 装备。",4);return false;}
+            if(NeedsPick(node.Item) && !pick){_c.Notice(UnityEngine.XR.XRSettings.isDeviceActive?"矿石需要石镐或铁镐：B 查看制作配方，Y 换装备；镐尖贴近矿石后按 A 或右扳机。":"矿石需要手持石镐或铁镐：I 查看配方，1–9 装备。",4);return false;}
             int amount=expectedTool==FieldItem.IronPickaxe && (node.Item==FieldItem.Stone || NeedsPick(node.Item))?4:3;
             if(!State.Harvest(_c.Career.Backpack,node.Id,node.Item,amount)){_c.Notice(State.ResourceReady(node.Id)?"背包已满，资源没有消耗。":"这处资源正在恢复，换一处采集。",3);return false;}
-            _c.Effects?.Burst(node.Root.position+Vector3.up*.3f,new Color(.8f,.75f,.5f));_c.Save();_c.Notice("采集 "+FishingBackpack.Name(node.Item)+" ×"+amount+" · I → 制作",4);return true;
+            _c.Effects?.Burst(node.Root.position+Vector3.up*.3f,new Color(.8f,.75f,.5f));_c.Save();_c.Notice("采集 "+FishingBackpack.Name(node.Item)+" ×"+amount+(UnityEngine.XR.XRSettings.isDeviceActive?" · B → 制作":" · I → 制作"),4);return true;
         }
         public bool HarvestNearest()
         {
-            if(_c.Paused || !_c.Ashore || !TryHarvestTarget(out var node)){_c.Notice("靠近可采集的木堆、草丛或矿石，再按 E。",3);return false;}
+            if(_c.Paused || !_c.Ashore || !TryHarvestTarget(out var node)){_c.Notice(UnityEngine.XR.XRSettings.isDeviceActive?"靠近可采资源，将右手或镐尖贴近目标后按 A。":"靠近可采集的木堆、草丛或矿石，再按 E。",3);return false;}
             return HarvestNode(node.Id,node.Item,_c.Career.Backpack.Equipped);
         }
         private bool BlocksAccess(Vector3 feet)
@@ -276,7 +276,7 @@ namespace BoatAttack.Fishing
             if(!_c.Shore.Ground(feet,out var ground) || !ValidPlacement(ground,yaw,out var checkedFeet) || Vector3.Distance(checkedFeet,feet)>.1f)return false;
             int id=State.Place(_c.Career.Backpack,FishingRecipes.StationKind(expectedItem),feet.x,feet.y+.02f,feet.z,yaw);
             if(id<0){_c.Notice("无法放置：设施已达 32 个上限或物品不足。",3);return false;}
-            Spawn(State.Station(id));Physics.SyncTransforms();_c.Save();_c.Notice("已放置"+FishingBackpack.Name(expectedItem)+" · 靠近按 E 使用",4);return true;
+            Spawn(State.Station(id));Physics.SyncTransforms();_c.Save();_c.Notice("已放置"+FishingBackpack.Name(expectedItem)+(UnityEngine.XR.XRSettings.isDeviceActive?" · 靠近按 A 使用":" · 靠近按 E 使用"),4);return true;
         }
         public bool PlaceEquipped()=>TryPlacement(1.02f,out var feet,out var yaw) && PlaceAt(feet,yaw,_c.Career.Backpack.Equipped);
         public bool Craft(string recipe)

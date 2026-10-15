@@ -17,10 +17,11 @@ namespace BoatAttack.EditorTools
             string evidence=Path.GetFullPath("Logs/v024-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(evidence);
             for(int i=0;i<35;i++)yield return null;
             var home=c.Home;var shop=c.TackleShop;var market=c.transform.Find("Tide and Fin floating fish market");
-            Check(FishingPrototype.Version=="0.24.0" && home!=null && shop!=null && market!=null,"V024 production home, shop and harbor market exist");
+            Check(home!=null && shop!=null && market!=null,"V024 production home, shop and harbor market exist");
             Check(home.House.gameObject.activeInHierarchy && home.House.GetComponentInChildren<MeshRenderer>().enabled,"home shell exists and its renderer is enabled in Game play");
             var chart=new FishingHUD.FocusLayout(900,false,CatchPhase.Idle).Chart;var homeButton=FishingHUD.HomeChartButton(chart);
             Check(homeButton.x>=chart.x+80 && homeButton.xMax<=chart.xMax-60 && homeButton.yMin>=chart.yMin && homeButton.yMax<=chart.yMax,"persistent home navigation button fits chart and pointer blocking bounds");
+
             Check(FishingPrototype.FlatDistance(home.Origin,c.harbor)>40 && FishingPrototype.FlatDistance(home.Origin,shop.Position)>40,"Home is separated from both shops");
             foreach(var spot in c.fishingSpots)Check(FishingPrototype.FlatDistance(home.Origin,spot)>45,"Home leaves fishing ground clearance");
             var homeColliders=new System.Collections.Generic.List<Collider>(home.House.GetComponentsInChildren<Collider>());

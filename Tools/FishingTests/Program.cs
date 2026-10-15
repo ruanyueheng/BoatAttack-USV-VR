@@ -15,6 +15,7 @@ internal static class Program
         try
         {
             ShopEconomyTests.Run(Check);
+            CashierConversationTests.Run(Check);
             HuntingTests.Run(Check);
             ForgeTests.Run(Check);
             AdventureTests.Run(Check);
