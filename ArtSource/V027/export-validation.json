@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "meshes": [
+    "GEO-HouseShell",
+    "GEO-IslandDetails",
+    "GEO-IslandGround"
+  ],
+  "triangles": 26269,
+  "vertex_colours": true,
+  "portable_size": 2862152
+}

@@ -33,10 +33,11 @@ namespace BoatAttack.Fishing
             var canvas = root.GetComponent<Canvas>(); canvas.renderMode = RenderMode.WorldSpace; canvas.worldCamera = c.viewCamera;
             var rt = root.GetComponent<RectTransform>(); rt.sizeDelta = new Vector2(840, 150); rt.localScale = Vector3.one * .0016f;
             _group = root.GetComponent<CanvasGroup>(); _group.blocksRaycasts = false; _group.interactable = false; _group.alpha = 0;
+            var paper=root.AddComponent<Image>();paper.sprite=FishingUITheme.PaperSprite;paper.type=Image.Type.Sliced;paper.color=FishingUITheme.Paper;paper.material=FishingUITheme.WorldMaterial;paper.raycastTarget=false;
             var text = new GameObject("Region calligraphy", typeof(RectTransform), typeof(Text)); text.transform.SetParent(root.transform, false);
             var rect = text.GetComponent<RectTransform>(); rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one; rect.sizeDelta = Vector2.zero;
-            _xrText = text.GetComponent<Text>(); _xrText.font = FishingUIFont.Font; _xrText.fontSize = 32; _xrText.alignment = TextAnchor.MiddleCenter;
-            _xrText.color = new Color(.98f, .89f, .64f); _xrText.raycastTarget = false;
+            _xrText = text.GetComponent<Text>(); _xrText.font = FishingUITheme.Heading; _xrText.fontSize = 32; _xrText.alignment = TextAnchor.MiddleCenter;
+            _xrText.color = FishingUITheme.Ink;_xrText.material=FishingUITheme.WorldMaterial; _xrText.raycastTarget = false;
         }
         public void Chime(int note)
         {

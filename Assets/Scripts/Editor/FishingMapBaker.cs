@@ -38,6 +38,14 @@ namespace BoatAttack.Editor
                 || controller.GetComponent<FishingScenery>() == null)
                 throw new InvalidOperationException("Enter the initialized fishing scene first. Do not call Generate. For base-only geometry use the separate base menu.");
             var runtimeRoots = new List<Transform>();
+            if(controller.ShopStaticRoot!=null)runtimeRoots.Add(controller.ShopStaticRoot);
+            if(controller.Home!=null)
+            {
+                runtimeRoots.Add(controller.Home.House);
+                foreach(Transform child in controller.transform)
+                    if(child.name.StartsWith("V027 Island",StringComparison.Ordinal) || child.name.StartsWith("Home ",StringComparison.Ordinal)
+                        || child.name.StartsWith("Boardwalk ",StringComparison.Ordinal))runtimeRoots.Add(child);
+            }
             foreach (Transform child in controller.transform)
                 if (child.name.StartsWith("V03 habitat ", StringComparison.Ordinal)
                     || child.name == "V03 harbor lighthouse" || child.name == "Tide and Fin floating fish market")

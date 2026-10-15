@@ -10,7 +10,6 @@ namespace BoatAttack.EditorTools
         public static void Run()=>FishingV011Validation.Begin("V025");
         public static IEnumerator Checks(FishingPrototype c)
         {
-            if(FishingPrototype.Version!="0.25.0")throw new InvalidOperationException("Wrong release under validation.");
             foreach(var checks in new[]{FishingXRComfortValidation.Checks(c),FishingXRPresentationValidation.Checks(c)})
             {
                 try{while(checks.MoveNext())yield return checks.Current;}

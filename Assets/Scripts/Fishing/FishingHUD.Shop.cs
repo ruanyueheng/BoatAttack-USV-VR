@@ -31,7 +31,7 @@ namespace BoatAttack.Fishing
                 float x=r.x+24+(supplies?i%2*506:0),y=r.y+140+(supplies?i/2:i)*132,w=supplies?494:r.width-48;
                 Rounded(new Rect(x,y,w,118),InkRaised,10);
                 Outline(new Rect(x,y,w,118),Hairline,10);
-                var icon=new Rect(x+14,y+18,78,78);Rounded(icon,new Color(.025f,.055f,.085f),8);
+                var icon=new Rect(x+14,y+18,78,78);Rounded(icon,Ink,8);
                 if(rifle)FieldIcon(icon,FieldItem.HuntingRifle);
                 else if(supplies)ItemIllustration(icon,FishingSupplies.Items[product]);
                 else ArtIllustration(icon,track==UpgradeTrack.Rudder?"Compass":track==UpgradeTrack.Cabin?"Lantern":track==UpgradeTrack.Hold?"chest":track==UpgradeTrack.Line?"RopeCoil":track==UpgradeTrack.Reel?"WindBell":"Telescope");

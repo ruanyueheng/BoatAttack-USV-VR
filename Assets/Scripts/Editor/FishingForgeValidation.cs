@@ -27,7 +27,8 @@ namespace BoatAttack.EditorTools
         public static IEnumerator Checks(FishingPrototype c)
         {
             var world=c.WorkshopWorld;var bag=c.Career.Backpack;
-            var forge=world.State.Stations.Single(s=>s.kind==CraftStation.Forge && s.permanent);
+            var forge=world.State.Stations.Single(s=>s.kind==CraftStation.Forge && s.permanent
+                && FishingPrototype.FlatDistance(new Vector3(s.x,s.y,s.z),c.Shore.Sites[0].Landing)<45f);
             var root=world.StationRoot(forge.id);
             Check(root!=null && root.GetComponent<Collider>().enabled,"one public forge is installed on safe shore footing");
             Check(c.Shore.Sites.All(s=>!s.Available || FishingPrototype.FlatDistance(root.position,s.Berth)>=6f),"forge stays clear of moored boat footprint");
@@ -64,10 +65,10 @@ namespace BoatAttack.EditorTools
             Check(!world.Craft("forge-iron"),"repeat click without materials cannot duplicate ingots");
             c.viewCamera.transform.LookAt(root.position+Vector3.up*.85f);Capture(c,"forge-in-game");
             var loaded=FishingSaveStore.Load(c.SavePath,out var warning);
-            Check(warning.Length==0 && loaded.Workshop.Stations.Count(s=>s.kind==CraftStation.Forge && s.permanent)==1 && loaded.Backpack.Count(FieldItem.StonePickaxe)==1,"forge and outputs persist to the isolated save");
+            Check(warning.Length==0 && loaded.Workshop.Stations.Count(s=>s.kind==CraftStation.Forge && s.permanent)==2 && loaded.Backpack.Count(FieldItem.StonePickaxe)==1,"public/home forges and outputs persist to the isolated save");
             Check(!world.Remove(),"public forge is protected from dismantling");
             c.ToggleInventory();world.RefreshFromCareer();yield return null;
-            Check(world.State.Stations.Count(s=>s.kind==CraftStation.Forge && s.permanent)==1,"reloading workshop state does not spawn a duplicate forge");
+            Check(world.State.Stations.Count(s=>s.kind==CraftStation.Forge && s.permanent)==2,"reloading workshop state does not duplicate either fixed forge");
             root=world.StationRoot(forge.id);var forgeFeet=c.Shore.Position;
             Check(world.OpenStation(forge.id),"return to forge to make iron pick");
             bag.TryAdd(FieldItem.IronIngot,2);bag.TryAdd(FieldItem.Stick,2);bag.TryAdd(FieldItem.Rope,1);

@@ -17,10 +17,10 @@ MonoBehaviour:
   worldXZBounds: {x: -500, y: -371.50238, z: 505.98267, w: 249.99994}
   seaLevel: 0
   sourceScene: Assets/scenes/Fishing/fishing_Island.unity
-  bakedUtc: 2026-10-11T23:52:14.3144501Z
+  bakedUtc: 2026-10-15T02:21:24.1736364Z
   includesInitializedScenery: 1
   terrainCount: 2
-  staticRendererCount: 1030
+  staticRendererCount: 920
   terrainVertexCount: 526338
   metersPerTexel: {x: 0.49120247, y: 0.4913062}
   captureNotes: "North = +Z; UV origin = SW. One-shot explicit CommandBuffer.DrawMesh,
@@ -1096,9 +1096,9 @@ MonoBehaviour:
     bench | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-41.37, 3.94, -80.77), Extents: (1.34, 0.39, 1.02)'
   - 'Mesh BeachTackleShop/03 Reserved NPC spaces - empty markers only/Clerk standing
-    area 1 - 1.4m square/Cashier - FantasyGirl/FantasyGirl LOD0 | FantasyGirl_LOD0
-    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.79,
-    4.41, -90.16), Extents: (0.46, 0.86, 0.39)'
+    area 1 - 1.4m square/Cashier/FantasyGirl LOD0 | FantasyGirl_LOD0 | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-40.79, 4.54, -90.16), Extents:
+    (0.48, 0.99, 0.43)'
   - 'Mesh BeachTackleShop/04 Porch and beach access/Access ramp plank | Cube | staticBatch=False
     firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-30.00, 0.77, -68.68), Extents:
     (1.47, 0.05, 0.95)'
@@ -1450,6 +1450,9 @@ MonoBehaviour:
   - 'Mesh BeachTackleShop/04 Porch and beach access/Shore landing deck | Cube | staticBatch=False
     firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-29.25, 0.60, -67.38), Extents:
     (3.02, 0.15, 2.72)'
+  - 'Mesh BeachTackleShop/Shop foundation | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-40.00, 1.00, -86.00), Extents: (7.70,
+    2.40, 7.33)'
   - 'Mesh BeachTackleShop/V018 stocked chandlery | Stocked tackle, tools and marine
     supplies | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-39.58, 5.10, -85.26), Extents: (7.40, 1.55, 7.52)'
@@ -1765,17 +1768,109 @@ MonoBehaviour:
   - 'Mesh BeachTackleShop/V018 stocked chandlery/tool-shovel/tool-shovel(Clone) |
     GEO-tool-shovel | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-37.21, 4.81, -86.41), Extents: (0.05, 0.17, 0.05)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-178.68, 1.50, -11.00), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-178.68, 1.64, -9.70), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-178.68, 1.77, -8.40), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-178.68, 1.91, -7.10), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-178.68, 2.04, -5.80), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-178.68, 2.18, -4.50), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-178.68, 2.31, -3.20), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-178.68, 2.45, -1.90), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-178.68, 2.58, -0.60), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-178.68, 2.72, 0.70), Extents: (0.04, 0.45,
+    0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-178.68, 2.85, 2.00), Extents: (0.04, 0.45,
+    0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-181.32, 1.50, -11.00), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-181.32, 1.64, -9.70), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-181.32, 1.77, -8.40), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-181.32, 1.91, -7.10), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-181.32, 2.04, -5.80), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-181.32, 2.18, -4.50), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-181.32, 2.31, -3.20), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-181.32, 2.45, -1.90), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-181.32, 2.58, -0.60), Extents: (0.04,
+    0.45, 0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-181.32, 2.72, 0.70), Extents: (0.04, 0.45,
+    0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk baluster | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-181.32, 2.85, 2.00), Extents: (0.04, 0.45,
+    0.04)'
+  - 'Mesh Fishing Prototype/Boardwalk foundation | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-180.00, 0.46, -4.37), Extents: (1.30,
+    1.88, 6.72)'
+  - 'Mesh Fishing Prototype/Boardwalk handrail | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-178.68, 2.63, -4.50), Extents: (0.05,
+    0.72, 6.51)'
+  - 'Mesh Fishing Prototype/Boardwalk handrail | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-181.32, 2.63, -4.50), Extents: (0.05,
+    0.72, 6.51)'
+  - 'Mesh Fishing Prototype/Home boarding platform | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-180.00, 0.97, -11.00), Extents: (2.00,
+    0.08, 1.50)'
+  - 'Mesh Fishing Prototype/Home boardwalk | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-180.00, 1.73, -4.50), Extents: (1.30,
+    0.75, 6.61)'
+  - 'Mesh Fishing Prototype/Home landing foundation | Cube | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-180.00, 0.32, -11.00), Extents: (2.00,
+    0.65, 1.50)'
   - 'Mesh Fishing Prototype/Tide and Fin floating fish market/Batched Dock wood |
     Tide and Fin floating fish market batch | staticBatch=False firstSubmesh=0 opaqueDraws=1
-    rendererBounds=Center: (-82.87, 1.08, -18.28), Extents: (4.00, 1.28, 3.00)'
-  - 'Mesh Fishing Prototype/Tide and Fin floating fish market/Batched Fishing v0.4
-    fish gloss | Tide and Fin floating fish market batch | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-82.87, 2.06, -17.73), Extents: (1.87,
-    0.05, 0.05)'
+    rendererBounds=Center: (-82.87, 0.69, -18.28), Extents: (4.00, 1.67, 3.00)'
   - 'Mesh Fishing Prototype/Tide and Fin floating fish market/Batched Harbor teal
     | Tide and Fin floating fish market batch | staticBatch=False firstSubmesh=0
     opaqueDraws=1 rendererBounds=Center: (-82.83, 0.96, -18.28), Extents: (3.21,
     1.44, 2.80)'
+  - 'Mesh Fishing Prototype/Tide and Fin floating fish market/Batched Marine model
+    / Coral | Tide and Fin floating fish market batch | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-84.67, 2.06, -17.73), Extents: (0.08,
+    0.03, 0.04)'
+  - 'Mesh Fishing Prototype/Tide and Fin floating fish market/Batched Marine model
+    / Dart | Tide and Fin floating fish market batch | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-82.87, 2.06, -17.73), Extents: (0.10,
+    0.02, 0.04)'
+  - 'Mesh Fishing Prototype/Tide and Fin floating fish market/Batched Marine model
+    / Puffer | Tide and Fin floating fish market batch | staticBatch=False firstSubmesh=0
+    opaqueDraws=1 rendererBounds=Center: (-81.07, 2.06, -17.73), Extents: (0.07,
+    0.04, 0.04)'
   - 'Mesh Fishing Prototype/Tide and Fin floating fish market/Batched Signal amber
     | Tide and Fin floating fish market batch | staticBatch=False firstSubmesh=0
     opaqueDraws=1 rendererBounds=Center: (-83.17, 3.24, -18.40), Extents: (3.13,
@@ -1788,6 +1883,12 @@ MonoBehaviour:
     | Tide and Fin floating fish market batch | staticBatch=False firstSubmesh=0
     opaqueDraws=1 rendererBounds=Center: (-82.68, 2.25, -18.28), Extents: (3.79,
     1.64, 2.95)'
+  - 'Mesh Fishing Prototype/V027 IslandDetails | GEO-IslandDetails | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-186.05, 10.38, 14.00),
+    Extents: (31.02, 13.15, 26.15)'
+  - 'Mesh Fishing Prototype/V027 IslandGround | GEO-IslandGround | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-185.83, 2.65, 14.08), Extents:
+    (29.33, 3.15, 24.23)'
   - 'Mesh Fishing Prototype/V03 habitat 0/Batched Stratified reef palette | V03 habitat
     0 batch | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-107.55, -0.62, 19.13), Extents: (14.30, 0.99, 12.53)'
@@ -1887,14 +1988,104 @@ MonoBehaviour:
   - "Mesh Fishing Prototype/\u5357\u5CB8\u6F02\u6D41\u6E7E/\u767B\u8BB0\u6D77\u6EE9\u6837\u5E26
     | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (70.00, 3.04, -98.00), Extents: (0.21, 0.14, 0.04)"
-  - "Mesh Fishing Prototype/\u5DE5\u4F5C\u53F0 #1 | Workshop / Workbench | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-80.64, 1.18, -17.20), Extents:
-    (0.65, 0.54, 0.49)"
-  - "Mesh Fishing Prototype/\u7194\u7089 #2 | Workshop / Furnace | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-80.10, 1.36, -19.13), Extents:
-    (0.54, 0.72, 0.51)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/Cottage name board | Cube |
+    staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-180.00,
+    5.75, 4.77), Extents: (1.60, 0.35, 0.04)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/Home foundation | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-180.00, 1.05, 10.00), Extents:
+    (6.00, 1.25, 5.00)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/HouseShellView(Clone) | GEO-HouseShell
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-180.00,
+    5.80, 8.75), Extents: (6.44, 3.56, 6.75)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/Porch foundation | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-180.00, 1.05, 3.50), Extents:
+    (6.50, 1.25, 1.50)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/bedDoubleView/bedDoubleView(Clone)
+    | GEO-bedDouble | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-183.30, 2.90, 12.70), Extents: (1.27, 0.50, 1.50)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/bookcaseOpenView/bookcaseOpenView(Clone)
+    | GEO-bookcaseOpen | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-180.80, 3.45, 13.10), Extents: (0.30, 1.05, 0.48)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/bookcaseOpenView/bookcaseOpenView(Clone)
+    | GEO-bookcaseOpen | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-185.20, 3.50, 14.20), Extents: (0.31, 1.10, 0.50)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/booksView/booksView(Clone) |
+    GEO-books | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-176.80, 3.42, 6.10), Extents: (0.32, 0.22, 0.20)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/booksView/booksView(Clone) |
+    GEO-books | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-184.60, 2.61, 14.20), Extents: (0.30, 0.21, 0.19)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/cabinetBedDrawerView/cabinetBedDrawerView(Clone)
+    | GEO-cabinetBedDrawer | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-185.00, 2.97, 12.70), Extents: (0.58, 0.57, 0.47)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/coatRackStandingView/coatRackStandingView(Clone)
+    | GEO-coatRackStanding | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-179.00, 3.30, 5.90), Extents: (0.32, 0.90, 0.32)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/deskView/deskView(Clone) | GEO-desk
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-176.35,
+    2.96, 6.10), Extents: (1.08, 0.56, 0.57)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/kitchenCabinetDrawerView/kitchenCabinetDrawerView(Clone)
+    | GEO-kitchenCabinetDrawer | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-178.00, 3.17, 14.20), Extents: (0.74, 0.77, 0.77)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/kitchenFridgeSmallView/kitchenFridgeSmallView(Clone)
+    | GEO-kitchenFridgeSmall | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-174.88, 3.15, 12.35), Extents: (0.54, 0.75, 0.36)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/kitchenSinkView/kitchenSinkView(Clone)
+    | GEO-kitchenSink | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-176.45, 3.18, 14.20), Extents: (0.68, 0.78, 0.71)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/kitchenStoveView/kitchenStoveView(Clone)
+    | GEO-kitchenStove | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-175.00, 3.17, 14.20), Extents: (0.74, 0.77, 0.77)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/lampRoundFloorView/lampRoundFloorView(Clone)
+    | GEO-lampRoundFloor | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-185.20, 3.28, 9.50), Extents: (0.15, 0.88, 0.18)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/lampRoundTableView/lampRoundTableView(Clone)
+    | GEO-lampRoundTable | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-175.70, 3.50, 6.10), Extents: (0.15, 0.30, 0.17)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/lampRoundTableView/lampRoundTableView(Clone)
+    | GEO-lampRoundTable | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-185.00, 3.57, 12.70), Extents: (0.15, 0.30, 0.17)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/loungeChairView/loungeChairView(Clone)
+    | GEO-loungeChair | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-185.10, 3.08, 6.70), Extents: (0.72, 0.68, 0.82)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/loungeSofaView/loungeSofaView(Clone)
+    | GEO-loungeSofa | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-183.20, 3.13, 8.20), Extents: (1.55, 0.73, 0.65)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/pottedPlantView/pottedPlantView(Clone)
+    | GEO-pottedPlant | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-174.95, 3.20, 6.40), Extents: (0.26, 0.80, 0.30)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/pottedPlantView/pottedPlantView(Clone)
+    | GEO-pottedPlant | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-185.10, 3.05, 3.50), Extents: (0.21, 0.65, 0.24)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/radioView/radioView(Clone) |
+    GEO-radio | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-183.00, 3.14, 6.80), Extents: (0.17, 0.12, 0.05)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/rugRectangleView/rugRectangleView(Clone)
+    | GEO-rugRectangle | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-183.00, 2.41, 6.75), Extents: (1.70, 0.01, 1.00)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/tableCoffeeView/tableCoffeeView(Clone)
+    | GEO-tableCoffee | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-183.00, 2.66, 6.80), Extents: (0.75, 0.26, 0.45)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/\u5DE5\u4F5C\u53F0 #4 | GEO-Workbench(Clone)
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-178.05,
+    3.04, 10.65), Extents: (0.65, 0.62, 0.42)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/\u7194\u7089 #5 | GEO-Furnace(Clone)
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-176.45,
+    3.17, 10.65), Extents: (0.54, 0.75, 0.51)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/\u7194\u7089 #5/Hot coals |
+    Sphere | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-176.45, 2.66, 10.45), Extents: (0.21, 0.04, 0.20)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/\u953B\u9020\u53F0 #6 | GEO-Forge(Clone)
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-174.89,
+    3.14, 10.65), Extents: (0.65, 0.72, 0.46)"
+  - "Mesh Fishing Prototype/\u5DE5\u4F5C\u53F0 #1 | GEO-Workbench(Clone) | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-63.00, 2.30, -8.80), Extents:
+    (0.65, 0.62, 0.42)"
+  - "Mesh Fishing Prototype/\u7194\u7089 #2 | GEO-Furnace(Clone) | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-60.36, 2.93, -11.95), Extents:
+    (0.54, 0.75, 0.51)"
   - "Mesh Fishing Prototype/\u7194\u7089 #2/Hot coals | Sphere | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-80.10, 0.88, -19.33), Extents:
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-60.36, 2.42, -12.15), Extents:
     (0.21, 0.04, 0.20)"
   - "Mesh Fishing Prototype/\u897F\u6E7E\u79D1\u8003\u5CB8/Amber landing flag | Cube
     | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-76.00,
@@ -1917,6 +2108,9 @@ MonoBehaviour:
   - "Mesh Fishing Prototype/\u897F\u6E7E\u79D1\u8003\u5CB8/\u91C7\u96C6\u5CB8\u8FB9\u6C34\u6837
     | Cube | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-62.00, 2.72, -14.00), Extents: (0.21, 0.14, 0.04)"
+  - "Mesh Fishing Prototype/\u953B\u9020\u53F0 #3 | GEO-Forge(Clone) | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-62.58, 2.52, -4.60), Extents:
+    (0.65, 0.72, 0.46)"
   - 'Mesh Island Level/Environment Objects/Buildings/CoveHouse/Geo_Props_Chair (1)/Geo_Props_Chair_LOD0
     | Combined Mesh (root: scene) 9 | staticBatch=True firstSubmesh=67 opaqueDraws=1
     rendererBounds=Center: (-22.33, 2.13, 25.51), Extents: (0.41, 0.48, 0.65)'
@@ -2287,18 +2481,6 @@ MonoBehaviour:
   - 'Mesh Island Level/Environment Objects/LargeCliff02/Rock_Small_04 (17)/Rock_Small_04_LOD0
     | Combined Mesh (root: scene) 7 | staticBatch=True firstSubmesh=63 opaqueDraws=1
     rendererBounds=Center: (-121.82, -1.92, 20.40), Extents: (2.26, 2.32, 3.14)'
-  - 'Mesh Island Level/Environment Objects/LargeCliff03/Cliff_Full_02 (1)/Cliff_Full_02_LOD0
-    | Combined Mesh (root: scene) 5 | staticBatch=True firstSubmesh=53 opaqueDraws=1
-    rendererBounds=Center: (-146.45, 17.60, -2.93), Extents: (15.88, 19.14, 19.78)'
-  - 'Mesh Island Level/Environment Objects/LargeCliff03/Rock_Medium_01 (17)/Rock_Medium_01_LOD0
-    | Combined Mesh (root: scene) 5 | staticBatch=True firstSubmesh=72 opaqueDraws=1
-    rendererBounds=Center: (-130.04, -1.61, -9.15), Extents: (5.10, 3.75, 3.83)'
-  - 'Mesh Island Level/Environment Objects/LargeCliff03/Rock_Small_03 (3)/Rock_Small_03_LOD0
-    | Combined Mesh (root: scene) 10 | staticBatch=True firstSubmesh=160 opaqueDraws=1
-    rendererBounds=Center: (-131.56, -0.57, -19.68), Extents: (2.14, 1.38, 2.38)'
-  - 'Mesh Island Level/Environment Objects/LargeCliff03/Rock_Small_04 (19)/Rock_Small_04_LOD0
-    | Combined Mesh (root: scene) 3 | staticBatch=True firstSubmesh=60 opaqueDraws=1
-    rendererBounds=Center: (-127.47, -1.53, -15.81), Extents: (3.48, 2.14, 2.08)'
   - 'Mesh Island Level/Environment Objects/MainIsland/Env_Rocks/Cliffs/Full/Cliff_Full_02
     (3)/Cliff_Full_02_LOD0 | Combined Mesh (root: scene) 7 | staticBatch=True firstSubmesh=0
     opaqueDraws=1 rendererBounds=Center: (-156.44, 27.48, -75.30), Extents: (29.21,
@@ -2476,10 +2658,10 @@ MonoBehaviour:
     rendererBounds=Center: (118.24, 7.53, -66.63), Extents: (6.59, 12.61, 4.65)'
   - 'Mesh Island Level/Environment Objects/Props_Floating/KayakRoot (2)/Geo_Props_Kayak
     (4) | Geo_Props_Kayak | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-83.76, 0.09, -41.82), Extents: (0.76, 0.28, 2.07)'
+    (-83.76, -0.16, -41.82), Extents: (0.77, 0.44, 2.09)'
   - 'Mesh Island Level/Environment Objects/Props_Floating/KayakRoot/Geo_Props_Kayak
     (4) | Geo_Props_Kayak | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-84.71, 0.09, -44.56), Extents: (0.83, 0.29, 2.08)'
+    (-84.71, -0.16, -44.55), Extents: (0.83, 0.44, 2.10)'
   - 'Mesh Island Level/Environment Objects/SmallIsland/Rocks/Rock_Large_01 (2)/Rock_Large_01_LOD0
     | Combined Mesh (root: scene) 7 | staticBatch=True firstSubmesh=60 opaqueDraws=1
     rendererBounds=Center: (10.07, 3.07, 70.93), Extents: (6.78, 12.84, 4.70)'
@@ -2525,27 +2707,6 @@ MonoBehaviour:
   - 'Mesh Island Level/Lighting/LightBlockers/aboveCave | Plane | staticBatch=False
     firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (5.91, 14.77, 13.04), Extents:
     (26.19, 0.00, 24.99)'
-  - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/Compass beacon |
-    Compass beacon | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (344.00, 2.60, -332.00), Extents: (0.38, 0.41, 0.38)"
-  - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/Compass beacon/Direction
-    pointer | Compass arrow | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (344.00, 3.08, -332.22), Extents: (0.14, 0.02, 0.25)"
-  - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/Compass beacon/Lit
-    signal | Restored signal | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (344.00, 3.90, -332.00), Extents: (0.17, 0.60, 0.16)"
-  - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/Distinct natural
-    landmark | Island landmark 3 | staticBatch=False firstSubmesh=0 opaqueDraws=1
-    rendererBounds=Center: (350.54, 3.55, -340.81), Extents: (13.03, 2.91, 20.02)"
-  - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/Hidden treasure
-    | Hidden treasure | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (358.00, 2.73, -349.01), Extents: (0.40, 0.23, 0.26)"
-  - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/Hidden treasure/Lid
-    | Chest lid | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (358.00, 2.75, -348.84), Extents: (0.42, 0.26, 0.15)"
-  - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/V019 island character/Portal/TideGate/TideGate(Clone)
-    | GEO-V020-TideGate | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (344.00, 3.71, -324.00), Extents: (2.20, 2.30, 0.53)"
   - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/V020 coastal art/CoastalFern/CoastalFern(Clone)
     | Combined Mesh (root: scene) 11 | staticBatch=True firstSubmesh=2 opaqueDraws=1
     rendererBounds=Center: (333.40, 1.59, -343.68), Extents: (0.52, 0.18, 0.53)"
@@ -2573,252 +2734,9 @@ MonoBehaviour:
   - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/V020 coastal art/Observatory/Observatory(Clone)
     | Combined Mesh (root: scene) 13 | staticBatch=True firstSubmesh=5 opaqueDraws=1
     rendererBounds=Center: (361.00, 5.74, -347.00), Extents: (6.48, 3.59, 6.48)"
-  - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/V020 coastal art/Planked
-    landing jetty | GEO-V020-LandingJetty | staticBatch=False firstSubmesh=0 opaqueDraws=1
-    rendererBounds=Center: (350.00, 0.17, -311.00), Extents: (1.24, 1.93, 7.50)"
-  - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/Voyage letter |
-    Voyage letter | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (353.00, 1.54, -317.00), Extents: (0.28, 0.62, 0.03)"
   - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/Walkable beach and
     interior | Combined Mesh (root: scene) 13 | staticBatch=True firstSubmesh=1 opaqueDraws=1
     rendererBounds=Center: (350.76, 0.40, -339.05), Extents: (31.69, 2.90, 32.45)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/Compass beacon |
-    Compass beacon | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-216.00, 2.29, 188.00), Extents: (0.38, 0.41, 0.38)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/Compass beacon/Direction
-    pointer | Compass arrow | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-216.22, 2.77, 188.00), Extents: (0.25, 0.02, 0.14)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/Compass beacon/Lit
-    signal | Restored signal | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-216.00, 3.59, 188.00), Extents: (0.17, 0.60, 0.16)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/Distinct natural
-    landmark | Island landmark 0 | staticBatch=False firstSubmesh=0 opaqueDraws=1
-    rendererBounds=Center: (-209.46, 4.71, 179.19), Extents: (13.03, 4.11, 20.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/Hidden treasure
-    | Hidden treasure | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-202.00, 2.48, 170.99), Extents: (0.40, 0.23, 0.26)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/Hidden treasure/Lid
-    | Chest lid | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-202.00, 2.49, 171.16), Extents: (0.42, 0.26, 0.15)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 1.58, 185.00), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 1.83, 184.59), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 2.09, 184.19), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 2.35, 183.78), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 2.60, 183.38), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 2.86, 182.97), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 3.12, 182.56), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 3.37, 182.16), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 3.63, 181.75), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 3.88, 181.34), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 4.14, 180.94), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 4.40, 180.53), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 4.65, 180.13), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 4.91, 179.72), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 5.17, 179.31), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 5.42, 178.91), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope ladder rung | Cube | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 5.68, 178.50), Extents: (0.43,
-    0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 1.58, 185.00), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 1.83, 184.59), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 2.09, 184.19), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 2.35, 183.78), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 2.60, 183.38), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 2.86, 182.97), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 3.12, 182.56), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 3.37, 182.16), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 3.63, 181.75), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 3.88, 181.34), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 4.14, 180.94), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 4.40, 180.53), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 4.65, 180.13), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 4.91, 179.72), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 5.17, 179.31), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 5.42, 178.91), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-222.54, 5.68, 178.50), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 1.58, 185.00), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 1.83, 184.59), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 2.09, 184.19), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 2.35, 183.78), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 2.60, 183.38), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 2.86, 182.97), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 3.12, 182.56), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 3.37, 182.16), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 3.63, 181.75), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 3.88, 181.34), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 4.14, 180.94), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 4.40, 180.53), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 4.65, 180.13), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 4.91, 179.72), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 5.17, 179.31), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 5.42, 178.91), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Climb
-    \u98CE\u94C3\u77AD\u671B\u53F0/Rope strand | Cylinder | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.46, 5.68, 178.50), Extents: (0.02,
-    0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Lookout
-    support | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-221.50, 3.67, 176.00), Extents: (0.09, 2.05, 0.09)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Lookout
-    support | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-221.50, 3.67, 179.00), Extents: (0.09, 2.05, 0.09)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Lookout
-    support | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-224.50, 3.67, 176.00), Extents: (0.09, 2.05, 0.09)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Lookout
-    support | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-224.50, 3.67, 179.00), Extents: (0.09, 2.05, 0.09)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V019 island character/Portal/TideGate/TideGate(Clone)
-    | GEO-V020-TideGate | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-216.00, 3.59, 196.00), Extents: (2.20, 2.30, 0.53)"
   - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V020 coastal art/CoastalFern/CoastalFern(Clone)
     | Combined Mesh (root: scene) 11 | staticBatch=True firstSubmesh=15 opaqueDraws=1
     rendererBounds=Center: (-195.27, 1.82, 171.50), Extents: (0.53, 0.18, 0.52)"
@@ -2840,260 +2758,13 @@ MonoBehaviour:
   - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V020 coastal art/CoastalRock/CoastalRock(Clone)
     | Combined Mesh (root: scene) 13 | staticBatch=True firstSubmesh=2 opaqueDraws=1
     rendererBounds=Center: (-191.90, 6.39, 162.21), Extents: (3.45, 5.50, 2.74)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V020 coastal art/Crafted
-    climb lookout/LookoutDeck(Clone) | GEO-V020-LookoutDeck | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-223.00, 7.33, 177.50), Extents: (2.30,
-    1.65, 2.09)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V020 coastal art/Planked
-    landing jetty | GEO-V020-LandingJetty | staticBatch=False firstSubmesh=0 opaqueDraws=1
-    rendererBounds=Center: (-210.00, 0.17, 209.00), Extents: (1.24, 1.93, 7.50)"
   - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V020 coastal art/WindArch/WindArch(Clone)
     | Combined Mesh (root: scene) 12 | staticBatch=True firstSubmesh=10 opaqueDraws=1
     rendererBounds=Center: (-202.00, 7.59, 173.00), Extents: (7.00, 5.43, 3.42)"
-  - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/Voyage letter |
-    Voyage letter | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-207.00, 1.54, 203.00), Extents: (0.28, 0.62, 0.03)"
   - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/Walkable beach and
     interior | Combined Mesh (root: scene) 12 | staticBatch=True firstSubmesh=14
     opaqueDraws=1 rendererBounds=Center: (-213.47, 0.11, 178.88), Extents: (30.01,
     2.61, 33.82)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/Compass beacon | Compass
-    beacon | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-356.00, 2.28, -332.00), Extents: (0.38, 0.41, 0.38)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/Compass beacon/Direction
-    pointer | Compass arrow | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-355.79, 2.75, -332.00), Extents: (0.25, 0.02, 0.14)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/Compass beacon/Lit signal
-    | Restored signal | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-356.00, 3.57, -332.00), Extents: (0.17, 0.60, 0.16)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/Distinct natural landmark
-    | Island landmark 2 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-349.46, 3.68, -340.81), Extents: (13.03, 3.08, 20.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/Hidden treasure | Hidden
-    treasure | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-342.00, 2.49, -349.01), Extents: (0.40, 0.23, 0.26)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/Hidden treasure/Lid |
-    Chest lid | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-342.00, 2.51, -348.84), Extents: (0.42, 0.26, 0.15)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 1.78, -335.00),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 2.01, -335.41),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 2.23, -335.81),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 2.46, -336.22),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 2.68, -336.63),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 2.91, -337.03),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 3.13, -337.44),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 3.36, -337.84),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 3.58, -338.25),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 3.81, -338.66),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 4.03, -339.06),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 4.26, -339.47),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 4.48, -339.88),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 4.71, -340.28),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 4.93, -340.69),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 5.16, -341.09),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope ladder rung | Cube | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.00, 5.38, -341.50),
-    Extents: (0.43, 0.04, 0.05)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 1.78, -335.00),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 2.01, -335.41),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 2.23, -335.81),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 2.46, -336.22),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 2.68, -336.63),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 2.91, -337.03),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 3.13, -337.44),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 3.36, -337.84),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 3.58, -338.25),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 3.81, -338.66),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 4.03, -339.06),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 4.26, -339.47),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 4.48, -339.88),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 4.71, -340.28),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 4.93, -340.69),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 5.16, -341.09),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-362.54, 5.38, -341.50),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 1.78, -335.00),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 2.01, -335.41),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 2.23, -335.81),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 2.46, -336.22),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 2.68, -336.63),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 2.91, -337.03),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 3.13, -337.44),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 3.36, -337.84),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 3.58, -338.25),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 3.81, -338.66),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 4.03, -339.06),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 4.26, -339.47),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 4.48, -339.88),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 4.71, -340.28),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 4.93, -340.69),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 5.16, -341.09),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Climb
-    \u5F52\u6F6E\u53F7\u6253\u635E\u53F0/Rope strand | Cylinder | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-363.46, 5.38, -341.50),
-    Extents: (0.02, 0.16, 0.02)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Lookout
-    support | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-361.50, 3.54, -341.00), Extents: (0.09, 1.80, 0.09)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Lookout
-    support | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-361.50, 3.54, -344.00), Extents: (0.09, 1.80, 0.09)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Lookout
-    support | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-364.50, 3.54, -341.00), Extents: (0.09, 1.80, 0.09)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Lookout
-    support | Cylinder | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-364.50, 3.54, -344.00), Extents: (0.09, 1.80, 0.09)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V019 island character/Portal/TideGate/TideGate(Clone)
-    | GEO-V020-TideGate | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-356.00, 3.45, -324.00), Extents: (2.20, 2.30, 0.53)"
   - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V020 coastal art/CoastalFern/CoastalFern(Clone)
     | Combined Mesh (root: scene) 12 | staticBatch=True firstSubmesh=2 opaqueDraws=1
     rendererBounds=Center: (-340.25, 1.44, -326.07), Extents: (0.52, 0.18, 0.52)"
@@ -3106,61 +2777,15 @@ MonoBehaviour:
   - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V020 coastal art/CoastalRock/CoastalRock(Clone)
     | Combined Mesh (root: scene) 11 | staticBatch=True firstSubmesh=7 opaqueDraws=1
     rendererBounds=Center: (-326.93, 4.29, -352.96), Extents: (1.53, 3.00, 1.99)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V020 coastal art/Crafted
-    climb lookout/LookoutDeck(Clone) | GEO-V020-LookoutDeck | staticBatch=False firstSubmesh=0
-    opaqueDraws=1 rendererBounds=Center: (-363.00, 7.04, -342.50), Extents: (2.30,
-    1.65, 2.09)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V020 coastal art/Planked
-    landing jetty | GEO-V020-LandingJetty | staticBatch=False firstSubmesh=0 opaqueDraws=1
-    rendererBounds=Center: (-350.00, 0.17, -311.00), Extents: (1.24, 1.93, 7.50)"
   - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V020 coastal art/Shipwreck/Shipwreck(Clone)
     | GEO-V020-Shipwreck | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-338.00, 4.16, -349.00), Extents: (4.00, 2.12, 2.61)"
   - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V020 coastal art/Shipwreck/Shipwreck(Clone)
     | GEO-V020-Shipwreck | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-365.00, 7.43, -351.00), Extents: (11.86, 5.58, 12.49)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V020 coastal art/barrel/barrel(Clone)
-    | GEO-barrel | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-361.60, 1.83, -327.00), Extents: (0.82, 0.55, 0.82)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V020 coastal art/barrel/barrel(Clone)
-    | GEO-barrel | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-364.80, 1.70, -327.00), Extents: (0.82, 0.55, 0.82)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V020 coastal art/barrel/barrel(Clone)
-    | GEO-barrel | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-368.00, 1.57, -327.00), Extents: (0.60, 0.55, 0.60)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V020 coastal art/crate-bottles/crate-bottles(Clone)
-    | GEO-crate-bottles | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-363.20, 1.70, -327.00), Extents: (0.77, 0.48, 0.77)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V020 coastal art/crate-bottles/crate-bottles(Clone)
-    | GEO-crate-bottles | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-366.40, 1.57, -327.00), Extents: (0.63, 0.48, 0.71)"
-  - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/Voyage letter | Voyage
-    letter | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-347.00, 1.54, -317.00), Extents: (0.28, 0.62, 0.03)"
   - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/Walkable beach and interior
     | Combined Mesh (root: scene) 12 | staticBatch=True firstSubmesh=16 opaqueDraws=1
     rendererBounds=Center: (-348.93, 0.11, -340.01), Extents: (43.77, 2.61, 29.61)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/Compass beacon |
-    Compass beacon | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (204.00, 2.29, 168.00), Extents: (0.38, 0.41, 0.38)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/Compass beacon/Direction
-    pointer | Compass arrow | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (204.00, 2.77, 168.22), Extents: (0.14, 0.02, 0.25)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/Compass beacon/Lit
-    signal | Restored signal | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (204.00, 3.59, 168.00), Extents: (0.17, 0.60, 0.16)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/Distinct natural
-    landmark | Island landmark 1 | staticBatch=False firstSubmesh=0 opaqueDraws=1
-    rendererBounds=Center: (210.15, 1.80, 159.62), Extents: (13.33, 0.75, 20.52)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/Hidden treasure
-    | Hidden treasure | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (218.00, 2.48, 150.99), Extents: (0.40, 0.23, 0.26)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/Hidden treasure/Lid
-    | Chest lid | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (218.00, 2.49, 151.16), Extents: (0.42, 0.26, 0.15)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V019 island character/Portal/TideGate/TideGate(Clone)
-    | GEO-V020-TideGate | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (204.00, 3.59, 176.00), Extents: (2.20, 2.30, 0.53)"
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/CoastalFern/CoastalFern(Clone)
     | Combined Mesh (root: scene) 11 | staticBatch=True firstSubmesh=6 opaqueDraws=1
     rendererBounds=Center: (204.90, 1.58, 176.21), Extents: (0.83, 0.29, 0.82)"
@@ -3221,63 +2846,6 @@ MonoBehaviour:
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/Mangrove/Mangrove(Clone)
     | Combined Mesh (root: scene) 12 | staticBatch=True firstSubmesh=1 opaqueDraws=1
     rendererBounds=Center: (228.78, 5.22, 166.87), Extents: (4.89, 4.17, 4.74)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/Planked
-    landing jetty | GEO-V020-LandingJetty | staticBatch=False firstSubmesh=0 opaqueDraws=1
-    rendererBounds=Center: (210.00, 0.17, 189.00), Extents: (1.24, 1.93, 7.50)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/campfire_logs/campfire_logs(Clone)
-    | GEO-campfire_logs | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (198.00, 1.55, 170.00), Extents: (0.65, 0.14, 0.65)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (192.55, 1.83, 162.30), Extents: (1.26, 0.56, 1.26)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (192.71, 1.88, 166.29), Extents: (1.43, 0.68, 1.43)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (193.60, 1.73, 156.36), Extents: (0.94, 0.43, 0.94)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (194.48, 2.28, 150.11), Extents: (1.12, 0.68, 1.12)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (197.13, 1.74, 170.80), Extents: (0.99, 0.43, 0.99)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (197.55, 2.43, 147.55), Extents: (1.24, 0.56, 1.24)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (202.90, 2.61, 144.77), Extents: (0.77, 0.43, 0.77)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (212.30, 2.77, 142.55), Extents: (1.06, 0.56, 1.06)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (217.76, 2.60, 145.10), Extents: (0.86, 0.43, 0.86)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (220.55, 1.87, 175.07), Extents: (1.47, 0.68, 1.47)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (221.83, 2.54, 145.90), Extents: (1.36, 0.68, 1.36)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (223.76, 1.77, 169.64), Extents: (0.70, 0.43, 0.70)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (225.24, 2.15, 151.20), Extents: (1.04, 0.56, 1.04)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (226.26, 1.80, 166.74), Extents: (1.23, 0.56, 1.23)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/plant_bush/plant_bush(Clone)
-    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (228.38, 1.86, 160.80), Extents: (1.19, 0.68, 1.19)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V020 coastal art/tent_detailedOpen/tent_detailedOpen(Clone)
-    | GEO-tent_detailedOpen | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (194.00, 2.92, 166.00), Extents: (3.07, 1.60, 2.78)"
-  - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/Voyage letter |
-    Voyage letter | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (213.00, 1.54, 183.00), Extents: (0.28, 0.62, 0.03)"
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/Walkable beach and
     interior | V020 physical coastline 1 | staticBatch=False firstSubmesh=0 opaqueDraws=1
     rendererBounds=Center: (211.75, 0.11, 158.48), Extents: (34.26, 2.61, 34.25)"

@@ -5,7 +5,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingHUD
     {
-        private void Glass(Rect r) { Rounded(r,new Color(.022f,.046f,.08f,.84f),7);Outline(r,Gold*new Color(1,1,1,.22f),7); }
+        private void Glass(Rect r) { Rounded(r,Ink,8);Outline(r,Hairline,8); }
 
         private void DrawCompactHeading()
         {

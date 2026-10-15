@@ -208,7 +208,7 @@ namespace BoatAttack.Fishing
             {
                 StowRod();
                 // TP locomotion keeps the source arm swing unless an actual tool/gesture owns it.
-                if(!_c.Ashore || (_c.FirstPerson && _c.Shore.WalkSpeed<.1f))
+                if(!_c.Ashore || (_c.FirstPerson && _c.Shore.WalkSpeed<.1f && !_c.Shore.Swimming && !_c.Shore.Climbing))
                 {
                     _left.SetPose(origin+frame*new Vector3(-.22f,-.32f,.22f),frame*Quaternion.Euler(10,-12,-12),.15f);
                     _right.SetPose(origin+frame*new Vector3(.22f,-.32f,.22f),frame*Quaternion.Euler(10,12,12),.15f);

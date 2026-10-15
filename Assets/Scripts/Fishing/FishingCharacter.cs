@@ -8,7 +8,8 @@ namespace BoatAttack.Fishing
     public sealed partial class FishingCharacter : MonoBehaviour
     {
         private Animation _animation;
-        private Transform _model,_body,_leftThigh,_rightThigh,_leftShin,_rightShin,_leftAnkle,_rightAnkle,_leftFoot,_rightFoot;
+        private Transform _model,_body,_head,_leftThigh,_rightThigh,_leftShin,_rightShin,_leftAnkle,_rightAnkle,_leftFoot,_rightFoot;
+        private LocalPose _modelRest;
         private Renderer[] _renderers;
         private readonly Dictionary<string,string> _clips=new Dictionary<string,string>();
         private readonly Dictionary<Transform,Quaternion> _rest=new Dictionary<Transform,Quaternion>();
@@ -89,10 +90,12 @@ namespace BoatAttack.Fishing
             if(first || bounds.size.y<.001f)throw new InvalidOperationException("Beach Character has no valid skin vertices");
             float scale=1.75f/bounds.size.y;_model.localScale*=scale;
             _model.localPosition=Vector3.up*(-bounds.min.y*scale);
+            _modelRest=new LocalPose(_model);
             foreach(var bone in _model.GetComponentsInChildren<Transform>())
                 switch(bone.name)
                 {
                     case "Body":_body=bone;break;
+                    case "Head":_head=bone;break;
                     case "UpperLeg.L":_leftThigh=bone;break;case "UpperLeg.R":_rightThigh=bone;break;
                     case "LowerLeg.L":_leftShin=bone;break;case "LowerLeg.R":_rightShin=bone;break;
                     case "Ankle.L":_leftAnkle=bone;break;case "Ankle.R":_rightAnkle=bone;break;
@@ -100,7 +103,7 @@ namespace BoatAttack.Fishing
                 }
             // 源动画对骨段还有独立缩放，按采样后的大腿长度校准非蒙皮踝部锚点。
             CalibrateAnkle(_leftThigh,_leftShin,_leftAnkle);CalibrateAnkle(_rightThigh,_rightShin,_rightAnkle);
-            foreach(var bone in new[]{_body,_leftThigh,_rightThigh,_leftShin,_rightShin,_leftAnkle,_rightAnkle,_leftFoot,_rightFoot})
+            foreach(var bone in new[]{_body,_head,_leftThigh,_rightThigh,_leftShin,_rightShin,_leftAnkle,_rightAnkle,_leftFoot,_rightFoot})
             {
                 if(bone==null)throw new InvalidOperationException("Beach Character stance rig incomplete");
                 _rest[bone]=bone.localRotation;_restPositions[bone]=bone.localPosition;
@@ -117,6 +120,7 @@ namespace BoatAttack.Fishing
         public void Pose(bool ashore,float speed,bool crouched,bool grounded,bool hidden,bool paused)
         {
             if(_model==null)return;
+            _modelRest.Apply(_model);
             SetBodyPresentation(hidden);
             string clip=_clips[ashore && grounded && speed>.1f?(speed>3?"Run":"Walk"):"Idle"];
             if(!_animation.IsPlaying(clip))_animation.CrossFade(clip,.15f);

@@ -83,6 +83,18 @@ namespace BoatAttack.Fishing
         private void ValidateCase()
         {
             var c = Controller;
+            if(CurrentCase==FishingAcceptanceCase.HomeInterior || CurrentCase==FishingAcceptanceCase.HomeWorkbench)
+            {
+                if(!c.Ashore || c.Shore.Swimming || FishingPrototype.FlatDistance(c.Shore.Position,c.Home.Origin)>6)
+                    throw new InvalidOperationException("Home capture did not reach the interior.");
+                if(c.Regions.Title!="回潮渔屋")throw new InvalidOperationException("Home capture retained a previous island title.");
+                int stations=0;
+                foreach(var station in c.Career.Workshop.Stations)
+                    if(station.permanent && FishingPrototype.FlatDistance(new Vector3(station.x,station.y,station.z),c.Home.Origin)<7)stations++;
+                if(stations!=3)throw new InvalidOperationException("Home capture requires all three usable stations.");
+                if(CurrentCase==FishingAcceptanceCase.HomeWorkbench && (!c.InventoryOpen || c.WorkshopWorld.Context!=CraftStation.Workbench))
+                    throw new InvalidOperationException("Home capture is missing the real workbench crafting page.");
+            }
             if(CurrentCase>=FishingAcceptanceCase.WindSanctuary && CurrentCase<=FishingAcceptanceCase.StarSanctuary
                 && (!c.Realms.Inside || c.Realms.Island!=(int)CurrentCase-(int)FishingAcceptanceCase.WindSanctuary))throw new InvalidOperationException("V19 sanctuary capture state failed");
             if(CurrentCase==FishingAcceptanceCase.ResidentDialogue && (!c.DialogueOpen || c.Residents.ActiveId!=0))throw new InvalidOperationException("V19 dialogue capture state failed");

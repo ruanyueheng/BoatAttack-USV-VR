@@ -1,0 +1,74 @@
+{
+  "date": "2026-10-14",
+  "unity": "2022.3.62f1",
+  "gameVersion": "0.26.0",
+  "scope": "XR notebook home prototype",
+  "verifiedLog": "Logs/notebook-ui-prototype-final.log",
+  "baselineLog": "Logs/usv-validation-de0b840916f14f29ad428f92457272d5.log",
+  "baselineCapture": "Logs/v025-ui-227e347341234b529f780c22b7541605/notebook-home.png",
+  "captureDirectory": "E:\\University\\Homework\\虚拟现实作业\\BoatAttack\\Logs\\v025-ui-7e58679abc95438fb01ef9a838cd1e7c",
+  "headsetVerified": false,
+  "files": [
+    {
+      "file": "Assets/Scripts/Fishing/FishingXRNotebook.cs",
+      "sha256": "0a9b6404626ecdbc6d466549fd95d65a78bb38a0a701c9a02b42d6251c26d6aa"
+    },
+    {
+      "file": "Assets/Scripts/Fishing/FishingXRNotebook.Home.cs",
+      "sha256": "06bcb8aad5f890e0bd0bc97247326296c6ee03b3174f00d739fb442ce3aa8f21"
+    },
+    {
+      "file": "Assets/Scripts/Editor/FishingXRPresentationValidation.cs",
+      "sha256": "9f7a791d8ebbbe9a20dc709a4bf4fef99c78846a120d6a002f1ac49f47dd12e0"
+    },
+    {
+      "file": "Assets/Scripts/Editor/FishingNotebookUIValidation.cs",
+      "sha256": "66abbb14bc765e643023aa48728db547b270199b73398352d9ce7199805631ab"
+    },
+    {
+      "file": "Assets/Resources/Fonts/TideSansSC.ttf",
+      "sha256": "066975215b68e408456bf8198773f1c0e3460905e3e06961ad6325ba5707a51a"
+    },
+    {
+      "file": "Assets/Resources/FishingUIPrototype/InkEdge.png",
+      "sha256": "893d09ea41ccc0e2e336a9e35f3ff34946e34051e31a0dc08321853b7071b96d"
+    },
+    {
+      "file": "Assets/Resources/FishingUIPrototype/InkEdge.png.meta",
+      "sha256": "aa8daa01d1f0e9ce7c9619bd665b883b3347fd3bac32f070906ffd4bb1aa40a1"
+    },
+    {
+      "file": "Assets/Resources/FishingUIPrototype/IslandPostcard.png",
+      "sha256": "6b9fe0a460702b61270849b6063d526d36873ea0703b9e027ba5b71b1e10b910"
+    },
+    {
+      "file": "Assets/Resources/FishingUIPrototype/IslandPostcard.png.meta",
+      "sha256": "bfa67995c71eef504de9e814966324f4fc88d172fc6db79c01d4098cb1c43ef3"
+    },
+    {
+      "file": "Assets/Resources/FishingUIPrototype/NavigationAtlas.png",
+      "sha256": "b0f79af9ef4f5defe78b65903b974b4c591b31026291f1d156962dd316b7fd79"
+    },
+    {
+      "file": "Assets/Resources/FishingUIPrototype/NavigationAtlas.png.meta",
+      "sha256": "377f1fb0d90a031148d51397b54398acc93bf2b7819ed1448f8724d95d9f7519"
+    },
+    {
+      "file": "Assets/Resources/FishingUIPrototype/Paper.png",
+      "sha256": "a69cb635d118b6bdac50247f5a53719ddde2c01f82bc91daf54e2e782cae301d"
+    },
+    {
+      "file": "Assets/Resources/FishingUIPrototype/Paper.png.meta",
+      "sha256": "f2b2a086983728c8e5fbd075dc94f5366dc99beb0f23c4060caa80bbb9ebb661"
+    },
+    {
+      "file": "Assets/Resources/FishingUIPrototype/TideHandSC.ttf",
+      "sha256": "91cc9193d4ab77aa4fe6e4c4481e6f31ac9309df75206ab9528e880ab038fc1e"
+    },
+    {
+      "file": "Assets/Resources/FishingUIPrototype/TideHandSC.ttf.meta",
+      "sha256": "66cdc41605c2a2bcf9a46a88befce84db19099dc22bb4587c051e0821ff2dc92"
+    }
+  ],
+  "transparentRouteOcclusion": "Actual route remains visible; paired renders change zero pixels inside notebook paper."
+}

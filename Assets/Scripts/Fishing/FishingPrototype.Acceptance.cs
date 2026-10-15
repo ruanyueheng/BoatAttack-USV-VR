@@ -129,6 +129,9 @@ namespace BoatAttack.Fishing
                     if(!Shore.TryDisembark())throw new InvalidOperationException("Island fixture failed to disembark.");
                     ToggleView();View.ResetLook();NavigationTarget=IslandNavigationIndex(landingIsland);
                     Regions.Show(FishingAdventure.Name(landingIsland),FishingLore.Subtitle(landingIsland),landingIsland);break;
+                case FishingAcceptanceCase.HomeInterior:
+                case FishingAcceptanceCase.HomeWorkbench:
+                    PrepareAcceptanceHome(selected);break;
                 case FishingAcceptanceCase.ShopSupplies: PrepareAcceptanceShore(selected);_hud.ShopCategory=2;break;
                 case FishingAcceptanceCase.Settings: TogglePause(); break;
                 case FishingAcceptanceCase.ShoreFirstPerson:
@@ -153,6 +156,26 @@ namespace BoatAttack.Fishing
             Save();
             if (SaveWarning.Length > 0) throw new IOException("Cannot persist the isolated acceptance profile.");
             View.ApplyView();
+        }
+        private void PrepareAcceptanceHome(FishingAcceptanceCase selected)
+        {
+            NavigationTarget=HomeNavigationIndex;
+            Teleport(Home.Berth+Vector3.up*.2f,Quaternion.identity);
+            if(!Shore.TryDisembark())throw new InvalidOperationException("Home fixture cannot land.");
+            bool crafting=selected==FishingAcceptanceCase.HomeWorkbench;
+            var feet=crafting?Home.StationPosition(CraftStation.Workbench)+Vector3.back*1.35f:Home.Origin+new Vector3(0,.22f,-3.5f);
+            if(!Shore.Relocate(feet,Quaternion.identity))throw new InvalidOperationException("Home fixture footing is blocked.");
+            for(int slot=0;slot<FishingBackpack.HotbarCount;slot++)
+                if(Career.Backpack.At(slot).item==FieldItem.Empty){SelectFieldSlot(slot);break;}
+            View.ResetLook();Regions.Show("回潮渔屋","休息整备 · 再赴潮汐",0);
+            if(!crafting)return;
+            foreach(var station in Career.Workshop.Stations)
+                if(station.kind==CraftStation.Workbench && FlatDistance(new Vector3(station.x,station.y,station.z),Home.StationPosition(CraftStation.Workbench))<.5f)
+                {
+                    if(!WorkshopWorld.OpenStation(station.id))throw new InvalidOperationException("Home workbench fixture cannot open crafting.");
+                    return;
+                }
+            throw new InvalidOperationException("Home workbench is missing.");
         }
         private void PrepareAcceptanceShore(FishingAcceptanceCase selected)
         {

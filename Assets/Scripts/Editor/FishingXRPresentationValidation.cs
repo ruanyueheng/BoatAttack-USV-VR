@@ -59,7 +59,7 @@ namespace BoatAttack.EditorTools
                         {var marker=(RectTransform)Field(field).GetValue(notebook);Check(marker.gameObject.activeSelf && marker.GetComponent<Text>().preferredHeight<=marker.rect.height,"Map position glyph fits without being truncated: "+field);}
                         CaptureCanvas(screen,Path.Combine(evidence,"notebook-map.png"));
                     }
-                    if(page==0)CaptureCanvas(screen,Path.Combine(evidence,"notebook-home.png"));
+                    if(page==0){CaptureCanvas(screen,Path.Combine(evidence,"notebook-home.png"));FishingNotebookUIValidation.Checks(c,evidence);}
                 }
                 var dock=c.DockConsole.GetComponentInChildren<Canvas>(true);
                 foreach(var text in dock.GetComponentsInChildren<Text>(true))Check(!text.text.Contains("CONFIRM") && !text.text.Contains("HELM") && !text.text.Contains("order"),"Dock commands no longer expose old English labels");
@@ -98,7 +98,7 @@ namespace BoatAttack.EditorTools
             }
             finally{xr.SetValue(c,wasXR);c.XRNotebook.Close();rb.velocity=velocity;rb.angularVelocity=angular;}
         }
-        private static void CaptureCanvas(Canvas canvas,string path)
+        internal static void CaptureCanvas(Canvas canvas,string path)
         {
             bool active=canvas.gameObject.activeSelf;var mode=canvas.renderMode;var camera=canvas.worldCamera;
             var p=canvas.transform.position;var q=canvas.transform.rotation;var scale=canvas.transform.localScale;

@@ -1,8 +1,10 @@
-# BoatAttack USV VR — v0.21.0 收线与取舍
+# BoatAttack USV VR — v0.27.0 海岛手册与灯塔家园
+
+当前版本：[第27版试玩与操作说明](Docs/PLAY_V027.md) · [验证与实际截图](Docs/VALIDATION_V027.md) · [PR #37](https://github.com/ruanyueheng/BoatAttack-USV-VR/pull/37)。奶油纸张 UI 已推广到桌面和 VR 功能页，回潮渔屋重建为带灯塔、草坡和木码头的小岛家园。
 
 基于 Unity Boat Attack，使用 **Unity 2022.3.62f1 / URP 14.0.12**。第21版加入每次不同的遛鱼节奏、传说鱼反扑、10秒抄网窗口、图鉴调查解锁、天气与潮汐鱼种条件、加速过热和二级船舶专精取舍。
 
-**Ctrl + W 加速，Shift 刹车，S 倒航。** 注意热量，过热后巡航冷却。J 查看调查清单与出没条件，低速 G 下船；E 交谈、寻宝或抄鱼。四岛、秘境、游泳、攀登继续可用，沿用 v11 存档并保留旧升级。Windows试玩入口：`Builds/FishingPrototype-v0.21.0/FishingPrototype.exe`。
+**Ctrl + W 加速，Shift 刹车，S 倒航。** 注意热量，过热后巡航冷却。J 查看调查清单与出没条件，低速 G 下船；E 交谈、寻宝或抄鱼。四岛、秘境、游泳、攀登继续可用，现使用 v12 存档并兼容读取旧进度。Windows试玩入口：`Builds/FishingPrototype-v0.27.0/FishingPrototype.exe`。
 
 - [第21版操作与改进](Docs/PLAY_V021.md)
 - [第21版验证记录](Docs/VALIDATION_V021.md)
