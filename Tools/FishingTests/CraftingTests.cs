@@ -6,6 +6,13 @@ internal static class CraftingTests
     public static void Run(Action<bool,string> check)
     {
         var bag=new FishingBackpack(false);bag.TryAdd(FieldItem.Driftwood,8);
+        var rawWood=new FishingBackpack(false);rawWood.TryAdd(FieldItem.Driftwood,1);
+        check(FishingRecipes.Craft(rawWood,"sticks",CraftStation.Hand) && rawWood.Count(FieldItem.Stick)==4 && rawWood.Count(FieldItem.Driftwood)==0,"Single driftwood directly makes four sticks");
+        check(!FishingRecipes.Craft(rawWood,"sticks",CraftStation.Hand),"Direct sticks cannot duplicate without driftwood");
+        var plankWood=new FishingBackpack(false);plankWood.TryAdd(FieldItem.Plank,2);
+        check(FishingRecipes.Craft(plankWood,"sticks-from-planks",CraftStation.Hand) && plankWood.Count(FieldItem.Stick)==4 && plankWood.Count(FieldItem.Plank)==0,"Prepared planks retain alternate stick recipe");
+        var fullSticks=new FishingBackpack(false);fullSticks.TryAdd(FieldItem.Driftwood,2);fullSticks.TryAdd(FieldItem.Shell,35*64);
+        check(!FishingRecipes.Craft(fullSticks,"sticks",CraftStation.Hand) && fullSticks.Count(FieldItem.Driftwood)==2,"Full bag preserves direct-stick materials");
         check(FishingRecipes.Craft(bag,"planks",CraftStation.Hand) && bag.Count(FieldItem.Driftwood)==7 && bag.Count(FieldItem.Plank)==4,"Craft planks consumes one log and makes four planks");
         check(FishingRecipes.Craft(bag,"bench",CraftStation.Hand) && bag.Count(FieldItem.Workbench)==1,"Hand crafts workbench");
         check(!FishingRecipes.Craft(bag,"furnace",CraftStation.Hand),"Furnace recipe is not hand-craftable");
@@ -72,7 +79,7 @@ internal static class CraftingTests
         malformed=state.Snapshot();malformed.stations[1].recipe="unknown";check(!FishingWorkshop.TryRestore(malformed,out _),"Save rejects unknown active smelting recipe");
         malformed=state.Snapshot();malformed.stations[0].remaining=1;malformed.stations[0].recipe="iron";check(!FishingWorkshop.TryRestore(malformed,out _),"Save rejects workbench pretending to be furnace");
         var career=new FishingCareer();var legacy=career.Snapshot();legacy.version=7;legacy.workshop=null;
-        check(FishingCareer.TryRestore(legacy,out var migrated) && migrated.Workshop!=null && migrated.Snapshot().version == 12,"v7 progress migrates to current workshop state");
+        check(FishingCareer.TryRestore(legacy,out var migrated) && migrated.Workshop!=null && migrated.Snapshot().version == 13,"v7 progress migrates to current workshop state");
         var v8=career.Snapshot();v8.workshop=null;check(!FishingCareer.TryRestore(v8,out _),"Current save requires workshop payload");
         check(FishingRecipes.All.Select(r=>r.Id).Distinct().Count()==FishingRecipes.All.Length,"Stable recipe IDs are unique");
         foreach(var recipe in FishingRecipes.All)

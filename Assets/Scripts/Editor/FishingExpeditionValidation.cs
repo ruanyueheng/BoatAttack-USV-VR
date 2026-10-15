@@ -122,6 +122,7 @@ namespace BoatAttack.EditorTools
         private static void Catch(FishingPrototype c,bool fillBeforeLanding=false)
         {
             Check(c.Cast(),"real cast at ground "+c.Spot);
+            FishingCatchValidation.KeepOrdinaryReceipt(c);
             var s=c.Session;int guard=0;
             while(s.Phase==CatchPhase.Waiting && guard++<1000)s.Tick(.02f,false);
             Check(c.Hook(),"real hook");guard=0;

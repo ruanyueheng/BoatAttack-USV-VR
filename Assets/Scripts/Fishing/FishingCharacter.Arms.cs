@@ -49,6 +49,7 @@ namespace BoatAttack.Fishing
         public int RightFingerJointCount=>_rightArm?.Fingers.Count ?? 0;
         public Vector3 HandReferencePosition=>HandRigReady?(_leftArm.Upper.position+_rightArm.Upper.position)*.5f:transform.position+transform.up*1.3f;
         public Vector3 ShoulderPosition(bool left)=>(left?_leftArm:_rightArm).Upper.position;
+        public Vector3 ElbowPosition(bool left)=>(left?_leftArm:_rightArm).Lower.position;
         public float ArmReach(bool left)
         {
             var arm=left?_leftArm:_rightArm;
@@ -202,6 +203,16 @@ namespace BoatAttack.Fishing
             var outward=arm.Upper.position-HandReferencePosition;
             var pole=outward.normalized*.65f-transform.up*.8f-transform.forward*.15f;
             SolveArm(arm,wristTarget,pole);
+            if(!tracked && target.ForearmRoll>0)
+            {
+                // Share pronation with the forearm instead of dumping the entire roll
+                // into the wrist skin. Rotation about the lower-arm axis preserves length.
+                var axis=(arm.Wrist.position-arm.Lower.position).normalized;
+                var from=Vector3.ProjectOnPlane((arm.Wrist.rotation*arm.WristToPalm)*Vector3.up,axis);
+                var to=Vector3.ProjectOnPlane(target.Palm.up,axis);
+                if(from.sqrMagnitude>1e-6f && to.sqrMagnitude>1e-6f)
+                    arm.Lower.rotation=Quaternion.AngleAxis(Vector3.SignedAngle(from,to,axis)*target.ForearmRoll,axis)*arm.Lower.rotation;
+            }
             arm.Wrist.rotation=desiredRotation;
             // Tracked hands use the hand-only source mesh: controller reach cannot stretch a visible forearm.
             if(tracked)arm.Wrist.position=wristTarget;

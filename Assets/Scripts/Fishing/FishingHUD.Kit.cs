@@ -5,21 +5,21 @@ namespace BoatAttack.Fishing
     /// <summary>Drawing primitives for the desktop HUD: one palette, rounded cards and custom buttons.</summary>
     public sealed partial class FishingHUD
     {
-        private static readonly Color Ink = FishingUITheme.Paper;
-        private static readonly Color InkRaised = FishingUITheme.Light;
-        private static readonly Color Hairline = new Color(.65f,.48f,.29f,.38f);
+        private static Color Ink => FishingUITheme.Paper;
+        private static Color InkRaised => FishingUITheme.Light;
+        private static Color Hairline => FishingUITheme.Blend(new Color(.65f,.48f,.29f,.38f),new Color(.62f,.71f,.77f,.38f));
         private static readonly Color CardShadow = new Color(.08f, .18f, .19f, .16f);
-        private static readonly Color Muted = FishingUITheme.Muted;
-        private static readonly Color Faint = new Color(.36f,.41f,.35f);
-        private static readonly Color Mint = FishingUITheme.Sage;
-        private static readonly Color Gold = FishingUITheme.Gold;
-        private static readonly Color Danger = new Color(.71f,.28f,.18f);
-        private static readonly Color Sky = new Color(.21f,.42f,.42f);
-        private static readonly Color Track = new Color(.76f,.77f,.65f);
-        private static readonly Color ButtonFill = FishingUITheme.Light;
-        private static readonly Color ButtonHover = new Color(.88f,.93f,.82f);
-        private static readonly Color ButtonOff = FishingUITheme.Disabled;
-        private static readonly Color InkText = FishingUITheme.Ink;
+        private static Color Muted => FishingUITheme.Muted;
+        private static Color Faint => FishingUITheme.Blend(new Color(.36f,.41f,.35f),new Color(.65f,.73f,.77f));
+        private static Color Mint => FishingUITheme.Sage;
+        private static Color Gold => FishingUITheme.Gold;
+        private static Color Danger => FishingUITheme.Blend(new Color(.71f,.28f,.18f),new Color(1,.59f,.43f));
+        private static Color Sky => FishingUITheme.Blend(new Color(.21f,.42f,.42f),new Color(.57f,.78f,.87f));
+        private static Color Track => FishingUITheme.Blend(new Color(.76f,.77f,.65f),new Color(.23f,.30f,.36f));
+        private static Color ButtonFill => FishingUITheme.Light;
+        private static Color ButtonHover => FishingUITheme.Selected;
+        private static Color ButtonOff => FishingUITheme.Disabled;
+        private static Color InkText => FishingUITheme.Ink;
         private Rect _pressedButton;
 
         // Opacity multiplier for everything drawn through this kit (used by fading cards).
@@ -66,7 +66,7 @@ namespace BoatAttack.Fishing
             _label.font=bold && size>=25?FishingUITheme.Heading:_font;
             // The bundled face is Medium; synthetic bold distorts small Chinese counters.
             _label.fontStyle = FontStyle.Normal;
-            _label.normal.textColor = Faded(color==Color.white?InkText:color==Gold?new Color(.48f,.32f,.15f):color==Mint?new Color(.20f,.39f,.30f):color);
+            _label.normal.textColor = Faded(color==Color.white?InkText:color==Gold?FishingUITheme.Blend(new Color(.48f,.32f,.15f),Gold):color==Mint?FishingUITheme.Blend(new Color(.20f,.39f,.30f),Mint):color);
             _label.alignment = align;
             GUI.Label(r, text, _label);
         }

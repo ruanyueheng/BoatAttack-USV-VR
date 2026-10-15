@@ -39,16 +39,17 @@ namespace BoatAttack.Fishing
             if(id!=4)ArtIllustration(new Rect(r.x+28,r.y+26,74,88),"Resident"+id);
             else ArtIllustration(new Rect(r.x+30,r.y+25,70,80),"Lantern");
             Label(r.x+120,r.y+22,510,38,FishingLore.ResidentName(id),27,Gold,true);
-            Label(r.x+122,r.y+64,590,23,FishingLore.ResidentRole(id)+"  /  回潮海的居民",14,Muted);
+            Label(r.x+122,r.y+64,590,23,FishingLore.ResidentRole(id)+"  /  "+resident.TopicTitle,14,Muted);
             Fill(r.x+30,r.y+115,716,1,Hairline);
-            Label(r.x+34,r.y+136,712,176,resident.VisibleSpeech,21,Color.white);
-            for(int i=0;i<3;i++)if(Button(new Rect(r.x+778,r.y+30+i*57,310,47),(i+1)+"  "+resident.Choice(i),true,false,16))resident.Choose(i);
-            if(id==4 && Button(new Rect(r.x+778,r.y+207,310,40),"查看商品",true,true,16))
-            {resident.Close();c.ToggleShop();}
+            int speechSize=21;_label.font=_font;_label.fontSize=speechSize;
+            while(speechSize>15 && _label.CalcHeight(new GUIContent(resident.Speech),712)>176)_label.fontSize=--speechSize;
+            Label(r.x+34,r.y+136,712,176,resident.VisibleSpeech,speechSize,Color.white);
+            for(int i=0;i<resident.ChoiceCount;i++)if(Button(new Rect(r.x+778,r.y+24+i*53,310,47),(i+1)+"  "+resident.Choice(i),true,false,16))resident.Choose(i);
+            if(id==4 && Button(new Rect(r.x+778,r.y+240,310,34),"查看商品",true,true,16))resident.BrowseCashierGoods();
             if(Button(new Rect(r.x+778,r.y+278,310,42),"Esc  结束交谈",true,false,16))resident.Close();
             if(resident.VisibleSpeech.Length<resident.Speech.Length)
             {if(Button(new Rect(r.x+34,r.y+314,230,24),"E 显示完整对话",true,false,13))resident.Reveal();}
-            else Label(r.x+34,r.y+320,640,20,"1 / 2 / 3选择话题 · 线索在J日志“世界与秘境”",13,Faint);
+            else Label(r.x+34,r.y+320,640,20,(resident.ChoiceCount==4?"1 / 2 / 3 / 4":"1 / 2 / 3")+" 选择话题 · J 日志记录线索",13,Faint);
         }
         private void DrawExplorationStatus()
         {

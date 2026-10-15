@@ -27,7 +27,7 @@ internal static class CatchTransactionTests
         check(!legend.ResolvePending(false,out _,out _),"Legend bounty cannot repeat");
         var restore=new FishingCareer();restore.BeginPending(Fish("save-pending"),0,12,24);restore.MarkOrder();
         var data=restore.Snapshot();FishingCareer reloaded=null;
-        check(data.version == 12 && FishingCareer.TryRestore(data,out reloaded) && reloaded.HasPendingCatch && reloaded.PendingCatch.fish.id=="save-pending" && reloaded.OrderMarked,"Snapshots preserve pending fish and marked commission");
+        check(data.version == 13 && FishingCareer.TryRestore(data,out reloaded) && reloaded.HasPendingCatch && reloaded.PendingCatch.fish.id=="save-pending" && reloaded.OrderMarked,"Snapshots preserve pending fish and marked commission");
         check(reloaded.ResolvePending(true,out _,out _) && reloaded.Count==1,"Restored pending catch settles exactly once");
         data.hasPendingCatch=false;check(!FishingCareer.TryRestore(data,out _),"Missing pending marker cannot silently discard a fish");
         data=restore.Snapshot();data.pendingCatch=null;check(!FishingCareer.TryRestore(data,out _),"Pending marker requires a real record");

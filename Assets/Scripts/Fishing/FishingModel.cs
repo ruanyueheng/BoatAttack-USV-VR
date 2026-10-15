@@ -187,7 +187,8 @@ namespace BoatAttack.Fishing
     public sealed class FishingSaveData
     {
         public List<HuntedAnimalData> huntedAnimals=new List<HuntedAnimalData>();
-        public int version = 12;
+        public int version = 13;
+        public FishingBarbecueData barbecue = new FishingBarbecueData();
         public bool prologueSeen;
 
         public LoreData lore = new LoreData();
@@ -435,7 +436,7 @@ namespace BoatAttack.Fishing
         {
             var result = new FishingSaveData
             {
-                prologueSeen = PrologueSeen,
+                prologueSeen = PrologueSeen, barbecue = _barbecue.Copy(),
                 calendar = Calendar.Snapshot(), hunting = Hunting.Snapshot(), lore = Lore.Snapshot(),
                 engineLevel = EngineLevel, rudderLevel = RudderLevel, cabinLevel = CabinLevel, adventure = Adventure.Snapshot(),
                 hasPendingCatch = HasPendingCatch, pendingCatch = _pending?.Copy(), releasedCatches = ReleasedCatches, orderMarked = OrderMarked,
@@ -455,7 +456,7 @@ namespace BoatAttack.Fishing
         public static bool TryRestore(FishingSaveData data, out FishingCareer career)
         {
             career = null;
-            if (data == null || data.version < 1 || data.version > 12 || (data.version < 12 && data.prologueSeen)) return false;
+            if (data == null || data.version < 1 || data.version > 13 || (data.version < 12 && data.prologueSeen)) return false;
             if (data.version < 11 && data.lore != null && (data.lore.residents != 0 || data.lore.shrines != 0 || data.lore.finale)) return false;
             if (data.engineLevel < 0 || data.engineLevel > MaxLevel || data.rudderLevel < 0 || data.rudderLevel > MaxLevel
                 || data.cabinLevel < 0 || data.cabinLevel > MaxLevel
@@ -562,6 +563,7 @@ namespace BoatAttack.Fishing
                     result._huntedAnimals.Add(receipt);
                 }
             }
+            if(!result.RestoreBarbecue(data.barbecue,data.version))return false;
             result.PrologueSeen = data.prologueSeen;
 
             career = result;
@@ -592,6 +594,7 @@ namespace BoatAttack.Fishing
 
         private bool IsAboard(string id)
         {
+            if(_barbecue.fish!=null && _barbecue.fish.id==id)return true;
             foreach (var fish in _inventory) if (fish.id == id) return true;
             return false;
         }

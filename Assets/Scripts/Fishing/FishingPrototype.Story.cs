@@ -14,7 +14,7 @@ namespace BoatAttack.Fishing
         public FishingPrologue Prologue { get; private set; }
         private int _storyConsumedFrame = -1;
         public bool DialogueOpen => Residents != null && Residents.Open;
-        public bool StoryBlocksGameplay => DialogueOpen || (Letter != null && Letter.Open) || (Prologue != null && Prologue.Open)
+        public bool StoryBlocksGameplay => DialogueOpen || (CoastWorld != null && CoastWorld.MenuOpen) || (Letter != null && Letter.Open) || (Prologue != null && Prologue.Open)
             || (Home != null && Home.Sleeping) || (Realms != null && Realms.Transitioning) || _storyConsumedFrame == Time.frameCount;
         internal void StoryModalChanged()
         {
@@ -24,6 +24,7 @@ namespace BoatAttack.Fishing
         }
         private bool TickStoryInput(Keyboard keyboard, bool focused, bool xr)
         {
+            if(CoastWorld!=null && CoastWorld.TickMenuInput(keyboard,focused,xr))return true;
             Regions.Tick(); Realms.Tick();
             if(Prologue.Open)
             {
@@ -66,6 +67,7 @@ namespace BoatAttack.Fishing
                     else if (keyboard.digit1Key.wasPressedThisFrame) Residents.Choose(0);
                     else if (keyboard.digit2Key.wasPressedThisFrame) Residents.Choose(1);
                     else if (keyboard.digit3Key.wasPressedThisFrame) Residents.Choose(2);
+                    else if (keyboard.digit4Key.wasPressedThisFrame) Residents.Choose(3);
                 }
                 return true;
             }

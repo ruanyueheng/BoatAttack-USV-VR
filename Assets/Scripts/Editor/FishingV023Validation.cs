@@ -21,13 +21,13 @@ namespace BoatAttack.EditorTools
             foreach(var mesh in c.Home.House.GetComponentsInChildren<MeshFilter>())
                 Check(mesh.GetComponent<Renderer>().sharedMaterial.shader==c.PaletteShader,"Furnished prefab preserves actual vertex palette: "+mesh.name);
             var pick=FishingV023Art.ItemMesh(FieldItem.IronPickaxe);
-            var sourcePick=Resources.Load<GameObject>("FishingV023/Items/IronPickaxe");var sourceFilter=sourcePick.GetComponentInChildren<MeshFilter>();
+            var sourcePick=Resources.Load<GameObject>("FishingUserTools/Pickaxe");var sourceFilter=sourcePick.GetComponentInChildren<MeshFilter>();
             Debug.Log("[V023] AXES: "+pick.bounds+" min="+pick.bounds.min+" max="+pick.bounds.max+" scale="+sourceFilter.transform.lossyScale+" rotation="+sourceFilter.transform.eulerAngles);
             Debug.Log("[V023] SHELL AXES: "+Resources.Load<GameObject>("FishingV023/Home/HouseShellView").GetComponentInChildren<MeshFilter>().sharedMesh.bounds);
             Debug.Log("[V023] SPEAR AXES: "+FishingV023Art.ItemMesh(FieldItem.HuntingSpear).bounds);
             Check(FishingV023Art.ItemMesh(FieldItem.HuntingSpear).bounds.max.z>.91f,"Spear's visible tip shares the positive-Z gameplay contact axis");
             Check(Resources.Load<GameObject>("FishingV023/Home/HouseShellView").GetComponentInChildren<MeshFilter>().sharedMesh.bounds.min.z<-7.9f,"Visible porch shares the negative-Z entrance and floor colliders");
-            Check(pick!=null && pick.bounds.max.y>.33f && pick.bounds.min.y<-.25f && pick.bounds.size.x>.54f && pick.bounds.size.x<.65f,"Imported pick retains exact metre grip and contact axes");
+            Check(pick!=null && Mathf.Abs(pick.bounds.size.y-.58f)<.01f && pick.bounds.Contains(FishingFieldWorld.PickTip) && pick.bounds.Contains(FishingFieldWorld.PickPalm),"Supplied pick retains calibrated metre grip and contact axes");
             foreach(FieldItem item in Enum.GetValues(typeof(FieldItem)))
             {
                 // Appended hunting/forge items use the supplied textured rifle and
@@ -86,7 +86,7 @@ namespace BoatAttack.EditorTools
             c.Home.Tick(.25f);c.Home.CancelSleep();yield return null;yield return null;
             Check(c.Career.Calendar.TotalMinutes==before,"Sleep cancelled before black-screen commitment keeps calendar unchanged");
             Check(c.Home.Sleep(),"Sleep can be restarted after cancellation");
-            for(int i=0;i<11;i++)c.Home.Tick(.25f);
+            for(int i=0;i<Mathf.CeilToInt(FishingHome.SleepDuration/.25f)+1;i++)c.Home.Tick(.25f);
             Check(!c.Home.Sleeping && c.Career.Calendar.Hour==6 && c.Career.Calendar.TotalMinutes>before,"Sleep completes to the next morning once");
             double morning=c.Career.Calendar.TotalMinutes;c.Home.Tick(1);
             Check(c.Career.Calendar.TotalMinutes==morning && c.Career.Catches==catches && c.Career.Coins==coins,"Completed sleep neither repeats time advance nor grants rewards");

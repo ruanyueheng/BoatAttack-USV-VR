@@ -7,8 +7,8 @@ namespace BoatAttack.Fishing
     public sealed partial class FishingXRNotebook
     {
         private enum HomeState { Normal, Hover, Pressed, Selected, Disabled }
-        private static readonly Color HomePaper=FishingUITheme.Paper,HomeInk=FishingUITheme.Ink,HomeMuted=FishingUITheme.Muted;
-        private static readonly Color HomeGold=FishingUITheme.Gold,HomeSage=FishingUITheme.Sage,HomeLight=FishingUITheme.Light;
+        private static Color HomePaper=>FishingUITheme.Paper;private static Color HomeInk=>FishingUITheme.Ink;private static Color HomeMuted=>FishingUITheme.Muted;
+        private static Color HomeGold=>FishingUITheme.Gold;private static Color HomeSage=>FishingUITheme.Sage;private static Color HomeLight=>FishingUITheme.Light;
         private static readonly string[] HomeTitles={"随身行囊","海岸工坊","航海图","自然手记","港口委托","钓具百货","群岛航记","设置","返回海湾"};
         private static readonly string[] HomeCaptions={"装备与物资","制作与锻造","海湾与航点","图鉴与日历","委托与鱼货","补给与升级"};
         private GameObject _homeDecor;
@@ -28,19 +28,21 @@ namespace BoatAttack.Fishing
             rt.anchoredPosition=new Vector2(rect.x,-rect.y);rt.sizeDelta=rect.size;
         }
 
-        private Image HomeImage(Transform parent,string name,Rect rect,Color color,Sprite sprite=null)
+        private Image HomeImage(Transform parent,string name,Rect rect,Color color,Sprite sprite=null,bool themed=true)
         {
             var go=new GameObject(name,typeof(RectTransform),typeof(Image));go.layer=5;go.transform.SetParent(parent,false);
             HomeRect(go.GetComponent<RectTransform>(),rect);
             var image=go.GetComponent<Image>();image.color=color;image.sprite=sprite;image.raycastTarget=false;
+            if(themed)FishingUITheme.Bind(image,color);
             if(sprite!=null && sprite.border!=Vector4.zero)image.type=Image.Type.Sliced;
             return image;
         }
 
-        private static Text HomeText(Transform parent,Rect rect,string value,int size,Color color,Font font=null)
+        private static Text HomeText(Transform parent,Rect rect,string value,int size,Color color,Font font=null,bool themed=true)
         {
             var text=Label(parent,new Vector2(rect.x,-rect.y),rect.size,size);
             text.text=value;text.color=color;text.font=font!=null?font:FishingUIFont.Font;
+            if(themed)FishingUITheme.Bind(text,color);
             text.horizontalOverflow=HorizontalWrapMode.Wrap;text.verticalOverflow=VerticalWrapMode.Truncate;
             return text;
         }
@@ -62,12 +64,12 @@ namespace BoatAttack.Fishing
             var decor=_homeDecor.GetComponent<RectTransform>();decor.anchorMin=Vector2.zero;decor.anchorMax=Vector2.one;decor.offsetMin=decor.offsetMax=Vector2.zero;
             var p=_homeDecor.transform;
             HomeImage(p,"Cloth binding",new Rect(13,25,9,730),HomeSage,_homePaperSprite);
-            HomeImage(p,"Quiet paper edge",new Rect(29,18,1051,744),new Color32(202,182,144,160),_homeEdgeSprite);
+            HomeImage(p,"Quiet paper edge",new Rect(29,18,1051,758),HomeGold,_homeEdgeSprite);
             HomeImage(p,"Compass insignia",new Rect(43,39,67,67),Color.white,_homeGlyphs[2]);
             HomeText(p,new Rect(127,35,410,62),"潮汐手册",48,HomeInk,titleFont);
             HomeText(p,new Rect(129,101,442,36),"回潮海  ·  航行与生活",22,HomeMuted);
             _homeDate=HomeText(p,new Rect(568,45,492,37),"",25,HomeInk);_homeDate.alignment=TextAnchor.MiddleRight;
-            HomeImage(p,"Weather stamp",new Rect(779,97,283,38),new Color32(223,230,206,255),_homePaperSprite);
+            HomeImage(p,"Weather stamp",new Rect(779,97,283,38),FishingUITheme.Selected,_homePaperSprite);
             _homeWeather=HomeText(p,new Rect(791,100,259,32),"",21,HomeInk);_homeWeather.alignment=TextAnchor.MiddleCenter;
             HomeImage(p,"Header rule",new Rect(42,149,1020,1.5f),HomeGold);
 
@@ -79,9 +81,11 @@ namespace BoatAttack.Fishing
             var tape=HomeImage(postcard.transform,"Small paper tape",new Rect(124,-6,114,20),new Color32(210,167,110,170),_homePaperSprite);tape.rectTransform.localRotation=Quaternion.Euler(0,0,-4);
             HomeText(postcard.transform,new Rect(20,352,331,48),"去海边，慢一点。",34,HomeInk,titleFont);
             HomeText(postcard.transform,new Rect(23,407,323,31),"装好行囊，再去遇见一片海。",21,HomeMuted);
-            var pocket=HomeImage(p,"Travel pocket",new Rect(42,651,367,79),new Color32(228,229,202,255),_homePaperSprite);
-            _homeWallet=HomeText(pocket.transform,new Rect(18,4,331,38),"",25,HomeInk);
-            _homeCapacity=HomeText(pocket.transform,new Rect(18,43,331,32),"",21,HomeMuted);
+            var pocket=HomeImage(p,"Travel pocket",new Rect(42,651,367,79),FishingUITheme.Selected,_homePaperSprite);
+            HomeImage(pocket.transform,"Coin pictogram",new Rect(15,6,29,29),HomeGold,FishingUITheme.Coins);
+            HomeImage(pocket.transform,"Fish box pictogram",new Rect(15,44,25,25),HomeSage,FishingUITheme.FishBox);
+            _homeWallet=HomeText(pocket.transform,new Rect(55,4,294,38),"",25,HomeInk);
+            _homeCapacity=HomeText(pocket.transform,new Rect(48,43,301,32),"",21,HomeMuted);
             _homeMessage=HomeText(p,new Rect(444,609,610,48),"",20,HomeMuted);
             _homeEquipment=HomeText(p,new Rect(44,741,457,32),"",20,HomeMuted);
             var hint=HomeText(p,new Rect(513,741,547,32),"右手指向  ·  扳机选择  ·  B 收起",20,HomeMuted);hint.alignment=TextAnchor.MiddleRight;
@@ -89,10 +93,10 @@ namespace BoatAttack.Fishing
 
             for(int i=0;i<9;i++)
             {
-                _homeEdges[i]=HomeImage(_plates[i].transform,"Handdrawn button edge",new Rect(0,0,1,1),HomeGold,_homeEdgeSprite);
+                _homeEdges[i]=HomeImage(_plates[i].transform,"Handdrawn button edge",new Rect(0,0,1,1),HomeGold,_homeEdgeSprite,false);
                 _homeIcons[i]=HomeImage(_plates[i].transform,"Navigation illustration",new Rect(0,0,1,1),Color.white,_homeGlyphs[i]);
-                _homeArrows[i]=HomeText(_plates[i].transform,new Rect(0,0,1,1),"›",30,HomeGold);_homeArrows[i].alignment=TextAnchor.MiddleCenter;
-                _homeCaptions[i]=HomeText(_plates[i].transform,new Rect(0,0,1,1),i<6?HomeCaptions[i]:"",21,HomeMuted);
+                _homeArrows[i]=HomeText(_plates[i].transform,new Rect(0,0,1,1),"›",30,HomeGold,null,false);_homeArrows[i].alignment=TextAnchor.MiddleCenter;
+                _homeCaptions[i]=HomeText(_plates[i].transform,new Rect(0,0,1,1),i<6?HomeCaptions[i]:"",21,HomeMuted,null,false);
             }
             _homeDecor.SetActive(false);
             BuildNotebookPages();
@@ -115,7 +119,7 @@ namespace BoatAttack.Fishing
                 _homeScaler.dynamicPixelsPerUnit=home?3:1;
                 var panel=_canvas.GetComponent<Image>();panel.sprite=home?_homePaperSprite:null;
                 panel.type=home?Image.Type.Sliced:Image.Type.Simple;panel.color=home?HomePaper:new Color(.025f,.048f,.082f,.97f);
-                foreach(var graphic in _canvas.GetComponentsInChildren<Graphic>(true))graphic.material=home?_homeMaterial:null;
+                foreach(var graphic in _canvas.GetComponentsInChildren<Graphic>(true))graphic.material=graphic==_map && _mapPalette!=null?_mapPalette:home?_homeMaterial:null;
                 for(int i=0;i<9;i++)
                 {
                     _homeEdges[i].gameObject.SetActive(home);_homeIcons[i].gameObject.SetActive(home);_homeArrows[i].gameObject.SetActive(home);
@@ -135,8 +139,9 @@ namespace BoatAttack.Fishing
             var day=_c.Career.Calendar;var bag=_c.Career.Backpack;
             _homeDate.text=day.DateLabel+"  /  "+day.TimeLabel;
             _homeWeather.text=BayClimate.Name(_c.Weather.Climate.Current)+"  ·  "+day.TideName;
+            _canvas.GetComponent<Image>().color=HomePaper;
             _homeWallet.text="金币    "+_c.Career.Coins;
-            _homeCapacity.text="行囊 "+bag.UsedSlots+" / 36   ·   鱼箱 "+_c.Career.Count+" / "+_c.Career.Capacity;
+            _homeCapacity.text="鱼箱 "+_c.Career.Count+"/"+_c.Career.Capacity+" · 行囊 "+bag.UsedSlots+"/36";
             _homeEquipment.text="当前装备  ·  "+FishingBackpack.Name(bag.Equipped);
             _homeMessage.text=_c.VisibleMessage;
             for(int i=0;i<9;i++)
@@ -161,8 +166,8 @@ namespace BoatAttack.Fishing
         private void ApplyHomeState(int i,HomeState state,bool instant)
         {
             bool disabled=state==HomeState.Disabled,selected=state==HomeState.Selected,pressed=state==HomeState.Pressed,hover=state==HomeState.Hover;
-            Color fill=disabled?new Color32(226,223,207,255):i==8?HomeInk:pressed?new Color32(210,226,207,255):selected?new Color32(226,236,215,255):hover?new Color32(255,253,242,255):HomeLight;
-            Color edge=disabled?new Color32(174,181,163,255):pressed||selected?HomeInk:hover?HomeSage:HomeGold;
+            Color fill=disabled?FishingUITheme.Disabled:i==8?HomeInk:pressed||selected?FishingUITheme.Selected:hover?FishingUITheme.Blend(new Color32(255,253,242,255),new Color32(54,75,93,255)):HomeLight;
+            Color edge=disabled?HomeMuted:pressed||selected?HomeInk:hover?HomeSage:HomeGold;
             float mix=instant?1:1-Mathf.Exp(-Time.unscaledDeltaTime/ .08f);
             _plates[i].color=Color.Lerp(_plates[i].color,fill,mix);_homeEdges[i].color=Color.Lerp(_homeEdges[i].color,edge,mix);
             _labels[i].color=i==8&&!disabled?HomeLight:HomeInk;

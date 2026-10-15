@@ -13,7 +13,7 @@ namespace BoatAttack.EditorTools
         public static void Prepare()
         {
             const string root="Assets/Resources/FishingV027/Home/";
-            PlayerSettings.bundleVersion=FishingPrototype.Version;PlayerSettings.Android.bundleVersionCode=27;
+            PlayerSettings.bundleVersion=FishingPrototype.Version;PlayerSettings.Android.bundleVersionCode=28;
             AssetDatabase.Refresh();
             var path=root+"CoastalHomePalette.mat";
             var material=AssetDatabase.LoadAssetAtPath<Material>(path);

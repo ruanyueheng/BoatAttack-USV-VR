@@ -1,0 +1,12 @@
+Two Coins and Wooden Crate by Delapouite, from Game-icons.net.
+Licensed under Creative Commons Attribution 3.0 Unported (CC BY 3.0).
+https://creativecommons.org/licenses/by/3.0/
+
+Two Coins: https://game-icons.net/1x1/delapouite/two-coins.html
+Downloaded original: https://game-icons.net/icons/ffffff/transparent/1x1/delapouite/two-coins.png
+Wooden Crate: https://game-icons.net/1x1/delapouite/wooden-crate.html
+Downloaded original: https://game-icons.net/icons/ffffff/transparent/1x1/delapouite/wooden-crate.png
+
+Original white transparent PNG images are bundled unchanged as Coins.png and FishBox.png.
+Runtime tint follows the coastal game's day/night UI palette; Wooden Crate represents fish-box capacity.
+Retrieved 2026-10-15. Attribution is also shown in desktop settings and the XR sailing-help page.

@@ -11,9 +11,9 @@ namespace BoatAttack.Fishing
         {
             yield return new WaitForSecondsRealtime(1f);
             string baseline = null;
-            string normalPath = Path.Combine(Application.persistentDataPath, "boatattack-fishing-v12.json");
+            string normalPath = Path.Combine(Application.persistentDataPath, "boatattack-fishing-v13.json");
             string normalStamp = SaveStamp(normalPath), backupStamp = SaveStamp(normalPath + ".bak");
-            string legacyPath=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v11.json");
+            string legacyPath=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v12.json");
             string legacyStamp=SaveStamp(legacyPath),legacyBackupStamp=SaveStamp(legacyPath+".bak");
             int comfort = PlayerPrefs.GetInt("Fishing.V3.Comfort", int.MinValue), quiet = PlayerPrefs.GetInt("Fishing.V3.Quiet", int.MinValue);
             if (!Check(() =>
@@ -83,6 +83,16 @@ namespace BoatAttack.Fishing
         private void ValidateCase()
         {
             var c = Controller;
+            if(CurrentCase==FishingAcceptanceCase.HomeBarbecue && (!c.CoastWorld.NearGrill || !c.CoastWorld.MenuOpen || c.Career.Count!=3))
+                throw new InvalidOperationException("Barbecue capture lacks the reachable fish-selection menu.");
+            if(CurrentCase==FishingAcceptanceCase.HomeGrilledFish)
+            {
+                var cooked=c.CoastWorld.Grill.Find("Whole grilled sea fish · scored skin and lemon");
+                if(!c.CoastWorld.NearGrill || !c.Career.BarbecueReady || c.Career.Count!=2 || cooked==null || !cooked.gameObject.activeInHierarchy)
+                    throw new InvalidOperationException("Barbecue capture lacks its reserved fish or visible cooked model.");
+            }
+            if(CurrentCase==FishingAcceptanceCase.CashierDialogue && (!c.DialogueOpen || c.Residents.ActiveId!=4 || c.Residents.ChoiceCount!=4))
+                throw new InvalidOperationException("Cashier capture lacks the real four-branch dialogue.");
             if(CurrentCase==FishingAcceptanceCase.HomeInterior || CurrentCase==FishingAcceptanceCase.HomeWorkbench)
             {
                 if(!c.Ashore || c.Shore.Swimming || FishingPrototype.FlatDistance(c.Shore.Position,c.Home.Origin)>6)

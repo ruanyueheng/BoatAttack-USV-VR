@@ -45,6 +45,10 @@ namespace BoatAttack.Fishing
                     p.Line(15,48,33,15,12,Ink);p.Line(35,49,51,26,11,Ink);p.Line(16,44,30,20,2,Steel);p.Line(35,44,47,28,2,Steel);break;
                 case FieldItem.IronIngot:
                     p.Poly(Steel,6,45,16,20,47,16,59,39,45,52);p.Poly(Light,16,20,47,16,49,29,12,35);p.Line(12,36,47,31,2,Ink);break;
+                case FieldItem.IronPickHead:
+                    p.Poly(Steel,5,27,15,17,29,14,47,19,59,29,54,39,42,28,23,28,7,35);p.Line(13,24,43,23,3,Light);p.Circle(31,24,5,Ink);break;
+                case FieldItem.GunParts:
+                    p.Rect(10,11,35,9,Steel);p.Line(15,15,41,15,2,Light);p.Rect(22,27,30,14,Steel);p.Circle(44,34,4,Ink);p.Rect(8,34,9,20,Ink);p.Line(26,47,50,51,5,Steel);break;
                 case FieldItem.Brick:
                     p.Poly(Red,5,26,41,12,59,25,59,44,23,57,5,44);p.Line(5,27,23,40,2,Light);p.Line(23,40,59,26,2,Light);p.Line(23,40,23,56,2,Light);break;
                 case FieldItem.Glass:

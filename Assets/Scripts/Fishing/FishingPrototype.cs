@@ -25,7 +25,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.27.0";
+        public const string Version = "0.28.0";
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
@@ -126,10 +126,11 @@ namespace BoatAttack.Fishing
             Automated = Application.isBatchMode || HasArgument("-fishing-field-capture") || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
             SavePath = AcceptanceOptions != null ? AcceptanceOptions.ProfilePath(Application.temporaryCachePath, false)
                 : Path.Combine(Automated ? Application.temporaryCachePath : Application.persistentDataPath,
-                Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v12.json");
+                Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v13.json");
             // Older executables keep their own files; migration never overwrites their progress.
             string warning;
-            string legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v11.json");
+            string legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v12.json");
+            if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v11.json");
             if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v10.json");
             if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v9.json");
             if(!File.Exists(legacy) && !File.Exists(legacy+".bak"))legacy=Path.Combine(Application.persistentDataPath,"boatattack-fishing-v8.json");
@@ -193,6 +194,7 @@ namespace BoatAttack.Fishing
             Letter=gameObject.AddComponent<FishingLetter>();Letter.Build(this);
             WaterRoute=gameObject.AddComponent<FishingWaterRoute>();WaterRoute.Build(this);
             Home=gameObject.AddComponent<FishingHome>();Home.Build(this);
+            CoastWorld=gameObject.AddComponent<FishingV028CoastWorld>();CoastWorld.Build(this);
             Prologue=gameObject.AddComponent<FishingPrologue>();Prologue.Build(this);
             Shore.RefreshClimbRoutes();
             ConfigurePresentation();
@@ -405,11 +407,11 @@ namespace BoatAttack.Fishing
         public void PresentCharacterFrame(float deltaTime=0)
         {
             if(!_initialized)return;
-            XRSeat.Apply();Shore.SyncRider();Shore.ApplyTraversalPose();View.ApplyView();Hands.Apply();FieldWorld.ApplyHeldTool();XRNotebook.SampleTool();ApplyWorldActionPose();CatchRig.Apply(deltaTime);
+            XRSeat.Apply();Shore.SyncRider();Home.PresentSleepPose();Shore.ApplyTraversalPose();View.ApplyView();Hands.Apply();FieldWorld.ApplyHeldTool();XRNotebook.SampleTool();ApplyWorldActionPose();CatchRig.Apply(deltaTime);
             RifleHunting.Present();
             // 全部工具和掌心目标落位后才解同源骨架；随后只读取竿尖画线，不再次采样。
             Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right,UnityEngine.XR.XRSettings.isDeviceActive);
-            Shore.Character.SetOpticalView(View.OpticalView || ((Letter.Open || Prologue.Open || Home.Sleeping) && !UnityEngine.XR.XRSettings.isDeviceActive));DockConsole.Present();
+            Shore.Character.SetOpticalView(View.OpticalView || ((Letter.Open || Prologue.Open) && !UnityEngine.XR.XRSettings.isDeviceActive));DockConsole.Present();
         }
         public void ToggleView()
         {
@@ -578,6 +580,14 @@ namespace BoatAttack.Fishing
             Bait=(BaitKind)(((int)Bait+1)%3);Notice(FishingVoyage.BaitName(Bait)+" · "+FishingVoyage.BaitHelp(Bait),4f);
         }
         public void CycleNavigation() => SelectNavigation((NavigationTarget+1)%NavigationCount);
+        public bool NavigateHome()
+        {
+            if(Paused || Home==null || !Home.isActiveAndEnabled)return false;
+            SelectNavigation(HomeNavigationIndex);ChartExpanded=true;
+            if(!Ashore && FlatDistance(ExplorerPosition,Home.Origin)>ChartRangeMeters)ChartRangeMeters=320;
+            Notice(UnityEngine.XR.XRSettings.isDeviceActive?"已标记回潮渔屋 · B 打开手册查看航海图。":"已标记回潮渔屋 · 按 M 查看航海图，低速靠岸后按 G 登岸。",6);
+            return NavigationTarget==HomeNavigationIndex;
+        }
         public void NavigateSurvey()
         {
             if(JournalOpen)ToggleJournal();

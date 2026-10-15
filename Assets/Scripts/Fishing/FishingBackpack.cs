@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace BoatAttack.Fishing
 {
     // Mainline IDs 0..25 are stable; local v8 gun IDs are migrated when loading.
-    public enum FieldItem { Empty, FieldGuide, Binoculars, Lantern, Shell, Driftwood, Stone, Fiber, Clay, IronOre, Coal, Sand, Plank, Stick, Rope, Charcoal, IronIngot, Brick, Glass, Workbench, Furnace, StonePickaxe, IronPickaxe, HuntingSpear, RawMeat, CookedMeat, HuntingRifle, Meat, Fur, RabbitMeat, RabbitFur, FoxMeat, FoxFur, TurtleMeat, TurtleShell, GullMeat, GullFeather, Forge }
+    public enum FieldItem { Empty, FieldGuide, Binoculars, Lantern, Shell, Driftwood, Stone, Fiber, Clay, IronOre, Coal, Sand, Plank, Stick, Rope, Charcoal, IronIngot, Brick, Glass, Workbench, Furnace, StonePickaxe, IronPickaxe, HuntingSpear, RawMeat, CookedMeat, HuntingRifle, Meat, Fur, RabbitMeat, RabbitFur, FoxMeat, FoxFur, TurtleMeat, TurtleShell, GullMeat, GullFeather, Forge, IronPickHead, GunParts, OldBoot, RustyCan, SeaTreasure, GrilledFish }
     public enum LandAnimalKind { Rabbit, Fox, Tortoise, Gull, SeaTurtle }
     [Serializable]
     public sealed class FieldStack
@@ -28,14 +28,18 @@ namespace BoatAttack.Fishing
             for(int i=0;i<SlotCount;i++)_slots[i]=new FieldStack();
             if(starter)_slots[0]=new FieldStack {item=FieldItem.FieldGuide,count=1};
         }
-        public static bool Defined(FieldItem item) => item>=FieldItem.Empty && item<=FieldItem.Forge;
+        public static bool Defined(FieldItem item) => item>=FieldItem.Empty && item<=FieldItem.GrilledFish;
         public static int Limit(FieldItem item) => !Defined(item) || item==FieldItem.Empty?0:item==FieldItem.Forge || item==FieldItem.HuntingRifle || item==FieldItem.HuntingSpear || item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe || item==FieldItem.Workbench || item==FieldItem.Furnace?1:item>=FieldItem.Shell?64:1;
         public static string Name(FieldItem item)
         {
             switch(item)
             {
+                case FieldItem.OldBoot:return "海漂旧靴";case FieldItem.RustyCan:return "锈蚀铁罐";
+                case FieldItem.SeaTreasure:return "沉海宝匣";case FieldItem.GrilledFish:return "香烤海鱼";
                 case FieldItem.HuntingRifle:return "猎枪";
                 case FieldItem.Forge:return "锻造台";
+                case FieldItem.IronPickHead:return "铁镐头";
+                case FieldItem.GunParts:return "枪械铁件";
                 case FieldItem.Meat:return "旧兽肉";case FieldItem.Fur:return "旧毛皮";
                 case FieldItem.RabbitMeat:return "兔肉";case FieldItem.RabbitFur:return "兔毛";
                 case FieldItem.FoxMeat:return "狐狸肉";case FieldItem.FoxFur:return "狐皮";

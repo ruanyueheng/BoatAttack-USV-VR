@@ -206,6 +206,7 @@ namespace BoatAttack.Fishing
             Label(x, y, w, 24, "恢复前先松开鼠标 · J 查看图鉴、委托与传说线索", 15, Mint);
             if (Button(new Rect(x, r.yMax - 70, w * 0.5f - 8, 46), "继续航行", true, true)) c.TogglePause();
             if (Button(new Rect(x + w * 0.5f + 8, r.yMax - 70, w * 0.5f - 8, 46), "退出游戏")) Application.Quit();
+            Label(x,r.yMax-20,w,18,"图标 Delapouite / game-icons.net / CC BY 3.0 · 依昼夜主题着色",11,Muted);
         }
     }
 }

@@ -58,7 +58,7 @@ namespace BoatAttack.Fishing
         }
         private static bool IsPick(FieldItem item)=>item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe;
 
-        private enum WorldTargetKind { None,Expedition,Station,Resource,Pickup,Survey,Island,Carcass,Home }
+        private enum WorldTargetKind { None,Expedition,Station,Resource,Pickup,Survey,Island,Carcass,Home,Barbecue }
         private struct WorldTarget
         {
             public WorldTargetKind Kind;public int Id;public Transform Root;
@@ -90,6 +90,7 @@ namespace BoatAttack.Fishing
                 else if(resource!=null)Offer(new WorldTarget{Kind=WorldTargetKind.Resource,Id=resource.Id,Root=resource.Root,Resource=resource},resource.Feet);
             }
             if(Home!=null && Home.TryTarget(out int homeItem,out var homeRoot))Offer(new WorldTarget{Kind=WorldTargetKind.Home,Id=homeItem,Root=homeRoot},Home.InteractionPoint(homeItem));
+            if(CoastWorld!=null && CoastWorld.TryTarget(out var grillRoot))Offer(new WorldTarget{Kind=WorldTargetKind.Barbecue,Root=grillRoot},grillRoot.position);
             if(FieldWorld.TryPickupTarget(out var pickup,refresh))Offer(new WorldTarget{Kind=WorldTargetKind.Pickup,Id=pickup.Id,Root=pickup.Root,Pickup=pickup},pickup.Feet);
             if(RifleHunting!=null && RifleHunting.TryLootTarget(out var carcass))Offer(new WorldTarget{Kind=WorldTargetKind.Carcass,Id=carcass.Id,Root=carcass.Root},carcass.Feet);
             if(refresh)Shore.UpdateProximity();int task=Shore.NearbyTask;var marker=Shore.SurveyMarker(task);
@@ -121,10 +122,10 @@ namespace BoatAttack.Fishing
             bool shop=TackleShop!=null && TackleShop.NearCounter;
             trace.Append(" shopNear=").Append(shop).Append(" frame=").Append(Time.frameCount);
             InteractionPreflight check;
-            if(shop || target.Kind==WorldTargetKind.None || target.Kind==WorldTargetKind.Station || target.Kind==WorldTargetKind.Home || target.Root==null)
+            if(shop || target.Kind==WorldTargetKind.None || target.Kind==WorldTargetKind.Station || target.Kind==WorldTargetKind.Home || target.Kind==WorldTargetKind.Barbecue || target.Root==null)
             {
-                check=new InteractionPreflight{TargetId=shop?"shop":target.Kind==WorldTargetKind.Station?"station:"+target.Id:target.Kind==WorldTargetKind.Home?"home:"+target.Id:"none",
-                    Reason=shop || target.Kind==WorldTargetKind.Station || target.Kind==WorldTargetKind.Home?"当前候选是即时交互，不是接触动作":"没有有效接触候选",
+                check=new InteractionPreflight{TargetId=shop?"shop":target.Kind==WorldTargetKind.Station?"station:"+target.Id:target.Kind==WorldTargetKind.Home?"home:"+target.Id:target.Kind==WorldTargetKind.Barbecue?"barbecue":"none",
+                    Reason=shop || target.Kind==WorldTargetKind.Station || target.Kind==WorldTargetKind.Home || target.Kind==WorldTargetKind.Barbecue?"当前候选是即时交互，不是接触动作":"没有有效接触候选",
                     Actor=ExplorerPosition,RootPosition=target.Root==null?Vector3.zero:target.Root.position,
                     Shoulder=Shore.Character.ShoulderPosition(false),ArmReach=Shore.Character.ArmReach(false),Grounded=Shore.Grounded,Crouched=Shore.Crouched};
                 check.BaseShoulder=check.Shoulder-Shore.Character.AppliedInteractionLean;check.GeometryReason=check.Reason;
@@ -210,6 +211,7 @@ namespace BoatAttack.Fishing
                     case WorldTargetKind.Expedition:return "E "+Expedition.InteractionLabel(target.Id);
                     case WorldTargetKind.Station:
                         var station=Career.Workshop.Station(target.Id);return station==null?null:"E 打开"+FishingRecipes.StationName(station.kind);
+                    case WorldTargetKind.Barbecue:return CoastWorld.InteractionTitle;
                     case WorldTargetKind.Resource:return target.Resource.Item==FieldItem.Coal?"E 开采山脚煤矿 · 需手持石镐 / 铁镐":"E 采集 "+FishingBackpack.Name(target.Resource.Item);
                     case WorldTargetKind.Pickup:return "E 拾取 "+FishingBackpack.Name(target.Pickup.Item)+" ×"+target.Pickup.Count;
                     case WorldTargetKind.Carcass:return "E 收取猎物 · "+FishingAnimalLoot.Description(Career.HuntedAnimal(target.Id).kind);
@@ -220,7 +222,10 @@ namespace BoatAttack.Fishing
             }
         }
         /// <summary>真实输入与 HUD 使用同一候选选择；接触阶段只提交已经锁定的目标。</summary>
-        internal bool HomeInteractionTargetSelected=>Home!=null && ResolveWorldTarget(true).Kind==WorldTargetKind.Home;
+        internal bool HomeInteractionTargetSelected
+        {
+            get{var kind=ResolveWorldTarget(true).Kind;return kind==WorldTargetKind.Home || kind==WorldTargetKind.Barbecue;}
+        }
         public bool RequestWorldInteraction()
         {
             if(Paused || InventoryOpen || JournalOpen || ShopBlocksGameplay || StoryBlocksGameplay || WorldActionBlocksGameplay)return false;
@@ -234,6 +239,7 @@ namespace BoatAttack.Fishing
             if(target.Kind==WorldTargetKind.None){Notice("靠近可互动对象后按 E；低处物品可蹲下触及。",3);return false;}
             if(target.Kind==WorldTargetKind.Home)return Home.InteractAt(target.Id);
             if(target.Kind==WorldTargetKind.Station)return WorkshopWorld.OpenStation(target.Id);
+            if(target.Kind==WorldTargetKind.Barbecue){CoastWorld.OpenMenu();return true;}
             if(target.Kind==WorldTargetKind.Resource)return RequestHarvest(target.Resource);
             var point=FishingContactGeometry.ClosestPoint(target.Root,Shore.Character.ShoulderPosition(false));int id=target.Id;
             if(target.Kind==WorldTargetKind.Carcass)
@@ -272,7 +278,7 @@ namespace BoatAttack.Fishing
         {
             contact=FishingContactGeometry.ClosestPoint(node.Root,Shore.Character.ShoulderPosition(false));
             var heading=Vector3.ProjectOnPlane(contact-Shore.Position,Vector3.up);
-            rotation=(heading.sqrMagnitude>.001f?Quaternion.LookRotation(heading):Shore.Actor.rotation)*Quaternion.Euler(0,0,-110);
+            rotation=FishingFieldWorld.PickContactRotation(heading.sqrMagnitude>.001f?heading:Shore.Actor.forward);
         }
         public bool RequestPlaceEquipped()
         {

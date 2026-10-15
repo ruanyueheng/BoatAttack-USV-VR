@@ -17,7 +17,7 @@ MonoBehaviour:
   worldXZBounds: {x: -500, y: -371.50238, z: 505.98267, w: 249.99994}
   seaLevel: 0
   sourceScene: Assets/scenes/Fishing/fishing_Island.unity
-  bakedUtc: 2026-10-15T02:21:24.1736364Z
+  bakedUtc: 2026-10-15T12:13:40.8831852Z
   includesInitializedScenery: 1
   terrainCount: 2
   staticRendererCount: 920
@@ -2658,10 +2658,10 @@ MonoBehaviour:
     rendererBounds=Center: (118.24, 7.53, -66.63), Extents: (6.59, 12.61, 4.65)'
   - 'Mesh Island Level/Environment Objects/Props_Floating/KayakRoot (2)/Geo_Props_Kayak
     (4) | Geo_Props_Kayak | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-83.76, -0.16, -41.82), Extents: (0.77, 0.44, 2.09)'
+    (-83.76, -0.16, -41.82), Extents: (0.76, 0.45, 2.09)'
   - 'Mesh Island Level/Environment Objects/Props_Floating/KayakRoot/Geo_Props_Kayak
     (4) | Geo_Props_Kayak | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-84.71, -0.16, -44.55), Extents: (0.83, 0.44, 2.10)'
+    (-84.71, -0.16, -44.55), Extents: (0.83, 0.45, 2.10)'
   - 'Mesh Island Level/Environment Objects/SmallIsland/Rocks/Rock_Large_01 (2)/Rock_Large_01_LOD0
     | Combined Mesh (root: scene) 7 | staticBatch=True firstSubmesh=60 opaqueDraws=1
     rendererBounds=Center: (10.07, 3.07, 70.93), Extents: (6.78, 12.84, 4.70)'

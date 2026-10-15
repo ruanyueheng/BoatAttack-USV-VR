@@ -43,6 +43,10 @@ internal static class AcceptanceTests
             if (value == FishingAcceptanceCase.FullHold) check(career.Count == career.Capacity, "Full-hold fixture really fills the inventory");
             if (value == FishingAcceptanceCase.HarborOrders) check(career.CurrentOrder.LineCount == 3 && career.OrderReady, "Harbor fixture contains a deliverable three-line order");
             if (value == FishingAcceptanceCase.MaxUpgrades) check(career.LineLevel == 2 && career.ReelLevel == 2 && career.HoldLevel == 2, "Upgrade fixture maxes all three tracks");
+            if(value==FishingAcceptanceCase.HomeBarbecue || value==FishingAcceptanceCase.HomeGrilledFish)
+                check(career.Count==3 && FishingCoastRules.Edible(career.Inventory[0].kind),"Barbecue fixture supplies real roastable fish: "+value);
+            if(value==FishingAcceptanceCase.CashierDialogue)
+                check(FishingAcceptanceCases.IsShopCase(value),"Cashier conversation fixture uses the actual shop landing");
             if (!FishingAcceptanceCases.IsCatchCase(value)) continue;
             var session = new CatchSession();
             FishingAcceptanceCases.PrepareSession(session, value, career);

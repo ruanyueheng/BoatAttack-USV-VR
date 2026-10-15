@@ -14,6 +14,8 @@ namespace BoatAttack.Fishing
         private RawImage _map;
         private RectTransform _mapPlayer,_mapTarget;
         private FishingMapDefinition _mapDefinition;
+        private Material _mapPalette;
+        private bool _craftBasics;
         private readonly Text[] _labels=new Text[9];
         private readonly Image[] _plates=new Image[9];
         private readonly RawImage[] _icons=new RawImage[9];
@@ -69,15 +71,25 @@ namespace BoatAttack.Fishing
                 var button=go.AddComponent<FishingNotebookButton>();button.Owner=this;button.Index=i;
             }
             BuildNotebookHome();
+            FishingUITheme.Bind(panel,0);FishingUITheme.Bind(_status,2);
+            var mapShader=Resources.Load<Shader>("FishingTerrainMap");
+            if(mapShader!=null && mapShader.isSupported)
+            {
+                _mapPalette=new Material(mapShader){name="Notebook daylight chart",renderQueue=3200};
+                _mapPalette.SetFloat("_Circular",0);_mapPalette.SetFloat("_ZTest",4);_mapPalette.SetFloat("_HasMap",1);_mapPalette.SetVector("_ViewUV",new Vector4(0,0,1,1));
+            }
             _ray=FishingArt.Line("Notebook controller ray",transform,c.lineMaterial,.003f);_ray.positionCount=2;Close();
             var toast=new GameObject("Transient Chinese XR feedback",typeof(RectTransform),typeof(Canvas));toast.layer=5;toast.transform.SetParent(transform,false);
             _feedback=toast.GetComponent<Canvas>();_feedback.renderMode=RenderMode.WorldSpace;_feedback.worldCamera=c.viewCamera;
             var toastRect=toast.GetComponent<RectTransform>();toastRect.sizeDelta=new Vector2(560,144);toastRect.localScale=Vector3.one*.0016f;
             var toastPlate=toast.AddComponent<Image>();toastPlate.color=FishingUITheme.Paper;toastPlate.sprite=FishingUITheme.PaperSprite;toastPlate.type=Image.Type.Sliced;toastPlate.material=FishingUITheme.WorldMaterial;toastPlate.raycastTarget=false;
+            FishingUITheme.Bind(toastPlate,0);
             _feedbackText=Label(toast.transform,new Vector2(18,-14),new Vector2(524,116),21);toast.SetActive(false);
+            FishingUITheme.Bind(_feedbackText,2);
         }
         private void LateUpdate()
         {
+            if(_mapPalette!=null){FishingUITheme.StyleMap(_mapPalette);_map.material=_mapPalette;}
             if(_c==null || _feedback==null)return;
             if(IsOpen && !_c.Automated)_canvas.transform.localScale=Vector3.one*.00105f*Mathf.Lerp(.985f,1,Mathf.SmoothStep(0,1,(Time.unscaledTime-_pageOpenedAt)/.12f));
             var message=_c.VisibleMessage;
@@ -161,8 +173,8 @@ namespace BoatAttack.Fishing
             }
             else if(_page==2)
             {
-                var recipes=_c.WorkshopWorld.Context==CraftStation.Forge?FishingRecipes.ForgeRecipes:FishingRecipes.All;
-                _status.text="制作 · "+FishingRecipes.StationName(_c.WorkshopWorld.Context)+"\n点选制作 1 份 / 熔炉开始烤制\n燃料优先煤、木炭、漂流木、木板\n港口事务页领取成品 / 收回设施\n关手册后炉火继续 · "+_c.VisibleMessage;
+                var context=_c.WorkshopWorld.Context;var recipes=FishingRecipes.ForStation(context,_craftBasics);
+                _status.text="制作 · "+FishingRecipes.StationName(context)+"\n"+FishingRecipes.Purpose(context)+"\n"+(_craftBasics?"随身加工":"设施配方")+" · 点卡片制作 1 份\n燃料：煤、木炭、漂流木、木板\n港口事务页领取成品 / 收回设施\n关手册后炉火继续 · "+_c.VisibleMessage;
                 for(int i=0;i<6;i++)
                 {
                     int recipe=_offset+i;if(recipe>=recipes.Length)break;var r=recipes[recipe];string costs="";
@@ -171,6 +183,7 @@ namespace BoatAttack.Fishing
                     Photo(i,FishingV023Art.Icon(r.Output) ?? FishingItemIcons.Get(r.Output));
                 }
                 Pager(recipes.Length);
+                Set(7,_craftBasics?"切回设施配方":"查看随身加工",()=>{_craftBasics=!_craftBasics;_offset=0;Refresh();});
             }
             else if(_page==3)
             {
@@ -199,10 +212,10 @@ namespace BoatAttack.Fishing
             else if(_page==8 && _c.DialogueOpen)
             {
                 _c.Residents.Reveal();
-                _status.text=FishingLore.ResidentName(_c.Residents.ActiveId)+" · "+FishingLore.ResidentRole(_c.Residents.ActiveId)+"\n"+_c.Residents.Speech;
+                _status.text=FishingLore.ResidentName(_c.Residents.ActiveId)+" · "+_c.Residents.TopicTitle+"\n"+_c.Residents.Speech;
                 _status.fontSize=18;
-                for(int i=0;i<3;i++){int choice=i;Set(i,_c.Residents.Choice(i),()=>{_c.Residents.Choose(choice);Refresh();});}
-                if(_c.Residents.ActiveId==4)Set(6,"查看商品",()=>{_c.Residents.Close();Open(4);});
+                for(int i=0;i<_c.Residents.ChoiceCount;i++){int choice=i;Set(i,_c.Residents.Choice(i),()=>{_c.Residents.Choose(choice);Refresh();});}
+                if(_c.Residents.ActiveId==4)Set(6,"查看商品",()=>_c.Residents.BrowseCashierGoods());
                 Set(8,"结束交谈",()=>_c.Residents.Close());
             }
             else if(_page==9)
@@ -303,8 +316,10 @@ namespace BoatAttack.Fishing
                 Set(3,"导航回潮渔屋",()=>{_c.SelectNavigation(_c.HomeNavigationIndex);Close();});
                 Set(4,"雨量特效\n"+(_c.Weather.ReducedEffects?"精简":"标准"),()=>{_c.Weather.ToggleReducedEffects();Refresh();});
                 Set(5,"收起船上事务面板",()=>_c.DockConsole.Hide());
+                Set(6,"图标署名与授权\nDelapouite / game-icons.net\nTwo Coins / Wooden Crate\nCC BY 3.0\ncreativecommons.org/licenses/by/3.0\n原图未修改，运行时依昼夜主题着色。",null);
                 Set(7,"返回设置",()=>Open(14));Set(8,"返回海湾",Close);
             }
+            else if(_page==17)RefreshBarbecuePage();
             else
             {
                 _status.text="二级载重 / 动力 / 操控专精三选一\n其他两项可升至一级；旧升级保留\n金币 "+_c.Career.Coins;
@@ -326,7 +341,7 @@ namespace BoatAttack.Fishing
         }
         private static readonly string[][] GuideCards={
             new[]{"右 A · 互动\n靠近目标 / 对话\n持竿：抛竿 / 提竿","右 B · 手册\n打开 / 关闭\n也可收起事务面板","左 X · 上下船\n靠近岸边且低速\n岸上返回泊船","左 Y · 换装备\n依次切换 1–9 格\n背包可换入物品","左摇杆\n船上前进 / 倒车\n岸上各方向行走","右摇杆\n船上转向\n岸上 30° 转身\n机关中转动转盘"},
-            new[]{"右扳机\n射线点击界面\n岸上使用工具\n猎枪：单次开火","左扳机\n船上刹车\n岸上无额外功能","右握把\n靠近鱼竿握住\n松开后放下\n靠近鱼获抓取","左握把\n靠近轮柄握住\n转动手腕收线\n靠近鱼获抓取","按下左摇杆\n向前航行时加速\n留意过热冷却","按下右摇杆\n当前未绑定\n系统 / 菜单键\n由 PICO 系统使用"},
+            new[]{"右扳机\n射线点击界面\n岸上使用工具\n猎枪：单次开火","左扳机\n船上刹车\n岸上无额外功能","右握把\n靠近鱼竿握住\n松开后放下\n靠近鱼获抓取\n靠近腰间提灯拿起","左握把\n靠近轮柄握住\n转动手腕收线\n靠近鱼获抓取","按下左摇杆\n向前航行时加速\n留意过热冷却","按下右摇杆\n当前未绑定\n系统 / 菜单键\n由 PICO 系统使用"},
             new[]{"钓鱼\n驻钓后右握把拿竿\n甩动并松右扳机\nA 也可快捷抛竿","搏鱼\n咬钩时扳机 / A\n左握把转轮收线\n跃水松开左握把","抄网 / 鱼获\n左手抄网套住举起\n握把拿鱼慢放鱼箱\n事务面板存放 / 放生","岸上探索\nA 与居民 / 机关互动\nY 换镐、猎枪或灯\n右扳机使用工具","制作 / 锻造\n右扳机放置设施\n靠近按 A 打开\n手册制作并领取成品","随时求助\nB → 设置重看教学\n校准眼高 / 救援返港\n序章可随时重播"}};
         private void ResetGuidePractice(){_guidePracticed=0;_guideLeftReady=_guideRightReady=false;ResetInput();}
         private void RefreshGuide()
@@ -495,5 +510,6 @@ namespace BoatAttack.Fishing
         }
         private void OnApplicationFocus(bool focus){if(!focus)Close();}
         private void OnApplicationPause(bool pause){if(pause)Close();}
+        private void OnDestroy(){if(_mapPalette!=null)Destroy(_mapPalette);}
     }
 }

@@ -17,11 +17,13 @@ namespace BoatAttack.Fishing
         public float Curl { get; private set; }
         public FishingFingerPose Fingers { get; private set; }
         public bool Pointing { get; private set; }
+        public float ForearmRoll { get; private set; }
         // Visibility here means target participation, not renderer visibility.
         public bool Visible=>_available && _frame==Time.frameCount && isActiveAndEnabled;
         public void Build(bool left){IsLeft=left;Disable();}
         public void BeginFrame()=>Disable();
-        public void Disable(){_available=false;_frame=-1;Curl=0;Fingers=FishingFingerPose.Uniform(0);Pointing=false;}
+        public void Disable(){_available=false;_frame=-1;Curl=0;Fingers=FishingFingerPose.Uniform(0);Pointing=false;ForearmRoll=0;}
+        public void SetForearmRoll(float blend){if(Visible && Finite(blend))ForearmRoll=Mathf.Clamp01(blend);}
         public void SetPose(Vector3 position,Quaternion rotation,float curl,bool pointing=false)
         {
             if(!Finite(position.x)||!Finite(position.y)||!Finite(position.z)||!Finite(rotation.x)||!Finite(rotation.y)

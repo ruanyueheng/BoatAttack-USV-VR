@@ -16,7 +16,7 @@ namespace BoatAttack.EditorTools
         private static void Check(bool ok,string message){if(!ok)throw new InvalidOperationException(message);Debug.Log("[V027] CHECK: "+message);}
         public static IEnumerator Checks(FishingPrototype c)
         {
-            Check(FishingPrototype.Version=="0.27.0","Release is v0.27.0");
+            Check(UnityEditor.PlayerSettings.bundleVersion==FishingPrototype.Version,"Home regression runs against the current release version");
             string evidence=Path.GetFullPath("Logs/v027-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(evidence);
             for(int warm=0;warm<20;warm++)yield return null;
             int triangles=0;

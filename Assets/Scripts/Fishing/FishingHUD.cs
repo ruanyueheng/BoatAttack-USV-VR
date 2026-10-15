@@ -41,6 +41,11 @@ namespace BoatAttack.Fishing
 
         private void Awake() => _font = FishingUIFont.Font;
 
+        private void Update()
+        {
+            if(Controller!=null && Controller.Career!=null)FishingUITheme.Tick(Controller.Career.Calendar.Daylight,Time.unscaledDeltaTime);
+        }
+
         private void OnGUI()
         {
             var c = Controller;
@@ -61,6 +66,7 @@ namespace BoatAttack.Fishing
                 if (c.Letter.Open) DrawLetter();
                 else if (c.DialogueOpen) DrawDialogue();
                 else if (c.ShopOpen) DrawTackleShop();
+                else if (c.CoastWorld!=null && c.CoastWorld.MenuOpen) DrawBarbecue();
                 else if (c.InventoryOpen) { DrawInventory(); DrawInventoryNotice(); }
                 else if (c.JournalOpen) DrawJournal();
                 else if (c.Paused) DrawPause();

@@ -110,7 +110,7 @@ namespace BoatAttack.Fishing
                 _wasAshore=true;
                 var room=Vector3.ProjectOnPlane(shoreRotation*_c.viewCamera.transform.localPosition,Vector3.up)+_roomCorrection;
                 if(!_c.Paused && !_c.XRNotebook.IsOpen && room.magnitude>.015f)_roomCorrection-=_c.Shore.RoomStep(Vector3.ClampMagnitude(room,.08f));
-                Origin.transform.SetPositionAndRotation(_c.Shore.Position+_roomCorrection,shoreRotation);GuardHead();return;
+                Origin.transform.SetPositionAndRotation(_c.Shore.Position+_roomCorrection+(_c.Home!=null?_c.Home.SleepEyeOffset:Vector3.zero),shoreRotation);GuardHead();return;
             }
             var boat=_c.Player.transform;
             if(_wasAshore || Vector3.Distance(boat.position,_lastBoatPosition)>12f)ResetVesselHeight();

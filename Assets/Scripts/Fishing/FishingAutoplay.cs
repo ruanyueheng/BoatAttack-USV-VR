@@ -16,6 +16,7 @@ namespace BoatAttack.Fishing
         private float _started,_captureAt,_landingCaptureAt;
         private bool _captured, _thirdCaptured, _landingCaptured, _pufferCaptured, _leapSeen, _leapCaptured;
         private string _captureDirectory;
+        private int SeaFindCount=>Controller.Career.Backpack.Count(FieldItem.OldBoot)+Controller.Career.Backpack.Count(FieldItem.RustyCan)+Controller.Career.Backpack.Count(FieldItem.SeaTreasure);
         private void Start()
         {
             Completed=false;Failure=null;_started=Time.realtimeSinceStartup;
@@ -91,8 +92,14 @@ namespace BoatAttack.Fishing
                         }
                         if(Controller.Session.Phase==CatchPhase.Landing && Controller.Session.CanLand)
                         {
-                            int before=Controller.Career.Count;
-                            if(!Controller.CatchRig.CaptureAndStoreForAutomation() || Controller.Career.Count!=before+1)throw new Exception("Assisted geometric net capture and explicit storage failed.");
+                            int before=Controller.Career.Count,finds=SeaFindCount;
+                            if(!Controller.CatchRig.CaptureAndStoreForAutomation())throw new Exception("Assisted geometric net capture failed.");
+                            if(Controller.Career.Count==before && SeaFindCount==finds+1)
+                            {
+                                if(Controller.CatchRig.CaptureAndStoreForAutomation() || SeaFindCount!=finds+1 || Controller.Career.Count!=before)throw new Exception("Repeated scoop duplicated a sea find.");
+                                _stage=0;break;
+                            }
+                            if(Controller.Career.Count!=before+1)throw new Exception("Explicit fish storage failed.");
                             if(Controller.CatchRig.CaptureAndStoreForAutomation() || Controller.Career.Count!=before+1)throw new Exception("Repeated scoop duplicated a catch.");
                             var landed=Controller.LastCatch.Fish;
                             if(landed==null || landed.grams<=0 || !FishingSpecies.ValidGrams(landed.kind,landed.grams) || landed.value!=FishingSpecies.Value(landed.kind,landed.rare,landed.grams))

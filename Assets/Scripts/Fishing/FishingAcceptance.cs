@@ -68,7 +68,7 @@ namespace BoatAttack.Fishing
             CurrentCase = selected;
             FreezeScenario = selected != FishingAcceptanceCase.FreePlay;
             Controller.ApplyAcceptanceCase(selected);
-            if(selected==FishingAcceptanceCase.ShopCounter || selected==FishingAcceptanceCase.ShopSupplies || selected==FishingAcceptanceCase.ShopRations)StartCoroutine(OpenCapturedShop());
+            if(FishingAcceptanceCases.IsShopCase(selected) && selected!=FishingAcceptanceCase.ShopAttendant)StartCoroutine(OpenCapturedShop());
             Status = selected == FishingAcceptanceCase.FreePlay
                 ? "真实操作 · 验收进度可续玩；F5/F6 的预置场景使用另一份存档"
                 : "预置场景 · F7 解除阶段定格后可实玩；F9 返回自己的验收进度";
@@ -80,12 +80,17 @@ namespace BoatAttack.Fishing
         {
             int initialFrame=Time.frameCount;
             do {yield return null;} while(Time.frameCount==initialFrame);
-            for(int frame=0;(CurrentCase==FishingAcceptanceCase.ShopCounter || CurrentCase==FishingAcceptanceCase.ShopSupplies || CurrentCase==FishingAcceptanceCase.ShopRations) && !Controller.Shore.Character.IsStanceSettled(true,false) && frame<120;frame++)
+            for(int frame=0;FishingAcceptanceCases.IsShopCase(CurrentCase) && !Controller.Shore.Character.IsStanceSettled(true,false) && frame<120;frame++)
                 yield return null;
-            if(CurrentCase!=FishingAcceptanceCase.ShopCounter && CurrentCase!=FishingAcceptanceCase.ShopSupplies && CurrentCase!=FishingAcceptanceCase.ShopRations)yield break;
+            if(!FishingAcceptanceCases.IsShopCase(CurrentCase) || CurrentCase==FishingAcceptanceCase.ShopAttendant)yield break;
             Check(()=>
             {
                 Controller.PresentCharacterFrame();
+                if(CurrentCase==FishingAcceptanceCase.CashierDialogue)
+                {
+                    if(!Controller.RequestWorldInteraction() || Controller.Residents.ActiveId!=4)throw new InvalidOperationException("Cashier capture cannot open the real conversation.");
+                    Controller.Residents.Reveal();return;
+                }
                 if(!Controller.ToggleShop())throw new InvalidOperationException("Shop capture could not open the real counter UI.");
             });
         }

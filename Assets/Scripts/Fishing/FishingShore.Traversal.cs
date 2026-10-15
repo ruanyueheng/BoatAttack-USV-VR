@@ -93,10 +93,12 @@ namespace BoatAttack.Fishing
         }
         public bool EatRation()
         {
+            var item=Controller.Career.Backpack.Equipped;
             if(!Ashore || Controller.Paused || Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || Controller.WorldActionBusy || Stamina>=.99f
-                || Controller.Career.Backpack.Equipped!=FieldItem.CookedMeat
-                || !Controller.Career.Backpack.Exchange(new[]{FishingRecipes.Stack(FieldItem.CookedMeat,1)},FieldItem.Empty,0))return false;
-            _motion.RestoreStamina();Controller.Save();Controller.Notice("食用远航口粮 · 体力恢复50%",4);return true;
+                || (item!=FieldItem.CookedMeat && item!=FieldItem.GrilledFish)
+                || !Controller.Career.Backpack.Exchange(new[]{FishingRecipes.Stack(item,1)},FieldItem.Empty,0))return false;
+            _motion.RestoreStamina();Controller.Hands.ReachGesture(Character.HandReferencePosition+Actor.forward*.22f+Vector3.up*.22f);
+            Controller.Save();Controller.Notice(item==FieldItem.GrilledFish?"吃下香烤海鱼 · 体力恢复50%":"食用远航口粮 · 体力恢复50%",4);return true;
         }
         private void ResetTraversal() { Swimming = Climbing = false; _climb = null; }
         private void OnDestroy() { if (_waterPoint.IsCreated) _waterPoint.Dispose(); }

@@ -20,7 +20,19 @@ namespace BoatAttack.Fishing
             var imported=FishingV023Art.ItemMesh(item);
             if(imported!=null)return Object.Instantiate(imported);
             var b=new FishingMeshBuilder();
-            if(item==FieldItem.HuntingSpear)
+            if(item==FieldItem.IronPickHead)
+            {
+                b.Tube(new Vector3(-.16f,.035f,0),new Vector3(0,.085f,0),.006f,.035f,Iron,8);
+                b.Tube(new Vector3(0,.085f,0),new Vector3(.16f,.035f,0),.035f,.003f,Iron,8);
+                b.Box(new Vector3(0,.055f,0),new Vector3(.055f,.07f,.055f),Rock);
+            }
+            else if(item==FieldItem.GunParts)
+            {
+                b.Box(new Vector3(.02f,.05f,0),new Vector3(.20f,.05f,.07f),Iron);
+                b.Tube(new Vector3(-.13f,.025f,-.04f),new Vector3(.14f,.025f,-.04f),.012f,.012f,Rock,8);
+                b.Box(new Vector3(-.08f,.035f,.075f),new Vector3(.06f,.04f,.10f),Iron);
+            }
+            else if(item==FieldItem.HuntingSpear)
             {
                 b.Tube(new Vector3(0,0,-.38f),new Vector3(0,0,.75f),.022f,.014f,Wood,8);
                 b.Tube(new Vector3(0,0,.70f),new Vector3(0,0,.92f),.045f,.001f,Iron,4);
