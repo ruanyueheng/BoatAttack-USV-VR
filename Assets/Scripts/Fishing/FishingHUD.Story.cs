@@ -25,7 +25,7 @@ namespace BoatAttack.Fishing
         {
             var region=Controller.Regions;if(region==null || region.Alpha<=.001f || Controller.Realms.Transitioning)return;
             float previous=_fade;_fade=region.Alpha;
-            float y=_height*.16f+(1-Mathf.SmoothStep(0,1,Mathf.Clamp01(region.Age/1.1f)))*8;
+            float y=Mathf.Max(174,_height*.16f)+(1-Mathf.SmoothStep(0,1,Mathf.Clamp01(region.Age/1.1f)))*8;
             Rounded(new Rect(600,y-8,400,90),Ink,12);Outline(new Rect(600,y-8,400,90),Hairline,12);
             Label(new Rect(616,y+2,368,44),region.Title,30,Color.white,true,TextAnchor.MiddleCenter);
             Label(new Rect(616,y+52,368,26),region.Subtitle,13,Muted,false,TextAnchor.UpperCenter);
