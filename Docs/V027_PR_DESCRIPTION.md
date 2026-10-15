@@ -9,4 +9,3 @@
 交付与证据：`Docs/PLAY_V027.md`、`Docs/VALIDATION_V027.md`、`Docs/Images/V027/`。模型源在 `ArtSource/V027/`，游戏 FBX/预制体在 `Assets/Resources/FishingV027/Home/`。无新增运行依赖或存档格式变化，不重置进度，保留第26版六个固定工坊兼容范围。
 
 PICO 未连接，未声称真实头显安装、双眼阅读、控制器追踪、帧率和舒适度已通过。安装包仅本机交付；PR 保持打开，未自动合并。
-
