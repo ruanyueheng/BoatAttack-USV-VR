@@ -24,9 +24,17 @@ namespace BoatAttack.Fishing
             var c = Controller.Career;
             var r = Layout.Pocket;
             Glass(r);
-            Label(new Rect(r.x + 14, r.y, 132, r.height), c.Coins.ToString("N0", CultureInfo.InvariantCulture) + " 金币", 16, Gold, true, TextAnchor.MiddleLeft);
+            PocketIcon(new Rect(r.x+10,r.y+6,25,25),FishingUITheme.Coins,Gold);
+            Label(new Rect(r.x + 43, r.y, 104, r.height), c.Coins.ToString("N0", CultureInfo.InvariantCulture), 16, Gold, true, TextAnchor.MiddleLeft);
             Fill(r.x + 148, r.y + 12, 1, 16, Hairline);
-            Label(new Rect(r.x + 165, r.y, 128, r.height), "鱼箱  " + c.Count + " / " + c.Capacity, 16, c.Count == c.Capacity ? Danger : Color.white, false, TextAnchor.MiddleLeft);
+            PocketIcon(new Rect(r.x+160,r.y+6,25,25),FishingUITheme.FishBox,Mint);
+            Label(new Rect(r.x + 193, r.y, 105, r.height), "鱼箱 " + c.Count + "/" + c.Capacity, 15, c.Count == c.Capacity ? Danger : Color.white, false, TextAnchor.MiddleLeft);
+        }
+
+        private void PocketIcon(Rect rect,Sprite icon,Color tint)
+        {
+            var previous=GUI.color;GUI.color=Faded(tint);
+            GUI.DrawTexture(rect,icon.texture,ScaleMode.ScaleToFit,true);GUI.color=previous;
         }
 
         private void DrawCompactToolbar()

@@ -6,7 +6,7 @@ using UnityEngine.XR;
 namespace BoatAttack.Fishing
 {
     /// <summary>One permanent furnished home, with walkable floors and a transactional sleep transition.</summary>
-    public sealed class FishingHome : MonoBehaviour
+    public sealed partial class FishingHome : MonoBehaviour
     {
         private FishingPrototype _c;
         private Canvas _fade;
@@ -248,6 +248,11 @@ namespace BoatAttack.Fishing
         {
             root=FishingV019Art.Spawn(name+"View",House,p,span,yaw,"FishingV023/Home");
             if(!solid)return;
+            if(name=="bedDouble")
+            {
+                foreach(var filter in root.GetComponentsInChildren<MeshFilter>())filter.gameObject.AddComponent<MeshCollider>().sharedMesh=filter.sharedMesh;
+                return;
+            }
             var bounds=new Bounds();bool first=true;
             foreach(var filter in root.GetComponentsInChildren<MeshFilter>())
             {
@@ -263,14 +268,14 @@ namespace BoatAttack.Fishing
         public bool Sleep()
         {
             if(!CanSleep)return false;
-            Sleeping=true;_age=0;_committed=false;_c.XRNotebook.Close();_c.StoryModalChanged();_fade.gameObject.SetActive(true);return true;
+            BeginSleepMotion();Sleeping=true;_age=0;_committed=false;_c.XRNotebook.Close();_c.StoryModalChanged();_fade.gameObject.SetActive(true);return true;
         }
         public void Tick(float seconds)
         {
             if(!Sleeping || float.IsNaN(seconds) || float.IsInfinity(seconds) || seconds<0)return;
             _age+=Mathf.Min(seconds,.25f);
-            if(!_committed && _age>=1.2f){_committed=true;_c.CompleteRest();}
-            float opacity=_age<1.2f?Mathf.Clamp01(_age/1.1f):1-Mathf.Clamp01((_age-1.4f)/1.0f);
+            if(!_committed && _age>=3.5f){_committed=true;_c.CompleteRest();}
+            float opacity=_age<3.5f?Mathf.SmoothStep(0,1,Mathf.InverseLerp(2.65f,3.4f,_age)):1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(3.8f,4.45f,_age));
             _black.color=new Color(.015f,.025f,.035f,opacity);
             if(XRSettings.isDeviceActive)
             {
@@ -278,11 +283,11 @@ namespace BoatAttack.Fishing
                 _fade.transform.SetPositionAndRotation(_c.viewCamera.transform.position+_c.viewCamera.transform.forward*.30f,_c.viewCamera.transform.rotation);
             }
             else _fade.renderMode=RenderMode.ScreenSpaceOverlay;
-            if(_age>=2.5f)CancelSleep();
+            if(_age>=SleepDuration)CancelSleep();
         }
         public void CancelSleep()
         {
-            if(!Sleeping)return;Sleeping=false;_fade.gameObject.SetActive(false);_c.StoryModalChanged();
+            if(!Sleeping)return;Sleeping=false;_fade.gameObject.SetActive(false);_c.Shore.SyncRider();_c.StoryModalChanged();
             _c.View.ResetLook();
         }
         private void OnDisable()=>CancelSleep();

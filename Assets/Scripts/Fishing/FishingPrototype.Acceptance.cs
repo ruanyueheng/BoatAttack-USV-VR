@@ -31,7 +31,7 @@ namespace BoatAttack.Fishing
                 throw new InvalidOperationException("Acceptance fixtures require an explicitly opted-in test profile.");
             // Validate before changing any live state. FreePlay is intentionally never synthesized.
             FishingCareer fixture = selected == FishingAcceptanceCase.FreePlay ? null : FishingAcceptanceCases.CreateCareer(selected);
-            Letter?.Close();CancelWorldAction();_workshopReceipt=false;TackleShop?.Close();Residents?.Close();Realms?.Abort();
+            Letter?.Close();CancelWorldAction();_workshopReceipt=false;TackleShop?.Close();Residents?.Close();Realms?.Abort();CoastWorld?.CloseMenu();
             if (InventoryOpen) ToggleInventory();
             if (JournalOpen) ToggleJournal();
             else if (Paused) TogglePause();
@@ -132,6 +132,19 @@ namespace BoatAttack.Fishing
                 case FishingAcceptanceCase.HomeInterior:
                 case FishingAcceptanceCase.HomeWorkbench:
                     PrepareAcceptanceHome(selected);break;
+                case FishingAcceptanceCase.HomeBarbecue:
+                case FishingAcceptanceCase.HomeGrilledFish:
+                    PrepareAcceptanceHome(FishingAcceptanceCase.HomeInterior);
+                    if(!Shore.Relocate(CoastWorld.Grill.position+Vector3.back*1.65f,Quaternion.identity))throw new InvalidOperationException("Barbecue fixture footing is blocked.");
+                    View.ResetLook();View.ApplyShoreLookDelta(new Vector2(0,-20/.12f));
+                    if(selected==FishingAcceptanceCase.HomeBarbecue)CoastWorld.OpenMenu();
+                    else
+                    {
+                        if(!CoastWorld.StartRoasting(Career.Inventory[0].id))throw new InvalidOperationException("Barbecue fixture cannot reserve its fish.");
+                        for(int step=0;step<72;step++)Career.TickBarbecue(.25f);
+                    }
+                    break;
+                case FishingAcceptanceCase.CashierDialogue: PrepareAcceptanceShore(selected);break;
                 case FishingAcceptanceCase.ShopSupplies: PrepareAcceptanceShore(selected);_hud.ShopCategory=2;break;
                 case FishingAcceptanceCase.Settings: TogglePause(); break;
                 case FishingAcceptanceCase.ShoreFirstPerson:

@@ -65,6 +65,7 @@ namespace BoatAttack.EditorTools
                 if(i%3==0)Capture(c,evidence,"03-crank-"+i);
             }
             Check(c.Cast(),"Production cast starts landing fixture");
+            FishingCatchValidation.KeepOrdinaryReceipt(c);
             for(int i=0;i<1000 && c.Session.Phase==CatchPhase.Waiting;i++)c.Session.Tick(.02f,false);
             Check(c.Hook(),"Production hook");
             for(int i=0;i<6000 && c.Session.Phase==CatchPhase.Fighting;i++)c.Session.Tick(.02f,c.Session.Tension<.6f);

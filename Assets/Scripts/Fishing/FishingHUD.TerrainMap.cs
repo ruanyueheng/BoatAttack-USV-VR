@@ -9,15 +9,15 @@ namespace BoatAttack.Fishing
         private FishingMapDefinition _terrainMap;
         private Material _terrainMapMaterial;
         private bool _terrainMapLoaded;
-        private static readonly Color MapSurface = new Color32(16,43,53,255);
+        private static Color MapSurface => FishingUITheme.Paper;
         // 小面积标记采用经过色觉分离检查的三组色；文字/形状同时表达身份。
         private static readonly Color MapPortColor = new Color32(57,135,229,255);
         private static readonly Color MapFishColor = new Color32(217,89,38,255);
         private static readonly Color MapShoreColor = new Color32(25,158,112,255);
-        private static readonly Color MapWater = new Color(.10f,.24f,.28f);
-        private static readonly Color MapLow = new Color(.73f,.69f,.54f);
-        private static readonly Color MapLand = new Color(.35f,.46f,.36f);
-        private static readonly Color MapHigh = new Color(.66f,.68f,.66f);
+        private static Color MapWater => FishingUITheme.MapWater;
+        private static Color MapLow => FishingUITheme.MapLow;
+        private static Color MapLand => FishingUITheme.MapLand;
+        private static Color MapHigh => FishingUITheme.MapHigh;
 
         /// <summary>Call instead of the background Disc, before chart rings and markers.
         /// This method alone is Repaint-only; never gate chart buttons or the entire OnGUI.</summary>
@@ -34,7 +34,7 @@ namespace BoatAttack.Fishing
             }
             if (_terrainMapMaterial == null)
             {
-                Disc(center, radius, new Color(.1f, .1f, .1f));
+                Disc(center, radius, MapSurface);
                 Label(new Rect(center.x - radius, center.y + 20, radius * 2, 20), "地形未烘焙", 12, Muted, false, TextAnchor.MiddleCenter);
                 return;
             }
@@ -46,6 +46,7 @@ namespace BoatAttack.Fishing
                 && (float)view.Width > 0 && (float)view.Width < float.MaxValue
                 && (float)view.Height > 0 && (float)view.Height < float.MaxValue;
             _terrainMapMaterial.SetFloat("_HasMap", known ? 1 : 0);
+            FishingUITheme.StyleMap(_terrainMapMaterial);
             _terrainMapMaterial.SetVector("_ViewUV", known
                 ? new Vector4((float)view.MinU, (float)view.MinV, (float)view.Width, (float)view.Height) : Vector4.zero);
             var matrix = GUI.matrix;

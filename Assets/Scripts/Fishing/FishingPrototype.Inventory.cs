@@ -38,7 +38,7 @@ namespace BoatAttack.Fishing
             int previous=Career.Backpack.Selected;
             if(!Career.Backpack.Select(slot))return;
             if(previous!=Career.Backpack.Selected){CancelWorldAction();FieldWorld?.ClearToolPresentation();}
-            BinocularsRaised=false;LanternOn=false;Save();
+            BinocularsRaised=false;if(Career.Backpack.Count(FieldItem.Lantern)==0)LanternOn=false;Save();
         }
         public void MoveFieldItem(int from,int to,bool half=false,bool quick=false)
         {
@@ -54,11 +54,15 @@ namespace BoatAttack.Fishing
         public void UseFieldItem()
         {
             if(Paused || ShopBlocksGameplay || StoryBlocksGameplay || WorldActionBlocksGameplay || !Ashore || Expedition.Aligning)return;
-            if((Shore.Swimming || Shore.Climbing) && Career.Backpack.Equipped!=FieldItem.CookedMeat){Notice("游泳或攀登时先收起工具；可选择口粮恢复体力。",3);return;}
+            if((Shore.Swimming || Shore.Climbing) && Career.Backpack.Equipped!=FieldItem.CookedMeat && Career.Backpack.Equipped!=FieldItem.GrilledFish){Notice("游泳或攀登时先收起工具；可选择口粮恢复体力。",3);return;}
             switch(Career.Backpack.Equipped)
             {
                 case FieldItem.HuntingRifle:RifleHunting.TryFire();break;
                 case FieldItem.CookedMeat:if(!Shore.EatRation())Notice("体力充足时不消耗口粮；快跑、游泳或攀登后可食用。",3);break;
+                case FieldItem.GrilledFish:if(!Shore.EatRation())Notice("体力充足时不消耗烤鱼；快跑、游泳或攀登后可食用。",3);break;
+                case FieldItem.SeaTreasure:
+                    if(Career.OpenSeaTreasure()){Save();CoastWorld.ShowSeaFind(FieldItem.SeaTreasure);Notice("打开沉海宝匣 · 金币 +"+FishingCoastRules.TreasureCoins,5);}
+                    break;
                 case FieldItem.HuntingSpear:FieldWorld.BeginHunt();break;
                 case FieldItem.Workbench:case FieldItem.Furnace:case FieldItem.Forge:RequestPlaceEquipped();break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:RequestHarvest();break;

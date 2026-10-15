@@ -4,24 +4,26 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingHUD
     {
-        private bool _craftPage;
+        private bool _craftPage,_craftBasics;
         private Vector2 _recipeScroll;
         private int _recipeIndex,_batch=1,_fuelIndex;
         private readonly FieldItem[] _fuels={FieldItem.Driftwood,FieldItem.Plank,FieldItem.Charcoal,FieldItem.Coal};
-        public void OpenCraftingPage(){_craftPage=true;_moveFrom=-1;if(Controller.WorkshopWorld.Context==CraftStation.Forge){_recipeIndex=0;_recipeScroll=Vector2.zero;}}
+        public void OpenCraftingPage(){_craftPage=true;_craftBasics=false;_moveFrom=-1;_recipeIndex=0;_recipeScroll=Vector2.zero;}
         private void DrawCraftingContents()
         {
             var world=Controller.WorkshopWorld;var bag=Controller.Career.Backpack;var context=world.Context;
-            var recipes=context==CraftStation.Forge?FishingRecipes.ForgeRecipes:FishingRecipes.All;
+            bool basic=_craftBasics || context==CraftStation.Hand;
+            var recipes=FishingRecipes.ForStation(context,basic);
             _recipeIndex=Mathf.Clamp(_recipeIndex,0,recipes.Length-1);
-            FieldIcon(new Rect(320,237,34,34),context==CraftStation.Hand?FieldItem.FieldGuide:FishingRecipes.StationItem(context));
-            Label(366,240,878,28,"当前设施："+FishingRecipes.StationName(context)+"  ·  工作台 / 熔炉 / 锻造台：快捷栏 F 放置",17,Mint,true);
-            Rounded(new Rect(320,280,395,435),InkRaised,8);
-            _recipeScroll=GUI.BeginScrollView(new Rect(326,286,384,423),_recipeScroll,new Rect(0,0,359,recipes.Length*45));
+            Label(320,238,940,24,"当前设施："+FishingRecipes.StationName(context)+"  ·  "+FishingRecipes.Purpose(context),16,Mint,true);
+            if(Button(new Rect(320,266,191,30),"设施配方",context!=CraftStation.Hand,!basic,14)){_craftBasics=false;_recipeIndex=0;_recipeScroll=Vector2.zero;}
+            if(Button(new Rect(520,266,195,30),"随身加工",true,basic,14)){_craftBasics=true;_recipeIndex=0;_recipeScroll=Vector2.zero;}
+            Rounded(new Rect(320,302,395,413),InkRaised,8);
+            _recipeScroll=GUI.BeginScrollView(new Rect(326,308,384,401),_recipeScroll,new Rect(0,0,359,recipes.Length*45));
             for(int i=0;i<recipes.Length;i++)
             {
                 var recipe=recipes[i];
-                string ingredient=recipe.Output==FieldItem.CookedMeat?"（"+FishingBackpack.Name(recipe.Costs[0].item)+"）":recipe.Id.StartsWith("coal-")?"（"+FishingBackpack.Name(recipe.Costs[1].item)+"）":"";
+                string ingredient=recipe.Output==FieldItem.CookedMeat || recipe.Output==FieldItem.Stick?"（"+FishingBackpack.Name(recipe.Costs[0].item)+"）":recipe.Id.StartsWith("coal-")?"（"+FishingBackpack.Name(recipe.Costs[1].item)+"）":"";
                 if(Button(new Rect(3,i*45,350,39),"",true,_recipeIndex==i,15))_recipeIndex=i;
                 FieldIcon(new Rect(8,i*45+3,32,32),recipe.Output);
                 Label(48,i*45+2,298,20,FishingBackpack.Name(recipe.Output)+ingredient+" ×"+recipe.Count,15,_recipeIndex==i?Mint:Color.white);

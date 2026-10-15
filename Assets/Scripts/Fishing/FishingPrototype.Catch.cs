@@ -21,6 +21,16 @@ namespace BoatAttack.Fishing
         {
             if(Paused || !Anchored || HasPendingCatch || !Session.LandFromNet())return false;
             var fish=Session.Claim();var p=Player.engine.RB.position;
+            if(fish!=null)
+            {
+                var find=FishingCoastRules.SeaFind(fish,Career.Discovered(fish.kind,fish.rare));
+                if(find!=FieldItem.Empty && Career.CollectSeaFind(fish,find))
+                {
+                    _caughtAt=-100;_fish.SetActive(false);CoastWorld.ShowSeaFind(find);CatchRig.Recover();Save();
+                    Notice(find==FieldItem.SeaTreasure?"海底惊喜！沉海宝匣已放入背包；选中后使用，可开启金币。":"钓到了 "+FishingBackpack.Name(find)+"！已捞起放入背包，海面又干净了一点。",7);
+                    return true;
+                }
+            }
             if(fish==null || !Career.BeginPending(fish,_castGround,p.x,p.z))
             {Debug.LogError("[CATCH] Failed to stage a new unique fish");return false;}
             Save();

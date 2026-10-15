@@ -51,15 +51,20 @@ namespace BoatAttack.EditorTools
                     c.View.ResetLook();yield return null;world.Sense();
                     Check(world.ReachStation(station.id) && c.RequestWorldInteraction() && c.InventoryOpen && world.Context==kind,"Production interaction opens home "+kind);
                     if(kind==CraftStation.Workbench)Check(world.Craft("furnace"),"Home workbench crafts using the existing recipe transaction");
-                    else if(kind==CraftStation.Forge)Check(world.Craft("forge-iron"),"Home forge converts actual ore and coal");
+                    else if(kind==CraftStation.Forge)
+                    {
+                        int ingots=bag.Count(FieldItem.IronIngot),heads=bag.Count(FieldItem.IronPickHead);
+                        Check(world.Craft("iron-pick-head") && bag.Count(FieldItem.IronIngot)==ingots-3 && bag.Count(FieldItem.IronPickHead)==heads+1,"Home forge shapes three smelted ingots into one real pick head");
+                    }
                     else
                     {
-                        Check(world.Smelt("iron",1,FieldItem.Coal),"Home furnace reserves ore and fuel");
+                        int ore=bag.Count(FieldItem.IronOre),coal=bag.Count(FieldItem.Coal),ingots=bag.Count(FieldItem.IronIngot);
+                        Check(world.Smelt("iron",3,FieldItem.Coal) && bag.Count(FieldItem.IronOre)==ore-3 && bag.Count(FieldItem.Coal)==coal-1,"Home furnace reserves three real ore and one coal");
                         var queued=world.State.Station(station.id);c.ToggleInventory();world.RefreshFromCareer();world.RefreshFromCareer();
                         Check(world.State.Station(station.id).remaining==queued.remaining && world.State.Station(station.id).progress==queued.progress,"Facility repair keeps in-flight furnace queue and progress");
                         Check(world.OpenStation(station.id),"Refreshed home furnace reopens");
-                        for(int i=0;i<8;i++)world.State.Tick(1);
-                        Check(world.Collect() && !world.Collect(),"Home furnace output can be collected exactly once");
+                        for(int i=0;i<24;i++)world.State.Tick(1);
+                        Check(world.Collect() && !world.Collect() && bag.Count(FieldItem.IronIngot)==ingots+3,"Home furnace output can be collected exactly once as three ingots");
                     }
                     c.ToggleInventory();yield return null;
                     Capture(c,evidence,"home-"+kind,world.StationRoot(station.id));

@@ -147,8 +147,20 @@ namespace BoatAttack.EditorTools
             var body=c.Shore.Character.BodySkin;var baked=new Mesh();
             try
             {
-                body.BakeMesh(baked);var vertices=baked.vertices;var weights=body.sharedMesh.boneWeights;var bones=body.bones;
+                // Include the normalized renderer scale so these vertices match the rendered skin.
+                body.BakeMesh(baked,true);var vertices=baked.vertices;var weights=body.sharedMesh.boneWeights;var bones=body.bones;
                 int hands=0,inside=0,lens=0;var touched=new bool[5];var digitNames=new[]{"Index","Middle","Ring","Pinky","Thumb"};bool wraps=false;float scale=binocular?FishingFieldWorld.BinocularScale:FishingFieldWorld.PickScale;
+                var toolMesh=pick?c.FieldWorld.HeldTool.GetComponent<MeshFilter>().sharedMesh:null;
+                var surfaceVertices=toolMesh!=null?toolMesh.vertices:null;var surfaceTriangles=toolMesh!=null?toolMesh.triangles:null;
+                var nearestFinger=new[]{float.MaxValue,float.MaxValue,float.MaxValue,float.MaxValue,float.MaxValue};
+                var insideParts=new int[6];
+                if(pick)
+                {
+                    float centre=SignedSurfaceDistance(Vector3.zero,surfaceVertices,surfaceTriangles);
+                    float outside=SignedSurfaceDistance(Vector3.right*.08f,surfaceVertices,surfaceTriangles);
+                    Debug.Log("[FIRST-PERSON] HANDLE NORMALS: centre="+centre.ToString("F5")+" outside="+outside.ToString("F5"));
+                    Check(centre<-.002f && outside>.01f,"新木柄三角面内外方向与已知轴心/外部点一致");
+                }
                 for(int i=0;i<vertices.Length;i++)
                 {
                     if(Contribution(weights[i],bones,n=>IsHand(n) && (binocular || n.EndsWith(".R")))<.5f)continue;
@@ -165,25 +177,51 @@ namespace BoatAttack.EditorTools
                     }
                     else
                     {
-                        float radius=Mathf.Lerp(.025f,.038f,Mathf.InverseLerp(-.26f,.33f,p.y));
-                        if(p.y>-.26f && p.y<.33f)
+                        // The supplied curved wooden handle replaces the old procedural cylinder.
+                        // Measure the actual imported surface, retaining the same penetration/contact tolerances.
+                        float gap=SignedSurfaceDistance(p,surfaceVertices,surfaceTriangles);
+                        if(gap<-.008f/scale)inside++;
+                        bool digitVertex=false;
+                        for(int digit=0;digit<5;digit++)
                         {
-                            float gap=new Vector2(p.x,p.z).magnitude-radius;
-                            if(gap<-.008f/scale)inside++;
-                            if(Mathf.Abs(gap)<.009f)
-                            {
-                                for(int digit=0;digit<5;digit++)if(Contribution(weights[i],bones,n=>n.StartsWith(digitNames[digit]) && n.EndsWith(".R"))>.5f)touched[digit]=true;
-                                wraps |= p.x<-.012f;
-                            }
+                            if(Contribution(weights[i],bones,n=>n.StartsWith(digitNames[digit]) && n.EndsWith(".R"))<=.5f)continue;
+                            digitVertex=true;if(gap<-.008f/scale)insideParts[digit]++;
+                            nearestFinger[digit]=Mathf.Min(nearestFinger[digit],Mathf.Abs(gap));
+                            if(Mathf.Abs(gap)<.009f)touched[digit]=true;
                         }
+                        if(!digitVertex && gap<-.008f/scale)insideParts[5]++;
+                        if(Mathf.Abs(gap)<.009f)wraps |= p.x<-.012f;
                     }
                 }
                 Debug.Log("[FIRST-PERSON] GRASP: "+item+" handVertices="+hands+" deepInside="+inside+" frontLens="+lens);
+                if(pick)Debug.Log("[FIRST-PERSON] SUPPLIED HANDLE: nearest finger distances="+string.Join(", ",Array.ConvertAll(nearestFinger,d=>d.ToString("F5")))+" inside by Index/Middle/Ring/Pinky/Thumb/Palm="+string.Join(",",insideParts)+" farSide="+wraps);
                 Check(lens==0,item+" 手部不进入前物镜光路");
                 Check(inside<=hands*.01f,item+" 深入物体 8mm 以上的手部顶点不超过 1%");
                 if(pick){int count=0;foreach(bool contact in touched)if(contact)count++;Check(count==5 && wraps,item+" 五指贴近柄面并包到另一侧，不是隔空握拳");}
             }
             finally{UnityEngine.Object.Destroy(baked);}
+        }
+        private static float SignedSurfaceDistance(Vector3 p,Vector3[] vertices,int[] triangles)
+        {
+            float nearest=float.MaxValue,signed=0;
+            for(int i=0;i<triangles.Length;i+=3)
+            {
+                var a=vertices[triangles[i]];var b=vertices[triangles[i+1]];var c=vertices[triangles[i+2]];
+                var normal=Vector3.Cross(b-a,c-a);float area=normal.sqrMagnitude;if(area<1e-12f)continue;
+                var projected=p-normal*(Vector3.Dot(p-a,normal)/area);Vector3 closest;
+                if(Vector3.Dot(Vector3.Cross(b-a,projected-a),normal)>=0 && Vector3.Dot(Vector3.Cross(c-b,projected-b),normal)>=0
+                    && Vector3.Dot(Vector3.Cross(a-c,projected-c),normal)>=0)closest=projected;
+                else
+                {
+                    closest=Segment(p,a,b);var q=Segment(p,b,c);if((p-q).sqrMagnitude<(p-closest).sqrMagnitude)closest=q;
+                    q=Segment(p,c,a);if((p-q).sqrMagnitude<(p-closest).sqrMagnitude)closest=q;
+                }
+                float distance=(p-closest).sqrMagnitude;if(distance>=nearest)continue;
+                nearest=distance;signed=Mathf.Sqrt(distance)*(Vector3.Dot(p-closest,normal)<0?-1:1);
+            }
+            return signed;
+            Vector3 Segment(Vector3 point,Vector3 a,Vector3 b)
+            {var delta=b-a;return a+delta*Mathf.Clamp01(Vector3.Dot(point-a,delta)/Mathf.Max(delta.sqrMagnitude,1e-12f));}
         }
         private static void Describe(FishingPrototype c,string label)
         {

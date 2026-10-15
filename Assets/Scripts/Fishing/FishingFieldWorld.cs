@@ -41,6 +41,7 @@ namespace BoatAttack.Fishing
                     {
                         FieldItem item=id==0?FieldItem.Binoculars:id==2?FieldItem.Lantern:id%2==0?FieldItem.Driftwood:FieldItem.Shell;
                         var root=MeshObject("Pickup "+id+" / "+item,_tools[item]);root.position=feet+Vector3.up*.3f;
+                        var suppliedMaterials=FishingUserTools.Materials(item);if(suppliedMaterials!=null)root.GetComponent<Renderer>().sharedMaterials=suppliedMaterials;
                         _pickups.Add(new Pickup{Id=id,Item=item,Count=item>=FieldItem.Shell?4+id:1,Root=root,Feet=feet});
                     }
                     if(TryLocation(shore.Landing,4f+j*1.3f,40+id*113,out var home))
@@ -52,7 +53,7 @@ namespace BoatAttack.Fishing
             }
             _held=MeshObject("Equipped field tool",_tools[FieldItem.FieldGuide]);_heldMesh=_held.GetComponent<MeshFilter>();
             _lamp=new GameObject("Field lantern light").AddComponent<Light>();_lamp.transform.SetParent(transform,false);
-            _lamp.type=LightType.Point;_lamp.color=new Color(1,.72f,.36f);_lamp.range=10;_lamp.intensity=2.5f;_lamp.shadows=LightShadows.None;
+            _lamp.type=LightType.Point;_lamp.color=new Color(1,.70f,.34f);_lamp.range=8;_lamp.intensity=1.35f;_lamp.shadows=LightShadows.None;
             RefreshPickups();Debug.Log("[FIELD] Built "+_pickups.Count+" pickups and "+_animals.Count+" ground-constrained land animals.");
         }
         private Transform MeshObject(string name,Mesh mesh)
@@ -188,7 +189,7 @@ namespace BoatAttack.Fishing
             Sense();if(_candidate==null){_c.Notice("看向附近陆地动物（8m 内）再按 T；望远镜可观察至 22m。Ctrl 蹲下不易惊动动物。",5);return false;}
             return _c.RecordLandAnimal(_candidate.Kind);
         }
-        public void ApplyHeldTool()=>PresentHeldTool();
+        public void ApplyHeldTool(){UpdateLanternGrip();PresentHeldTool();PresentLanternHolster();}
         private void OnDestroy(){foreach(var item in _owned)if(item!=null)Destroy(item);}
     }
 }

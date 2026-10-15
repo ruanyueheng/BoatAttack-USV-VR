@@ -55,9 +55,18 @@ namespace BoatAttack.EditorTools
         }
         private static void Check(bool ok,string label){if(!ok)throw new Exception(label);Debug.Log("[CATCH] CHECK: "+label);}
         private static CatchRecord Fish()=>new CatchRecord{id=Guid.NewGuid().ToString("N"),kind=FishKind.Puffer,grams=2000,value=FishingSpecies.Value(FishKind.Puffer,false,2000)};
+        public static void KeepOrdinaryReceipt(FishingPrototype c)
+        {
+            if(!c.HasIsolatedProfile)throw new InvalidOperationException("Only isolated capture fixtures may choose a receipt.");
+            var fish=new CatchRecord{kind=c.Session.Kind,rare=c.Session.Rare};
+            do{fish.id=Guid.NewGuid().ToString("N");}while(FishingCoastRules.SeaFind(fish,true)!=FieldItem.Empty);
+            // These fixtures test fish handling; V028 separately exercises real net-caught sea finds.
+            typeof(CatchSession).GetField("_id",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).SetValue(c.Session,fish.id);
+        }
         private static void Landing(FishingPrototype c)
         {
             c.ReturnToHarbor();c.MoveToSpotForAutomation(0);c.Interact();Check(c.Cast(),"start real production catch");var s=c.Session;
+            KeepOrdinaryReceipt(c);
             for(int i=0;i<1500 && s.Phase==CatchPhase.Waiting;i++)s.Tick(.02f,false);Check(c.Hook(),"hook real bite");
             for(int i=0;i<6000 && s.Phase==CatchPhase.Fighting;i++)s.Tick(.02f,s.Tension<.6f);
             Check(s.Phase==CatchPhase.Landing,"existing fish fight reaches landing");for(int i=0;i<15;i++)s.Tick(.1f,false);Check(s.CanNet,"bounded drag lets the left hand take the net");

@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 namespace BoatAttack.Fishing
 {
     /// <summary>Fixed population, shared meshes and sight-based discovery. No spawning loop or physics herd.</summary>
-    public sealed class FishingEcology : MonoBehaviour
+    public sealed partial class FishingEcology : MonoBehaviour
     {
         public FishingPrototype Controller;
         public MarineKind? Candidate { get; private set; }
@@ -62,6 +62,7 @@ namespace BoatAttack.Fishing
                     _shoal.Add(new ShoalFish{root=fish.transform,kind=species,zone=zone,phase=kind*.7f+i*.4f});
                 }
             }
+            InitializeSeaSurprises();
             Debug.Log("[FISHING] Living bay: "+CreatureCount+" wildlife renderers, 3 habitat meshes; "+MeshVertices+" unique vertices.");
         }
         private GameObject MeshObject(string name,Mesh mesh)
@@ -146,6 +147,7 @@ namespace BoatAttack.Fishing
                 var point=Controller.fishingSpots[fish.zone]+new Vector3(Mathf.Cos(a)*r,-.09f+Mathf.Sin(a*3)*.02f,Mathf.Sin(a)*r);
                 fish.root.SetPositionAndRotation(point,Quaternion.LookRotation(new Vector3(-Mathf.Sin(a),0,Mathf.Cos(a))));
             }
+            TickSeaSurprises(Time.deltaTime);
             if(Time.time<_nextSense)return;_nextSense=Time.time+.25f;Sense();
         }
         private void Sense()

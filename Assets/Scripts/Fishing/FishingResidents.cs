@@ -8,6 +8,11 @@ namespace BoatAttack.Fishing
         private FishingPrototype _c;
         private readonly Transform[] _people = new Transform[6];
         private float _spokenAt;
+        private readonly FishingCashierConversation _cashier=new FishingCashierConversation();
+        private int _homeNavigationFrame=-1;
+        public int ChoiceCount=>ActiveId==4?_cashier.ChoiceCount:3;
+        public CashierTopic CashierTopic=>_cashier.Topic;
+        public string TopicTitle=>ActiveId==4?_cashier.Title:"回潮海的故事";
         public int ActiveId { get; private set; } = -1;
         public bool Open => ActiveId >= 0;
         public string Speech { get; private set; } = "";
@@ -70,15 +75,24 @@ namespace BoatAttack.Fishing
             if (_c.Paused || _c.StoryBlocksGameplay || _c.InventoryOpen || _c.JournalOpen || _c.HasPendingCatch || _c.WorldActionBusy
                 || _c.Shore.Swimming || _c.Shore.Climbing || _c.Realms.Transitioning || !InRange(id)) return false;
             if (_c.ShopOpen && id != 4) return false;
+            bool first=!_c.Career.Lore.Met(id);
             _c.TackleShop.Close(); _c.Career.Lore.Meet(id); _c.Save();
-            ActiveId = id; _c.StoryModalChanged(); Say(Greeting(id));
+            ActiveId = id; _c.StoryModalChanged();
+            if(id==4){_cashier.Begin(first);Say(_cashier.Speech(_c.Career,XRSettings.isDeviceActive));}else Say(Greeting(id));
             if (XRSettings.isDeviceActive) _c.XRNotebook.Open(8);
             return true;
         }
-        public string Choice(int choice) => choice == 0 ? "聊聊这里的故事" : choice == 1 ? (ActiveId == 5 ? "汇报四段潮汐回响" : ActiveId == 4 ? "介绍商品与装备" : "询问秘境线索") : "航海与探索建议";
+        public string Choice(int choice) => ActiveId==4?_cashier.Choice(choice):choice == 0 ? "聊聊这里的故事" : choice == 1 ? (ActiveId == 5 ? "汇报四段潮汐回响" : "询问秘境线索") : "航海与探索建议";
         public void Choose(int choice)
         {
-            if (!Open || choice < 0 || choice > 2 || !_c.Ashore || _c.Paused || !InRange(ActiveId)) return;
+            if (!Open || choice < 0 || choice >= ChoiceCount || !_c.Ashore || _c.Paused || !InRange(ActiveId)) return;
+            if(ActiveId==4)
+            {
+                var action=_cashier.Choose(choice);
+                if(action==CashierConversationAction.BrowseGoods){BrowseCashierGoods();return;}
+                if(action==CashierConversationAction.NavigateHome){Close();_homeNavigationFrame=Time.frameCount;return;}
+                Say(_cashier.Speech(_c.Career,XRSettings.isDeviceActive));return;
+            }
             int id = ActiveId;bool xr=XRSettings.isDeviceActive;
             if (choice == 0) Say(Story(id));
             else if (choice == 1)
@@ -101,6 +115,13 @@ namespace BoatAttack.Fishing
                 : "捕鱼、委托、旧航标与秘境共享金币。你可以按任意顺序探索；R随时救援回港，鱼获和已完成的故事会保留。");
         }
         private void Say(string text) { Speech = text; _spokenAt = Time.unscaledTime; }
+        public bool BrowseCashierGoods()
+        {
+            if(!Open || ActiveId!=4 || _c.Paused || !InRange(4))return false;
+            Close();
+            if(XRSettings.isDeviceActive){_c.XRNotebook.Open(4);return _c.XRNotebook.StorePage;}
+            return _c.ToggleShop();
+        }
         public void Reveal() { if (Open) _spokenAt = Time.unscaledTime - 100; }
         public void Close()
         {
@@ -121,6 +142,11 @@ namespace BoatAttack.Fishing
             : "这片海叫回潮海。很久以前，四位守望者分别守护风、林、潮与星，把彼此的灯连成航路。\n\n风暴毁了灯，却没毁掉岛上的人。取回四段潮汐回响，新的故事就从你开始。";
         private void LateUpdate()
         {
+            if(_homeNavigationFrame>=0 && Time.frameCount>_homeNavigationFrame)
+            {
+                _homeNavigationFrame=-1;
+                if(_c!=null && !_c.Paused && !_c.StoryBlocksGameplay && !_c.InventoryOpen)_c.NavigateHome();
+            }
             if (_c == null || _c.Paused) return;
             for (int i = 0; i < 6; i++)
             {

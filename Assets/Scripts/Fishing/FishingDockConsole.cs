@@ -29,6 +29,7 @@ namespace BoatAttack.Fishing
             var rect=root.GetComponent<RectTransform>();rect.sizeDelta=new Vector2(680,820);rect.localScale=Vector3.one*.0015f;
             root.AddComponent<CanvasScaler>().dynamicPixelsPerUnit=3;
             var panel=root.AddComponent<Image>();panel.color=FishingUITheme.Paper;panel.sprite=FishingUITheme.PaperSprite;panel.type=Image.Type.Sliced;panel.material=FishingUITheme.WorldMaterial;panel.raycastTarget=false;
+            FishingUITheme.Bind(panel,0);
             var title=Label(root.transform,new Vector2(26,-18),new Vector2(628,60),40);title.text="码头事务";title.font=FishingUITheme.Heading;
             _status=Label(root.transform,new Vector2(26,-85),new Vector2(628,250),21);
             _message=Label(root.transform,new Vector2(26,-704),new Vector2(628,76),21);
@@ -54,7 +55,7 @@ namespace BoatAttack.Fishing
         {
             var go=new GameObject("Chinese command label",typeof(RectTransform),typeof(Text));go.layer=5;go.transform.SetParent(parent,false);
             var rt=go.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(0,1);rt.pivot=new Vector2(0,1);rt.anchoredPosition=position;rt.sizeDelta=size;
-            var text=go.GetComponent<Text>();text.font=FishingUIFont.Font;text.fontSize=fontSize;text.color=FishingUITheme.Ink;text.material=FishingUITheme.WorldMaterial;text.raycastTarget=false;return text;
+            var text=go.GetComponent<Text>();text.font=FishingUIFont.Font;text.fontSize=fontSize;text.color=FishingUITheme.Ink;text.material=FishingUITheme.WorldMaterial;text.raycastTarget=false;FishingUITheme.Bind(text,2);return text;
         }
         public bool Allowed(FishingDockAction action)
         {
@@ -142,7 +143,7 @@ namespace BoatAttack.Fishing
             float height=_c.XRSeat.Ready?_c.XRSeat.Origin.transform.position.y+1.3f:boat.y+1.55f;
             _canvas.transform.SetPositionAndRotation(new Vector3(boat.x,height,boat.z)+yaw*new Vector3(-.75f,0,2),yaw);
             for(int i=0;i<_rings.Length;i++)_rings[i].gameObject.SetActive(_c.Career.LineLevel>i);
-            foreach(var p in _buttons)p.Value.color=!Allowed(p.Key)?FishingUITheme.Disabled:_offer==p.Key?FishingUITheme.Selected:_hover!=null && _hover.Action==p.Key?(_pointerHeld?FishingUITheme.Selected:Color.white):FishingUITheme.Light;
+            foreach(var p in _buttons)p.Value.color=!Allowed(p.Key)?FishingUITheme.Disabled:_offer==p.Key?FishingUITheme.Selected:_hover!=null && _hover.Action==p.Key?FishingUITheme.Selected:FishingUITheme.Light;
             string state=_c.HasPendingCatch?"待处理："+FishingSpecies.Name(_c.Career.PendingCatch.fish.kind)+" "+FishingText.Weight(_c.Career.PendingCatch.fish.grams)+(_c.Career.PendingCatch.measured?"（已测量）":""):_c.Anchored?"驻钓中":"航行："+(_c.Speed*3.6f).ToString("0")+" 千米/时";
             _status.text="潮汐渔港  ·  "+state+"\n金币 "+_c.Career.Coins+"    鱼箱 "+_c.Career.Count+"/"+_c.Career.Capacity+"    鱼线 "+_c.Career.LineLevel+" 级\n委托「"+_c.Career.CurrentOrder.Name+"」"+(_c.Career.OrderReady?" · 可交付":"")+"\n";
             for(int i=0;i<_c.Career.CurrentOrder.LineCount;i++){var line=_c.Career.CurrentOrder.Line(i);_status.text+=FishingSpecies.Name(line.Kind)+" ×"+line.Count+(line.Rare?" 珍珠":"")+"  ";}

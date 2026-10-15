@@ -10,7 +10,7 @@ namespace BoatAttack.Fishing
         private Text _pageTitle,_pageDate,_pageDetail;
         private Image _pageLeaf,_pageLeafEdge;
         private int _pageHover=-1;
-        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助"};
+        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤"};
 
         private void BuildNotebookPages()
         {
@@ -19,7 +19,7 @@ namespace BoatAttack.Fishing
             _pageDecor.transform.SetAsFirstSibling();
             var p=_pageDecor.transform;
             HomeImage(p,"Cloth spine",new Rect(13,25,9,730),HomeSage,_homePaperSprite);
-            HomeImage(p,"Paper perimeter",new Rect(29,18,1051,744),HomeGold*.75f,_homeEdgeSprite);
+            HomeImage(p,"Paper perimeter",new Rect(29,18,1051,758),HomeGold,_homeEdgeSprite);
             _pageTitle=HomeText(p,new Rect(52,37,600,64),"",45,HomeInk,FishingUITheme.Heading);
             HomeText(p,new Rect(55,106,620,33),"潮汐手册  /  回潮海",21,HomeMuted);
             _pageDate=HomeText(p,new Rect(651,49,407,40),"",23,HomeInk);_pageDate.alignment=TextAnchor.MiddleRight;
@@ -28,7 +28,7 @@ namespace BoatAttack.Fishing
             _pageLeafEdge=HomeImage(p,"Left leaf edge",new Rect(42,171,375,555),HomeGold,_homeEdgeSprite);
             _pageDetail=HomeText(p,new Rect(62,191,335,471),"",22,HomeInk);
             HomeText(p,new Rect(62,680,335,34),"指向卡片，查看完整信息",20,HomeMuted);
-            HomeImage(p,"Footer rule",new Rect(42,733,1020,1),HomeGold*.7f);
+            HomeImage(p,"Footer rule",new Rect(42,733,1020,1),HomeGold);
             var hint=HomeText(p,new Rect(44,741,1018,32),"右手指向  ·  扳机选择  ·  B 返回海湾",20,HomeMuted);hint.alignment=TextAnchor.MiddleRight;
             _pageDecor.SetActive(false);
         }
@@ -44,6 +44,7 @@ namespace BoatAttack.Fishing
             bool chart=_page==12;
             HomeRect(_pageLeaf.rectTransform,new Rect(42,171,chart?620:375,555));HomeRect(_pageLeafEdge.rectTransform,new Rect(42,171,chart?620:375,555));
             HomeRect(_status.rectTransform,new Rect(62,191,chart?580:335,chart?120:471));_status.fontSize=22;_status.color=HomeInk;
+            if(_page==8){while(_status.fontSize>20 && _status.preferredHeight>_status.rectTransform.rect.height)_status.fontSize--;}
             if(_page==12 && _map.texture!=null)
             {
                 float ratio=_map.texture.width/(float)_map.texture.height,width=Mathf.Min(580,305*ratio);
@@ -86,18 +87,19 @@ namespace BoatAttack.Fishing
                 }
                 ApplyPageState(i,false,true);
             }
-            foreach(var graphic in _canvas.GetComponentsInChildren<Graphic>(true))graphic.material=_homeMaterial;
+            foreach(var graphic in _canvas.GetComponentsInChildren<Graphic>(true))graphic.material=graphic==_map && _mapPalette!=null?_mapPalette:_homeMaterial;
             UpdatePagePointer(_pageHover,false);
         }
 
         private void ApplyPageState(int i,bool held,bool instant)
         {
             bool disabled=_actions[i]==null,hover=i==_pageHover;
-            Color surface=disabled?FishingUITheme.Disabled:hover?(held?FishingUITheme.Selected:Color.white):HomeLight;
+            Color surface=disabled?FishingUITheme.Disabled:hover?FishingUITheme.Selected:HomeLight;
             if(_page==12 && _pageContent[i]!=null && _pageContent[i].StartsWith("★"))surface=FishingUITheme.Selected;
             float blend=instant?1:1-Mathf.Exp(-Time.unscaledDeltaTime/.08f);
             _plates[i].color=Color.Lerp(_plates[i].color,surface,blend);
-            _homeEdges[i].color=disabled?new Color32(174,181,163,255):hover?HomeSage:HomeGold;
+            _homeEdges[i].color=disabled?HomeMuted:hover?HomeSage:HomeGold;
+            _labels[i].color=HomeInk;_homeCaptions[i].color=HomeMuted;_homeIcons[i].color=HomeInk;
             _homeArrows[i].text=disabled?"–":"›";_homeArrows[i].color=disabled?HomeMuted:HomeInk;
         }
 

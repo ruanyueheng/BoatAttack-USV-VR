@@ -21,8 +21,8 @@ namespace BoatAttack.Fishing
             const float radius = TerrainMapRadius;
             Disc(center, radius + 4, MapSurface);
             DrawTerrainMap(center, radius);
-            Outline(new Rect(center.x-radius, center.y-radius, radius*2, radius*2), new Color(.52f,.82f,.85f,.55f), radius, 1.5f);
-            Outline(new Rect(center.x-radius*.5f, center.y-radius*.5f, radius, radius), new Color(.4f,.7f,.76f,.12f), radius*.5f);
+            Outline(new Rect(center.x-radius, center.y-radius, radius*2, radius*2), Gold, radius, 1.5f);
+            Outline(new Rect(center.x-radius*.5f, center.y-radius*.5f, radius, radius), Hairline*.45f, radius*.5f);
             for (int i=0;i<24;i++)
             {
                 float a=i*Mathf.PI/12; var dir=new Vector2(Mathf.Sin(a),-Mathf.Cos(a));
@@ -67,7 +67,7 @@ namespace BoatAttack.Fishing
                 Label(new Rect(badge.x-10,badge.y-11,20,22),"★",16,Color.white,true,TextAnchor.MiddleCenter);
             }
             Disc(center,12,MapSurface);
-            DrawArrow(center,c.Ashore?c.viewCamera.transform.eulerAngles.y:c.Player.transform.eulerAngles.y,Color.white,10);
+            DrawArrow(center,c.Ashore?c.viewCamera.transform.eulerAngles.y:c.Player.transform.eulerAngles.y,InkText,10);
             DrawTerrainMapGuide(center,radius,new Rect(r.x,center.y+radius+12,r.width,36));
             if(Event.current.type==EventType.Repaint && !string.IsNullOrEmpty(GUI.tooltip))
             {

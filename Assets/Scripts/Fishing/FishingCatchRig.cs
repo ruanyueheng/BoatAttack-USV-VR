@@ -85,21 +85,22 @@ namespace BoatAttack.Fishing
         }
         private void OnApplicationFocus(bool focus){if(!focus)Recover();}
         private void OnApplicationPause(bool pause){if(pause)Recover();}
-        public void StepDesktop(float dt)
+        public bool StepDesktop(float dt)
         {
-            if(!_assist || _c.Paused)return;
-            if(_c.Session.Phase!=CatchPhase.Landing){_assist=false;return;}
-            if(dt<=0 || float.IsNaN(dt) || float.IsInfinity(dt))return;
+            if(!_assist || _c.Paused)return false;
+            if(_c.Session.Phase!=CatchPhase.Landing){_assist=false;return false;}
+            if(dt<=0 || float.IsNaN(dt) || float.IsInfinity(dt))return false;
             _assistTime+=Mathf.Min(dt,.05f);
             var center=_c.LandingTarget+Vector3.up*Mathf.Clamp((_assistTime-.25f)*.8f,0,.32f);
-            ApplyNetPose(center,DesktopNetRotation(center),dt);
+            return ApplyNetPose(center,DesktopNetRotation(center),dt);
         }
         public bool CaptureAndStoreForAutomation()
         {
             if(!_c.HasIsolatedProfile)throw new System.InvalidOperationException("Only isolated fixtures may fast-step the assist");
             if(!RequestScoop())return false;
-            for(int i=0;i<45 && !_c.HasPendingCatch;i++)StepDesktop(.02f);
-            if(!_c.HasPendingCatch)return false;
+            bool captured=false;
+            for(int i=0;i<45 && !captured;i++)captured=StepDesktop(.02f);
+            if(!_c.HasPendingCatch)return captured;
             if(FishingSpecies.Of(_c.Career.PendingCatch.fish.kind).Legendary){_c.MeasureCatch();_c.ResolveCatch(false);}else _c.ResolveCatch(true);return true;
         }
         public bool ApplyNetPose(Vector3 center,Quaternion rotation,float dt)

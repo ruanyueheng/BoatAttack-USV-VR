@@ -185,6 +185,8 @@ namespace BoatAttack.Fishing
                 }
                 return;
             }
+            // Sleep owns the desktop resting arms; tracked controllers above retain their physical poses.
+            if(_c.Home.Sleeping){StowRod();return;}
             GetToolFrame(out var origin,out var frame);
             bool fishing=_c.Anchored && !_c.Ashore && !_c.HasPendingCatch;
             if(fishing)
