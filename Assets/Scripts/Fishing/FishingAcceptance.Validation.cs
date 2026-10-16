@@ -83,6 +83,16 @@ namespace BoatAttack.Fishing
         private void ValidateCase()
         {
             var c = Controller;
+            if(FishingAcceptanceCases.IsFindCase(CurrentCase))
+            {
+                var expectedFind=CurrentCase==FishingAcceptanceCase.BootCatch?FieldItem.OldBoot:CurrentCase==FishingAcceptanceCase.CanCatch?FieldItem.RustyCan:FieldItem.SeaTreasure;
+                if(c.LastCatch.Find!=expectedFind || c.LastCatch.Fish!=null || c.HasPendingCatch || c.Career.Backpack.Count(expectedFind)!=1)
+                    throw new InvalidOperationException("Sea-find feedback or inventory receipt is missing.");
+                if(c.GetComponent<FishingHUD>().RegionTitleVisible)throw new InvalidOperationException("Region banner obscures the sea-find catch card.");
+            }
+            if((CurrentCase==FishingAcceptanceCase.LetterEnvelope || CurrentCase==FishingAcceptanceCase.LetterPaper)
+                && (!c.Letter.Open || (CurrentCase==FishingAcceptanceCase.LetterPaper && !c.Letter.Ready)))
+                throw new InvalidOperationException("Stationery capture is missing its actual envelope or readable paper.");
             if(CurrentCase==FishingAcceptanceCase.HomeBarbecue && (!c.CoastWorld.NearGrill || !c.CoastWorld.MenuOpen || c.Career.Count!=3))
                 throw new InvalidOperationException("Barbecue capture lacks the reachable fish-selection menu.");
             if(CurrentCase==FishingAcceptanceCase.HomeGrilledFish)
@@ -135,8 +145,11 @@ namespace BoatAttack.Fishing
             if(FishingAcceptanceCases.IsShoreCase(CurrentCase) && !FishingAcceptanceCases.IsShopCase(CurrentCase))
             {
                 bool thirdPerson=CurrentCase==FishingAcceptanceCase.ShoreThirdPerson || CurrentCase==FishingAcceptanceCase.BinocularThirdPerson;
-                if(!c.Ashore || c.FirstPerson==thirdPerson || c.FieldWorld.HeldTool==null || !c.FieldWorld.HeldTool.gameObject.activeInHierarchy
-                    || c.FieldWorld.PresentedItem!=FishingAcceptanceCases.ViewItem(CurrentCase))
+                var item=FishingAcceptanceCases.ViewItem(CurrentCase);
+                bool visible=item==FieldItem.Lantern
+                    ?c.FieldWorld.HolsteredLantern!=null && c.FieldWorld.HolsteredLantern.gameObject.activeInHierarchy && !c.FieldWorld.LanternHeld
+                    :c.FieldWorld.HeldTool!=null && c.FieldWorld.HeldTool.gameObject.activeInHierarchy && c.FieldWorld.PresentedItem==item;
+                if(!c.Ashore || c.FirstPerson==thirdPerson || !visible)
                     throw new InvalidOperationException("Shore avatar/tool capture fixture failed.");
                 if(CurrentCase==FishingAcceptanceCase.BinocularObserve && (!c.View.OpticalView || c.FieldWorld.HeldToolRenderer.enabled
                     || Mathf.Abs(c.viewCamera.fieldOfView-FishingViewRig.BinocularFieldOfView)>.01f))

@@ -80,7 +80,7 @@ namespace BoatAttack.EditorTools
                 var prey=gull.Find("Seabird's visible catch");Check(prey!=null && prey.gameObject.activeInHierarchy,"The climbing bird actually carries its visible fish");
                 var preySize=prey.GetComponent<MeshFilter>().sharedMesh.bounds.size;
                 var size=Vector3.Scale(preySize,prey.lossyScale);float length=Mathf.Max(size.x,size.y,size.z);
-                Check(length>=.12f && length<=.17f && Vector3.Distance(prey.position,gull.TransformPoint(new Vector3(0,0,.425f)))<.02f,"The carried fish is 12–17 cm in world space and touches the gull's beak");
+                Check(length>=.12f && length<=.17f && Vector3.Distance(prey.position,gull.TransformPoint(FishingEcology.GullBeakPoint))<.02f,"The carried fish is 12–17 cm in world space and touches the calibrated supplied gull's beak");
                 Capture(c,gull.TransformPoint(new Vector3(1.8f,.6f,2.0f)),gull.TransformPoint(new Vector3(0,0,.1f)),Path.Combine(evidence,"gull-with-fish.png"));
                 SeaFindChecks(c);
                 Debug.Log("[V028-COAST] EVIDENCE: "+evidence);
@@ -101,7 +101,7 @@ namespace BoatAttack.EditorTools
                 Check(supported,"Dry geometry supports the actual footprint corner of "+root.name+": "+x+", "+z);
             }
         }
-        private static void SeaFindChecks(FishingPrototype c)
+        internal static void SeaFindChecks(FishingPrototype c,Action<FieldItem> landed=null)
         {
             c.ReturnToHarbor();
             var fixture=new FishingCareer();fixture.Store(Fish("v028-sea-discovery",FishKind.Coral));fixture.SellAll();
@@ -123,6 +123,7 @@ namespace BoatAttack.EditorTools
                 for(int i=0;i<15;i++)s.Tick(.1f,false);
                 Check(c.CatchRig.CaptureAndStoreForAutomation() && !c.HasPendingCatch && c.Career.Count==0
                     && c.Career.Backpack.Count(item)==1,"Actual assisted net capture reports a committed sea find without inventing a pending fish: "+item);
+                landed?.Invoke(item);
                 Check(!c.CatchRig.CaptureAndStoreForAutomation() && !c.Career.Store(receipt)
                     && c.Career.Backpack.Count(item)==1,"Repeating the scoop or receipt cannot duplicate the sea find: "+item);
                 var saved=FishingSaveStore.Load(c.SavePath,out var warning);

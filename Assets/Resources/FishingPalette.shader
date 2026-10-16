@@ -26,6 +26,7 @@ Shader "BoatAttack/FishingPalette"
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             CBUFFER_START(UnityPerMaterial)
@@ -68,8 +69,8 @@ Shader "BoatAttack/FishingPalette"
                 uint count=GetAdditionalLightsCount();
                 for(uint i=0u;i<count;i++)
                 {
-                    Light local=GetAdditionalLight(i,input.positionWS);
-                    color+=albedo*local.color*saturate(dot(normal,local.direction))*local.distanceAttenuation;
+                    Light local=GetAdditionalLight(i,input.positionWS,half4(1,1,1,1));
+                    color+=albedo*local.color*saturate(dot(normal,local.direction))*local.distanceAttenuation*local.shadowAttenuation;
                 }
                 #endif
                 // Optional stylised gloss and rim; both default to zero so existing palettes are unchanged.

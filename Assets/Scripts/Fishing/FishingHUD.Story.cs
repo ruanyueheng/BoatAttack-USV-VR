@@ -21,9 +21,10 @@ namespace BoatAttack.Fishing
                 :item==FieldItem.Coal||item==FieldItem.Charcoal?"campfire_logs":item==FieldItem.Sand?"bag":null;
             if(art!=null)ArtIllustration(rect,art);else FieldIcon(new Rect(rect.x+16,rect.y+14,rect.width-32,rect.height-28),item);
         }
+        internal bool RegionTitleVisible=>Controller.Regions!=null && Controller.Regions.Alpha>.001f && !Controller.Realms.Transitioning && !CatchVisible;
         private void DrawRegionTitle()
         {
-            var region=Controller.Regions;if(region==null || region.Alpha<=.001f || Controller.Realms.Transitioning)return;
+            var region=Controller.Regions;if(!RegionTitleVisible)return;
             float previous=_fade;_fade=region.Alpha;
             float y=Mathf.Max(174,_height*.16f)+(1-Mathf.SmoothStep(0,1,Mathf.Clamp01(region.Age/1.1f)))*8;
             Rounded(new Rect(600,y-8,400,90),Ink,12);Outline(new Rect(600,y-8,400,90),Hairline,12);

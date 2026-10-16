@@ -14,6 +14,9 @@ namespace BoatAttack.Fishing
     {
         public const float RoastSeconds=18;
         public const int TreasureCoins=80;
+        public static string FindQuip(FieldItem item)=>item==FieldItem.OldBoot?"哈哈，原来是鞋子……这条鱼还挺有脚气！"
+            :item==FieldItem.RustyCan?"罐头上钩了！可惜海鲜已经下班了。"
+            :item==FieldItem.SeaTreasure?"这回真捞着了！海底也有神秘快递。":"海风送来了一份意外收获。";
         public static bool Edible(FishKind kind)=>kind==FishKind.Coral || kind==FishKind.Dart || kind==FishKind.Mackerel
             || kind==FishKind.SeaBream || kind==FishKind.Sardine || kind==FishKind.Grouper || kind==FishKind.Butterfly || kind==FishKind.Tuna;
 

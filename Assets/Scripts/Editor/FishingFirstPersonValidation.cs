@@ -36,6 +36,7 @@ namespace BoatAttack.EditorTools
             foreach(var item in new[]{FieldItem.StonePickaxe,FieldItem.IronPickaxe,FieldItem.Binoculars,FieldItem.FieldGuide,FieldItem.Lantern})
             {
                 Equip(c,item);c.View.ResetLook();
+                if(item==FieldItem.Lantern)Check(c.InspectFieldItem(c.Career.Backpack.Selected),"明确检视腰挂提灯时才拿到手中");
                 for(int i=0;i<3;i++)yield return null;
                 c.PresentCharacterFrame();Describe(c,item.ToString());Capture(c,(shot++).ToString("D2")+"-"+item);
                 Check(c.FieldWorld.PresentedItem==item && c.FieldWorld.HeldToolRenderer.enabled,"平视持物可见 "+item);
@@ -51,6 +52,7 @@ namespace BoatAttack.EditorTools
                     Check(palmError<.035f,"俯仰不拉断握持 "+item+" / "+pitch+" error="+palmError);
                 }
                 if(item==FieldItem.StonePickaxe)Capture(c,"08-look-down-standing");
+                if(item==FieldItem.Lantern)c.EndItemInspection();
                 c.View.ResetLook();
                 if(item!=FieldItem.Binoculars)continue;
                 c.UseFieldItem();

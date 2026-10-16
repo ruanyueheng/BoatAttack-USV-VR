@@ -121,7 +121,15 @@ namespace BoatAttack.EditorTools
         {
             Check(c.Automated && c.HasIsolatedProfile && c.SavePath.StartsWith(Application.temporaryCachePath),"仅操作临时隔离存档");
             int firstFrame=Time.frameCount;while(Time.frameCount==firstFrame)yield return null;
-            if(suite=="V028")
+            if(suite=="V030")
+            {
+                var run=FishingV030Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}
+            }
+            else if(suite=="V029")
+            {
+                var run=FishingV029Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}
+            }
+            else if(suite=="V028")
             {
                 foreach(var run in new[]{FishingV028UIValidation.Checks(c),FishingV028ToolsSleepValidation.Checks(c),FishingV028CoastValidation.Checks(c)})
                 {
@@ -329,6 +337,7 @@ namespace BoatAttack.EditorTools
             foreach(var item in new[]{FieldItem.FieldGuide,FieldItem.Binoculars,FieldItem.Lantern,FieldItem.StonePickaxe,FieldItem.IronPickaxe})
             {
                 Equip(c,item);yield return null;
+                if(item==FieldItem.Lantern)Check(c.InspectFieldItem(c.Career.Backpack.Selected),"显式拿起检视腰挂灯");
                 for(int view=0;view<2;view++)
                 {
                     if(c.FirstPerson!=(view==0))c.ToggleView();c.PresentCharacterFrame();
@@ -336,6 +345,7 @@ namespace BoatAttack.EditorTools
                     HandOnGoal(c,false,item+"右手");HandOnGoal(c,true,item+"左手/休息位");
                     Check(Vector3.Distance(c.FieldWorld.HeldTool.position,c.Shore.Character.HandReferencePosition)<1.2f,"工具没有跟随远处第三人称相机");
                 }
+                if(item==FieldItem.Lantern)c.EndItemInspection();
                 if(item==FieldItem.Binoculars)
                 {
                     c.UseFieldItem();

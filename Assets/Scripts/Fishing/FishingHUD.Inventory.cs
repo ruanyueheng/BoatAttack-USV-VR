@@ -23,7 +23,7 @@ namespace BoatAttack.Fishing
         private void DrawHotbar()
         {
             var c=Controller;var r=HotbarRect(_height);
-            Label(new Rect(r.x,r.y-23,r.width,20),"I 背包   ·   "+FishingBackpack.Name(c.Career.Backpack.Equipped)+"   ·   F 使用",13,Muted,false,TextAnchor.MiddleCenter);
+            Label(new Rect(r.x,r.y-23,r.width,20),"I 背包 · "+FishingBackpack.Name(c.Career.Backpack.Equipped)+" · F 使用 · Z 检视",13,Muted,false,TextAnchor.MiddleCenter);
             for(int i=0;i<9;i++)
             {
                 var slot=new Rect(r.x+4+i*54,r.y+2,48,48);
@@ -68,7 +68,8 @@ namespace BoatAttack.Fishing
                 if(confirming){Controller.DiscardFieldItem(_moveFrom,selected.item,selected.count);ClearFieldSelection();}
                 else{_discardSlot=_moveFrom;_discardItem=selected.item;_discardCount=selected.count;}
             }
-            Label(545,698,365,45,confirming?"不可撤销；点击其他格取消确认。":"自然手册受保护；满包不吞拾取物。",13,confirming?Danger:Faint);
+            if(Button(new Rect(545,697,190,35),"拿起检视",selected.count>0,false,14)){int slot=_moveFrom;ClearFieldSelection();Controller.InspectFieldItem(slot);return;}
+            Label(747,698,164,45,confirming?"不可撤销":"Z 检视快捷栏物品",13,confirming?Danger:Faint);
             Fill(933,235,1,495,Hairline);
             Label(958,239,300,30,"野外手册",23,Mint,true);
             string[] notes={"野兔掉落兔肉和兔毛。","赤狐掉落狐狸肉和狐皮。","龟类掉落海龟肉和龟壳；海鸥掉落肉和羽毛。"};

@@ -72,7 +72,7 @@ namespace BoatAttack.Fishing
             Notice(string.Empty, 0f);
 
             CastMotion.Reset();
-            if (FishingAcceptanceCases.IsCatchCase(selected) || selected == FishingAcceptanceCase.FullHold || selected == FishingAcceptanceCase.Details || selected == FishingAcceptanceCase.CastFlight)
+            if (FishingAcceptanceCases.IsCatchCase(selected) || FishingAcceptanceCases.IsFindCase(selected) || selected == FishingAcceptanceCase.FullHold || selected == FishingAcceptanceCase.Details || selected == FishingAcceptanceCase.CastFlight)
             {
                 int spot = selected == FishingAcceptanceCase.LegendLeap ? FishingSpecies.LegendArea : 0;
                 Teleport(fishingSpots[spot] + Vector3.up, spawnRotation);
@@ -95,6 +95,10 @@ namespace BoatAttack.Fishing
             }
             switch (selected)
             {
+                case FishingAcceptanceCase.BootCatch:case FishingAcceptanceCase.CanCatch:case FishingAcceptanceCase.TreasureCatch:
+                    PrepareAcceptanceFind(selected);break;
+                case FishingAcceptanceCase.LetterEnvelope:case FishingAcceptanceCase.LetterPaper:
+                    Letter.ShowIsland(0);if(selected==FishingAcceptanceCase.LetterPaper)Letter.Reveal();break;
                 case FishingAcceptanceCase.ResidentDialogue:
                 case FishingAcceptanceCase.WindSanctuary:
                 case FishingAcceptanceCase.ForestSanctuary:

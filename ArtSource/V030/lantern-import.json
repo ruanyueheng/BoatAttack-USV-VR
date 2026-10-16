@@ -1,0 +1,22 @@
+{
+  "source": "ArtSource/V030/lantern-original.glb",
+  "source_triangles": 50000,
+  "export_triangles": 12000,
+  "height_m": 0.4,
+  "unity_grip": [
+    0.09134315452545953,
+    0.3567366856852317,
+    -0.017
+  ],
+  "unity_light": [
+    0,
+    0.14,
+    0
+  ],
+  "glowing_triangles": 552,
+  "submeshes": [
+    "LanternFrame",
+    "LanternPaperLight"
+  ],
+  "note": "Original supplied GLB retained; luminous panes selected by height and source metalness."
+}

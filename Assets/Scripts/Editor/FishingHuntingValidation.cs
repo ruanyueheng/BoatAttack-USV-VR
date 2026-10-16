@@ -102,6 +102,13 @@ namespace BoatAttack.EditorTools
             for(int i=0;i<35;i++){c.Shore.Move(Vector2.zero,false,false,false,.02f);c.PresentCharacterFrame();yield return null;}
             int meat=c.Career.Backpack.Count(FieldItem.RabbitMeat),fur=c.Career.Backpack.Count(FieldItem.RabbitFur);
             Debug.Log("[HUNTING] LOOT PREFLIGHT: "+c.InspectWorldInteractionStart());
+            if(!c.InspectWorldInteractionStart().CanBegin)
+            {
+                Check(!c.RequestWorldInteraction(),"New smaller corpse cannot be collected beyond actual arm reach");
+                Check(c.Shore.Ground(corpse+Vector3.back*.20f,out ground),"Closer ground exists beside the smaller supplied rabbit");
+                Feet(c,ground+Vector3.up*.07f,animal.Root.GetComponent<Renderer>().bounds.center);
+                for(int i=0;i<35;i++){c.Shore.Move(Vector2.zero,false,false,false,.02f);c.PresentCharacterFrame();yield return null;}
+            }
             Check(c.RequestWorldInteraction(),"E starts corpse pickup through contact action");
             for(int i=0;i<180 && c.WorldActionBusy;i++)yield return null;
             Check(c.Career.Backpack.Count(FieldItem.RabbitMeat)==meat+1 && c.Career.Backpack.Count(FieldItem.RabbitFur)==fur+1,"corpse contact grants one meat and one fur");
@@ -201,7 +208,8 @@ namespace BoatAttack.EditorTools
                 foreach(int number in new[]{1,2})
                 {
                     page.SetValue(notebook,number);
-                    var items=number==1?c.Career.Backpack.Snapshot().Select(s=>s.item).ToArray():FishingRecipes.All.Select(r=>r.Output).ToArray();
+                    bool basics=(bool)typeof(FishingXRNotebook).GetField("_craftBasics",flags).GetValue(notebook);
+                    var items=number==1?c.Career.Backpack.Snapshot().Select(s=>s.item).ToArray():FishingRecipes.ForStation(c.WorkshopWorld.Context,basics).Select(r=>r.Output).ToArray();
                     for(int first=0;first<items.Length;first+=6)
                     {
                         offset.SetValue(notebook,first);refresh.Invoke(notebook,null);
@@ -223,11 +231,15 @@ namespace BoatAttack.EditorTools
             var hashes=new System.Collections.Generic.HashSet<int>();
             for(int n=0;n<items.Length;n++)
             {
-                var icon=FishingItemIcons.Get(items[n]);Check(icon!=null,"pictogram exists for "+FishingBackpack.Name(items[n]));
+                var source=FishingV023Art.Icon(items[n]);Check(source!=null,"runtime item icon exists for "+FishingBackpack.Name(items[n]));
+                var icon=new Texture2D(128,128,TextureFormat.RGBA32,false);var active=RenderTexture.active;var target=RenderTexture.GetTemporary(128,128,0,RenderTextureFormat.ARGB32);
+                try{Graphics.Blit(source,target);RenderTexture.active=target;icon.ReadPixels(new Rect(0,0,128,128),0,0);icon.Apply();}
+                finally{RenderTexture.active=active;RenderTexture.ReleaseTemporary(target);}
                 var pixels=icon.GetPixels();Check(pixels.Count(p=>p.a>.1f)>80,"nonempty drawn icon "+items[n]);
                 int hash=17;foreach(var pixel in icon.GetPixels32())unchecked{hash=hash*31+pixel.GetHashCode();}hashes.Add(hash);
                 var composed=pixels.Select(p=>Color.Lerp(new Color(.035f,.07f,.095f),p,p.a)).ToArray();
                 sheet.SetPixels(n%8*144+8,sheet.height-(n/8+1)*144+8,128,128,composed);
+                UnityEngine.Object.DestroyImmediate(icon);
             }
             Check(hashes.Count>=items.Length-3,"icons use distinct recognizable silhouettes rather than a text fallback");
             Directory.CreateDirectory("Logs/HuntingLoot");sheet.Apply();File.WriteAllBytes("Logs/HuntingLoot/icon-sheet.png",sheet.EncodeToPNG());UnityEngine.Object.DestroyImmediate(sheet);

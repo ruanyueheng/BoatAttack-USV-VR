@@ -3,10 +3,14 @@ Read-only for the source .blend. Outputs normalized runtime FBX/maps/thumbnail.
 """
 import bpy
 import json
+import sys
 import numpy as np
 from pathlib import Path
 from mathutils import Vector, Matrix
 ROOT=Path(__file__).resolve().parents[2];OUT=ROOT/'Assets/Resources/FishingUserTools';OUT.mkdir(parents=True,exist_ok=True)
+v030='--v030' in sys.argv
+if v030:
+    bpy.ops.import_scene.gltf(filepath=str(ROOT/'ArtSource/V030/lantern-original.glb'))
 source=bpy.data.objects['node_0'];scene=bpy.context.scene
 material=source.data.materials[0];textures=[n.image for n in material.node_tree.nodes if n.type=='TEX_IMAGE']
 colour_src=next(i for i in textures if i.name=='texture_pbr_20250901')
@@ -50,6 +54,9 @@ for face in mesh.polygons:
     # threshold left triangular patches in the source texture, so identify each
     # pane by its inset span while excluding corner posts and horizontal rails.
     glass=.043<center.z<.242 and ((abs(center.x)<.055 and abs(center.y)>.04) or (abs(center.y)<.048 and abs(center.x)>.04))
+    if v030:
+        mx=max(0,min(1023,int(u*1024)));my=max(0,min(1023,int(v*1024)))
+        glass=.043<center.z<.242 and data[(my*1024+mx)*4+2]<.35 and (r+g+b)/3>.2
     face.material_index=1 if glass else 0;glow_faces+=glass
 assert glow_faces>100,glow_faces
 modifier=obj.modifiers.new('Runtime geometry budget','DECIMATE');modifier.ratio=.24
@@ -65,7 +72,15 @@ grip_unity=[float(grip[0]),float(grip[2]+.014),float(-grip[1]-.017)]
 emitter=[0,.14,0]
 bpy.ops.export_scene.fbx(filepath=str(OUT/'Lantern.fbx'),use_selection=True,object_types={'MESH'},axis_forward='-Z',axis_up='Y',bake_space_transform=True,apply_unit_scale=True,add_leaf_bones=False,bake_anim=False,path_mode='STRIP')
 report={'source':'ArtSource/UserLantern/lantern.blend','source_triangles':50000,'export_triangles':sum(len(p.vertices)-2 for p in obj.data.polygons),'height_m':.40,'unity_grip':grip_unity,'unity_light':emitter,'glowing_triangles':sum(len(p.vertices)-2 for p in obj.data.polygons if p.material_index==1),'submeshes':['LanternFrame','LanternPaperLight'],'note':'Only supplied lantern; no match or unrelated ak-47 imported.'}
-(ROOT/'ArtSource/UserLantern/import-manifest.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+if v030:
+    report['source']='ArtSource/V030/lantern-original.glb'
+    report['note']='Original supplied GLB retained; luminous panes selected by height and source metalness.'
+(ROOT/('ArtSource/V030/lantern-import.json' if v030 else 'ArtSource/UserLantern/import-manifest.json')).write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+if v030:
+    bpy.data.orphans_purge(do_recursive=True)
+    for image in bpy.data.images:
+        if image.has_data and image.source=='FILE':image.pack()
+    bpy.ops.wm.save_as_mainfile(filepath=str(ROOT/'ArtSource/V030/lantern-adapted.blend'))
 scene.render.engine='BLENDER_EEVEE';scene.render.resolution_x=768;scene.render.resolution_y=768;scene.render.resolution_percentage=100;scene.render.film_transparent=True
 world=bpy.data.worlds.new('PreviewWorld');world.use_nodes=True;world.node_tree.nodes.clear();bg=world.node_tree.nodes.new('ShaderNodeBackground');bg.inputs['Color'].default_value=(.25,.25,.25,1);out=world.node_tree.nodes.new('ShaderNodeOutputWorld');world.node_tree.links.new(bg.outputs[0],out.inputs['Surface']);scene.world=world
 center=Vector((.035,0,.20));camera=bpy.data.objects.new('Preview',bpy.data.cameras.new('Preview'));scene.collection.objects.link(camera);camera.location=center+Vector((.5,-1.5,.5));camera.rotation_euler=(center-camera.location).to_track_quat('-Z','Y').to_euler();camera.data.type='ORTHO';camera.data.ortho_scale=.54;scene.camera=camera

@@ -8,6 +8,8 @@ namespace BoatAttack.Fishing
     public sealed partial class FishingCharacter
     {
         private Mesh _waistMesh;
+        private Vector3 _beltLocal;
+        public Vector3 BeltPosition=>_body.TransformPoint(_beltLocal);
         public MeshRenderer WaistCover { get; private set; }
         public float WaistHalfWidth { get; private set; }=.20f;
 
@@ -49,6 +51,7 @@ namespace BoatAttack.Fishing
             if(hull.Count<3)throw new InvalidOperationException("源人物腰口不是有效闭合轮廓");
             foreach(var p in hull)WaistHalfWidth=Mathf.Max(WaistHalfWidth,Mathf.Abs(p.x));
             var center=Vector3.zero;foreach(var p in hull)center+=p;center/=hull.Count;
+            _beltLocal=ToHip(center);
             var cap=new Vector3[hull.Count+1];var triangles=new int[hull.Count*3];
             cap[0]=ToHip(center+Vector3.up*.002f);
             for(int i=0;i<hull.Count;i++)
