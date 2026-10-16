@@ -34,7 +34,7 @@ namespace BoatAttack.Fishing
         public Vector3 Muzzle=>_rifle.TransformPoint(MuzzleLocal);
         public bool Equipped=>_c!=null && _c.Career.Backpack.Equipped==FieldItem.HuntingRifle;
         private Vector3 Eye=>XRSettings.isDeviceActive?_c.viewCamera.transform.position:_c.Shore.Character.EyePosition;
-        private bool Context=>Equipped && _c.Ashore && !_c.Paused && !_c.InventoryOpen && !_c.JournalOpen
+        private bool Context=>Equipped && !_c.InspectingItem && _c.Ashore && !_c.Paused && !_c.InventoryOpen && !_c.JournalOpen
             && !_c.ShopBlocksGameplay && !_c.StoryBlocksGameplay && !_c.Shore.Swimming && !_c.Shore.Climbing
             && !_c.WorldActionBlocksGameplay && !_c.HasPendingCatch && !_c.Expedition.Aligning
             && !_c.DockConsole.BlocksGameplay && (_c.XRNotebook==null || !_c.XRNotebook.BlocksGameplay) && _c.Hands.CanPresentTools

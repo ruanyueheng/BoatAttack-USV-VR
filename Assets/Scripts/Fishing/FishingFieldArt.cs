@@ -47,6 +47,8 @@ namespace BoatAttack.Fishing
         }
         public static Mesh Animal(LandAnimalKind kind)
         {
+            var supplied=FishingV029Art.Animal(kind==LandAnimalKind.Rabbit?"Rabbit":kind==LandAnimalKind.Fox?"Fox":kind==LandAnimalKind.SeaTurtle?"Turtle":null);
+            if(supplied!=null)return Object.Instantiate(supplied);
             var b=new FishingMeshBuilder();
             Color fur=kind==LandAnimalKind.Fox?new Color(.72f,.3f,.1f):new Color(.61f,.53f,.39f);
             if(kind==LandAnimalKind.Tortoise)

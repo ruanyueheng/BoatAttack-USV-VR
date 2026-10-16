@@ -71,7 +71,7 @@ namespace BoatAttack.Fishing
         }
         private GameObject Model(string name,Transform parent)
         {
-            var source=Resources.Load<GameObject>("FishingV028/Coast/"+name);
+            var source=Resources.Load<GameObject>("FishingV029/"+name) ?? Resources.Load<GameObject>("FishingV028/Coast/"+name);
             if(source==null)throw new InvalidOperationException("Missing V028 coast model: "+name);
             var result=Instantiate(source,parent,false);result.name=name;
             foreach(var renderer in result.GetComponentsInChildren<Renderer>()){renderer.sharedMaterial=_palette;renderer.shadowCastingMode=ShadowCastingMode.Off;}

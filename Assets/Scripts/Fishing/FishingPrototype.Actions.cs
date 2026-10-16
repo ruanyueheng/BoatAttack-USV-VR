@@ -85,7 +85,15 @@ namespace BoatAttack.Fishing
             {
                 if(station>=0)
                 {
-                    var root=WorkshopWorld.StationRoot(station);if(root!=null)Offer(new WorldTarget{Kind=WorldTargetKind.Station,Id=station,Root=root},root.position);
+                    var root=WorkshopWorld.StationRoot(station);
+                    if(root!=null)
+                    {
+                        var target=new WorldTarget{Kind=WorldTargetKind.Station,Id=station,Root=root};
+                        var aim=root.position+Vector3.up*.85f-viewCamera.transform.position;
+                        // A nearby station the player faces must not lose E to the repair note behind its apron.
+                        if(FlatDistance(ExplorerPosition,root.position)<1.9f && Vector3.Dot(viewCamera.transform.forward,aim.normalized)>.84f)return target;
+                        Offer(target,root.position);
+                    }
                 }
                 else if(resource!=null)Offer(new WorldTarget{Kind=WorldTargetKind.Resource,Id=resource.Id,Root=resource.Root,Resource=resource},resource.Feet);
             }

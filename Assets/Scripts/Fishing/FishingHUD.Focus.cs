@@ -138,14 +138,25 @@ namespace BoatAttack.Fishing
             var card = Controller.LastCatch;
             float age = CatchAge;
             _fade = Mathf.Min(Mathf.Clamp01(age / .2f), Mathf.Clamp01((CardSeconds - age) / .5f));
-            var r = Layout.Catch;
+            var r = new Rect(530,116,540,172);
             var fish = card.Fish;
-            Glass(r);
-            FishGlyph(new Rect(r.x + 12, r.y + 26, 76, 48), fish.kind, fish.rare);
-            Label(r.x + 102, r.y + 12, 236, 27, FishingSpecies.Name(fish.kind) + "  " + FishingText.Weight(fish.grams), 18, Color.white, true);
-            string result = FishingSpecies.Of(fish.kind).Legendary ? "已放生 · 奖励 +" + card.Bounty : card.Released ? "已放生 · 图鉴与纪录保留" : "已入箱 · 价值 " + fish.value + " 金币";
-            Label(r.x + 102, r.y + 43, 236, 23, result, 14, Gold);
-            Label(r.x + 102, r.y + 69, 236, 20, card.Discovery ? "首次发现 · 写入渔获记录册" : card.PersonalBest ? "刷新个人最大鱼纪录！" : fish.rare ? "珍珠变体" : "J 查看鱼获图鉴", 13, Mint);
+            Card(r,Gold);
+            if(card.Find!=FieldItem.Empty)
+            {
+                FieldIcon(new Rect(r.x+20,r.y+40,112,112),card.Find);
+                Label(r.x+154,r.y+12,360,45,card.Find==FieldItem.SeaTreasure?"捞到宝啦！":"咦？钓到了！",34,Gold,true);
+                Label(r.x+154,r.y+60,360,30,FishingBackpack.Name(card.Find),22,Color.white,true);
+                Label(r.x+154,r.y+96,366,42,FishingCoastRules.FindQuip(card.Find),16,Mint);
+                Label(r.x+154,r.y+142,366,22,card.Find==FieldItem.SeaTreasure?"已放入背包 · 选中后 F 开启":"已放入背包 · 海面又干净了一点",14,Gold);
+                _fade=1f;return;
+            }
+            FishGlyph(new Rect(r.x+20,r.y+52,112,76),fish.kind,fish.rare);
+            Label(r.x+154,r.y+12,360,45,"钓到了！",34,Gold,true);
+            Label(r.x+154,r.y+60,360,30,FishingSpecies.Name(fish.kind)+"  "+FishingText.Weight(fish.grams),22,Color.white,true);
+            bool pending=Controller.HasPendingCatch && Controller.Career.PendingCatch.fish.id==fish.id;
+            string result=pending?"E 拿起检视  ·  F 入箱  ·  X 放生":FishingSpecies.Of(fish.kind).Legendary?"已放生 · 奖励 +"+card.Bounty:card.Released?"已放生 · 图鉴与纪录保留":"已入箱 · 价值 "+fish.value+" 金币";
+            Label(r.x+154,r.y+99,366,23,result,15,Gold);
+            Label(r.x+154,r.y+133,366,22,card.Discovery?"首次发现！":card.PersonalBest?"刷新个人最大鱼纪录！":fish.rare?"珍珠变体":"海风送来的收获",15,Mint);
             _fade = 1f;
         }
 

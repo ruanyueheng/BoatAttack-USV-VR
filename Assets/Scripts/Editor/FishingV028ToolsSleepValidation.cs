@@ -25,7 +25,7 @@ namespace BoatAttack.EditorTools
                 if(slot!=1)Check(c.Career.Backpack.Move(slot,1),"Put lantern into hotbar");
                 c.SelectFieldSlot(1);c.UseFieldItem();c.PresentCharacterFrame();
                 var lamp=c.FieldWorld.transform.Find("Field lantern light").GetComponent<Light>();
-                Check(c.FieldWorld.LanternHeld && c.LanternOn && lamp.enabled,"Held source lantern lights its real chamber");
+                Check(!c.FieldWorld.LanternHeld && c.LanternOn && lamp.enabled,"Equipped source lantern stays on the belt and lights its real chamber");
                 c.SelectFieldSlot(0);c.PresentCharacterFrame();
                 var holster=c.FieldWorld.HolsteredLantern;
                 Check(holster!=null && holster.gameObject.activeInHierarchy && !c.FieldWorld.LanternHeld && c.LanternOn && lamp.enabled,"Switching tools clips the lit lantern to the waist");
@@ -35,7 +35,7 @@ namespace BoatAttack.EditorTools
                 Check(nearest>character.WaistHalfWidth+.025f,"Entire lantern mesh has positive clearance outside the source waist");
                 Check(Vector3.Distance(lamp.transform.position,holster.TransformPoint(FishingFieldWorld.LanternLightPoint))<.002f,"The same warm light follows the visible waist lantern");
                 FishingV016Validation.Capture(c,output,"waist-lantern");
-                c.SelectFieldSlot(1);c.PresentCharacterFrame();Check(c.FieldWorld.LanternHeld && !holster.gameObject.activeSelf,"Equipping returns the same lantern to hand with no duplicate");
+                c.SelectFieldSlot(1);c.PresentCharacterFrame();Check(!c.FieldWorld.LanternHeld && holster.gameObject.activeSelf,"Selecting the lamp keeps both hands free and does not duplicate it");
                 c.SelectFieldSlot(0);c.PresentCharacterFrame();
                 double before=c.Career.Calendar.TotalMinutes;var feet=c.Shore.Position;var eye=c.viewCamera.transform.position;
                 Check(c.Home.Sleep(),"Bed starts the authored getting-on/lying/getting-off motion");

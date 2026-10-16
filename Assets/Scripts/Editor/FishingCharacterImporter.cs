@@ -5,7 +5,7 @@ namespace BoatAttack.EditorTools
 {
     public sealed class FishingCharacterImporter : AssetPostprocessor
     {
-        private bool Character => assetPath=="Assets/Resources/FishingCharacter/BeachCharacter.fbx";
+        private bool Character => assetPath=="Assets/Resources/FishingCharacter/BeachCharacter.fbx" || assetPath=="Assets/Resources/FishingCharacter/9SCharacter.fbx";
         private void OnPreprocessModel()
         {
             if(!Character)return;
@@ -16,7 +16,7 @@ namespace BoatAttack.EditorTools
             model.animationCompression=ModelImporterAnimationCompression.Off;
             model.materialImportMode=ModelImporterMaterialImportMode.ImportStandard;
         }
-        public override uint GetVersion()=>4;
+        public override uint GetVersion()=>5;
         private void OnPostprocessMaterial(Material material)
         {
             if(!Character)return;
@@ -27,6 +27,13 @@ namespace BoatAttack.EditorTools
             if(shader==null)throw new InvalidOperationException("Beach Character requires the installed URP Lit shader.");
             material.shader=shader;
             material.SetColor("_BaseColor",color);material.SetFloat("_Metallic",0);material.SetFloat("_Smoothness",.2f);
+            if(material.name.StartsWith("9S",StringComparison.Ordinal))
+            {
+                var texture=AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Resources/FishingCharacter/"+material.name+"Albedo.png");
+                if(texture==null)throw new InvalidOperationException("Missing supplied character texture: "+material.name);
+                material.SetTexture("_BaseMap",texture);material.SetColor("_BaseColor",Color.white);
+                material.SetFloat("_Cull",0);
+            }
         }
     }
 }

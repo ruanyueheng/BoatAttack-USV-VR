@@ -23,7 +23,7 @@ namespace BoatAttack.Fishing
         {
             var go = new GameObject("Original " + kind + (rare ? " pearl variant" : " fish"), typeof(MeshFilter), typeof(MeshRenderer));
             go.transform.SetParent(parent, false);
-            var source=Resources.Load<GameObject>("FishingFish/"+kind);
+            var source=(kind==FishKind.SeaTurtle?Resources.Load<GameObject>("FishingV029/Turtle"):null) ?? Resources.Load<GameObject>("FishingFish/"+kind);
             var imported=source!=null?source.GetComponentInChildren<MeshFilter>():null;
             go.GetComponent<MeshFilter>().sharedMesh = imported!=null?imported.sharedMesh:Cached(owned, FishingMeshBuilder.FishMeshName(kind, rare), () => FishingMeshBuilder.Fish(kind, rare));
             var renderer = go.GetComponent<MeshRenderer>();
@@ -32,7 +32,7 @@ namespace BoatAttack.Fishing
             {
                 go.name=(kind>=FishKind.SeaTurtle?"Coastal fauna / ":"Hunyuan / ")+kind+(rare?" pearl":"");
                 var material=Palette(owned,palette,"Marine model / "+kind+(rare?" pearl":""),.22f,.12f);
-                var texture=Resources.Load<Texture2D>("FishingFish/"+kind+"Albedo");
+                var texture=kind==FishKind.SeaTurtle?Resources.Load<Texture2D>("FishingV029/TurtleAlbedo"):Resources.Load<Texture2D>("FishingFish/"+kind+"Albedo");
                 material.SetTexture("_BaseMap",texture);
                 material.SetFloat("_Textured",texture!=null?1:0);
                 material.SetVector("_TailMotion",new Vector4(kind>=FishKind.SeaTurtle?.045f:.28f,kind>=FishKind.SeaTurtle?2:4,FishingSpecies.LengthMeters(kind)*.15f,0));

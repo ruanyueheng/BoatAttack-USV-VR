@@ -35,6 +35,9 @@ internal static class CoastRulesTests
         blank.barbecue.remaining=.1f;check(!FishingCareer.TryRestore(blank,out _),"A blank grill cannot carry cooking progress");
         var venom=new FishingCareer();var puffer=Fish("puffer",FishKind.Puffer);venom.Store(puffer);
         check(!venom.BeginBarbecue(puffer.id) && venom.Count==1,"Only supported whole sea fish enter the grill");
+        check(FishingCoastRules.FindQuip(FieldItem.OldBoot).Contains("鞋子")
+            && FishingCoastRules.FindQuip(FieldItem.RustyCan).Contains("罐头")
+            && FishingCoastRules.FindQuip(FieldItem.SeaTreasure).Contains("快递"),"Each sea find has its own readable catch quip");
         check(FishingCoastRules.SeaFind(Fish("first"),false)==FieldItem.Empty
             && FishingCoastRules.SeaFind(Fish("legend",FishKind.Sailfish),true)==FieldItem.Empty,"First discoveries and legendary catches are protected from surprise replacement");
         int junk=0,treasures=0;bool stable=true;CatchRecord treasure=null;FieldItem treasureItem=FieldItem.Empty;

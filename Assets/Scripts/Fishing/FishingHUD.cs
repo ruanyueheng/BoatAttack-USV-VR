@@ -8,7 +8,7 @@ namespace BoatAttack.Fishing
     public sealed partial class FishingHUD : MonoBehaviour
     {
         public FishingPrototype Controller;
-        private const float CardSeconds = 5f;
+        private const float CardSeconds = 7f;
         private Font _font;
         private GUIStyle _label;
         private int _journalPage;
@@ -19,7 +19,7 @@ namespace BoatAttack.Fishing
         public static float LayoutScale(int width, int height) => Mathf.Max(0.01f, Mathf.Min(width / 1600f, height / 900f));
         public int JournalPage { get => _journalPage; set => _journalPage = Mathf.Clamp(value, 0, JournalTabs.Length - 1); }
         private float CatchAge => Controller.Acceptance != null && Controller.Acceptance.KeepCatchCardVisible ? 1f : Time.unscaledTime - Controller.LastCatch.ShownAt;
-        private bool CatchVisible => Controller.LastCatch.Fish != null && CatchAge < CardSeconds;
+        private bool CatchVisible => (Controller.LastCatch.Fish != null || Controller.LastCatch.Find != FieldItem.Empty) && CatchAge < CardSeconds;
 
         public bool BlocksPointer(Vector2 screen, int width, int height)
             => Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || Controller.InventoryOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,

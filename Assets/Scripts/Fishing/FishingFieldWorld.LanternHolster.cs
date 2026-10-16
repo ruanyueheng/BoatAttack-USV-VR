@@ -6,6 +6,7 @@ namespace BoatAttack.Fishing
     public sealed partial class FishingFieldWorld
     {
         private Transform _holsteredLantern;
+        private Transform _lanternMount;
         private Renderer _holsterRenderer;
         private readonly FishingPressEdge _lanternGrip=new FishingPressEdge();
         private bool _lanternInHand;
@@ -39,17 +40,26 @@ namespace BoatAttack.Fishing
             {
                 _holsteredLantern=MeshObject("Waist lantern · grip to lift",ToolMesh(FieldItem.Lantern));
                 _holsterRenderer=_holsteredLantern.GetComponent<Renderer>();_holsterRenderer.sharedMaterials=FishingUserTools.Materials(FieldItem.Lantern);
+                _holsterRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
                 _holsteredLantern.localScale=Vector3.one*LanternScale;
+                var mount=new FishingMeshBuilder();var brass=new Color(.43f,.31f,.14f);var leather=new Color(.16f,.09f,.045f);
+                mount.Tube(new Vector3(-.075f,0,0),new Vector3(.024f,0,0),.012f,.012f,leather);
+                mount.Arc(new Vector3(.025f,-.012f,0),.018f,.004f,20,310,brass,8);
+                mount.Tube(new Vector3(.031f,-.029f,0),new Vector3(.072f,-.067f,0),.007f,.007f,leather,8);
+                mount.Arc(new Vector3(.075f,-.073f,0),.012f,.0035f,0,360,brass,6);
+                var mesh=mount.Finish("Belt hook and short leather lantern strap");_owned.Add(mesh);
+                _lanternMount=MeshObject("Belt hook and short leather lantern strap",mesh);
             }
             if(_holsteredLantern==null)return;
-            _holsteredLantern.gameObject.SetActive(visible);if(!visible)return;
+            _holsteredLantern.gameObject.SetActive(visible);_lanternMount.gameObject.SetActive(visible);if(!visible)return;
             var character=_c.Shore.Character;var rotation=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0);
             var bounds=ToolMesh(FieldItem.Lantern).bounds;
-            float side=character.WaistHalfWidth+(LanternPalm.x-bounds.min.x)*LanternScale+.05f;
-            var center=character.HipPosition+rotation*new Vector3(side,0,.025f);
-            _holsteredLantern.SetPositionAndRotation(center-rotation*(LanternPalm*LanternScale),rotation);
+            float side=character.WaistHalfWidth+(LanternHangPoint.x-bounds.min.x)*LanternScale+.035f;
+            var center=character.BeltPosition+rotation*new Vector3(side,-.073f,.025f);
+            _holsteredLantern.SetPositionAndRotation(center-rotation*(LanternHangPoint*LanternScale),rotation);
+            _lanternMount.SetPositionAndRotation(center-rotation*new Vector3(.075f,-.073f,0),rotation);
             if(_holsterGlow==null)_holsterGlow=new MaterialPropertyBlock();
-            _holsterGlow.SetColor("_EmissionColor",_c.LanternOn?new Color(1,.55f,.16f)*3.5f:Color.black);_holsterRenderer.SetPropertyBlock(_holsterGlow,1);
+            _holsterGlow.SetColor("_EmissionColor",_c.LanternOn?new Color(1,.55f,.16f)*2f:Color.black);_holsterRenderer.SetPropertyBlock(_holsterGlow,1);
             if(_c.LanternOn)
             {_lamp.enabled=true;_lamp.transform.position=_holsteredLantern.TransformPoint(LanternLightPoint);}
         }

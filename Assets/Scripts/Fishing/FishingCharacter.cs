@@ -4,9 +4,10 @@ using UnityEngine;
 using UnityEngine.Rendering;
 namespace BoatAttack.Fishing
 {
-    /// <summary>Quaternius Beach Character (CC0). Imported rig/locomotion, not primitive body blocks.</summary>
+    /// <summary>Supplied 9S surface on the calibrated Quaternius rig and locomotion.</summary>
     public sealed partial class FishingCharacter : MonoBehaviour
     {
+        public const string Resource="FishingCharacter/9SCharacter";
         private Animation _animation;
         private Transform _model,_body,_head,_leftThigh,_rightThigh,_leftShin,_rightShin,_leftAnkle,_rightAnkle,_leftFoot,_rightFoot;
         private LocalPose _modelRest;
@@ -58,9 +59,9 @@ namespace BoatAttack.Fishing
         }
         public void Build()
         {
-            var prefab=Resources.Load<GameObject>("FishingCharacter/BeachCharacter");
+            var prefab=Resources.Load<GameObject>(Resource);
             if(prefab==null)throw new InvalidOperationException("Missing CC0 Beach Character FBX");
-            _model=Instantiate(prefab,transform,false).transform;_model.name="Beach Character • Quaternius (CC0)";
+            _model=Instantiate(prefab,transform,false).transform;_model.name="9S • supplied surface / calibrated game rig";
             _animation=_model.GetComponent<Animation>();
             if(_animation==null)_animation=_model.gameObject.AddComponent<Animation>();
             _animation.playAutomatically=false;_animation.cullingType=AnimationCullingType.AlwaysAnimate;
@@ -88,7 +89,8 @@ namespace BoatAttack.Fishing
                 Destroy(baked);
             }
             if(first || bounds.size.y<.001f)throw new InvalidOperationException("Beach Character has no valid skin vertices");
-            float scale=1.75f/bounds.size.y;_model.localScale*=scale;
+            // 新人物约1.67m，保持已校准手掌与工具的物理尺寸。
+            float scale=1.67f/bounds.size.y;_model.localScale*=scale;
             _model.localPosition=Vector3.up*(-bounds.min.y*scale);
             _modelRest=new LocalPose(_model);
             foreach(var bone in _model.GetComponentsInChildren<Transform>())

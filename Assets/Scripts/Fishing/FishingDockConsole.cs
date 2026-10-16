@@ -10,7 +10,7 @@ namespace BoatAttack.Fishing
     /// <summary>World-space command surface. Disabled targets still consume the trigger, never leaking into casting.</summary>
     public sealed class FishingDockConsole : MonoBehaviour
     {
-        private FishingPrototype _c;private Canvas _canvas;private Text _status,_message;private LineRenderer _ray;
+        private FishingPrototype _c;private Canvas _canvas;private Text _title,_status,_message;private LineRenderer _ray;
         private readonly Dictionary<FishingDockAction,Image> _buttons=new Dictionary<FishingDockAction,Image>();
         private readonly FishingPressEdge _edge=new FishingPressEdge();
         private FishingDockButton _hover;private FishingDockAction? _offer;private string _quote;private float _until;
@@ -30,7 +30,7 @@ namespace BoatAttack.Fishing
             root.AddComponent<CanvasScaler>().dynamicPixelsPerUnit=3;
             var panel=root.AddComponent<Image>();panel.color=FishingUITheme.Paper;panel.sprite=FishingUITheme.PaperSprite;panel.type=Image.Type.Sliced;panel.material=FishingUITheme.WorldMaterial;panel.raycastTarget=false;
             FishingUITheme.Bind(panel,0);
-            var title=Label(root.transform,new Vector2(26,-18),new Vector2(628,60),40);title.text="码头事务";title.font=FishingUITheme.Heading;
+            _title=Label(root.transform,new Vector2(26,-18),new Vector2(628,60),40);_title.text="码头事务";_title.font=FishingUITheme.Heading;
             _status=Label(root.transform,new Vector2(26,-85),new Vector2(628,250),21);
             _message=Label(root.transform,new Vector2(26,-704),new Vector2(628,76),21);
             Label(root.transform,new Vector2(26,-786),new Vector2(628,32),20).text="B 收起  ·  右手指向  ·  扳机选择";
@@ -138,6 +138,7 @@ namespace BoatAttack.Fishing
             if(!_c.HasPendingCatch)_pendingDismissed=false;
             _canvas.gameObject.SetActive((XRSettings.isDeviceActive && !_c.Ashore && !_c.StoryBlocksGameplay && (_requested || (_c.HasPendingCatch && !_pendingDismissed)) && (_c.XRNotebook==null || !_c.XRNotebook.IsOpen)) || _preview);
             if(!_canvas.gameObject.activeSelf)return;
+            _title.text=_c.HasPendingCatch?"钓到了！":"码头事务";
             var yaw=Quaternion.Euler(0,_c.Player.transform.eulerAngles.y+(_c.Anchored?35:0),0);
             var boat=_c.Player.transform.position;
             float height=_c.XRSeat.Ready?_c.XRSeat.Origin.transform.position.y+1.3f:boat.y+1.55f;
