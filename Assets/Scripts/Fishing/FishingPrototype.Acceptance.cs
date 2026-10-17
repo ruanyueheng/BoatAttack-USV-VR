@@ -31,6 +31,7 @@ namespace BoatAttack.Fishing
                 throw new InvalidOperationException("Acceptance fixtures require an explicitly opted-in test profile.");
             // Validate before changing any live state. FreePlay is intentionally never synthesized.
             FishingCareer fixture = selected == FishingAcceptanceCase.FreePlay ? null : FishingAcceptanceCases.CreateCareer(selected);
+            StartMenuOpen=false;MenuControls=false;CancelGuideOpening();
             Letter?.Close();CancelWorldAction();_workshopReceipt=false;TackleShop?.Close();Residents?.Close();Realms?.Abort();CoastWorld?.CloseMenu();
             if (InventoryOpen) ToggleInventory();
             if (JournalOpen) ToggleJournal();
@@ -150,6 +151,19 @@ namespace BoatAttack.Fishing
                     break;
                 case FishingAcceptanceCase.CashierDialogue: PrepareAcceptanceShore(selected);break;
                 case FishingAcceptanceCase.ShopSupplies: PrepareAcceptanceShore(selected);_hud.ShopCategory=2;break;
+                case FishingAcceptanceCase.StartMenu:OpenStartMenu();break;
+                case FishingAcceptanceCase.MenuControls:OpenStartMenu();MenuControls=true;break;
+                case FishingAcceptanceCase.NatureJournal:_hud.JournalPage=2;ToggleJournal();break;
+                case FishingAcceptanceCase.LegendJournal:_hud.JournalPage=1;ToggleJournal();break;
+                case FishingAcceptanceCase.ShoreJournal:_hud.JournalPage=3;ToggleJournal();break;
+                case FishingAcceptanceCase.GuideOpening:
+                    PrepareAcceptanceShore(FishingAcceptanceCase.ShoreFirstPerson);
+                    View.ResetLook();
+                    if(!OpenFieldGuide())throw new InvalidOperationException("Guide fixture could not start opening");
+                    GuideOpenAmount=.82f;_guideAge=.82f;break;
+                case FishingAcceptanceCase.HomeMoonlight:
+                    Teleport(Home.Berth+Vector3.back*55+Vector3.up,Quaternion.identity);
+                    if(FirstPerson)ToggleView();SetDayNight(true);View.ResetLook();break;
                 case FishingAcceptanceCase.Settings: TogglePause(); break;
                 case FishingAcceptanceCase.ShoreFirstPerson:
                 case FishingAcceptanceCase.ShoreThirdPerson:

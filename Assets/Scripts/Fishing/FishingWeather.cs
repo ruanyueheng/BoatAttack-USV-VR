@@ -149,15 +149,15 @@ namespace BoatAttack.Fishing
                 // This island uses _SkyTint, not the cubemap shader's _Tint. Its original
                 // exposure=4 blows out the horizon, so only this runtime clone is capped.
                 if(_skyTintProperty!=null)_sky.SetColor(_skyTintProperty,(_skyTintProperty=="_SkyTint"?new Color(.5f,.5f,.5f):_skyTint)*sky);
-                if(_sky.HasProperty("_Exposure"))_sky.SetFloat("_Exposure",Mathf.Min(_skyExposure,1.4f)*Mathf.Lerp(.72f,1,intensity)*Mathf.Lerp(.08f,1,daylight));
+                if(_sky.HasProperty("_Exposure"))_sky.SetFloat("_Exposure",Mathf.Min(_skyExposure,1.4f)*Mathf.Lerp(.72f,1,intensity)*Mathf.Lerp(.20f,1,daylight));
             }
             RenderSettings.fog=true;RenderSettings.fogMode=FogMode.Linear;
             RenderSettings.fogColor=Color.Lerp(new Color(.018f,.031f,.064f),Color.Lerp(a.fog,b.fog,t),daylight);RenderSettings.fogStartDistance=35;
             RenderSettings.fogEndDistance=Mathf.Lerp(a.distance,b.distance,t);
             RenderSettings.ambientMode=AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor=Color.Lerp(new Color(.015f,.025f,.05f),_ambient*Color.Lerp(Color.white,sky,.35f),daylight);
-            RenderSettings.ambientEquatorColor=Color.Lerp(new Color(.009f,.014f,.025f),new Color(.32f,.38f,.39f),daylight);
-            RenderSettings.ambientGroundColor=Color.Lerp(new Color(.004f,.007f,.012f),new Color(.15f,.18f,.18f),daylight);
+            RenderSettings.ambientSkyColor=Color.Lerp(new Color(.028f,.043f,.075f),_ambient*Color.Lerp(Color.white,sky,.35f),daylight);
+            RenderSettings.ambientEquatorColor=Color.Lerp(new Color(.015f,.023f,.040f),new Color(.32f,.38f,.39f),daylight);
+            RenderSettings.ambientGroundColor=Color.Lerp(new Color(.008f,.012f,.019f),new Color(.15f,.18f,.18f),daylight);
             RenderSettings.ambientIntensity=_ambientIntensity*Mathf.Lerp(.82f,1,intensity);
             RenderSettings.reflectionIntensity=_reflection*Mathf.Lerp(.08f,1,daylight);
             _rainAmount=Mathf.Lerp(a.rain,b.rain,t);

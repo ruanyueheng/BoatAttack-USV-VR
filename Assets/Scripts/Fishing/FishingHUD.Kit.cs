@@ -172,12 +172,12 @@ namespace BoatAttack.Fishing
         }
 
         /// <summary>All catalog entries use portraits of their actual game meshes.</summary>
-        private void FishGlyph(Rect r, FishKind kind, bool rare)
+        private void FishGlyph(Rect r, FishKind kind, bool rare,bool undiscovered=false)
         {
             if(!_fishThumbnails.TryGetValue(kind,out var thumbnail))
                 _fishThumbnails[kind]=thumbnail=Resources.Load<Texture2D>("FishingFish/"+kind+"Thumbnail");
             if(thumbnail==null)return;
-            var color=GUI.color;GUI.color=Faded(rare?new Color(1,.88f,.65f):Color.white);
+            var color=GUI.color;GUI.color=Faded(undiscovered?new Color(.42f,.50f,.55f,.35f):rare?new Color(1,.88f,.65f):Color.white);
             GUI.DrawTexture(r,thumbnail,ScaleMode.ScaleToFit,true);GUI.color=color;
         }
         private readonly System.Collections.Generic.Dictionary<FishKind,Texture2D> _fishThumbnails=new System.Collections.Generic.Dictionary<FishKind,Texture2D>();

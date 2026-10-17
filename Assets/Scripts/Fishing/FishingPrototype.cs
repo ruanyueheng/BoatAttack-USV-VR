@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.30.0";
+        public const string Version = "0.31.0";
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
@@ -59,6 +59,7 @@ namespace BoatAttack.Fishing
         public int NavigationCount => HomeNavigationIndex + 1;
         public int IslandNavigationIndex(int island) => ShopNavigationIndex + 1 + island;
         public FishingWeather Weather { get; private set; }
+        public FishingNightscape Nightscape { get; private set; }
         public FishingEcology Ecology { get; private set; }
         public Shader PaletteShader { get; private set; }
         public bool FirstPerson => View != null && View.FirstPerson;
@@ -196,6 +197,7 @@ namespace BoatAttack.Fishing
             WaterRoute=gameObject.AddComponent<FishingWaterRoute>();WaterRoute.Build(this);
             Home=gameObject.AddComponent<FishingHome>();Home.Build(this);
             CoastWorld=gameObject.AddComponent<FishingV028CoastWorld>();CoastWorld.Build(this);
+            Nightscape=gameObject.AddComponent<FishingNightscape>();Nightscape.Build(this);
             Prologue=gameObject.AddComponent<FishingPrologue>();Prologue.Build(this);
             Shore.RefreshClimbRoutes();
             ConfigurePresentation();
@@ -210,8 +212,7 @@ namespace BoatAttack.Fishing
                 ?"欢迎来到回潮海。校准完成后将播放序章和手柄教学；B 可随时打开潮汐手册。"
                 :"潮汐回响：N选择岛屿，低速G下船，E与居民交谈 / 进入潮纹秘境。J查看世界航记；店员可介绍商品，离岸可游泳。"):warning,10f);
             _initialized=true;
-            if(!Automated && !HasIsolatedProfile && !Career.PrologueSeen && !HasPendingCatch
-                && !_xrActive && Application.platform!=RuntimePlatform.Android)Prologue.Begin();
+            InitializeStartMenu();
             if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }
             else if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
             Debug.Log("[FISHING] Prototype v"+Version+" initialized. Procedural and Hunyuan fish; desktop/XR input.");
@@ -230,6 +231,8 @@ namespace BoatAttack.Fishing
             }
             var k=Keyboard.current;var m=Mouse.current;var g=Gamepad.current;
             bool focused=Automated || Application.isFocused;
+            if(TickStartMenu(k)){Shore.Tick(false);AnimateEquipment();return;}
+            if(TickGuideOpening(k,focused)){Shore.Tick(false);AnimateEquipment();return;}
             if(TickStoryInput(k,focused,xr)){Shore.Tick(false);AnimateEquipment();return;}
             if(!Anchored || HasPendingCatch)CastMotion.Reset();
             else if(Paused || !focused)CastMotion.CancelPreparation();
@@ -252,7 +255,7 @@ namespace BoatAttack.Fishing
                 Shore.Tick(false);return;
             }
             if(TickItemInspection(k,m,focused)){Shore.Tick(false);AnimateEquipment();return;}
-            if(!xr && !Automated && _input.Current.pause) { if(alignmentFrame)Expedition.Cancel();else if(JournalOpen)ToggleJournal();else TogglePause(); }
+            if(!xr && !Automated && _input.Current.pause) { if(alignmentFrame)Expedition.Cancel();else if(JournalOpen)ToggleJournal();else if(MenuControls)MenuControls=false;else TogglePause(); }
             if(!Automated && focused && k!=null && k.jKey.wasPressedThisFrame && (!Paused || JournalOpen))ToggleJournal();
             TickWorldAction(Time.deltaTime,focused,xr);
             if(WorldActionBlocksGameplay)
@@ -416,6 +419,11 @@ namespace BoatAttack.Fishing
             RifleHunting.Present();
             // 全部工具和掌心目标落位后才解同源骨架；随后只读取竿尖画线，不再次采样。
             Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right,UnityEngine.XR.XRSettings.isDeviceActive);
+            if(Acceptance!=null && Acceptance.FreezeScenario && Acceptance.CurrentCase==FishingAcceptanceCase.HomeMoonlight)
+            {
+                var island=Home.Origin;var position=island+new Vector3(26,8,-61);var target=island+new Vector3(-9,17,10);
+                viewCamera.transform.SetPositionAndRotation(position,Quaternion.LookRotation(target-position));
+            }
             Shore.Character.SetOpticalView(View.OpticalView || ((Letter.Open || Prologue.Open) && !UnityEngine.XR.XRSettings.isDeviceActive));DockConsole.Present();
         }
         public void ToggleView()
@@ -619,7 +627,7 @@ namespace BoatAttack.Fishing
             TackleShop?.Close();
             if(InventoryOpen)return;
             if(Paused && !JournalOpen)return;
-            JournalOpen=!JournalOpen;TogglePause();
+            JournalOpen=!JournalOpen;if(!JournalOpen){ReadingFieldGuide=false;GuideOpenAmount=0;}TogglePause();
         }
         public void ToggleComfort()
         {

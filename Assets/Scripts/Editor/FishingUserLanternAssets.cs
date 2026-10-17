@@ -37,10 +37,13 @@ namespace BoatAttack.EditorTools
                     material.SetFloat("_Cull",0);material.doubleSidedGI=true;
                     if(i==1)
                     {
+                        material.SetTexture("_BaseMap",Texture2D.whiteTexture);material.SetColor("_BaseColor",new Color(.91f,.51f,.16f));
+                        material.SetTexture("_MetallicGlossMap",null);material.DisableKeyword("_METALLICSPECGLOSSMAP");
+                        material.SetTexture("_BumpMap",null);material.DisableKeyword("_NORMALMAP");material.SetFloat("_Smoothness",.18f);
                         material.SetTexture("_EmissionMap",Texture2D.whiteTexture);material.EnableKeyword("_EMISSION");
                         material.globalIlluminationFlags=MaterialGlobalIlluminationFlags.RealtimeEmissive;
                     }
-                    else material.DisableKeyword("_EMISSION");
+                    else {material.DisableKeyword("_EMISSION");material.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");material.SetFloat("_EnvironmentReflections",0);}
                     EditorUtility.SetDirty(material);materials[i]=material;
                 }
                 var source=UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(folder+"Lantern.fbx"));

@@ -1,0 +1,27 @@
+{
+  "grip_local_m": [
+    0.018,
+    0.391,
+    -0.017
+  ],
+  "rotation_x_deg": -60,
+  "finger_curls": [
+    0.8,
+    0.8,
+    0.8,
+    0.8,
+    0.8
+  ],
+  "full_hand_vertices": 2685,
+  "deep_inside_metal_over_8mm": 0,
+  "nearest_finger_surface_gap_local_m": [
+    0.00038,
+    0.00087,
+    0.00029,
+    0.00041,
+    7e-05
+  ],
+  "lantern_scale": 0.75,
+  "validation": "Logs/v031-grip-parity.log",
+  "note": "Nonconvex ring uses closed-mesh ray parity; its empty centre is not solid metal."
+}

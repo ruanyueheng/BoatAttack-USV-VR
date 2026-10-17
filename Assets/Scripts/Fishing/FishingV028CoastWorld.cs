@@ -139,6 +139,8 @@ namespace BoatAttack.Fishing
             _sign.gameObject.SetActive((_c.ExplorerPosition-Grill.position).sqrMagnitude<18*18);
             if(_sign.gameObject.activeSelf)_sign.transform.rotation=Quaternion.LookRotation(_sign.transform.position-_c.viewCamera.transform.position);
         }
+        public void ClearFindPresentation(){if(_find!=null)Destroy(_find);_find=null;}
+        public bool ShowingSeaFind=>_find!=null;
         public void ShowSeaFind(FieldItem item)
         {
             if(_find!=null)Destroy(_find);_find=Model(item.ToString(),transform);_findAge=0;

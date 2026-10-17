@@ -36,7 +36,6 @@ namespace BoatAttack.EditorTools
             foreach(var item in new[]{FieldItem.StonePickaxe,FieldItem.IronPickaxe,FieldItem.Binoculars,FieldItem.FieldGuide,FieldItem.Lantern})
             {
                 Equip(c,item);c.View.ResetLook();
-                if(item==FieldItem.Lantern)Check(c.InspectFieldItem(c.Career.Backpack.Selected),"明确检视腰挂提灯时才拿到手中");
                 for(int i=0;i<3;i++)yield return null;
                 c.PresentCharacterFrame();Describe(c,item.ToString());Capture(c,(shot++).ToString("D2")+"-"+item);
                 Check(c.FieldWorld.PresentedItem==item && c.FieldWorld.HeldToolRenderer.enabled,"平视持物可见 "+item);
@@ -144,15 +143,15 @@ namespace BoatAttack.EditorTools
         }
         private static void CheckGrasp(FishingPrototype c,FieldItem item)
         {
-            bool binocular=item==FieldItem.Binoculars,pick=item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe;
-            if(!binocular && !pick)return;
+            bool binocular=item==FieldItem.Binoculars,pick=item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe,lantern=item==FieldItem.Lantern;
+            if(!binocular && !pick && !lantern)return;
             var body=c.Shore.Character.BodySkin;var baked=new Mesh();
             try
             {
                 // Include the normalized renderer scale so these vertices match the rendered skin.
                 body.BakeMesh(baked,true);var vertices=baked.vertices;var weights=body.sharedMesh.boneWeights;var bones=body.bones;
-                int hands=0,inside=0,lens=0;var touched=new bool[5];var digitNames=new[]{"Index","Middle","Ring","Pinky","Thumb"};bool wraps=false;float scale=binocular?FishingFieldWorld.BinocularScale:FishingFieldWorld.PickScale;
-                var toolMesh=pick?c.FieldWorld.HeldTool.GetComponent<MeshFilter>().sharedMesh:null;
+                int hands=0,inside=0,lens=0;var touched=new bool[5];var digitNames=new[]{"Index","Middle","Ring","Pinky","Thumb"};bool wraps=false;float scale=binocular?FishingFieldWorld.BinocularScale:lantern?FishingFieldWorld.LanternScale:FishingFieldWorld.PickScale;
+                var toolMesh=pick || lantern?c.FieldWorld.HeldTool.GetComponent<MeshFilter>().sharedMesh:null;
                 var surfaceVertices=toolMesh!=null?toolMesh.vertices:null;var surfaceTriangles=toolMesh!=null?toolMesh.triangles:null;
                 var nearestFinger=new[]{float.MaxValue,float.MaxValue,float.MaxValue,float.MaxValue,float.MaxValue};
                 var insideParts=new int[6];
@@ -182,28 +181,45 @@ namespace BoatAttack.EditorTools
                         // The supplied curved wooden handle replaces the old procedural cylinder.
                         // Measure the actual imported surface, retaining the same penetration/contact tolerances.
                         float gap=SignedSurfaceDistance(p,surfaceVertices,surfaceTriangles);
-                        if(gap<-.008f/scale)inside++;
+                        bool penetrates=gap<-.008f/scale && (!lantern || InsideClosedMesh(p,surfaceVertices,surfaceTriangles));
+                        if(penetrates)inside++;
                         bool digitVertex=false;
                         for(int digit=0;digit<5;digit++)
                         {
                             if(Contribution(weights[i],bones,n=>n.StartsWith(digitNames[digit]) && n.EndsWith(".R"))<=.5f)continue;
-                            digitVertex=true;if(gap<-.008f/scale)insideParts[digit]++;
+                            digitVertex=true;if(penetrates)insideParts[digit]++;
                             nearestFinger[digit]=Mathf.Min(nearestFinger[digit],Mathf.Abs(gap));
                             if(Mathf.Abs(gap)<.009f)touched[digit]=true;
                         }
-                        if(!digitVertex && gap<-.008f/scale)insideParts[5]++;
+                        if(!digitVertex && penetrates)insideParts[5]++;
                         if(Mathf.Abs(gap)<.009f)wraps |= p.x<-.012f;
                     }
                 }
                 Debug.Log("[FIRST-PERSON] GRASP: "+item+" handVertices="+hands+" deepInside="+inside+" frontLens="+lens);
-                if(pick)Debug.Log("[FIRST-PERSON] SUPPLIED HANDLE: nearest finger distances="+string.Join(", ",Array.ConvertAll(nearestFinger,d=>d.ToString("F5")))+" inside by Index/Middle/Ring/Pinky/Thumb/Palm="+string.Join(",",insideParts)+" farSide="+wraps);
+                if(pick || lantern)Debug.Log("[FIRST-PERSON] SUPPLIED HANDLE: nearest finger distances="+string.Join(", ",Array.ConvertAll(nearestFinger,d=>d.ToString("F5")))+" inside by Index/Middle/Ring/Pinky/Thumb/Palm="+string.Join(",",insideParts)+" farSide="+wraps);
                 Check(lens==0,item+" 手部不进入前物镜光路");
                 Check(inside<=hands*.01f,item+" 深入物体 8mm 以上的手部顶点不超过 1%");
-                if(pick){int count=0;foreach(bool contact in touched)if(contact)count++;Check(count==5 && wraps,item+" 五指贴近柄面并包到另一侧，不是隔空握拳");}
+                if(pick || lantern){int count=0;foreach(bool contact in touched)if(contact)count++;Check(count==5 && wraps,item+" 五指贴近柄面并包到另一侧，不是隔空握拳");}
             }
             finally{UnityEngine.Object.Destroy(baked);}
         }
-        private static float SignedSurfaceDistance(Vector3 p,Vector3[] vertices,int[] triangles)
+        internal static bool InsideClosedMesh(Vector3 point,Vector3[] vertices,int[] triangles)
+        {
+            // A lantern handle is a ring: the empty centre is outside the metal, even beside an inward-facing normal.
+            var direction=new Vector3(.937f,.271f,.219f).normalized;var hits=new System.Collections.Generic.List<float>();
+            for(int i=0;i<triangles.Length;i+=3)
+            {
+                var a=vertices[triangles[i]];var edge=vertices[triangles[i+1]]-a;var other=vertices[triangles[i+2]]-a;
+                var h=Vector3.Cross(direction,other);float determinant=Vector3.Dot(edge,h);if(Mathf.Abs(determinant)<1e-9f)continue;
+                var offset=point-a;float u=Vector3.Dot(offset,h)/determinant;if(u<0 || u>1)continue;
+                var q=Vector3.Cross(offset,edge);float v=Vector3.Dot(direction,q)/determinant;if(v<0 || u+v>1)continue;
+                float distance=Vector3.Dot(other,q)/determinant;if(distance>1e-5f)hits.Add(distance);
+            }
+            hits.Sort();int count=0;float last=-1;
+            foreach(float hit in hits)if(hit-last>.0001f){count++;last=hit;}
+            return count%2==1;
+        }
+        internal static float SignedSurfaceDistance(Vector3 p,Vector3[] vertices,int[] triangles)
         {
             float nearest=float.MaxValue,signed=0;
             for(int i=0;i<triangles.Length;i+=3)

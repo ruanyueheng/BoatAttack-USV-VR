@@ -1,10 +1,10 @@
-# BoatAttack USV VR — v0.30.0 海风来信与腰间灯火
+# BoatAttack USV VR — v0.31.0 循灯而归
 
-当前版本：[第30版试玩与操作说明](Docs/PLAY_V030.md) · [验证记录](Docs/VALIDATION_V030.md)。加入海底拾获幽默钓获框、带邮戳的牛皮纸来信、新版腰挂复古提灯和用户9S人物；保留[第29版完整改进](Docs/PLAY_V029.md)，两版合并提交PR。
+当前版本：[第31版试玩与操作说明](Docs/PLAY_V031.md) · [验证记录](Docs/VALIDATION_V031.md) · [设计记录](Docs/DESIGN_V031.md)。新增夜海开始菜单与显示模式切换，修正手持提灯与低位自动蹲下采集，加入实体翻书、七章插画手札、星月夜景与家岛环扫灯塔；保留[第30版内容](Docs/PLAY_V030.md)和既有v13存档。
 
 基于 Unity Boat Attack，使用 **Unity 2022.3.62f1 / URP 14.0.12**。第21版加入每次不同的遛鱼节奏、传说鱼反扑、10秒抄网窗口、图鉴调查解锁、天气与潮汐鱼种条件、加速过热和二级船舶专精取舍。
 
-**Ctrl + W 加速，Shift 刹车，S 倒航。** 注意热量，过热后巡航冷却。J 查看调查清单与出没条件，低速 G 下船；E 交谈、寻宝或抄鱼。四岛、秘境、游泳、攀登继续可用，使用独立 v13 存档并兼容迁移 v12 进度，原 v12 文件保留。Windows 试玩入口：`Builds/FishingPrototype-v0.30.0/FishingPrototype.exe`；PICO 安装包：`Builds/FishingPrototype-v0.30.0-Android/FishingPrototype.apk`。每版用 `Tools/Run-FishingBuilds.ps1` 生成并校验两端，电脑便携包为 `Builds/FishingPrototype-v0.30.0-Windows.zip`。
+**Ctrl + W 加速，Shift 刹车，S 倒航。** 注意热量，过热后巡航冷却。J 查看调查清单与出没条件，低速 G 下船；E 交谈、寻宝或抄鱼。四岛、秘境、游泳、攀登继续可用，使用独立 v13 存档并兼容迁移 v12 进度，原 v12 文件保留。Windows 试玩入口：`Builds/FishingPrototype-v0.31.0/FishingPrototype.exe`；PICO 安装包：`Builds/FishingPrototype-v0.31.0-Android/FishingPrototype.apk`。每版用 `Tools/Run-FishingBuilds.ps1` 生成并校验两端，电脑便携包为 `Builds/FishingPrototype-v0.31.0-Windows.zip`。
 
 - [第21版操作与改进](Docs/PLAY_V021.md)
 - [第21版验证记录](Docs/VALIDATION_V021.md)
