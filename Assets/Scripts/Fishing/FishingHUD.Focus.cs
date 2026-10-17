@@ -93,7 +93,7 @@ namespace BoatAttack.Fishing
             {
                 switch (s.Phase)
                 {
-                    case CatchPhase.Waiting: title = c.CastMotion.Casting?"浮标飞向海面":"等待咬钩…"; help = c.CastMotion.Casting?"鱼线正在放出 · 落水后开始等待":"留意浮标与声音，出现咬钩提示再点击左键"; break;
+                    case CatchPhase.Waiting: title = c.CastMotion.Casting?"浮标飞向海面":s.BitePreview>0?"浮标轻啄 · 还没吞钩":"等待咬钩…"; help = c.CastMotion.Casting?"鱼线正在放出 · 落水后开始等待":s.BitePreview>0?"先别提竿，等浮标明显下沉、出现咬钩提示":"留意浮标与声音，出现咬钩提示再点击左键"; break;
                     case CatchPhase.Bite: title = (s.Species.Legendary ? "金帆旗鱼！" : "咬钩了！") + "点击左键提竿"; help = "剩余 " + s.Remaining.ToString("0.0") + " 秒"; accent = Gold; break;
                     case CatchPhase.Fighting: title = FightTitle(s); help = ""; accent = s.Beat == FishBeat.Leap || s.Tension > .78f ? Danger : Mint; break;
                     case CatchPhase.Landing: title = "剩余 "+s.Remaining.ToString("0.0")+"秒 · 松开收线，E 抄网"; help = "XR：自动泄力；左握键拿网，覆盖鱼体后轻抬"; break;
@@ -124,12 +124,19 @@ namespace BoatAttack.Fishing
 
         private void DrawCompactFight(Rect r, CatchSession s, Color accent)
         {
-            Label(r.x + 20, r.y + 47, 300, 22, FishingSpecies.Name(s.Kind) + " · 张力 " + (s.Tension * 100).ToString("0") + "%", 15, Color.white);
-            var bar = new Rect(r.x + 20, r.y + 80, 344, 9);
-            Bar(bar, s.Tension, accent);
+            string direction=s.FishDirection<-.2f?"鱼向左游  ←":s.FishDirection>.2f?"→  鱼向右游":"鱼在转向";
+            string steer=s.FishDirection<-.2f?"D / → 向右控竿":s.FishDirection>.2f?"A / ← 向左控竿":"保持收线节奏";
+            string quality=s.ControlQuality>.25f?"反向控竿有效":s.ControlQuality<-.25f?"顺着鱼拉会增加张力":steer;
+            Label(r.x+20,r.y+43,588,22,direction+"  ·  "+quality,15,s.ControlQuality<-.25f?Danger:Mint,true);
+            Label(r.x+20,r.y+69,344,20,"鱼线张力 "+(s.Tension*100).ToString("0")+"%"+(s.Tension>.86f?" · 松线！":""),13,Muted);
+            Label(new Rect(r.x+390,r.y+69,218,20),"余线 "+s.Distance.ToString("0.0")+" m",13,Muted,false,TextAnchor.MiddleRight);
+            var bar = new Rect(r.x + 20, r.y + 95, 344, 7);
+            Bar(bar, s.Tension, s.Tension>.78f?Danger:accent);
             Fill(bar.x + bar.width * .78f, bar.y - 4, 1, 17, Muted);
-            Label(new Rect(r.x + 390, r.y + 47, 218, 22), "余线 " + s.Distance.ToString("0.0") + " m", 15, Muted, false, TextAnchor.UpperRight);
-            Bar(new Rect(r.x + 394, r.y + 80, 214, 9), 1 - s.Distance / Mathf.Max(.01f, s.MaxDistance), Sky);
+            Bar(new Rect(r.x+394,r.y+95,214,7),1-s.Distance/Mathf.Max(.01f,s.MaxDistance),Sky);
+            Label(r.x+20,r.y+115,158,20,"鱼的体力 "+(s.Stamina*100).ToString("0")+"%",13,Faint);
+            Bar(new Rect(r.x+174,r.y+123,126,4),s.Stamina,Gold);
+            Label(new Rect(r.x+318,r.y+111,290,24),"左键收线 · 松开放线 · A/D 控竿",13,Muted,false,TextAnchor.MiddleRight);
         }
 
         private void DrawCatchToast()

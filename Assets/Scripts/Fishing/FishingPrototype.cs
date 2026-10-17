@@ -337,7 +337,8 @@ namespace BoatAttack.Fishing
             {
                 bool reel=Automated?AutomationReel:_xrActive?Hands.XRReeling:(pointerReady && !overTools && !rightHeld && leftHeld)||(gamepadReady && g!=null && g.rightTrigger.ReadValue()>0.5f);
                 _reeling=reel && Session.Phase==CatchPhase.Fighting;
-                if(!CastMotion.Casting && (Acceptance == null || !Acceptance.FreezeScenario)) Session.Tick(Time.deltaTime,reel);
+                RodControl=ReadRodControl(k,g,pointerReady,gamepadReady);
+                if(!CastMotion.Casting && (Acceptance == null || !Acceptance.FreezeScenario)) Session.Tick(Time.deltaTime,reel,RodControl);
                 if(Session.Phase!=_previousPhase)
                 {
                     if(Session.Phase==CatchPhase.Bite)
@@ -397,6 +398,7 @@ namespace BoatAttack.Fishing
             if(_initialized)
             {
                 PresentCharacterFrame(Time.deltaTime);
+                Angling.PresentRod(AnglingAvailable?Time.deltaTime:0);
                 if(_line.enabled)
                 {
                     var target=_line.GetPosition(24);
@@ -427,6 +429,7 @@ namespace BoatAttack.Fishing
         }
         private void ResetToolInput()
         {
+            RodControl=0;_rodControlReady=false;Angling?.Tick(0,false,false);
             CancelWorldAction();FieldWorld?.ClearToolPresentation();
             TackleShop?.Close();
             Residents?.Close();
@@ -496,6 +499,7 @@ namespace BoatAttack.Fishing
             if(cast)
             {
                 CastMotion.Launch(power);_castOrigin=_rodTip.position;_castSplash=false;
+                Angling.BeginCast(power);
                 _castGround=Spot;_previousPhase=CatchPhase.Waiting;
                 _fish.SetActive(false);Destroy(_fish);
                 _fish=MakeFish(transform,kind,rare);
@@ -700,6 +704,7 @@ namespace BoatAttack.Fishing
             _fish=MakeFish(transform,FishKind.Coral,false);
             _bobber=FishingArt.Shape("Float",PrimitiveType.Sphere,transform,Vector3.zero,Vector3.one*0.18f,orange);
             _line=FishingArt.Line("Fishing line",transform,lineMaterial,0.018f);_line.positionCount=25;
+            BuildAngling();
             RefreshHold();
         }
         private GameObject MakeFish(Transform parent,FishKind kind,bool rare)=>FishingArt.Fish(parent,_owned,PaletteShader,kind,rare);
@@ -733,8 +738,7 @@ namespace BoatAttack.Fishing
             if(!HasPendingCatch)_fish.SetActive(active && (phase==CatchPhase.Fighting || phase==CatchPhase.Landing || (phase==CatchPhase.Caught && Time.time-_caughtAt<0.8f)));
             var t=Player.transform;var yaw=Quaternion.Euler(0,t.eulerAngles.y,0);
             bool legend=Session.Species.Legendary;
-            float distance=phase==CatchPhase.Fighting?3.4f+Session.Distance*0.24f:4.5f+CastMotion.Power*3;
-            var target=t.position+yaw*new Vector3(distance,0,1.5f);target.y=phase==CatchPhase.Fighting?0.18f+Mathf.Abs(Mathf.Sin(Time.time*3f))*0.20f:0.25f+Mathf.Sin(Time.time*4f)*0.06f;
+            var target=Angling.Target(phase);
             float leap=phase==CatchPhase.Fighting?Session.LeapProgress:0f;
             // The legend clears the water in a readable arc; the HUD warns before the line would snap.
             if(leap>0f)target.y=0.2f+Mathf.Sin(leap*Mathf.PI)*2.4f;
@@ -749,6 +753,7 @@ namespace BoatAttack.Fishing
                 _castSplash=true;Effects?.Burst(target,new Color(.72f,.9f,1));
             }
             _bobber.transform.position=target;
+            TickAnglingPresentation();
             // 入网前由钓鱼轨迹驱动；待处理鱼只交给 CatchRig，避免两套姿态互相覆盖。
             if(!HasPendingCatch)
             {
