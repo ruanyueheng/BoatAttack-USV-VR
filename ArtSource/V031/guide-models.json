@@ -1,0 +1,17 @@
+[
+  {
+    "name": "FieldGuide",
+    "triangles": 1380,
+    "sha256": "698a2b14f76fb2449becd15bd4a6f3de1d5f580ceacf029b61a83714dacee1e2"
+  },
+  {
+    "name": "GuideCover",
+    "triangles": 376,
+    "sha256": "6d3f6dcb08e7b246a9226491dcb4415d28b25f62442bcc94b7f243a8d0cb168e"
+  },
+  {
+    "name": "GuideLeaf",
+    "triangles": 356,
+    "sha256": "db329e0aef139e5bbf8dc4238bbf8c230f7fb88ff4514e661f25c562d11f7761"
+  }
+]

@@ -49,8 +49,10 @@ namespace BoatAttack.EditorTools
                 if(slot>=9){Check(bag.Move(slot,1),"Move lamp to hotbar");slot=1;}
                 c.SelectFieldSlot(slot);c.UseFieldItem();c.SetDayNight(true);
                 for(int i=0;i<6;i++){c.PresentCharacterFrame();yield return null;}
+                Check(c.FieldWorld.LanternHeld && c.LanternOn,"Selected lantern is now held in V031");
+                c.SelectFieldSlot(0);c.PresentCharacterFrame();
                 var holster=c.FieldWorld.HolsteredLantern;var character=c.Shore.Character;
-                Check(holster!=null && holster.gameObject.activeInHierarchy && !c.FieldWorld.LanternHeld,"Selected lantern remains on the belt with hands free");
+                Check(holster!=null && holster.gameObject.activeInHierarchy && !c.FieldWorld.LanternHeld,"Idle lantern remains on the belt with hands free");
                 Check(Vector3.Dot(holster.up,Vector3.up)>.999f,"Lamp remains upright under gravity");
                 float clearance=holster.GetComponent<MeshFilter>().sharedMesh.vertices.Min(v=>Vector3.Dot(holster.TransformPoint(v)-character.HipPosition,c.Shore.Actor.right));
                 Check(clearance>character.WaistHalfWidth+.025f,"Lantern stays outside the actual clothing silhouette");
@@ -65,7 +67,7 @@ namespace BoatAttack.EditorTools
                 c.viewCamera.transform.SetPositionAndRotation(pos,Quaternion.LookRotation(target-pos));FishingV016Validation.Capture(c,output,"character-waist-lantern");
                 c.SetDayNight(false);c.PresentCharacterFrame();c.viewCamera.transform.SetPositionAndRotation(pos,Quaternion.LookRotation(target-pos));
                 FishingV016Validation.Capture(c,output,"character-daylight");
-                c.ToggleView();c.UseFieldItem();c.PresentCharacterFrame();
+                c.ToggleView();c.SelectFieldSlot(slot);c.UseFieldItem();c.PresentCharacterFrame();
                 Check(!c.LanternOn && !c.FieldWorld.transform.Find("Field lantern light").GetComponent<Light>().enabled
                     && !c.FieldWorld.transform.Find("Lantern soft ground spill").GetComponent<Light>().enabled,"F extinguishes the waist light");
             }

@@ -147,7 +147,7 @@ namespace BoatAttack.Fishing
                 bool thirdPerson=CurrentCase==FishingAcceptanceCase.ShoreThirdPerson || CurrentCase==FishingAcceptanceCase.BinocularThirdPerson;
                 var item=FishingAcceptanceCases.ViewItem(CurrentCase);
                 bool visible=item==FieldItem.Lantern
-                    ?c.FieldWorld.HolsteredLantern!=null && c.FieldWorld.HolsteredLantern.gameObject.activeInHierarchy && !c.FieldWorld.LanternHeld
+                    ?c.FieldWorld.LanternHeld && c.FieldWorld.HeldTool.gameObject.activeInHierarchy
                     :c.FieldWorld.HeldTool!=null && c.FieldWorld.HeldTool.gameObject.activeInHierarchy && c.FieldWorld.PresentedItem==item;
                 if(!c.Ashore || c.FirstPerson==thirdPerson || !visible)
                     throw new InvalidOperationException("Shore avatar/tool capture fixture failed.");

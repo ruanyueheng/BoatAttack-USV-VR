@@ -59,7 +59,7 @@ namespace BoatAttack.Fishing
             _holsteredLantern.SetPositionAndRotation(center-rotation*(LanternHangPoint*LanternScale),rotation);
             _lanternMount.SetPositionAndRotation(center-rotation*new Vector3(.075f,-.073f,0),rotation);
             if(_holsterGlow==null)_holsterGlow=new MaterialPropertyBlock();
-            _holsterGlow.SetColor("_EmissionColor",_c.LanternOn?new Color(1,.55f,.16f)*2f:Color.black);_holsterRenderer.SetPropertyBlock(_holsterGlow,1);
+            _holsterGlow.SetColor("_EmissionColor",_c.LanternOn?new Color(1,.14f,.018f)*3f:Color.black);_holsterRenderer.SetPropertyBlock(_holsterGlow,1);
             if(_c.LanternOn)
             {_lamp.enabled=true;_lamp.transform.position=_holsteredLantern.TransformPoint(LanternLightPoint);}
         }

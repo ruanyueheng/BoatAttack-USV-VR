@@ -68,7 +68,7 @@ namespace BoatAttack.Fishing
                 case FieldItem.HuntingSpear:FieldWorld.BeginHunt();break;
                 case FieldItem.Workbench:case FieldItem.Furnace:case FieldItem.Forge:RequestPlaceEquipped();break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:RequestHarvest();break;
-                case FieldItem.FieldGuide: FieldWorld.Observe();break;
+                case FieldItem.FieldGuide: OpenFieldGuide();break;
                 case FieldItem.Binoculars:
                     BinocularsRaised=!BinocularsRaised;Notice(BinocularsRaised?(_xrActive?"望远镜 · A 记录动物 / 扳机放下":"望远镜 · T 记录动物 / F 放下"):"已放下望远镜",3);break;
                 case FieldItem.Lantern:LanternOn=!LanternOn;Notice(LanternOn?"提灯已点亮":"提灯已熄灭",3);break;
@@ -103,7 +103,7 @@ namespace BoatAttack.Fishing
         {
             if(Paused || !Ashore)return false;
             bool fresh=Career.Backpack.Observe(kind);
-            if(fresh){Save();Notice("自然手册新增："+FishingBackpack.AnimalName(kind)+(UnityEngine.XR.XRSettings.isDeviceActive?" · B 查看自然观察记录":" · I 查看陆地记录"),5);}
+            if(fresh){Save();Notice("自然手册新增："+FishingBackpack.AnimalName(kind)+(UnityEngine.XR.XRSettings.isDeviceActive?" · B 查看自然观察记录":" · F 翻开自然手册"),5);}
             else Notice("已记录："+FishingBackpack.AnimalName(kind)+(UnityEngine.XR.XRSettings.isDeviceActive?"。缓慢接近或轻蹲可以靠得更近。":"。按住 Ctrl 蹲下可以靠得更近。"),4);
             return fresh;
         }

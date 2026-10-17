@@ -116,6 +116,7 @@ namespace BoatAttack.EditorTools
                 FishingCashierValidation.ValidateAssets();
                 FishingScriptBinding.ValidateScene();
                 PlayerSettings.bundleVersion=FishingPrototype.Version;
+                PlayerSettings.resizableWindow=true;PlayerSettings.allowFullscreenSwitch=true;
                 AddressableAssetSettings.BuildPlayerContent(out var content);
                 if(!string.IsNullOrEmpty(content.Error))throw new Exception("Addressables: "+content.Error);
                 string output=Path.GetFullPath("Builds/FishingPrototype-v"+FishingPrototype.Version+"/FishingPrototype.exe");Directory.CreateDirectory(Path.GetDirectoryName(output));

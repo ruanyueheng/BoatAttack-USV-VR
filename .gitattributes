@@ -18,6 +18,7 @@ ArtSource/V027/*.blend filter=lfs diff=lfs merge=lfs -text
 ArtSource/V028/*.blend filter=lfs diff=lfs merge=lfs -text
 ArtSource/V029/*.blend filter=lfs diff=lfs merge=lfs -text
 ArtSource/V030/*.blend filter=lfs diff=lfs merge=lfs -text
+ArtSource/V031/*.blend filter=lfs diff=lfs merge=lfs -text
 ArtSource/UserPickaxe/*.blend filter=lfs diff=lfs merge=lfs -text
 ArtSource/UserLantern/*.blend filter=lfs diff=lfs merge=lfs -text
 

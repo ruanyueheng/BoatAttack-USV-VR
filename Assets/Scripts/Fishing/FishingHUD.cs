@@ -22,7 +22,7 @@ namespace BoatAttack.Fishing
         private bool CatchVisible => (Controller.LastCatch.Fish != null || Controller.LastCatch.Find != FieldItem.Empty) && CatchAge < CardSeconds;
 
         public bool BlocksPointer(Vector2 screen, int width, int height)
-            => Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || Controller.InventoryOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
+            => Controller.StartMenuOpen || Controller.JournalOpen || Controller.Paused || Controller.GuideOpening || Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || Controller.InventoryOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
                 Controller.HarborDeskOpen && Controller.AtHarbor, Controller.AtHarbor,
                 Controller.Ecology.Candidate.HasValue && !CatchVisible, Controller.Acceptance != null);
 
@@ -43,6 +43,7 @@ namespace BoatAttack.Fishing
 
         private void Update()
         {
+            if(Controller==null || !Controller.JournalOpen){_journalDrawn=false;_journalOrderOpen=false;}
             if(Controller!=null && Controller.Career!=null)FishingUITheme.Tick(Controller.Career.Calendar.Daylight,Time.unscaledDeltaTime);
         }
 
@@ -50,6 +51,7 @@ namespace BoatAttack.Fishing
         {
             var c = Controller;
             if (c == null || c.Career == null || c.Player == null || XRSettings.isDeviceActive) return;
+            c.HandleDisplayShortcut(Event.current);
             if(c.Prologue.Open || c.Home.Sleeping)return;
             if(Event.current.rawType==EventType.MouseDown)_pressedButton=default;
             DrawOpticalView();
@@ -63,7 +65,13 @@ namespace BoatAttack.Fishing
                 GUI.matrix = Matrix4x4.TRS(new Vector3(_offset, 0, 0), Quaternion.identity, new Vector3(_scale, _scale, 1));
                 if (_label == null) _label = new GUIStyle(GUI.skin.label) { font = _font, wordWrap = true, richText = false, padding = new RectOffset() };
                 _fade = 1f;
-                if (c.Letter.Open) DrawLetter();
+                if(c.StartMenuOpen) DrawStartMenu();
+                else if(c.GuideOpening)
+                {
+                    Rounded(new Rect(550,_height-78,500,43),Ink,6);
+                    Label(new Rect(562,_height-70,476,29),"翻开自然手册……  /  Esc 收起",20,InkText,true,TextAnchor.MiddleCenter);
+                }
+                else if (c.Letter.Open) DrawLetter();
                 else if (c.DialogueOpen) DrawDialogue();
                 else if (c.ShopOpen) DrawTackleShop();
                 else if (c.CoastWorld!=null && c.CoastWorld.MenuOpen) DrawBarbecue();
