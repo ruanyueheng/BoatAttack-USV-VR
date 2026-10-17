@@ -400,7 +400,8 @@ namespace BoatAttack.Fishing
         }
         public bool Tick(bool allow)
         {
-            if(!XRSettings.isDeviceActive){Close();return false;}
+            // A closed XR notebook must not reset the desktop cast/hand interaction every frame.
+            if(!XRSettings.isDeviceActive){if(IsOpen)Close();return false;}
             bool tracked=allow && FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out _,out _) && FishingXRTracking.TryPose(_c.viewCamera,XRNode.LeftHand,out _,out _);
             if(!tracked){ResetInput();_ray.enabled=false;if(!allow)Close();return true;}
             var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);var left=InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);

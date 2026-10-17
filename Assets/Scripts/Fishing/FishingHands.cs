@@ -198,7 +198,8 @@ namespace BoatAttack.Fishing
             // Sleep owns the desktop resting arms; tracked controllers above retain their physical poses.
             if(_c.Home.Sleeping){StowRod();return;}
             GetToolFrame(out var origin,out var frame);
-            bool fishing=_c.Anchored && !_c.Ashore && !_c.HasPendingCatch;
+            bool inspection=_c.CatchRig!=null && _c.CatchRig.LeftHandInspecting;
+            bool fishing=_c.Anchored && !_c.Ashore && (!_c.HasPendingCatch || inspection);
             if(fishing)
             {
                 _rod.gameObject.SetActive(true);
@@ -210,9 +211,9 @@ namespace BoatAttack.Fishing
                 // The knob spins freely on its axle: fingers wrap across it, without rolling the wrist with the crank.
                 var reelPalm=_rod.InverseTransformPoint(_knob.position)+new Vector3(-.012f,.022f,-.018f);
                 bool landing=_c.Session.Phase==CatchPhase.Landing;
-                FitToolPose(_rod,reelPalm,RodPalm,Quaternion.LookRotation(Vector3.right,Vector3.up),RodPalmRotation);
+                FitToolPose(_rod,reelPalm,RodPalm,Quaternion.LookRotation(Vector3.right,Vector3.up),RodPalmRotation,!inspection,true);
                 _right.SetFromGrip(_rod,RodPalm,RodPalmRotation,.86f);
-                if(!landing)
+                if(!landing && !inspection)
                 {
                     _left.SetFromGrip(_rod,reelPalm,Quaternion.LookRotation(Vector3.right,Vector3.up),.6f);
                     _left.SetFingers(new FishingFingerPose(.55f,.64f,.66f,.62f,.72f));

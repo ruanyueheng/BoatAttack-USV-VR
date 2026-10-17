@@ -28,6 +28,20 @@ namespace BoatAttack.Fishing
         private Vector3 _restTip;
         private Quaternion _restTipRotation;
         private float _bendVelocity, _sideVelocity;
+        private bool _spoolDirty;
+        public float SpoolTurns { get; private set; }
+        public float SpoolFill { get; private set; }=1;
+        public int SpoolVertexCount { get; private set; }
+        private static bool OnSpool(Vector3 p)
+        {
+            float radius=new Vector2(p.x,p.y+.14f).magnitude;
+            return p.z>=.063f && p.z<=.153f && radius>=.043f && radius<=.065f;
+        }
+        public void AdvanceSpool(float woundMeters,float fill)
+        {
+            if(!Finite(woundMeters) || !Finite(fill))return;
+            SpoolTurns+=woundMeters/(2*Mathf.PI*.049f);SpoolFill=Mathf.Clamp01(fill);_spoolDirty=true;
+        }
 
         /// <summary>Main downward bend in radians, not an accumulated vertex displacement.</summary>
         public float CurrentBend { get; private set; }
@@ -42,6 +56,7 @@ namespace BoatAttack.Fishing
             _root = root;
             Tip = tip;
             CurrentBend = CurrentSideBend = _bendVelocity = _sideVelocity = 0;
+            SpoolTurns=0;SpoolFill=1;SpoolVertexCount=0;_spoolDirty=false;
             if (_root == null || Tip == null) return;
             _restTip = _root.InverseTransformPoint(Tip.position);
             _restTipRotation = Quaternion.Inverse(_root.rotation) * Tip.rotation;
@@ -86,6 +101,7 @@ namespace BoatAttack.Fishing
                 for (int i = 0; i < originalVertices.Length; i++)
                 {
                     item.RootVertices[i] = toRoot.MultiplyPoint3x4(originalVertices[i]);
+                    if(OnSpool(item.RootVertices[i]))SpoolVertexCount++;
                     if (item.OriginalNormals.Length == originalVertices.Length)
                         item.RootNormals[i] = item.NormalToRoot.MultiplyVector(item.OriginalNormals[i]).normalized;
                     if (item.OriginalTangents.Length == originalVertices.Length)
@@ -105,7 +121,7 @@ namespace BoatAttack.Fishing
             if (_root == null || Tip == null || !Finite(deltaTime) || deltaTime <= 0) return;
             tension = Finite(tension) ? Mathf.Clamp01(tension) : 0;
             side = Finite(side) ? Mathf.Clamp(side, -1, 1) : 0;
-            if (!fighting && CurrentBend == 0 && CurrentSideBend == 0) return;
+            if (!fighting && CurrentBend == 0 && CurrentSideBend == 0 && !_spoolDirty) return;
             float target = fighting ? .10f + .95f * Mathf.SmoothStep(0, 1, tension) : 0;
             float targetSide = fighting ? side * (.04f + .12f * tension) : 0;
             float step = Mathf.Min(deltaTime, .1f);
@@ -119,6 +135,8 @@ namespace BoatAttack.Fishing
 
         private void ApplyBend()
         {
+            _spoolDirty=false;
+            var spoolRotation=Quaternion.AngleAxis(Mathf.Repeat(SpoolTurns,1)*360,Vector3.forward);
             var direction = new Vector3(CurrentSideBend, -CurrentBend, 0);
             float bend = direction.magnitude;
             if (bend > .000001f) direction /= bend;
@@ -128,6 +146,16 @@ namespace BoatAttack.Fishing
                 bool hasTangents = item.OriginalTangents.Length == item.Vertices.Length;
                 for (int i = 0; i < item.Vertices.Length; i++)
                 {
+                    if(OnSpool(item.RootVertices[i]) && (SpoolTurns!=0 || SpoolFill!=1))
+                    {
+                        var p=item.RootVertices[i]-new Vector3(0,-.14f,0);
+                        // Only the wound line shrinks slightly; metal lips keep their original diameter.
+                        if(new Vector2(p.x,p.y).magnitude<.054f){float fill=.85f+.15f*SpoolFill;p.x*=fill;p.y*=fill;}
+                        item.Vertices[i]=item.ToMesh.MultiplyPoint3x4(new Vector3(0,-.14f,0)+spoolRotation*p);
+                        if(hasNormals)item.Normals[i]=item.NormalToMesh.MultiplyVector(spoolRotation*item.RootNormals[i]).normalized;
+                        if(hasTangents){var t=item.ToMesh.MultiplyVector(spoolRotation*item.RootTangents[i]).normalized;item.Tangents[i]=new Vector4(t.x,t.y,t.z,item.OriginalTangents[i].w);}
+                        continue;
+                    }
                     // Copy rigid vertices verbatim: no numerical drift in grip, cork, seat or reel.
                     if (bend <= .000001f || item.RootVertices[i].z <= FlexibleStart)
                     {

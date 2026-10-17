@@ -3,9 +3,9 @@ using UnityEngine.XR;
 namespace BoatAttack.Fishing
 {
     /// <summary>One net and one fish. Measured capture; bounded, kinematic handling cannot kick the hull or camera.</summary>
-    public sealed class FishingCatchRig : MonoBehaviour
+    public sealed partial class FishingCatchRig : MonoBehaviour
     {
-        public enum Place { Net, Hand, Tray }
+        public enum Place { Net, Hand, Tray, LeftHand }
         private FishingPrototype _c;private readonly FishingNetGate _gate=new FishingNetGate();
         private readonly FishingNetTransferGate _transfer=new FishingNetTransferGate();
         private Vector3 _boxLocal;private Transform _tray;
@@ -81,7 +81,9 @@ namespace BoatAttack.Fishing
         public void ResetFixture(){if(!_c.HasIsolatedProfile)throw new System.InvalidOperationException("Isolated fixtures only");_fishId=null;Recover();}
         public void Recover()
         {
+            bool leftInspection=Location==Place.LeftHand;
             _assist=_netHeld=_hadSample=_tipSample=false;_assistTime=_releaseUntil=0;_gate.Reset();_transfer.Reset();_left.Reset();_right.Reset();Location=Place.Tray;
+            _placingLeft=false;_leftLiftTime=0;if(leftInspection)Location=Place.Net;
         }
         private void OnApplicationFocus(bool focus){if(!focus)Recover();}
         private void OnApplicationPause(bool pause){if(pause)Recover();}
@@ -158,7 +160,7 @@ namespace BoatAttack.Fishing
         {
             if(_c==null || _c.Player==null)return;
             bool xr=XRSettings.isDeviceActive;ConfigureLayout(xr);
-            if(_c.Paused){if(_netHeld || Location==Place.Hand)Recover();}
+            if(_c.Paused){if(_netHeld || Location==Place.Hand || Location==Place.LeftHand)Recover();}
             else if(xr)ReadTracked(dt);
             else StepDesktop(dt);
             bool landing=_c.Anchored && !_c.HasPendingCatch && _c.Session.Phase==CatchPhase.Landing;
@@ -167,12 +169,12 @@ namespace BoatAttack.Fishing
                 var rotation=DesktopNetRotation(_c.LandingTarget);
                 _c.LandingNet.SetPositionAndRotation(_c.LandingTarget-rotation*new Vector3(FishingDetailArt.NetMouthOffset,0,0),rotation);
             }
-            if(_c.HasPendingCatch && Location==Place.Net && !_netHeld)
+            if(_c.HasPendingCatch && (Location==Place.Net || Location==Place.LeftHand) && !_netHeld)
             {
                 var parked=Quaternion.Euler(0,_c.Player.transform.eulerAngles.y,0);
                 _c.LandingNet.SetPositionAndRotation(_c.NetTray+Vector3.up*.13f-parked*new Vector3(FishingDetailArt.NetMouthOffset,0,0),parked);
             }
-            else if(!xr && !landing && !_netHeld && !_assist && (!_c.HasPendingCatch || Location!=Place.Net))
+            else if(!xr && !landing && !_netHeld && !_assist && (!_c.HasPendingCatch || (Location!=Place.Net && Location!=Place.LeftHand)))
             {
                 _c.LandingNet.localPosition=_c.StowedNetPosition;_c.LandingNet.localRotation=_c.StowedNetRotation;
             }
@@ -184,6 +186,7 @@ namespace BoatAttack.Fishing
             var pending=_c.Career.PendingCatch;
             if(_fishId!=pending.fish.id){_fishId=pending.fish.id;_c.RestorePendingFishVisual();}
             var fish=_c.ActiveFish;fish.gameObject.SetActive(true);
+            if(!xr && Location==Place.LeftHand){ApplyLeftInspection(dt);return;}
             Vector3 pos;Quaternion rot;
             if(Location==Place.Hand)
             {

@@ -15,6 +15,9 @@ namespace BoatAttack.Fishing
         private AudioSource _reelAudio;
         private AudioClip _clicks;
         private Material _lineMaterial;
+        private LineRenderer _spoolThread;
+        private float _lastLineMeters;
+        public float LineTravel { get; private set; }
         private CatchPhase _lastPhase;
         private float _clock,_nextRipple,_strikeAt=-100;
         private Vector3 _castForward=Vector3.right,_castRight=Vector3.forward;
@@ -29,6 +32,8 @@ namespace BoatAttack.Fishing
             _c=c;_tip=tip;_line=line;_float=bobber;
             _lineMaterial=new Material(Resources.Load<Shader>("FishingAnglingLine")){name="Original translucent angling cues"};
             line.sharedMaterial=_lineMaterial;
+            _spoolThread=FishingArt.Line("Moving spool winding",tip.parent,_lineMaterial,.0017f,false);_spoolThread.positionCount=61;
+            _spoolThread.startColor=_spoolThread.endColor=new Color(.36f,.46f,.37f);
             // A slender high-contrast float, rather than a giant floating sphere.
             bobber.GetComponent<Renderer>().enabled=false;bobber.localScale=Vector3.one;
             FishingArt.Shape("Float lower cork",PrimitiveType.Sphere,bobber,new Vector3(0,.015f,0),new Vector3(.095f,.14f,.095f),c.cream);
@@ -59,6 +64,7 @@ namespace BoatAttack.Fishing
             _castForward=aim.normalized;_castRight=Vector3.Cross(Vector3.up,_castForward);
             _range=Mathf.Max(5,_c.Session.MaxDistance*Mathf.Lerp(.7f,1,Mathf.Clamp01(power)));
             _nextRipple=0;_lastPhase=CatchPhase.Idle;
+            _lastLineMeters=0;LineTravel=0;
         }
         public Vector3 Target(CatchPhase phase)
         {
@@ -77,6 +83,13 @@ namespace BoatAttack.Fishing
             var s=_c.Session;bool live=available && _c.Anchored && !_c.HasPendingCatch;
             if(live && dt>0 && !float.IsInfinity(dt))_clock+=Mathf.Min(dt,.1f);
             bool fighting=s.Phase==CatchPhase.Fighting;
+            LineTravel=0;
+            if(live && dt>0 && (fighting || s.Phase==CatchPhase.Waiting || s.Phase==CatchPhase.Bite || s.Phase==CatchPhase.Landing))
+            {
+                float meters=s.Phase==CatchPhase.Waiting?s.MaxDistance*_c.CastMotion.FlightProgress:s.Distance;
+                LineTravel=_lastLineMeters-meters;_lastLineMeters=meters;
+                _tip.parent.GetComponent<FishingRodDynamics>()?.AdvanceSpool(LineTravel,1-meters/Mathf.Max(.01f,s.MaxDistance));
+            }
             if(fighting && _lastPhase!=s.Phase)_strikeAt=_clock;
             bool wet=live && !_c.CastMotion.Casting && (s.Phase==CatchPhase.Waiting || s.Phase==CatchPhase.Bite || fighting || s.Phase==CatchPhase.Landing);
             bool preview=live && _c.CastMotion.Preparing && !UnityEngine.XR.XRSettings.isDeviceActive;
@@ -101,7 +114,7 @@ namespace BoatAttack.Fishing
                 _marker.transform.position=target+Vector3.up*.65f;
                 _marker.transform.rotation=Quaternion.LookRotation(target-_c.viewCamera.transform.position);
                 SizeMarker();
-                _label.text=s.Phase==CatchPhase.Bite?"咬钩！提竿":s.Phase==CatchPhase.Landing?"鱼已靠近 · 抄网":
+                _label.text=s.Phase==CatchPhase.Bite?"咬钩！提竿":s.Phase==CatchPhase.Landing?(UnityEngine.XR.XRSettings.isDeviceActive?"鱼已靠近 · 抄网":"点击左键 · 提鱼检视"):
                     (Vector3.Distance(_c.Player.transform.position,target)).ToString("0.0")+" m"+(fighting?"\n"+(s.Beat==FishBeat.Leap?"跃水 · 松线":s.FishDirection<-.2f?"← 鱼向左游":s.FishDirection>.2f?"鱼向右游 →":"鱼在转向"):s.BitePreview>0?"\n轻啄 · 等待下沉":"");
                 if(fighting && _clock-_strikeAt<1.1f && s.PerfectStrike)_label.text="漂亮提竿！\n"+_label.text;
                 if(fighting && UnityEngine.XR.XRSettings.isDeviceActive)_label.text+="\n"+(s.Beat==FishBeat.Leap?"松开收线握把":s.FishDirection<0?"持竿手向右控竿":"持竿手向左控竿");
@@ -122,7 +135,7 @@ namespace BoatAttack.Fishing
             }
             _lastPhase=s.Phase;
             _reelAudio.mute=_c.QuietMode;
-            bool sound=live && fighting && (reeling || s.Beat==FishBeat.Surge || s.Beat==FishBeat.Leap);
+            bool sound=live && fighting && Mathf.Abs(LineTravel)>.00001f;
             if(sound){_reelAudio.volume=reeling?.1f:.075f;_reelAudio.pitch=reeling?1.25f:1.7f;if(!_reelAudio.isPlaying)_reelAudio.Play();}
             else if(_reelAudio.isPlaying)_reelAudio.Stop();
             _line.startWidth=_line.endWidth=fighting?.012f:.009f;
@@ -132,7 +145,12 @@ namespace BoatAttack.Fishing
         {
             var dynamics=_tip.parent.GetComponent<FishingRodDynamics>();
             bool fighting=_c.Anchored && (_c.Session.Phase==CatchPhase.Fighting || _c.Session.Phase==CatchPhase.Landing);
-            dynamics?.SetLoad(_c.Session.Tension,_c.Session.FishDirection,fighting,dt);
+            dynamics?.SetLoad(_c.Session.Tension,Mathf.Clamp(_c.RodControl*.85f+_c.Session.FishDirection*.15f,-1,1),fighting,dt);
+            if(dynamics!=null)
+            {
+                float radius=.050f*(.85f+.15f*dynamics.SpoolFill);
+                for(int i=0;i<61;i++){float u=i/60f,a=(u*3+dynamics.SpoolTurns)*Mathf.PI*2;_spoolThread.SetPosition(i,new Vector3(Mathf.Cos(a)*radius,-.14f+Mathf.Sin(a)*radius,Mathf.Lerp(.078f,.137f,u)));}
+            }
             if(_castGuide.enabled)
             {
                 var goal=_castGuide.GetPosition(20);float power=.35f+_c.CastMotion.Charge*.65f;

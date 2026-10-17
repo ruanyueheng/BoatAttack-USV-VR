@@ -80,7 +80,13 @@ namespace BoatAttack.Fishing
             if (c == null || c.Player == null || c.viewCamera == null || !OwnsCamera) { ReleaseCursor(); return; }
             if (c.Paused || c.InventoryOpen || c.ShopBlocksGameplay || c.StoryBlocksGameplay) { ResetInput(); return; }
             if(c.Ashore){ApplyShoreView(focused,automated);return;}
-            ReleaseCursor();
+            bool fishingDrag=c.DesktopFishingDrag && focused && !automated;
+            if(fishingDrag)
+            {
+                if(_pointer.LockState!=CursorLockMode.Locked)_pointer.LockState=CursorLockMode.Locked;
+                _pointer.Visible=false;_cursorOwned=true;
+            }
+            else ReleaseCursor();
             var boat = c.Player.transform;
             var yaw = Quaternion.Euler(0f, boat.eulerAngles.y, 0f);
             bool fishingSeat=c.UsesFishingSeat;
@@ -90,7 +96,7 @@ namespace BoatAttack.Fishing
             var mouse = Mouse.current;
             bool rightHeld = mouse != null && mouse.rightButton.isPressed;
             bool lookReady = _lookGate.Update(focused, c.Paused, false, rightHeld);
-            IsLooking = !automated && lookReady && rightHeld;
+            IsLooking = !fishingDrag && !automated && lookReady && rightHeld;
             if (IsLooking)
             {
                 // Pointer delta is already frame-relative; multiplying by deltaTime changes sensitivity with FPS.
