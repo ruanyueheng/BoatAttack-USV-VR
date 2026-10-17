@@ -66,6 +66,8 @@ namespace BoatAttack.Fishing
                 if (_label == null) _label = new GUIStyle(GUI.skin.label) { font = _font, wordWrap = true, richText = false, padding = new RectOffset() };
                 _fade = 1f;
                 if(c.StartMenuOpen) DrawStartMenu();
+                else if(c.HomeChartOpen) DrawHomeChart();
+                else if(c.SaveMenuOpen) DrawSaveSlots();
                 else if(c.GuideOpening)
                 {
                     Rounded(new Rect(550,_height-78,500,43),Ink,6);

@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.32.0";
+        public const string Version = "0.33.0";
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
@@ -213,6 +213,7 @@ namespace BoatAttack.Fishing
                 :"潮汐回响：N选择岛屿，低速G下船，E与居民交谈 / 进入潮纹秘境。J查看世界航记；店员可介绍商品，离岸可游泳。"):warning,10f);
             _initialized=true;
             InitializeSettings();
+            InitializeSaveSlots(legacy);
             InitializeStartMenu();
             if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }
             else if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
@@ -232,7 +233,9 @@ namespace BoatAttack.Fishing
             }
             var k=Keyboard.current;var m=Mouse.current;var g=Gamepad.current;
             bool focused=Automated || Application.isFocused;
+            TickAutosave();
             if(TickStartMenu(k)){Shore.Tick(false);AnimateEquipment();return;}
+            if(TickHomeChart(k)){Shore.Tick(false);AnimateEquipment();return;}
             if(TickGuideOpening(k,focused)){Shore.Tick(false);AnimateEquipment();return;}
             if(TickStoryInput(k,focused,xr)){Shore.Tick(false);AnimateEquipment();return;}
             if(!Anchored || HasPendingCatch)CastMotion.Reset();
@@ -256,7 +259,7 @@ namespace BoatAttack.Fishing
                 Shore.Tick(false);return;
             }
             if(TickItemInspection(k,m,focused)){Shore.Tick(false);AnimateEquipment();return;}
-            if(!xr && !Automated && _input.Current.pause) { if(alignmentFrame)Expedition.Cancel();else if(JournalOpen)ToggleJournal();else if(MenuControls)MenuControls=false;else TogglePause(); }
+            if(!xr && !Automated && _input.Current.pause) { if(SaveMenuOpen){if(SaveConfirmation.Length>0)CancelSaveConfirmation();else CloseSaveMenu();}else if(alignmentFrame)Expedition.Cancel();else if(JournalOpen)ToggleJournal();else if(MenuControls){MenuControls=false;SaveSettings();}else TogglePause(); }
             if(!Automated && focused && k!=null && k.jKey.wasPressedThisFrame && (!Paused || JournalOpen))ToggleJournal();
             TickWorldAction(Time.deltaTime,focused,xr);
             if(WorldActionBlocksGameplay)
@@ -440,9 +443,9 @@ namespace BoatAttack.Fishing
         }
         public void TogglePause()
         {
-            if(!Paused){_resumeTimeScale=Time.timeScale;Time.timeScale=0f;Paused=true;}
+            if(!Paused){Save();_resumeTimeScale=Time.timeScale;Time.timeScale=0f;Paused=true;}
             else{Time.timeScale=_resumeTimeScale;Paused=false;}
-            ResetToolInput();
+            ResetToolInput();SaveSettings();ApplyAudioSettings();
         }
         private void ResetToolInput()
         {
@@ -461,7 +464,7 @@ namespace BoatAttack.Fishing
         private void OnApplicationFocus(bool focused){if(!focused){ResetToolInput();SaveOnSuspend();}}
         private void OnApplicationPause(bool paused){if(paused){ResetToolInput();SaveOnSuspend();}}
         private void OnApplicationQuit()=>SaveOnSuspend();
-        private void SaveOnSuspend(){if(_initialized && !Automated)Save();}
+        private void SaveOnSuspend(){if(_initialized){SaveSettings();if(!Automated)Save();}}
         private void ConfigurePresentation()
         {
             // The grade is isolated to this desktop camera, not the original race or XR camera.
@@ -644,7 +647,7 @@ namespace BoatAttack.Fishing
         public void ToggleInstruments() { WorldInstruments=!WorldInstruments; }
         public void ToggleQuiet()
         {
-            QuietMode=!QuietMode;_feedback.mute=QuietMode;
+            QuietMode=!QuietMode;ApplyAudioSettings();
             if(!HasIsolatedProfile){PlayerPrefs.SetInt("Fishing.V3.Quiet",QuietMode?1:0);PlayerPrefs.Save();}
         }
         public int DeliverOrder()
@@ -681,11 +684,7 @@ namespace BoatAttack.Fishing
             for(int i=0;i<fishingSpots.Length;i++){float d=FlatDistance(Player.engine.RB.position,fishingSpots[i]);if(d<SpotDistance){SpotDistance=d;Spot=i;}}
         }
         public void CommitExpedition(string message) { Save();Notice(message,9f); }
-        internal void Save()
-        {
-            try{FishingSaveStore.Save(SavePath,Career);SaveWarning=string.Empty;}
-            catch(Exception ex) when(ex is IOException || ex is UnauthorizedAccessException){SaveWarning="存档失败：进度仅保留在内存，请检查磁盘权限后再进行一次交易。";Notice(SaveWarning,10f);Debug.LogWarning("[FISHING] Save failed: "+ex.Message);}
-        }
+        internal void Save() => SaveProgress();
         public void Notice(string text,float seconds=5f,bool catchNotice=false){Message=text;MessageIsCatch=catchNotice;_messageUntil=Time.unscaledTime+seconds;}
         public string VisibleMessage=>Time.unscaledTime<_messageUntil?Message:string.Empty;
         public static float FlatDistance(Vector3 a,Vector3 b)=>Vector2.Distance(new Vector2(a.x,a.z),new Vector2(b.x,b.z));
@@ -807,6 +806,7 @@ namespace BoatAttack.Fishing
         }
         private void OnDestroy()
         {
+            RestoreAudioSettings();
             if(Paused)Time.timeScale=_resumeTimeScale;
             Application.targetFrameRate=_previousTargetFrameRate;
             foreach(var o in _owned)if(o!=null)Destroy(o);

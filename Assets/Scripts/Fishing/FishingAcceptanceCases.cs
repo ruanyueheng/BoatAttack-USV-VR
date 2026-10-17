@@ -13,13 +13,14 @@ namespace BoatAttack.Fishing
         ResidentDialogue, WindSanctuary, ForestSanctuary, WreckSanctuary, StarSanctuary, LoreJournal, ShopRations, RegionArrival, SwimmingView, ClimbingView,
         ForestIslandLanding, WreckIslandLanding, StarIslandLanding, HomeInterior, HomeWorkbench, HomeBarbecue, HomeGrilledFish, CashierDialogue,
         BootCatch, CanCatch, TreasureCatch, LetterEnvelope, LetterPaper, StartMenu, MenuControls, NatureJournal, LegendJournal, ShoreJournal, GuideOpening, HomeMoonlight,
-        MenuGraphics,MenuAudio,Departure,ArchIslet,FireflyIslet
+        MenuGraphics,MenuAudio,Departure,ArchIslet,FireflyIslet,
+        SaveSlots,SaveOverwrite,HomeChart
     }
 
     /// <summary>Deterministic fixtures built through the production rules, not unchecked save JSON.</summary>
     public static class FishingAcceptanceCases
     {
-        public const int Count = 70;
+        public const int Count = 73;
         private static readonly string[] Titles =
         {
             "自由实玩 / 继续验收进度", "咬钩提示", "高张力收线", "抄网时机", "捕获与后续反馈", "传说跃水",
@@ -31,7 +32,8 @@ namespace BoatAttack.Fishing
             "居民剧情对话", "风之回廊", "森光庭院", "沉潮机库", "星轨圣所", "世界与秘境航记", "远航口粮与物资", "地区名称渐显", "海岸游泳与体力", "绳梯攀登与瞭望台",
             "潮林岛实际登陆", "沉船沙洲实际登陆", "星望遗迹岛实际登陆", "回潮渔屋生活与工坊", "家中工作台与图示配方", "屋旁烧烤与鱼箱选鱼", "炭火烤鱼与领取", "汐禾分支对话",
             "旧鞋幽默钓获卡", "罐头幽默钓获卡", "宝匣惊喜钓获卡", "海风邮戳信封", "牛皮纸手写来信", "实时启航菜单", "按键图示与灵敏度", "插画自然手册", "金帆传说线索", "沿岸调查卡片", "双手翻开自然手册", "家岛月色与环扫灯塔",
-            "画面与视野设置","独立音量设置","开船离屏过渡","白帆拱湾","萤火沙洲"
+            "画面与视野设置","独立音量设置","开船离屏过渡","白帆拱湾","萤火沙洲",
+            "三槽存档与手动自动记录","手动存档覆盖确认","家中航线书桌与独立海图"
         };
 
         public static string Title(FishingAcceptanceCase value)

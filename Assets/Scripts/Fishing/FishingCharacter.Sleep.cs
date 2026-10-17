@@ -8,6 +8,8 @@ namespace BoatAttack.Fishing
         public void ApplySleepPose(Vector3 feet,Quaternion rotation,float seated,Vector3 seatedHip,float resting)
         {
             if(!Ready)return;
+            RestoreRigBase();
+            seated=Mathf.Clamp01(seated);resting=Mathf.Clamp01(resting);
             var eyeLocal=_head.InverseTransformPoint(EyePosition);
             var delta=rotation*Quaternion.Inverse(transform.rotation);
             _model.SetPositionAndRotation(feet+delta*(_model.position-transform.position),delta*_model.rotation);
@@ -29,7 +31,8 @@ namespace BoatAttack.Fishing
             var forward=rotation*Vector3.forward;var up=rotation*Vector3.up;
             // Knees face out from the bed with the posed rig, not with the stationary collision capsule.
             var target=Vector3.Lerp(standingTarget,thigh.position+forward*(upper*.9f)-up*lower,seated);
-            var delta=target-thigh.position;var axis=delta.normalized;
+            if(upper<.001f || lower<.001f)return;
+            var delta=target-thigh.position;var axis=delta.sqrMagnitude>1e-8f?delta.normalized:-up;
             float distance=Mathf.Clamp(delta.magnitude,Mathf.Abs(upper-lower)+.001f,upper+lower-.001f);
             var reachable=thigh.position+axis*distance;var bend=Vector3.ProjectOnPlane(forward,axis).normalized;
             if(bend.sqrMagnitude<.01f)bend=Vector3.ProjectOnPlane(up,axis).normalized;

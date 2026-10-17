@@ -50,12 +50,28 @@ namespace BoatAttack.Fishing
         }
         private void ReleaseCursor() { if(!_cursorOwned)return; _pointer.LockState=CursorLockMode.None;_pointer.Visible=true;_cursorOwned=false; }
         private void OnDisable() { ReleaseCursor();BinocularBlend=0; }
+        public static Vector2 ScaleLookDelta(Vector2 delta,float sensitivity,bool invert)
+        {
+            if(float.IsNaN(delta.x) || float.IsInfinity(delta.x) || float.IsNaN(delta.y) || float.IsInfinity(delta.y)
+                || float.IsNaN(sensitivity) || float.IsInfinity(sensitivity))return Vector2.zero;
+            // Input System 的 delta 已是逐帧像素位移；船和岸共用倍率，不能再次乘 deltaTime。
+            return new Vector2(delta.x,-delta.y*(invert?-1:1))*(.12f*Mathf.Clamp(sensitivity,.25f,2.5f));
+        }
+        private bool LookBlocked=>Controller==null || Controller.Paused || Controller.InventoryOpen || Controller.InspectingItem
+            || Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || !OwnsCamera || (Controller.Expedition!=null && Controller.Expedition.Aligning);
         public void ApplyShoreLookDelta(Vector2 delta)
         {
-            if(Controller==null || !Controller.Ashore || Controller.Paused || Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || !OwnsCamera || Controller.Expedition.Aligning)return;
-            if(float.IsNaN(delta.x) || float.IsInfinity(delta.x) || float.IsNaN(delta.y) || float.IsInfinity(delta.y))return;
-            _lookYaw=Mathf.Repeat(_lookYaw+delta.x*.12f*Controller.MouseSensitivity+180,360)-180;
-            _lookPitch=Mathf.Clamp(_lookPitch-delta.y*.12f*Controller.MouseSensitivity*(Controller.InvertLook?-1:1),-65,65);
+            if(LookBlocked || !Controller.Ashore)return;
+            var look=ScaleLookDelta(delta,Controller.MouseSensitivity,Controller.InvertLook);
+            _lookYaw=Mathf.Repeat(_lookYaw+look.x+180,360)-180;
+            _lookPitch=Mathf.Clamp(_lookPitch+look.y,-65,65);
+        }
+        public void ApplyBoatLookDelta(Vector2 delta)
+        {
+            if(LookBlocked || Controller.Ashore)return;
+            var look=ScaleLookDelta(delta,Controller.MouseSensitivity,Controller.InvertLook);
+            _lookYaw=Mathf.Clamp(_lookYaw+look.x,-100,100);
+            _lookPitch=Mathf.Clamp(_lookPitch+look.y,-45,50);
         }
 
         private void UpdateBinocularView()
@@ -99,10 +115,7 @@ namespace BoatAttack.Fishing
             IsLooking = !c.InspectingItem && !automated && lookReady && rightHeld;
             if (IsLooking)
             {
-                // Pointer delta is already frame-relative; multiplying by deltaTime changes sensitivity with FPS.
-                var delta = mouse.delta.ReadValue();
-                _lookYaw = Mathf.Clamp(_lookYaw + delta.x * 0.12f*c.MouseSensitivity, -100f, 100f);
-                _lookPitch = Mathf.Clamp(_lookPitch - delta.y * 0.12f*c.MouseSensitivity*(c.InvertLook?-1:1), -45f, 50f);
+                ApplyBoatLookDelta(mouse.delta.ReadValue());
             }
             if (_reset || teleported) { _waterY = boat.position.y; _waterVelocity = 0f; _velocity = Vector3.zero; }
             // A pause/resume in one frame can leave deltaTime=0 even while Paused=false.

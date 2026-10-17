@@ -177,3 +177,21 @@ See [FISHING_V08_FIELD.md](FISHING_V08_FIELD.md) for controls, v6 migration and 
 ## v0.9.0 catch transactions and XR candidate
 
 See [FISHING_V09_CATCH_LOOP.md](FISHING_V09_CATCH_LOOP.md). `FishingCatch` / `FishingCatchCapture` validate geometry-driven capture, optional inspection, quick net-to-box transfer, durable ownership, explicit settlement and real world-space collider/ray commands with simulated poses. `FishingXRSetup` configures Android-only OpenXR; `Run-FishingAndroidBuild.ps1` uses a verified temporary ASCII drive alias when needed and builds an ARM64 candidate. No attached PICO device was available: these are not physical-input, stereo, comfort or performance certification.
+
+## 第33版：存档、继续游戏、设置、海图与动作
+
+```powershell
+dotnet run --project Tools/FishingTests/FishingTests.csproj --configuration Release -p:BuildInParallel=false
+dotnet run --project Tools/InputTests/InputTests.csproj --configuration Release -p:BuildInParallel=false
+./Tools/Run-V033Validation.ps1
+./Tools/Run-FishingBuilds.ps1
+./Tools/Run-FishingAcceptance.ps1 -Mode Smoke -Session v033-review
+# 可见桌面窗口完整HUD截图，与实际键鼠/耳听验收分开：
+./Tools/Run-FishingAcceptance.ps1 -Mode Capture -Session v033-capture -Width 1600 -Height 900
+```
+
+第33版专项包含：三槽手动/自动独立、空槽/损坏档/备份、真实早期旧档迁移；新航程双记录事务失败不修改原四文件（包括第二个文件被锁后的逆序回滚）；覆盖与读取确认、继续保持内存对象、家中安全脚点恢复。设置检查断言真实音源分类音量、全局静音、零音量、输入倍率/反转、船上实际镜头转角、FOV与画质。书桌检查覆盖真实E交互、图像资源、宽幅比例、缩放/平移/航点、原镜头/暂停恢复、缺资源降级和标题装饰不移动真实碰撞。
+
+人物专项检查源Legacy曲线、缩放曲线、bindpose/蒙皮权重与索引，360真实帧的站坐蹲/走跑跳/双手握持与抄鱼/游泳攀登、同帧幂等及暂停恢复，另120真实帧睡眠。独立回归同时运行第一人称、捕鱼、床与工具、秘境、31版菜单航记和Smoke，避免多套测试共用脏夹具。
+
+本次纯规则 **3871通过**，纯输入 **70通过**；七组串行Unity专项/回归全部通过，最新V033复验通过；Windows与ARM64 Android候选构建、210文件便携ZIP逐项校验以及Android v2签名校验通过。新版独立Windows Player的73场景Smoke及73张1600×900完整HUD截图均通过。完整记录见本次交付报告。全屏偏好写入沿用V032键；隔离测试不修改用户偏好，设置重启的真实交互体验、物理键鼠/耳听音量、PICO立体/实体手柄、长时间性能与全部动画观感仍需人工验收，不用自动断言替代。

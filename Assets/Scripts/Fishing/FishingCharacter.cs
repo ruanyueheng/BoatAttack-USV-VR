@@ -13,8 +13,11 @@ namespace BoatAttack.Fishing
         private LocalPose _modelRest;
         private Renderer[] _renderers;
         private readonly Dictionary<string,string> _clips=new Dictionary<string,string>();
-        private readonly Dictionary<Transform,Quaternion> _rest=new Dictionary<Transform,Quaternion>();
-        private readonly Dictionary<Transform,Vector3> _restPositions=new Dictionary<Transform,Vector3>();
+        private readonly List<OverlayBone> _rigPose=new List<OverlayBone>();
+        private readonly Dictionary<string,float> _fadeStart=new Dictionary<string,float>();
+        private string _activeClip;
+        private float _fadeAge=.15f;
+        private Vector3 _leftAnkleRest,_rightAnkleRest;
         public bool Ready=>_model!=null && _clips.Count>=3 && HandRigReady;
         private float _eyeHeight=1.58f,_eyeForward=.12f,_seatWeight,_crouchWeight;
         public const float CrouchDrop=FishingLocomotion.StandingHeight-FishingLocomotion.CrouchingHeight;
@@ -23,6 +26,7 @@ namespace BoatAttack.Fishing
         public Vector3 AshoreStanceOffset(bool crouched)=>(Vector3.down*CrouchDrop-transform.forward*.12f)*((crouched?1:0)-_crouchWeight)
             +(Vector3.up*.38f+transform.forward*.08f)*_seatWeight;
         private int _stanceFrame=-1;
+        private float _presentationDelta;
         public bool IsStanceSettled(bool ashore,bool crouched)=>Mathf.Approximately(_seatWeight,ashore?0:1)
             && Mathf.Approximately(_crouchWeight,ashore && crouched?1:0);
         public Vector3 InteractionLean { get; set; }
@@ -65,6 +69,8 @@ namespace BoatAttack.Fishing
             _animation=_model.GetComponent<Animation>();
             if(_animation==null)_animation=_model.gameObject.AddComponent<Animation>();
             _animation.playAutomatically=false;_animation.cullingType=AnimationCullingType.AlwaysAnimate;
+            // 仅由晚帧 Pose 驱动采样，禁止引擎在最终手部 IK 后再次写入骨骼。
+            _animation.enabled=false;
             foreach(AnimationState state in _animation)
             {
                 foreach(var key in new[]{"Idle","Walk","Run"})
@@ -74,7 +80,10 @@ namespace BoatAttack.Fishing
             if(_renderers.Length==0 || _clips.Count<3)throw new InvalidOperationException("Beach Character rig/locomotion import incomplete");
             // FBX animation bounds include exporter unit-conversion transforms and are not
             // a reliable measure of this rig. Normalize the *sampled skin*, in our local frame.
-            _animation.Play(_clips["Idle"]);_animation.Sample();
+            _activeClip=_clips["Idle"];
+            foreach(AnimationState state in _animation)
+            {state.enabled=state.name==_activeClip;state.weight=state.enabled?1:0;state.speed=0;state.time=0;}
+            _animation.Sample();
             var bounds=new Bounds();bool first=true;
             foreach(var renderer in _model.GetComponentsInChildren<SkinnedMeshRenderer>())
             {
@@ -108,10 +117,11 @@ namespace BoatAttack.Fishing
             foreach(var bone in new[]{_body,_head,_leftThigh,_rightThigh,_leftShin,_rightShin,_leftAnkle,_rightAnkle,_leftFoot,_rightFoot})
             {
                 if(bone==null)throw new InvalidOperationException("Beach Character stance rig incomplete");
-                _rest[bone]=bone.localRotation;_restPositions[bone]=bone.localPosition;
             }
+            _leftAnkleRest=_leftAnkle.localPosition;_rightAnkleRest=_rightAnkle.localPosition;
+            // 保存全部同源层级的 TRS；无曲线的躯干、脚、缩放也必须回基。
+            foreach(var bone in _model.GetComponentsInChildren<Transform>())_rigPose.Add(new OverlayBone(bone));
             BuildArms();CalibrateEye();BuildFirstPersonSkin();
-            _animation.Play(_clips["Idle"]);
         }
         private static void CalibrateAnkle(Transform thigh,Transform shin,Transform ankle)
         {
@@ -119,57 +129,94 @@ namespace BoatAttack.Fishing
             var axis=ankle.localPosition.sqrMagnitude>1e-10f?ankle.localPosition.normalized:Vector3.up;
             ankle.localPosition=axis*(Vector3.Distance(thigh.position,shin.position)/shin.TransformVector(axis).magnitude);
         }
-        public void Pose(bool ashore,float speed,bool crouched,bool grounded,bool hidden,bool paused)
+        public void Pose(bool ashore,float speed,bool crouched,bool grounded,bool hidden,bool paused,bool swimming=false,bool climbing=false)
+            =>PoseCore(ashore,speed,crouched,grounded,hidden,paused,swimming,climbing,Time.deltaTime);
+        public void SampleTitlePose(float deltaTime)
+            =>PoseCore(false,0,false,true,false,false,false,false,deltaTime);
+        private void PoseCore(bool ashore,float speed,bool crouched,bool grounded,bool hidden,bool paused,bool swimming,bool climbing,float deltaTime)
         {
             if(_model==null)return;
+            bool initial=_stanceFrame<0;
+            float dt=!paused && _stanceFrame!=Time.frameCount?Mathf.Clamp(deltaTime,0,.05f):0;
+            if(_stanceFrame!=Time.frameCount)_presentationDelta=dt;
             _modelRest.Apply(_model);
             SetBodyPresentation(hidden);
-            string clip=_clips[ashore && grounded && speed>.1f?(speed>3?"Run":"Walk"):"Idle"];
-            if(!_animation.IsPlaying(clip))_animation.CrossFade(clip,.15f);
-            foreach(AnimationState state in _animation)state.speed=paused?0:1;
-            // 每次先恢复叠加层再采样，防止坐姿、蹲姿污染下一帧或站立姿态。
-            foreach(var rest in _rest)rest.Key.localRotation=rest.Value;
-            foreach(var rest in _restPositions)rest.Key.localPosition=rest.Value;
-            RestoreArmRest(); // Also restores scale and all finger bones with no animation curves.
-            _animation.Sample();
-            _leftAnkle.localPosition=_restPositions[_leftAnkle];_rightAnkle.localPosition=_restPositions[_rightAnkle];
-            // 每帧只推进一次视觉坐姿/蹲姿；碰撞与上下船安全判定仍立即生效。
-            if(_stanceFrame!=Time.frameCount || paused)
-            {
-                float amount=paused || _stanceFrame<0?1:Mathf.Min(1,Time.deltaTime*8);
-                _seatWeight=Mathf.MoveTowards(_seatWeight,ashore?0:1,amount);
-                _crouchWeight=Mathf.MoveTowards(_crouchWeight,ashore && crouched?1:0,amount);
-                _stanceFrame=Time.frameCount;
-            }
+            string clip=_clips[ashore && grounded && !swimming && !climbing && speed>.1f?(speed>3?"Run":"Walk"):"Idle"];
+            if(!paused || initial)SelectClip(clip);
+            // 每次先恢复完整局部 TRS，再采样；所有程序化层只能叠加在本帧基础上。
+            foreach(var bone in _rigPose)bone.Rest.Apply(bone.Bone);
+            SampleLocomotion(dt);
+            _leftAnkle.localPosition=_leftAnkleRest;_rightAnkle.localPosition=_rightAnkleRest;
+            // 初始化允许直接摆好坐姿；暂停中只重画，不推进动画或站姿过渡。
+            float amount=initial?1:Mathf.Min(1,dt*8);
+            _seatWeight=Mathf.MoveTowards(_seatWeight,ashore?0:1,amount);
+            _crouchWeight=Mathf.MoveTowards(_crouchWeight,ashore && crouched?1:0,amount);
+            _stanceFrame=Time.frameCount;
             if(_seatWeight>0 || _crouchWeight>0)
             {
                 var footOffset=transform.forward*(.35f*_seatWeight);
                 var leftTarget=_leftAnkle.position+footOffset;var rightTarget=_rightAnkle.position+footOffset;
+                var leftOffset=_leftFoot.position-_leftAnkle.position;var rightOffset=_rightFoot.position-_rightAnkle.position;
                 _body.position+=Vector3.down*(.38f*_seatWeight+CrouchDrop*_crouchWeight)-transform.forward*(.08f*_seatWeight+.12f*_crouchWeight);
-                _leftFoot.position+=footOffset;_rightFoot.position+=footOffset;
                 SolveLeg(_leftThigh,_leftShin,_leftAnkle,leftTarget);
                 SolveLeg(_rightThigh,_rightShin,_rightAnkle,rightTarget);
+                _leftFoot.position=_leftAnkle.position+leftOffset;_rightFoot.position=_rightAnkle.position+rightOffset;
             }
             // 接触只允许有限的真实躯干俯身；脚目标保持不动，随后重新求解双腿。
-            AppliedInteractionLean=paused?Vector3.zero:Vector3.ClampMagnitude(InteractionLean,.22f);
+            if(!paused || initial)AppliedInteractionLean=Vector3.ClampMagnitude(InteractionLean,.22f);
             if(AppliedInteractionLean.sqrMagnitude>0)
             {
                 var leftTarget=_leftAnkle.position;var rightTarget=_rightAnkle.position;
+                var leftOffset=_leftFoot.position-leftTarget;var rightOffset=_rightFoot.position-rightTarget;
                 _body.position+=AppliedInteractionLean;
                 SolveLeg(_leftThigh,_leftShin,_leftAnkle,leftTarget);SolveLeg(_rightThigh,_rightShin,_rightAnkle,rightTarget);
+                _leftFoot.position=_leftAnkle.position+leftOffset;_rightFoot.position=_rightAnkle.position+rightOffset;
             }
+            CaptureRigBase();
             CaptureArmBase(paused);
+        }
+        private void SelectClip(string clip)
+        {
+            if(_activeClip==clip)return;
+            _activeClip=clip;_fadeAge=0;_fadeStart.Clear();
+            foreach(AnimationState state in _animation)_fadeStart[state.name]=state.weight;
+        }
+        private void SampleLocomotion(float dt)
+        {
+            _fadeAge=Mathf.Min(.15f,_fadeAge+dt);
+            float fade=Mathf.SmoothStep(0,1,_fadeAge/.15f);
+            foreach(AnimationState state in _animation)
+            {
+                float start=_fadeStart.TryGetValue(state.name,out var weight)?weight:(state.name==_activeClip?1:0);
+                state.weight=Mathf.Lerp(start,state.name==_activeClip?1:0,fade);
+                state.enabled=state.weight>0 || state.name==_activeClip;
+                state.speed=0;
+                if(state.enabled && state.length>0)state.time=Mathf.Repeat(state.time+dt,state.length);
+            }
+            _animation.Sample();
+        }
+        private void CaptureRigBase()
+        {
+            foreach(var bone in _rigPose)bone.Sample=new LocalPose(bone.Bone);
+        }
+        private void RestoreRigBase()
+        {
+            foreach(var bone in _rigPose)bone.Sample.Apply(bone.Bone);
         }
         private void SolveLeg(Transform thigh,Transform shin,Transform ankle,Vector3 target)
         {
             float upper=Vector3.Distance(thigh.position,shin.position),lower=Vector3.Distance(shin.position,ankle.position);
-            var delta=target-thigh.position;float distance=Mathf.Clamp(delta.magnitude,.001f,upper+lower-.0001f);
-            var axis=delta.normalized;var bend=Vector3.ProjectOnPlane(transform.forward,axis).normalized;
+            if(upper<.001f || lower<.001f)return;
+            var delta=target-thigh.position;
+            float distance=Mathf.Clamp(delta.magnitude,Mathf.Abs(upper-lower)+.001f,upper+lower-.001f);
+            var axis=delta.sqrMagnitude>1e-8f?delta.normalized:-transform.up;
+            var reachable=thigh.position+axis*distance;
+            var bend=Vector3.ProjectOnPlane(transform.forward,axis).normalized;
             if(bend.sqrMagnitude<.01f)bend=Vector3.ProjectOnPlane(transform.up,axis).normalized;
             float along=(upper*upper-lower*lower+distance*distance)/(2*distance);
             var knee=thigh.position+axis*along+bend*Mathf.Sqrt(Mathf.Max(0,upper*upper-along*along));
             thigh.rotation=Quaternion.FromToRotation(shin.position-thigh.position,knee-thigh.position)*thigh.rotation;
-            shin.rotation=Quaternion.FromToRotation(ankle.position-shin.position,target-shin.position)*shin.rotation;
+            shin.rotation=Quaternion.FromToRotation(ankle.position-shin.position,reachable-shin.position)*shin.rotation;
         }
     }
 }
