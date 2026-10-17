@@ -84,7 +84,7 @@ namespace BoatAttack.Fishing
             foreach(var fog in FindObjectsOfType<FogOverride>())if(fog.enabled){_suspended.Add(fog);fog.enabled=false;}
             if(_originalSky!=null)
             {
-                _sky=new Material(_originalSky){name="Fishing weather sky (runtime clone)"};_owned.Add(_sky);
+                _sky=new Material(Resources.Load<Shader>("FishingCoastalSky")){name="Fishing watercolor sky (runtime)"};_owned.Add(_sky);
                 _skyTintProperty=_sky.HasProperty("_SkyTint")?"_SkyTint":_sky.HasProperty("_Tint")?"_Tint":null;
                 _skyTint=_skyTintProperty!=null?_sky.GetColor(_skyTintProperty):Color.white;
                 _skyExposure=_sky.HasProperty("_Exposure")?_sky.GetFloat("_Exposure"):1f;
@@ -105,7 +105,11 @@ namespace BoatAttack.Fishing
             for(int i=0;i<samples.Length;i++){low=Mathf.Lerp(low,(float)rng.NextDouble()*2-1,.065f);samples[i]=low*Mathf.Sin(Mathf.PI*i/(samples.Length-1));}
             var clip=AudioClip.Create("Original soft coastal wind",samples.Length,1,22050,false);clip.SetData(samples,0);_owned.Add(clip);_audio.clip=clip;_audio.Play();
         }
-        public void ToggleReducedEffects(){ReducedEffects=!ReducedEffects;}
+        public void ToggleReducedEffects()
+        {
+            ReducedEffects=!ReducedEffects;
+            if(Controller!=null && !Controller.HasIsolatedProfile){PlayerPrefs.SetInt("Fishing.V032.ReducedEffects",ReducedEffects?1:0);PlayerPrefs.Save();}
+        }
         public void CyclePreview()
         {
             if(!Climate.Select(Climate.Forecast))Controller.Notice("天气正在缓慢过渡，请等待过渡结束。",3);
@@ -118,7 +122,7 @@ namespace BoatAttack.Fishing
             Climate.Tick(Time.deltaTime,frozen,Controller.Automated?(BayWeather?)null:Controller.Career.Calendar.Weather);
             if(!frozen && !Controller.Automated && (_saveTimer+=Time.deltaTime)>=30){_saveTimer=0;Controller.Save();}
             ApplyEnvironment();
-            if(_audio!=null){_audio.mute=Controller.QuietMode || Controller.Paused;_audio.volume=.07f+_rainAmount*.13f;}
+            if(_audio!=null){_audio.mute=Controller.QuietMode || (Controller.Paused && !Controller.StartMenuOpen);_audio.volume=(.07f+_rainAmount*.13f)*Controller.AmbientVolume;}
             if(_rain!=null)
             {
                 bool covered=(Controller.Realms!=null && Controller.Realms.Inside) || (Controller.TackleShop!=null && Controller.TackleShop.Inside);
@@ -130,8 +134,9 @@ namespace BoatAttack.Fishing
         {
             if(!_captured)return;
             var a=Preset(Climate.Previous);var b=Preset(Climate.Current);float t=Mathf.SmoothStep(0,1,Climate.Blend);
+            if(Controller.StartMenuOpen){a=b=Preset(BayWeather.Sunset);t=1;}
             var sky=Color.Lerp(a.sky,b.sky,t);var sun=Color.Lerp(a.sun,b.sun,t);float intensity=Mathf.Lerp(a.light,b.light,t);
-            float daylight=Daylight;
+            float daylight=Controller.StartMenuOpen?.82f:Daylight;
             if(DeckLight!=null){DeckLight.intensity=3f*(1-daylight);DeckLight.enabled=daylight<.95f;}
             float twilight=4*daylight*(1-daylight);
             var nightSky=new Color(.07f,.12f,.24f);
@@ -140,12 +145,14 @@ namespace BoatAttack.Fishing
             if(_sun!=null)
             {
                 _sun.color=_sunColor*sun;_sun.intensity=_sunIntensity*intensity*Mathf.Lerp(.025f,1,daylight);
-                float hour=Controller.Career.Calendar.Hour;
+                float hour=Controller.StartMenuOpen?17.2f:Controller.Career.Calendar.Hour;
                 float elevation=daylight>.01f?Mathf.Lerp(8,65,Mathf.Sin(Mathf.Clamp01((hour-6)/12)*Mathf.PI)):32;
                 _sun.transform.rotation=Quaternion.Euler(elevation,_sunRotation.eulerAngles.y+(hour-12)*7,0);
             }
             if(_sky!=null)
             {
+                _sky.SetFloat("_Daylight",daylight);_sky.SetFloat("_CoastTime",Time.unscaledTime);
+                if(_sun!=null)_sky.SetVector("_SunDirection",-_sun.transform.forward);
                 // This island uses _SkyTint, not the cubemap shader's _Tint. Its original
                 // exposure=4 blows out the horizon, so only this runtime clone is capped.
                 if(_skyTintProperty!=null)_sky.SetColor(_skyTintProperty,(_skyTintProperty=="_SkyTint"?new Color(.5f,.5f,.5f):_skyTint)*sky);

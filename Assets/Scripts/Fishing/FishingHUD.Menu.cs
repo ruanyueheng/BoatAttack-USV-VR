@@ -5,7 +5,16 @@ namespace BoatAttack.Fishing
     public sealed partial class FishingHUD
     {
         private static readonly Color SeaInk=new Color32(14,30,46,255),CreamInk=new Color32(247,235,208,255),AmberInk=new Color32(224,185,119,255);
-        private Texture2D _titleArt,_chapterArt;
+        private Texture2D _chapterArt,_titleVeil;
+        public int SettingsTab { get; set; }
+        private void WorldLabel(Rect r,string text,int size,Color ink,bool heading=false,TextAnchor align=TextAnchor.UpperLeft)
+        {
+            ink=ink==Gold?AmberInk:ink==Mint?new Color(.70f,.94f,.83f):ink==Color.white || ink==Muted || ink==Faint?CreamInk:ink;
+            DisplayText(new Rect(r.x+1,r.y+2,r.width,r.height),text,size,new Color(.015f,.035f,.045f,.95f),heading,align);
+            DisplayText(r,text,size,ink,heading,align);
+        }
+        private void WorldLabel(float x,float y,float width,float height,string text,int size,Color ink,bool heading=false)
+            =>WorldLabel(new Rect(x,y,width,height),text,size,ink,heading);
         private void DisplayText(Rect r,string text,int size,Color ink,bool heading=false,TextAnchor align=TextAnchor.UpperLeft)
         {
             _label.font=heading?FishingUITheme.Heading:_font;_label.fontSize=size;_label.fontStyle=FontStyle.Normal;
@@ -14,61 +23,108 @@ namespace BoatAttack.Fishing
         private bool SeaButton(Rect r,string text,bool primary=false,bool enabled=true,int size=20)
         {
             bool hover=enabled && r.Contains(Event.current.mousePosition);
-            Rounded(r,primary?new Color(.83f,.68f,.43f,.96f):new Color(.03f,.10f,.15f,hover?.92f:.7f),5);
-            Outline(r,hover?CreamInk:new Color(.87f,.72f,.46f,.5f),5);
-            DisplayText(r,text,size,!enabled?new Color(.52f,.58f,.59f):primary?SeaInk:CreamInk,false,TextAnchor.MiddleCenter);
+            if(primary || hover)Fill(r.x,r.yMax-3,r.width,1,AmberInk);
+            DisplayText(new Rect(r.x+4,r.y,r.width-8,r.height),text,size,!enabled?new Color(.52f,.58f,.59f):primary || hover?AmberInk:CreamInk,false,TextAnchor.MiddleLeft);
             return GUI.Button(r,GUIContent.none,GUIStyle.none) && enabled;
         }
         private void DrawStartMenu()
         {
-            var c=Controller;
-            if(_titleArt==null)_titleArt=Resources.Load<Texture2D>("FishingV031/TitleSea");
-            var full=new Rect(-_offset/_scale,0,Screen.width/_scale,_height);
-            Fill(full.x,0,full.width,_height,SeaInk);
-            if(_titleArt!=null)GUI.DrawTexture(full,_titleArt,ScaleMode.ScaleAndCrop);
-            Fill(full.x,0,full.width,_height,new Color(.01f,.025f,.045f,.12f));
+            var c=Controller;var full=new Rect(-_offset/_scale,0,Screen.width/_scale,_height);
+            if(_titleVeil==null)
+            {
+                _titleVeil=new Texture2D(128,1,TextureFormat.RGBA32,false){name="Smooth title reading veil",wrapMode=TextureWrapMode.Clamp,filterMode=FilterMode.Bilinear,hideFlags=HideFlags.HideAndDontSave};
+                var pixels=new Color[128];for(int i=0;i<pixels.Length;i++)pixels[i]=new Color(.015f,.035f,.055f,.56f*(1-i/127f));
+                _titleVeil.SetPixels(pixels);_titleVeil.Apply(false,true);
+            }
+            GUI.DrawTexture(new Rect(full.x,0,680,_height),_titleVeil,ScaleMode.StretchToFill,true);
             float top=(_height-740)*.5f;
-            if(c.MenuControls){DrawMenuControls(new Rect(230,top+26,1140,690));return;}
+            if(c.TitleVoyage.Sailing)
+            {
+                Fill(full.x,0,full.width,_height,new Color(.015f,.03f,.045f,c.TitleVoyage.Fade));
+                DisplayText(new Rect(100,_height-120,900,40),"风已起，向着下一座灯塔。",24,CreamInk,true);return;
+            }
+            if(c.MenuControls){DrawMenuControls(new Rect(380,top+30,1100,690));return;}
             DisplayText(new Rect(116,top+84,540,30),"T I D E B O U N D   /   回 潮 海",17,AmberInk);
             DisplayText(new Rect(108,top+130,660,116),"潮汐回响",82,CreamInk,true);
             Fill(120,top+258,62,2,AmberInk);
             DisplayText(new Rect(120,top+284,530,60),"循着灯火，驶向海风寄来的远方。",24,CreamInk,true);
-            if(SeaButton(new Rect(120,top+406,318,62),"开始游戏    →",true))c.StartFromMenu();
-            if(SeaButton(new Rect(120,top+484,318,54),"控制"))c.MenuControls=true;
-            if(SeaButton(new Rect(120,top+554,318,54),"退出游戏"))Application.Quit();
-            DisplayText(new Rect(120,_height-70,660,25),"Enter 开始  ·  F11 全屏 / 窗口  ·  进度自动保存",15,CreamInk);
-            DisplayText(new Rect(1190,_height-70,290,25),"第 31 版  /  v"+FishingPrototype.Version,14,AmberInk,false,TextAnchor.UpperRight);
-            // Only tiny accents move; the painted scene keeps a quiet reading area.
-            for(int i=0;i<14;i++)
+            if(SeaButton(new Rect(120,top+406,278,62),"开始游戏    →",true,true,30))c.StartFromMenu();
+            if(SeaButton(new Rect(120,top+486,278,54),"设置",false,true,26))c.MenuControls=true;
+            if(SeaButton(new Rect(120,top+558,278,54),"退出游戏",false,true,26))Application.Quit();
+            KeyCap(new Rect(120,_height-70,62,30),"Enter");DisplayText(new Rect(196,_height-68,520,30),"启航  ·  F11 全屏 / 窗口  ·  进度自动保存",15,CreamInk);
+            DisplayText(new Rect(1190,_height-70,290,25),"第 32 版  /  v"+FishingPrototype.Version,14,AmberInk,false,TextAnchor.UpperRight);
+        }
+        private void KeyCap(Rect r,string key)
+        {
+            Rounded(r,new Color(.035f,.06f,.075f,.25f),6);Outline(r,new Color(.96f,.91f,.80f,.85f),6,1.5f);
+            if(key=="鼠标")
             {
-                float a=.25f+.18f*Mathf.Sin(Time.unscaledTime*.6f+i*2.1f);
-                Disc(new Vector2(860+(i*137%660),top+55+(i*79%365)),i%3==0?1.7f:1,new Color(1,.86f,.6f,a));
+                var m=new Rect(r.center.x-9,r.y+5,18,r.height-10);Outline(m,CreamInk,8,1.5f);
+                Segment(new Vector2(m.center.x,m.y),new Vector2(m.center.x,m.center.y),CreamInk,1.5f);
+                Segment(new Vector2(m.x,m.center.y),new Vector2(m.xMax,m.center.y),CreamInk,1.5f);
             }
+            else DisplayText(r,key,key.Length>4?16:20,CreamInk,false,TextAnchor.MiddleCenter);
+        }
+        private void SettingSlider(float x,float y,string text,string key,float value,float min=0,float max=1)
+        {
+            DisplayText(new Rect(x,y,220,35),text,23,CreamInk);
+            var track=new Rect(x+248,y+13,440,24);
+            Fill(track.x,track.y+3,track.width,1,new Color(.9f,.83f,.68f,.45f));
+            float next=GUI.HorizontalSlider(track,value,min,max,GUIStyle.none,GUIStyle.none);
+            float amount=Mathf.InverseLerp(min,max,next);Fill(track.x,track.y+3,track.width*amount,2,AmberInk);
+            Disc(new Vector2(track.x+track.width*amount,track.y+4),7,AmberInk);
+            string number=key=="FOV"?next.ToString("0")+"°":key=="Sensitivity"?next.ToString("0.00")+"×":(next*100).ToString("0")+"%";
+            DisplayText(new Rect(x+720,y,110,34),number,18,AmberInk);
+            if(Mathf.Abs(next-value)>.0001f)Controller.SetSetting(key,next);
+            if(Event.current.rawType==EventType.MouseUp)Controller.SaveSettings();
         }
         private void DrawMenuControls(Rect r)
         {
             var c=Controller;
-            Rounded(r,new Color(.025f,.075f,.115f,.96f),12);Outline(r,new Color(.8f,.65f,.4f,.55f),12);
-            DisplayText(new Rect(r.x+38,r.y+28,600,56),"控制与航行",38,CreamInk,true);
-            DisplayText(new Rect(r.x+40,r.y+88,900,28),"调好视野，慢慢认识这片海。",17,AmberInk);
-            Fill(r.x+40,r.y+133,r.width-80,1,new Color(.8f,.7f,.5f,.4f));
-            DisplayText(new Rect(r.x+42,r.y+157,440,32),"显示模式",26,CreamInk,true);
-            if(SeaButton(new Rect(r.x+42,r.y+210,228,50),"全屏",Screen.fullScreen))c.SetFullscreen(true);
-            if(SeaButton(new Rect(r.x+284,r.y+210,228,50),"窗口",!Screen.fullScreen))c.SetFullscreen(false);
-            DisplayText(new Rect(r.x+42,r.y+279,474,62),"F11 或 Alt + Enter 随时切换\n窗口模式支持自由调整大小",17,CreamInk);
-            if(SeaButton(new Rect(r.x+42,r.y+366,470,48),"舒适航行："+(c.ComfortMode?"开启":"标准动力")))c.ToggleComfort();
-            if(SeaButton(new Rect(r.x+42,r.y+430,470,48),"环境与捕鱼音效："+(c.QuietMode?"关闭":"开启")))c.ToggleQuiet();
-            string[] keys={"W A S D","鼠标 / Alt","E","F / T","J / I","C / Ctrl","G / Esc"};
-            string[] meanings={"步行与航行","转头 / 释放鼠标","交谈、采集（低处自动蹲下）","使用手中工具 / 观察动物","航海手札 / 背包与制作","切换视角 / 手动蹲下","上船下船 / 暂停"};
-            for(int i=0;i<keys.Length;i++)
+            Fill(-_offset/_scale,0,Screen.width/_scale,_height,new Color(.02f,.035f,.05f,.83f));
+            DisplayText(new Rect(116,r.y+26,250,60),"潮汐回响",40,CreamInk,true);
+            DisplayText(new Rect(120,r.y+140,220,40),"设 置",30,AmberInk,true);
+            Fill(r.x,r.y+36,r.width,1,new Color(.83f,.68f,.43f,.6f));
+            string[] tabs={"操作","画面","声音"};
+            for(int i=0;i<3;i++)if(SeaButton(new Rect(r.x+i*170,r.y+58,130,50),tabs[i],SettingsTab==i,true,26))SettingsTab=i;
+            float x=r.x,y=r.y+152;
+            if(SettingsTab==0)
             {
-                float y=r.y+158+i*51;
-                DisplayText(new Rect(r.x+566,y,146,32),keys[i],19,AmberInk);
-                DisplayText(new Rect(r.x+720,y,380,42),meanings[i],18,CreamInk);
-                Fill(r.x+566,y+40,530,1,new Color(.7f,.8f,.8f,.12f));
+                string[] keys={"WASD","鼠标","E","F","G","Space","Shift","Ctrl","J / I","M / N","C","Esc"};
+                string[] meanings={"移动 / 驾船（方向键也可以）","转动视角 · 船上按住右键","互动 / 交谈 / 采集","使用工具 / 开关提灯","上船 / 下船","跳跃 / 上低岸","步行快跑 / 航行刹车","蹲下 / 配合 W 航行加速","航海手札 / 背包","地图 / 切换航点","第一 / 第三人称","暂停 / 返回"};
+                for(int i=0;i<keys.Length;i++)
+                {
+                    float cx=x+(i%2)*550,cy=y+(i/2)*56;
+                    if(i==0)for(int k=0;k<4;k++)KeyCap(new Rect(cx+k*36,cy,31,32),keys[i][k].ToString());
+                    else KeyCap(new Rect(cx,cy,keys[i].Length>4?102:76,32),keys[i]);
+                    DisplayText(new Rect(cx+158,cy+2,385,43),meanings[i],19,CreamInk);
+                }
+                SettingSlider(x,y+360,"鼠标灵敏度","Sensitivity",c.MouseSensitivity,.25f,2.5f);
+                if(SeaButton(new Rect(x,y+423,400,40),"垂直视角反转："+(c.InvertLook?"开启":"关闭")))c.SetSetting("Invert",c.InvertLook?0:1);
             }
-            DisplayText(new Rect(r.x+566,r.y+531,530,48),"选择提灯后拿在手中，F 开关灯火。\n选择自然手册后 F 翻开，Esc 收起。",16,AmberInk);
-            if(SeaButton(new Rect(r.x+42,r.yMax-80,470,48),"返回"))c.MenuControls=false;
+            else if(SettingsTab==1)
+            {
+                DisplayText(new Rect(x,y,180,40),"显示模式",24,CreamInk);
+                if(SeaButton(new Rect(x+248,y,180,40),"全屏",Screen.fullScreen))c.SetFullscreen(true);
+                if(SeaButton(new Rect(x+468,y,180,40),"窗口",!Screen.fullScreen))c.SetFullscreen(false);
+                DisplayText(new Rect(x,y+80,180,40),"画质",24,CreamInk);
+                string[] qualities={"流畅","均衡","精致"};for(int i=0;i<3;i++)if(SeaButton(new Rect(x+248+i*180,y+80,140,40),qualities[i],c.GraphicsQuality==i))c.SetSetting("Quality",i);
+                SettingSlider(x,y+169,"第一人称视野","FOV",c.FieldOfView,55,90);
+                if(SeaButton(new Rect(x,y+259,660,42),"舒适航行："+(c.ComfortMode?"开启":"标准动力")))c.ToggleComfort();
+                if(SeaButton(new Rect(x,y+335,660,42),"粒子特效："+(c.Weather.ReducedEffects?"精简":"完整")))c.Weather.ToggleReducedEffects();
+                DisplayText(new Rect(x,y+413,1000,70),"舒适航行会降低转向与加速度；视野设置只影响桌面第一人称。\n降低粒子数量可保留水花反馈，同时减轻画面负担。",17,AmberInk);
+            }
+            else
+            {
+                SettingSlider(x,y,"主音量","Master",c.MasterVolume);
+                SettingSlider(x,y+87,"音乐","Music",c.MusicVolume);
+                SettingSlider(x,y+174,"海风与环境","Ambient",c.AmbientVolume);
+                SettingSlider(x,y+261,"互动与捕鱼音效","Effects",c.EffectsVolume);
+                if(SeaButton(new Rect(x,y+365,580,44),"静音："+(c.QuietMode?"开启":"关闭")))c.ToggleQuiet();
+                DisplayText(new Rect(x,y+439,1000,44),"设置自动保存，下次启航继续使用。",17,AmberInk);
+            }
+            KeyCap(new Rect(120,r.yMax-44,62,34),"Esc");
+            if(SeaButton(new Rect(200,r.yMax-48,180,42),"返回",false,true,23)){c.MenuControls=false;c.SaveSettings();}
         }
     }
 }

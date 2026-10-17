@@ -31,7 +31,7 @@ namespace BoatAttack.Fishing
                 throw new InvalidOperationException("Acceptance fixtures require an explicitly opted-in test profile.");
             // Validate before changing any live state. FreePlay is intentionally never synthesized.
             FishingCareer fixture = selected == FishingAcceptanceCase.FreePlay ? null : FishingAcceptanceCases.CreateCareer(selected);
-            StartMenuOpen=false;MenuControls=false;CancelGuideOpening();
+            if(StartMenuOpen)TitleVoyage.Close();StartMenuOpen=false;MenuControls=false;CancelGuideOpening();
             Letter?.Close();CancelWorldAction();_workshopReceipt=false;TackleShop?.Close();Residents?.Close();Realms?.Abort();CoastWorld?.CloseMenu();
             if (InventoryOpen) ToggleInventory();
             if (JournalOpen) ToggleJournal();
@@ -152,7 +152,15 @@ namespace BoatAttack.Fishing
                 case FishingAcceptanceCase.CashierDialogue: PrepareAcceptanceShore(selected);break;
                 case FishingAcceptanceCase.ShopSupplies: PrepareAcceptanceShore(selected);_hud.ShopCategory=2;break;
                 case FishingAcceptanceCase.StartMenu:OpenStartMenu();break;
-                case FishingAcceptanceCase.MenuControls:OpenStartMenu();MenuControls=true;break;
+                case FishingAcceptanceCase.MenuControls:OpenStartMenu();MenuControls=true;_hud.SettingsTab=0;break;
+                case FishingAcceptanceCase.MenuGraphics:OpenStartMenu();MenuControls=true;_hud.SettingsTab=1;break;
+                case FishingAcceptanceCase.MenuAudio:OpenStartMenu();MenuControls=true;_hud.SettingsTab=2;break;
+                case FishingAcceptanceCase.Departure:OpenStartMenu();StartFromMenu();break;
+                case FishingAcceptanceCase.ArchIslet:
+                case FishingAcceptanceCase.FireflyIslet:
+                    int islet=selected==FishingAcceptanceCase.ArchIslet?0:1;
+                    Teleport(FishingCoastalPresentation.Berth(islet)+Vector3.up,Quaternion.identity);
+                    NavigationTarget=HomeNavigationIndex+1+islet;if(FirstPerson)ToggleView();break;
                 case FishingAcceptanceCase.NatureJournal:_hud.JournalPage=2;ToggleJournal();break;
                 case FishingAcceptanceCase.LegendJournal:_hud.JournalPage=1;ToggleJournal();break;
                 case FishingAcceptanceCase.ShoreJournal:_hud.JournalPage=3;ToggleJournal();break;

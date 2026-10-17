@@ -230,7 +230,7 @@ namespace BoatAttack.EditorTools
             PropChecks(c);
             FishingCharacterValidation.CheckSource(c);
             var handExpiry=FishingCharacterValidation.CheckTargetExpiry();while(handExpiry.MoveNext())yield return null;
-            Check(c.fishingSpots.Length==4 && c.NavigationCount==10 && c.ShopNavigationIndex==9,"四渔区、四调查岸点及独立商店航点");
+            Check(c.fishingSpots.Length==4 && c.NavigationCount==17 && c.ShopNavigationIndex==9,"四渔区、四调查岸点、商店、秘境岛、家园与两座新岛航点");
             c.MoveToSpotForAutomation(3);c.Interact();Check(!c.Anchored,"north ground locked before repair");
             c.ReturnToHarbor();c.MoveToSpotForAutomation(0);c.Interact();
             Presentation(c);

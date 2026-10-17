@@ -83,6 +83,15 @@ namespace BoatAttack.Fishing
         private void ValidateCase()
         {
             var c = Controller;
+            if(CurrentCase==FishingAcceptanceCase.StartMenu || CurrentCase==FishingAcceptanceCase.MenuControls || CurrentCase==FishingAcceptanceCase.MenuGraphics || CurrentCase==FishingAcceptanceCase.MenuAudio || CurrentCase==FishingAcceptanceCase.Departure)
+            {
+                if(!c.StartMenuOpen || !c.Paused || c.TitleVoyage.Boat==null)throw new InvalidOperationException("Live title presentation fixture failed");
+                if(CurrentCase==FishingAcceptanceCase.Departure && !c.TitleVoyage.Sailing)throw new InvalidOperationException("Title boat never began sailing");
+                if(CurrentCase==FishingAcceptanceCase.MenuGraphics && c.GetComponent<FishingHUD>().SettingsTab!=1)throw new InvalidOperationException("Graphics settings fixture has the wrong tab");
+                if(CurrentCase==FishingAcceptanceCase.MenuAudio && c.GetComponent<FishingHUD>().SettingsTab!=2)throw new InvalidOperationException("Audio settings fixture has the wrong tab");
+            }
+            if(CurrentCase==FishingAcceptanceCase.ArchIslet || CurrentCase==FishingAcceptanceCase.FireflyIslet)
+                if(c.NavigationTarget<=c.HomeNavigationIndex || Resources.Load<GameObject>("FishingV032/CoastalArch")==null)throw new InvalidOperationException("New islet/Tripo asset fixture failed");
             if(FishingAcceptanceCases.IsFindCase(CurrentCase))
             {
                 var expectedFind=CurrentCase==FishingAcceptanceCase.BootCatch?FieldItem.OldBoot:CurrentCase==FishingAcceptanceCase.CanCatch?FieldItem.RustyCan:FieldItem.SeaTreasure;

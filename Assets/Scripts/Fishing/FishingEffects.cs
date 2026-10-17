@@ -10,6 +10,15 @@ namespace BoatAttack.Fishing
         private Transform _stars;
         private Mesh _starMesh;
         private Material _material,_starMaterial;
+        private Material _sprayMaterial,_foamMaterial;
+        private ParticleSystem _spray;
+        private readonly LineRenderer[] _ripples=new LineRenderer[8];
+        private readonly float[] _rippleAge=new float[8],_ripplePower=new float[8];
+        private int _ring;
+        private float _nextSplash,_nextWake;
+        private CatchPhase _surfacePhase;
+        public int SplashCount { get; private set; }
+        public int SprayBudget=>192;
         private void Start()
         {
             _material=new Material(Controller.PaletteShader){name="Coastal soft motes"};_material.SetFloat("_Unlit",1);
@@ -31,6 +40,41 @@ namespace BoatAttack.Fishing
             var stars=new GameObject("Coastal night sky",typeof(MeshFilter),typeof(MeshRenderer));_stars=stars.transform;_stars.SetParent(transform,false);
             _starMaterial=new Material(_material){name="Night star palette"};stars.GetComponent<MeshFilter>().sharedMesh=_starMesh;
             var sr=stars.GetComponent<MeshRenderer>();sr.sharedMaterial=_starMaterial;sr.shadowCastingMode=ShadowCastingMode.Off;sr.receiveShadows=false;
+            _sprayMaterial=new Material(Resources.Load<Shader>("FishingSpray")){name="Soft water droplets"};
+            _foamMaterial=new Material(_sprayMaterial){name="Sea foam rings"};_foamMaterial.SetFloat("_Round",0);
+            renderer.sharedMaterial=_sprayMaterial;
+            var spray=new GameObject("V032 water spray pool");spray.transform.SetParent(transform,false);
+            _spray=spray.AddComponent<ParticleSystem>();_spray.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);
+            var water=_spray.main;water.maxParticles=SprayBudget;water.startLifetime=.8f;water.gravityModifier=.65f;water.startSpeed=0;water.simulationSpace=ParticleSystemSimulationSpace.World;
+            var emit=_spray.emission;emit.enabled=false;var source=_spray.shape;source.enabled=false;
+            var fade=_spray.colorOverLifetime;fade.enabled=true;var gradient=new Gradient();gradient.SetKeys(new[]{new GradientColorKey(new Color(.83f,.96f,1),0),new GradientColorKey(Color.white,1)},new[]{new GradientAlphaKey(.85f,0),new GradientAlphaKey(0,1)});fade.color=gradient;
+            var size=_spray.sizeOverLifetime;size.enabled=true;size.size=new ParticleSystem.MinMaxCurve(1,AnimationCurve.Linear(0,1,1,.2f));
+            var sprayRenderer=spray.GetComponent<ParticleSystemRenderer>();sprayRenderer.sharedMaterial=_sprayMaterial;sprayRenderer.shadowCastingMode=ShadowCastingMode.Off;sprayRenderer.receiveShadows=false;
+            for(int i=0;i<_ripples.Length;i++)
+            {
+                _ripples[i]=FishingArt.Line("Expanding water ripple "+i,transform,_foamMaterial,.035f);_ripples[i].loop=true;_ripples[i].positionCount=40;
+                _ripples[i].enabled=false;_rippleAge[i]=2;
+            }
+        }
+        public void Splash(Vector3 at,float strength=1)
+        {
+            if(_spray==null || (Controller.Paused && !Controller.StartMenuOpen))return;
+            strength=Mathf.Clamp(strength,.25f,2);at.y=.12f;SplashCount++;
+            int count=Controller.Weather.ReducedEffects?8:28;
+            for(int i=0;i<count;i++)
+            {
+                float a=i*2.399963f;float speed=(.6f+(i%7)*.16f)*strength;
+                _spray.Emit(new ParticleSystem.EmitParams{position=at,startColor=new Color(.82f,.96f,1,.9f),startSize=(.04f+(i%3)*.022f)*strength,startLifetime=.45f+(i%5)*.1f,
+                    velocity=new Vector3(Mathf.Cos(a)*speed,(.9f+(i%4)*.55f)*strength,Mathf.Sin(a)*speed)},1);
+            }
+            _ring=(_ring+1)%_ripples.Length;_rippleAge[_ring]=0;_ripplePower[_ring]=strength;_ripples[_ring].transform.position=at;
+        }
+        public void FishSurface(Vector3 at,CatchPhase phase,float distance,FishBeat beat)
+        {
+            bool landing=phase==CatchPhase.Landing,leap=phase==CatchPhase.Fighting && beat==FishBeat.Leap;
+            if((landing || leap || (phase==CatchPhase.Fighting && distance<5)) && (phase!=_surfacePhase || Time.time>=_nextSplash))
+            {Splash(at,leap?1.4f:landing?1.05f:.7f);_nextSplash=Time.time+(landing?.45f:.7f);}
+            _surfacePhase=phase;
         }
         public void Burst(Vector3 at,Color color,bool splash=false)
         {
@@ -45,12 +89,28 @@ namespace BoatAttack.Fishing
         }
         private void LateUpdate()
         {
+            if(Controller==null)return;
+            if(_spray!=null)
+            {
+                var main=_spray.main;main.useUnscaledTime=Controller.StartMenuOpen;
+                float dt=Controller.StartMenuOpen?Time.unscaledDeltaTime:Time.deltaTime;
+                for(int i=0;i<_ripples.Length;i++)
+                {
+                    _rippleAge[i]+=dt;float u=_rippleAge[i]/1.25f;var line=_ripples[i];line.enabled=u<1;
+                    if(u>=1)continue;float radius=(.18f+u*1.8f)*_ripplePower[i];
+                    var tint=new Color(.86f,.98f,1,(1-u)*.65f);line.startColor=line.endColor=tint;line.widthMultiplier=.035f*(1-u*.7f);
+                    for(int j=0;j<40;j++){float a=j*Mathf.PI*2/40;line.SetPosition(j,line.transform.position+new Vector3(Mathf.Cos(a)*radius,.01f,Mathf.Sin(a)*radius));}
+                }
+                bool title=Controller.StartMenuOpen && Controller.TitleVoyage.Sailing;
+                if((title || (!Controller.Paused && !Controller.Ashore && Controller.Speed>3)) && Time.unscaledTime>=_nextWake)
+                {var boat=title?Controller.TitleVoyage.Boat:Controller.Player.transform;Splash(boat.position-boat.forward*2,.35f);_nextWake=Time.unscaledTime+.24f;}
+            }
             if(_stars==null || Controller.Player==null)return;
             float light=1-Controller.Weather.Daylight;
             bool clear=Controller.Weather.Climate.Current!=BayWeather.Rain && Controller.Weather.Climate.Current!=BayWeather.Mist;
             _stars.gameObject.SetActive(clear && light>.08f);_stars.position=Controller.viewCamera.transform.position;
             _starMaterial.SetColor("_BaseColor",Color.white*light);
         }
-        private void OnDestroy(){if(_material!=null)Destroy(_material);if(_starMaterial!=null)Destroy(_starMaterial);if(_starMesh!=null)Destroy(_starMesh);}
+        private void OnDestroy(){if(_material!=null)Destroy(_material);if(_starMaterial!=null)Destroy(_starMaterial);if(_starMesh!=null)Destroy(_starMesh);if(_sprayMaterial!=null)Destroy(_sprayMaterial);if(_foamMaterial!=null)Destroy(_foamMaterial);}
     }
 }

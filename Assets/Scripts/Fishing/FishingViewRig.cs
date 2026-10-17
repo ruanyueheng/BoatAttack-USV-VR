@@ -54,8 +54,8 @@ namespace BoatAttack.Fishing
         {
             if(Controller==null || !Controller.Ashore || Controller.Paused || Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || !OwnsCamera || Controller.Expedition.Aligning)return;
             if(float.IsNaN(delta.x) || float.IsInfinity(delta.x) || float.IsNaN(delta.y) || float.IsInfinity(delta.y))return;
-            _lookYaw=Mathf.Repeat(_lookYaw+delta.x*.12f+180,360)-180;
-            _lookPitch=Mathf.Clamp(_lookPitch-delta.y*.12f,-65,65);
+            _lookYaw=Mathf.Repeat(_lookYaw+delta.x*.12f*Controller.MouseSensitivity+180,360)-180;
+            _lookPitch=Mathf.Clamp(_lookPitch-delta.y*.12f*Controller.MouseSensitivity*(Controller.InvertLook?-1:1),-65,65);
         }
 
         private void UpdateBinocularView()
@@ -68,7 +68,7 @@ namespace BoatAttack.Fishing
                 bool hadOptics=BinocularBlend>0;
                 BinocularBlend=0;_binocularFrame=Time.frameCount;
                 // 模态会提前返回相机更新；取消光学状态时也必须立即归还桌面投影。
-                if(hadOptics && OwnsCamera && c!=null && c.viewCamera!=null)c.viewCamera.fieldOfView=FirstPerson?DesktopFieldOfView:58;
+                if(hadOptics && OwnsCamera && c!=null && c.viewCamera!=null)c.viewCamera.fieldOfView=FirstPerson?c.FieldOfView:58;
                 return;
             }
             if(_binocularFrame==Time.frameCount)return;
@@ -101,8 +101,8 @@ namespace BoatAttack.Fishing
             {
                 // Pointer delta is already frame-relative; multiplying by deltaTime changes sensitivity with FPS.
                 var delta = mouse.delta.ReadValue();
-                _lookYaw = Mathf.Clamp(_lookYaw + delta.x * 0.12f, -100f, 100f);
-                _lookPitch = Mathf.Clamp(_lookPitch - delta.y * 0.12f, -45f, 50f);
+                _lookYaw = Mathf.Clamp(_lookYaw + delta.x * 0.12f*c.MouseSensitivity, -100f, 100f);
+                _lookPitch = Mathf.Clamp(_lookPitch - delta.y * 0.12f*c.MouseSensitivity*(c.InvertLook?-1:1), -45f, 50f);
             }
             if (_reset || teleported) { _waterY = boat.position.y; _waterVelocity = 0f; _velocity = Vector3.zero; }
             // A pause/resume in one frame can leave deltaTime=0 even while Paused=false.
@@ -117,7 +117,7 @@ namespace BoatAttack.Fishing
                 c.viewCamera.nearClipPlane = .04f;
                 float pitch = Mathf.Clamp((fishingSeat ? 25f : 0f) + _lookPitch, -45f, 70f);
                 c.viewCamera.transform.rotation = yaw * Quaternion.Euler(pitch, (fishingSeat ? FishingPrototype.FishingSeatYaw : 0f) + _lookYaw, 0f);
-                c.viewCamera.fieldOfView = DesktopFieldOfView;
+                c.viewCamera.fieldOfView = c.FieldOfView;
             }
             else
             {
@@ -166,8 +166,8 @@ namespace BoatAttack.Fishing
             c.viewCamera.nearClipPlane=.04f;
             // Unity 的 fieldOfView 是垂直角；只放大第一人称世界，不放大第三人称或实体双手。
             float zoom=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.72f,1,BinocularBlend));
-            float opticalFov=2*Mathf.Atan(Mathf.Tan(DesktopFieldOfView*Mathf.Deg2Rad*.5f)/BinocularMagnification)*Mathf.Rad2Deg;
-            c.viewCamera.fieldOfView=FirstPerson?Mathf.Lerp(DesktopFieldOfView,opticalFov,zoom):58;
+            float opticalFov=2*Mathf.Atan(Mathf.Tan(c.FieldOfView*Mathf.Deg2Rad*.5f)/BinocularMagnification)*Mathf.Rad2Deg;
+            c.viewCamera.fieldOfView=FirstPerson?Mathf.Lerp(c.FieldOfView,opticalFov,zoom):58;
             _reset=true; // Boarding must not interpolate the boat camera from an inland position.
         }
         private Vector3 ConstrainToVisibleSegment(Vector3 pivot,Vector3 position,Transform boat)

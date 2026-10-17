@@ -37,6 +37,7 @@ namespace BoatAttack.EditorTools
                 var career=c.Career;c.OpenStartMenu();
                 Check(c.StartMenuOpen && c.Paused && Time.timeScale==0,"Opening title menu freezes gameplay");
                 c.MenuControls=true;Check(c.Career==career,"Controls preserve the current profile");c.StartFromMenu();
+                for(int i=0;i<600 && c.StartMenuOpen;i++)yield return null;
                 Check(!c.StartMenuOpen && !c.Paused && c.Career==career,"Starting resumes the existing save without reset");
                 Check(PlayerSettings.resizableWindow && PlayerSettings.allowFullscreenSwitch,"Desktop player permits resizing and fullscreen switching");
                 foreach(string name in new[]{"FieldGuide","GuideCover","GuideLeaf"})
@@ -107,7 +108,7 @@ namespace BoatAttack.EditorTools
             }
             finally
             {
-                if(c.StartMenuOpen)c.StartFromMenu();if(c.JournalOpen)c.ToggleJournal();if(c.Paused)c.TogglePause();
+                if(c.StartMenuOpen)c.FinishTitleVoyage();if(c.JournalOpen)c.ToggleJournal();if(c.Paused)c.TogglePause();
                 c.CancelWorldAction();c.ReturnToHarbor();c.RestoreShopTestProfile(profile);
             }
         }

@@ -44,7 +44,7 @@ namespace BoatAttack.Fishing
         public void Chime(int note)
         {
             if (_c.QuietMode || _c.Paused) return;
-            _audio.PlayOneShot(_chimes[Mathf.Abs(note) % 3]);
+            _audio.PlayOneShot(_chimes[Mathf.Abs(note) % 3],_c.EffectsVolume);
         }
         public void Show(string title, string subtitle, int theme)
         {

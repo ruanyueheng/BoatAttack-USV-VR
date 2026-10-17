@@ -91,7 +91,7 @@ namespace BoatAttack.Fishing
             if(_c.Paused)return false;
             _c.XRNotebook.Close();_c.CloseBoatPanels();Open=true;Age=0;_skip.Reset();_c.StoryModalChanged();
             ConfigureScreen(XRSettings.isDeviceActive);
-            _canvas.gameObject.SetActive(true);_camera.enabled=true;_music.mute=_c.QuietMode;_music.Play();Present();return true;
+            _canvas.gameObject.SetActive(true);_camera.enabled=true;_music.mute=_c.QuietMode;_music.volume=.20f*_c.MusicVolume;_music.Play();Present();return true;
         }
         public void Tick(float seconds,bool tracked)
         {

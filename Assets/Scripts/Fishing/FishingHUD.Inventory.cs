@@ -23,11 +23,18 @@ namespace BoatAttack.Fishing
         private void DrawHotbar()
         {
             var c=Controller;var r=HotbarRect(_height);
-            Label(new Rect(r.x,r.y-23,r.width,20),"I 背包 · "+FishingBackpack.Name(c.Career.Backpack.Equipped)+" · F 使用 · Z 检视",13,Muted,false,TextAnchor.MiddleCenter);
+            WorldLabel(new Rect(r.x,r.y-23,r.width,20),"I 背包 · "+FishingBackpack.Name(c.Career.Backpack.Equipped)+" · F 使用 · Z 检视",13,Muted,false,TextAnchor.MiddleCenter);
             for(int i=0;i<9;i++)
             {
                 var slot=new Rect(r.x+4+i*54,r.y+2,48,48);
-                DrawFieldSlot(slot,i,c.Career.Backpack.Selected==i,false);
+                var stack=c.Career.Backpack.At(i);bool selected=c.Career.Backpack.Selected==i;
+                if(stack.count>0)
+                {
+                    FieldIcon(new Rect(slot.x+5,slot.y+1,38,36),stack.item);
+                    if(stack.count>1)DisplayText(new Rect(slot.x+23,slot.y+23,24,20),stack.count.ToString(),13,CreamInk,false,TextAnchor.MiddleRight);
+                }
+                DisplayText(new Rect(slot.x,slot.yMax-16,slot.width,18),(i+1).ToString(),12,selected?AmberInk:CreamInk,false,TextAnchor.MiddleCenter);
+                if(selected)Fill(slot.x+9,slot.yMax+3,30,2,AmberInk);
                 if(GUI.Button(slot,GUIContent.none,GUIStyle.none))c.SelectFieldSlot(i);
             }
         }

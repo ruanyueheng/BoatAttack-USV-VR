@@ -14,6 +14,7 @@ namespace BoatAttack.Fishing
         public float GuideReachAmount=>GuideOpening?Mathf.SmoothStep(0,1,Mathf.Clamp01(_guideAge/.18f)):0;
         private float _guideAge;
         private int _windowWidth=1280,_windowHeight=720;
+        private bool _titleStarted;
         public bool DesktopDisplay => !XRSettings.isDeviceActive && Application.platform!=RuntimePlatform.Android;
 
         public void OpenStartMenu()
@@ -22,15 +23,23 @@ namespace BoatAttack.Fishing
             if(InventoryOpen)ToggleInventory();
             if(JournalOpen)ToggleJournal();
             if(!Paused)TogglePause();
-            CoastWorld.ClearFindPresentation();StartMenuOpen=true;MenuControls=false;
+            CoastWorld.ClearFindPresentation();StartMenuOpen=true;MenuControls=false;TitleVoyage.Open();
             Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
         }
         public void StartFromMenu()
         {
             if(!StartMenuOpen)return;
+            if(TitleVoyage.Sailing)return;
+            TitleVoyage.Sail();
+        }
+        public void FinishTitleVoyage()
+        {
+            if(!StartMenuOpen)return;
+            TitleVoyage.Close();
             StartMenuOpen=false;MenuControls=false;
             if(Paused)TogglePause();
-            if(!Automated && !HasIsolatedProfile && !Career.PrologueSeen)Prologue.Begin();
+            if(!Automated && !HasIsolatedProfile && !_titleStarted)Prologue.Begin();
+            _titleStarted=true;
         }
         public void SetFullscreen(bool fullscreen)
         {
@@ -57,9 +66,9 @@ namespace BoatAttack.Fishing
         private bool TickStartMenu(Keyboard keyboard)
         {
             if(!StartMenuOpen)return false;
-            if(keyboard!=null && !Automated && Application.isFocused)
+            if(keyboard!=null && !Automated && Application.isFocused && !TitleVoyage.Sailing)
             {
-                if(keyboard.escapeKey.wasPressedThisFrame)MenuControls=false;
+                if(keyboard.escapeKey.wasPressedThisFrame){MenuControls=false;SaveSettings();}
                 else if(keyboard.enterKey.wasPressedThisFrame && !keyboard.leftAltKey.isPressed && !keyboard.rightAltKey.isPressed && !MenuControls)StartFromMenu();
             }
             return true;
