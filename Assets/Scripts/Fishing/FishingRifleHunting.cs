@@ -51,6 +51,7 @@ namespace BoatAttack.Fishing
                 Register(animal);
             }
             _audio=gameObject.AddComponent<AudioSource>();_audio.playOnAwake=false;_audio.spatialBlend=0;_audio.volume=.23f;
+            _c.RegisterAudioSource(_audio,FishingAudioCategory.Effects,.23f);
             _shot=AudioClip.Create("Hunting report",7056,1,44100,false);
             var samples=new float[7056];var random=new System.Random(71);
             for(int i=0;i<samples.Length;i++){float t=i/44100f;samples[i]=(float)((random.NextDouble()*2-1)*Math.Exp(-t*45)+.3*Math.Sin(t*1050)*Math.Exp(-t*25));}

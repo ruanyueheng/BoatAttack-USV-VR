@@ -29,7 +29,7 @@ namespace BoatAttack.Fishing
         private GameObject _rain;
         private readonly Vector3[] _rainVertices = new Vector3[96 * 4];
         private readonly Color[] _rainColors = new Color[96 * 4];
-        private float _rainTimer, _rainAmount, _saveTimer;
+        private float _rainTimer, _rainAmount;
         private AmbientMode _ambientMode;
         private Color _equator, _ground;
         private float _reflection;
@@ -103,7 +103,8 @@ namespace BoatAttack.Fishing
             _audio=gameObject.AddComponent<AudioSource>(); _audio.playOnAwake=false;_audio.loop=true;_audio.spatialBlend=0;_audio.volume=0;
             var rng=new System.Random(731);var samples=new float[22050*4];float low=0;
             for(int i=0;i<samples.Length;i++){low=Mathf.Lerp(low,(float)rng.NextDouble()*2-1,.065f);samples[i]=low*Mathf.Sin(Mathf.PI*i/(samples.Length-1));}
-            var clip=AudioClip.Create("Original soft coastal wind",samples.Length,1,22050,false);clip.SetData(samples,0);_owned.Add(clip);_audio.clip=clip;_audio.Play();
+            var clip=AudioClip.Create("Original soft coastal wind",samples.Length,1,22050,false);clip.SetData(samples,0);_owned.Add(clip);_audio.clip=clip;
+            Controller.RegisterAudioSource(_audio,FishingAudioCategory.Ambient,.07f);_audio.Play();
         }
         public void ToggleReducedEffects()
         {
@@ -120,9 +121,8 @@ namespace BoatAttack.Fishing
             bool frozen=Controller.Paused || Controller.StoryBlocksGameplay || (Controller.XRNotebook!=null && Controller.XRNotebook.IsOpen) || (!_focused && !Controller.Automated);
             Controller.Career.Calendar.Tick(Time.deltaTime, frozen || Controller.Automated);
             Climate.Tick(Time.deltaTime,frozen,Controller.Automated?(BayWeather?)null:Controller.Career.Calendar.Weather);
-            if(!frozen && !Controller.Automated && (_saveTimer+=Time.deltaTime)>=30){_saveTimer=0;Controller.Save();}
             ApplyEnvironment();
-            if(_audio!=null){_audio.mute=Controller.QuietMode || (Controller.Paused && !Controller.StartMenuOpen);_audio.volume=(.07f+_rainAmount*.13f)*Controller.AmbientVolume;}
+            if(_audio!=null)Controller.SetAudioBaseVolume(_audio,.07f+_rainAmount*.13f);
             if(_rain!=null)
             {
                 bool covered=(Controller.Realms!=null && Controller.Realms.Inside) || (Controller.TackleShop!=null && Controller.TackleShop.Inside);

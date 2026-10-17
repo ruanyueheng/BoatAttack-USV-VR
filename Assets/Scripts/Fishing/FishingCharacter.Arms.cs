@@ -164,14 +164,6 @@ namespace BoatAttack.Fishing
             }
             finally{Destroy(mesh);}
         }
-        private void RestoreArmRest()
-        {
-            RestoreArm(_leftArm);RestoreArm(_rightArm);
-        }
-        private static void RestoreArm(Arm arm)
-        {
-            if(arm!=null)foreach(var bone in arm.Overlay)bone.Rest.Apply(bone.Bone);
-        }
         private void CaptureArmBase(bool paused)
         {
             _armsPaused=paused;_armBaseFrame=Time.frameCount;

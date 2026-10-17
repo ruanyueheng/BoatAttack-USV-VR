@@ -43,16 +43,22 @@ namespace BoatAttack.Fishing
                 Fill(full.x,0,full.width,_height,new Color(.015f,.03f,.045f,c.TitleVoyage.Fade));
                 DisplayText(new Rect(100,_height-120,900,40),"风已起，向着下一座灯塔。",24,CreamInk,true);return;
             }
+            if(c.SaveMenuOpen){DrawSaveSlots();return;}
             if(c.MenuControls){DrawMenuControls(new Rect(380,top+30,1100,690));return;}
             DisplayText(new Rect(116,top+84,540,30),"T I D E B O U N D   /   回 潮 海",17,AmberInk);
             DisplayText(new Rect(108,top+130,660,116),"潮汐回响",82,CreamInk,true);
             Fill(120,top+258,62,2,AmberInk);
             DisplayText(new Rect(120,top+284,530,60),"循着灯火，驶向海风寄来的远方。",24,CreamInk,true);
-            if(SeaButton(new Rect(120,top+406,278,62),"开始游戏    →",true,true,30))c.StartFromMenu();
-            if(SeaButton(new Rect(120,top+486,278,54),"设置",false,true,26))c.MenuControls=true;
-            if(SeaButton(new Rect(120,top+558,278,54),"退出游戏",false,true,26))Application.Quit();
-            KeyCap(new Rect(120,_height-70,62,30),"Enter");DisplayText(new Rect(196,_height-68,520,30),"启航  ·  F11 全屏 / 窗口  ·  进度自动保存",15,CreamInk);
-            DisplayText(new Rect(1190,_height-70,290,25),"第 32 版  /  v"+FishingPrototype.Version,14,AmberInk,false,TextAnchor.UpperRight);
+            if(SeaButton(new Rect(120,top+376,310,52),"继续游戏    →",true,c.CanContinue,28))c.ContinueFromMenu();
+            DisplayText(new Rect(452,top+390,650,30),c.CanContinue?"恢复本次航程，不读档、不重新开局":"暂无本次航程 · 请新建或读取存档",16,CreamInk);
+            if(SeaButton(new Rect(120,top+446,278,48),"新建游戏",false,true,26))c.StartFromMenu();
+            if(SeaButton(new Rect(120,top+508,278,48),"读取存档",false,true,26))c.OpenSaveMenu("load");
+            if(SeaButton(new Rect(452,top+508,278,48),"手动保存",false,c.CanContinue,23))c.OpenSaveMenu("save");
+            if(SeaButton(new Rect(120,top+570,278,48),"设置",false,true,26))c.MenuControls=true;
+            if(SeaButton(new Rect(120,top+632,278,48),"退出游戏",false,true,26))Application.Quit();
+            if(c.SaveMenuMessage.Length>0 || c.SaveWarning.Length>0)DisplayText(new Rect(452,top+570,660,80),c.SaveWarning.Length>0?c.SaveWarning:c.SaveMenuMessage,17,AmberInk);
+            KeyCap(new Rect(120,_height-56,62,30),"Enter");DisplayText(new Rect(196,_height-54,800,30),"继续 / 新建  ·  F11 显示模式  ·  自动与手动存档独立",15,CreamInk);
+            DisplayText(new Rect(1190,_height-56,290,25),"第 33 版  /  v"+FishingPrototype.Version,14,AmberInk,false,TextAnchor.UpperRight);
         }
         private void KeyCap(Rect r,string key)
         {
@@ -70,7 +76,7 @@ namespace BoatAttack.Fishing
             DisplayText(new Rect(x,y,220,35),text,23,CreamInk);
             var track=new Rect(x+248,y+13,440,24);
             Fill(track.x,track.y+3,track.width,1,new Color(.9f,.83f,.68f,.45f));
-            float next=GUI.HorizontalSlider(track,value,min,max,GUIStyle.none,GUIStyle.none);
+            float next=InteractiveSettingValue(track,key,value,min,max);
             float amount=Mathf.InverseLerp(min,max,next);Fill(track.x,track.y+3,track.width*amount,2,AmberInk);
             Disc(new Vector2(track.x+track.width*amount,track.y+4),7,AmberInk);
             string number=key=="FOV"?next.ToString("0")+"°":key=="Sensitivity"?next.ToString("0.00")+"×":(next*100).ToString("0")+"%";

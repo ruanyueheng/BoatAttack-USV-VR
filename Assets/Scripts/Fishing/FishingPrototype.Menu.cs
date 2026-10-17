@@ -20,17 +20,19 @@ namespace BoatAttack.Fishing
         public void OpenStartMenu()
         {
             if(!DesktopDisplay || Prologue.Open || Home.Sleeping || HasPendingCatch || StoryBlocksGameplay)return;
+            CloseHomeChart();Save();SaveSettings();
             if(InventoryOpen)ToggleInventory();
             if(JournalOpen)ToggleJournal();
             if(!Paused)TogglePause();
-            CoastWorld.ClearFindPresentation();StartMenuOpen=true;MenuControls=false;TitleVoyage.Open();
+            CoastWorld.ClearFindPresentation();StartMenuOpen=true;MenuControls=false;SaveMenuOpen=false;SaveMenuMessage=string.Empty;TitleVoyage.Open();ApplyAudioSettings();
             Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
         }
         public void StartFromMenu()
         {
             if(!StartMenuOpen)return;
             if(TitleVoyage.Sailing)return;
-            TitleVoyage.Sail();
+            if(CanContinue && HasIsolatedProfile)TitleVoyage.Sail();
+            else OpenSaveMenu("new");
         }
         public void FinishTitleVoyage()
         {
@@ -38,7 +40,8 @@ namespace BoatAttack.Fishing
             TitleVoyage.Close();
             StartMenuOpen=false;MenuControls=false;
             if(Paused)TogglePause();
-            if(!Automated && !HasIsolatedProfile && !_titleStarted)Prologue.Begin();
+            ApplyAudioSettings();
+            if(!Automated && !HasIsolatedProfile && !Career.PrologueSeen)Prologue.Begin();
             _titleStarted=true;
         }
         public void SetFullscreen(bool fullscreen)
@@ -48,7 +51,7 @@ namespace BoatAttack.Fishing
             var display=Screen.currentResolution;
             if(fullscreen)Screen.SetResolution(display.width,display.height,FullScreenMode.FullScreenWindow);
             else Screen.SetResolution(Mathf.Clamp(_windowWidth,640,display.width),Mathf.Clamp(_windowHeight,480,display.height),FullScreenMode.Windowed);
-
+            PersistDisplaySettings(fullscreen,_windowWidth,_windowHeight);
         }
         private void InitializeStartMenu()
         {
@@ -68,8 +71,13 @@ namespace BoatAttack.Fishing
             if(!StartMenuOpen)return false;
             if(keyboard!=null && !Automated && Application.isFocused && !TitleVoyage.Sailing)
             {
-                if(keyboard.escapeKey.wasPressedThisFrame){MenuControls=false;SaveSettings();}
-                else if(keyboard.enterKey.wasPressedThisFrame && !keyboard.leftAltKey.isPressed && !keyboard.rightAltKey.isPressed && !MenuControls)StartFromMenu();
+                if(keyboard.escapeKey.wasPressedThisFrame)
+                {
+                    if(SaveConfirmation.Length>0)CancelSaveConfirmation();else if(SaveMenuOpen)CloseSaveMenu();else MenuControls=false;
+                    SaveSettings();
+                }
+                else if(keyboard.enterKey.wasPressedThisFrame && !keyboard.leftAltKey.isPressed && !keyboard.rightAltKey.isPressed && !MenuControls && !SaveMenuOpen)
+                {if(CanContinue)ContinueFromMenu();else StartFromMenu();}
             }
             return true;
         }

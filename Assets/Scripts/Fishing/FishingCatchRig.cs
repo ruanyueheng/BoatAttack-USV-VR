@@ -78,7 +78,8 @@ namespace BoatAttack.Fishing
             if(ReleaseConfirmation){_releaseUntil=0;if(animate)_c.RequestCatchResolution(false);else _c.ResolveCatch(false);}
             else{_releaseUntil=Time.unscaledTime+3;_c.Notice("再按 X 确认放生；不出售、不增加普通鱼金币。",3);}
         }
-        public void ResetFixture(){if(!_c.HasIsolatedProfile)throw new System.InvalidOperationException("Isolated fixtures only");_fishId=null;Recover();}
+        public void ResetFixture(){if(!_c.HasIsolatedProfile)throw new System.InvalidOperationException("Isolated fixtures only");ResetForLoad();}
+        internal void ResetForLoad(){_fishId=null;Recover();_tray.gameObject.SetActive(false);}
         public void Recover()
         {
             _assist=_netHeld=_hadSample=_tipSample=false;_assistTime=_releaseUntil=0;_gate.Reset();_transfer.Reset();_left.Reset();_right.Reset();Location=Place.Tray;

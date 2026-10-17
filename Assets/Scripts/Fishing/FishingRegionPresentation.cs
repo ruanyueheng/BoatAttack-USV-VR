@@ -22,6 +22,7 @@ namespace BoatAttack.Fishing
         public void Build(FishingPrototype c)
         {
             _c = c; _audio = gameObject.AddComponent<AudioSource>(); _audio.spatialBlend = 0; _audio.volume = .16f;
+            _c.RegisterAudioSource(_audio,FishingAudioCategory.Effects,.16f);
             for (int n = 0; n < 3; n++)
             {
                 var clip = AudioClip.Create("Tide chime " + n, 13230, 1, 44100, false); var samples = new float[13230];
@@ -44,7 +45,7 @@ namespace BoatAttack.Fishing
         public void Chime(int note)
         {
             if (_c.QuietMode || _c.Paused) return;
-            _audio.PlayOneShot(_chimes[Mathf.Abs(note) % 3],_c.EffectsVolume);
+            _c.ApplyAudioSettings();_audio.PlayOneShot(_chimes[Mathf.Abs(note) % 3]);
         }
         public void Show(string title, string subtitle, int theme)
         {

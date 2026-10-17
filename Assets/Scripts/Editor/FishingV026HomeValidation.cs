@@ -82,7 +82,7 @@ namespace BoatAttack.EditorTools
                     if(item==2 && c.ChartExpanded)c.ToggleChart();
                     Check(c.RequestWorldInteraction(),"Desktop E dispatches home interaction "+item);
                     if(item==1)Check(c.VisibleMessage.Contains("明日白昼"),"Radio reports the real calendar forecast");
-                    if(item==2)Check(c.ChartExpanded,"Chart desk opens the existing navigation chart");
+                    if(item==2){Check(c.HomeChartOpen,"Chart desk opens its independent navigation reader");c.CloseHomeChart();yield return null;}
                     if(item==3)
                     {
                         Check(home.LightsOn!=before && home.House.GetComponentsInChildren<Light>().Where(l=>l.name=="Warm home practical").All(l=>l.intensity==0),"Lamp switch immediately turns off the real home lights");

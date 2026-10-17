@@ -233,8 +233,8 @@ namespace BoatAttack.Fishing
                 case 1:
                     _c.Notice("回潮天气台 · 现在："+BayClimate.Name(_c.Career.Calendar.Weather)+"；明日白昼："+BayClimate.Name(FishingCalendar.Forecast(_c.Career.Calendar.Day+1)),8);return true;
                 case 2:
-                    if(XRSettings.isDeviceActive)_c.XRNotebook.Open(12);else if(!_c.ChartExpanded)_c.ToggleChart();
-                    _c.Notice("航海图已展开 · 选择目的地规划下一次出航。",5);return true;
+                    if(XRSettings.isDeviceActive){_c.XRNotebook.Open(12);return true;}
+                    return _c.OpenHomeChart();
                 case 3:
                     LightsOn=!LightsOn;UpdateLights();_c.Notice(LightsOn?"渔屋灯光已打开":"渔屋灯光已关闭",3);return true;
                 default:return false;

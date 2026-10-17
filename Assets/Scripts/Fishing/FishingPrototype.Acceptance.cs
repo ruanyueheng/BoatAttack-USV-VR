@@ -31,6 +31,7 @@ namespace BoatAttack.Fishing
                 throw new InvalidOperationException("Acceptance fixtures require an explicitly opted-in test profile.");
             // Validate before changing any live state. FreePlay is intentionally never synthesized.
             FishingCareer fixture = selected == FishingAcceptanceCase.FreePlay ? null : FishingAcceptanceCases.CreateCareer(selected);
+            CloseHomeChart();CloseSaveMenu();
             if(StartMenuOpen)TitleVoyage.Close();StartMenuOpen=false;MenuControls=false;CancelGuideOpening();
             Letter?.Close();CancelWorldAction();_workshopReceipt=false;TackleShop?.Close();Residents?.Close();Realms?.Abort();CoastWorld?.CloseMenu();
             if (InventoryOpen) ToggleInventory();
@@ -151,6 +152,27 @@ namespace BoatAttack.Fishing
                     break;
                 case FishingAcceptanceCase.CashierDialogue: PrepareAcceptanceShore(selected);break;
                 case FishingAcceptanceCase.ShopSupplies: PrepareAcceptanceShore(selected);_hud.ShopCategory=2;break;
+                case FishingAcceptanceCase.SaveSlots:
+                case FishingAcceptanceCase.SaveOverwrite:
+                    ActiveSaveSlot=0;
+                    OpenStartMenu();
+                    for(int slot=1;slot<FishingSlotStore.Count;slot++)
+                        foreach(var kind in new[]{FishingSlotKind.Manual,FishingSlotKind.Auto})
+                        {
+                            string path=FishingSlotStore.PathFor(SavePath,slot,kind);
+                            File.Delete(path);File.Delete(path+".bak");
+                        }
+                    FishingSlotStore.Write(SavePath,0,FishingSlotKind.Manual,Career,new FishingResumeData(),"acceptance");
+                    FishingSlotStore.Write(SavePath,0,FishingSlotKind.Auto,Career,new FishingResumeData(),"acceptance");
+                    OpenSaveMenu(selected==FishingAcceptanceCase.SaveSlots?"load":"save");
+                    if(selected==FishingAcceptanceCase.SaveOverwrite)RequestSlotAction(0,"save");
+                    break;
+                case FishingAcceptanceCase.HomeChart:
+                    PrepareAcceptanceHome(FishingAcceptanceCase.HomeInterior);
+                    if(!Shore.Relocate(Home.WakePoint,Quaternion.identity))throw new InvalidOperationException("家中海图夹具无法到达安全落脚点。");
+                    View.ResetLook();
+                    if(!OpenHomeChart())throw new InvalidOperationException("家中海图夹具无法打开独立窗口。");
+                    break;
                 case FishingAcceptanceCase.StartMenu:OpenStartMenu();break;
                 case FishingAcceptanceCase.MenuControls:OpenStartMenu();MenuControls=true;_hud.SettingsTab=0;break;
                 case FishingAcceptanceCase.MenuGraphics:OpenStartMenu();MenuControls=true;_hud.SettingsTab=1;break;

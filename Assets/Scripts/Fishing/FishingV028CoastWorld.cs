@@ -116,6 +116,7 @@ namespace BoatAttack.Fishing
             _c.Save();RefreshFishView();_c.FieldWorld.ShowPickupPreview(FieldItem.GrilledFish);
             _c.Notice("香烤海鱼已装入背包 · 选入快捷栏后使用，恢复50%体力。",6);return true;
         }
+        public void RefreshSavedProgress(){_saveClock=0;RefreshFishView();}
         private void RefreshFishView()
         {
             var data=_c.Career.Barbecue;string id=data.fish?.id??"";

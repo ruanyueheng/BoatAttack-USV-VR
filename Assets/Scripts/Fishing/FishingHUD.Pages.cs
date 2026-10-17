@@ -12,7 +12,7 @@ namespace BoatAttack.Fishing
             ChapterImage(new Rect(r.x+1,r.y+1,r.width-2,172),7);
             Rounded(new Rect(r.x+25,r.y+42,360,93),new Color(.02f,.07f,.11f,.87f),6);
             DisplayText(new Rect(r.x+49,r.y+59,320,47),"在海风里歇一会",32,CreamInk,true);
-            DisplayText(new Rect(r.x+51,r.y+110,300,26),"航程已暂停 · 进度自动保存",15,AmberInk);
+            DisplayText(new Rect(r.x+51,r.y+110,300,26),"航程已暂停 · "+(c.LastAutoSave.Length>0?"自动保存 "+c.LastAutoSave:"内存进度保留"),15,AmberInk);
             float x=r.x+30,y=r.y+204,w=432;
             if(Button(new Rect(x,y,w,47),"操作、画面与声音设置",true,true))c.MenuControls=true;
             if(Button(new Rect(x+w+16,y,w,47),"音效："+(c.QuietMode?"静音":"开启")))c.ToggleQuiet();
@@ -26,7 +26,8 @@ namespace BoatAttack.Fishing
             y+=65;
             if(Button(new Rect(x,y,w,47),"世界仪表："+(c.WorldInstruments?"开启":"关闭")))c.ToggleInstruments();
             if(Button(new Rect(x+w+16,y,w,47),"显示模式："+(Screen.fullScreen?"全屏":"窗口")))c.SetFullscreen(!Screen.fullScreen);
-            Label(x,r.y+491,870,50,"J 打开航海手札，I 整理行囊。回到海上之前，记得带一盏灯。",19,Muted,true);
+            if(Button(new Rect(x,r.y+480,w,45),"手动保存（三个槽）",c.CanContinue))c.OpenSaveMenu("save");
+            if(Button(new Rect(x+w+16,r.y+480,w,45),"读取存档"))c.OpenSaveMenu("load");
             if(Button(new Rect(x,r.y+566,278,49),"继续航行",true,true))c.TogglePause();
             if(Button(new Rect(x+300,r.y+566,278,49),"返回开始菜单",!c.HasPendingCatch))c.OpenStartMenu();
             if(Button(new Rect(x+600,r.y+566,278,49),"退出游戏"))Application.Quit();
