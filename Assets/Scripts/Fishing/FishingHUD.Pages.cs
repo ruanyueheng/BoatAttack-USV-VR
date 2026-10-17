@@ -7,14 +7,14 @@ namespace BoatAttack.Fishing
         private void DrawPause()
         {
             var c=Controller;Dim();
-            if(c.MenuControls){DrawMenuControls(new Rect(230,(_height-690)*.5f,1140,690));return;}
+            if(c.MenuControls){DrawMenuControls(new Rect(380,(_height-690)*.5f,1100,690));return;}
             var r=new Rect(330,(_height-686)*.5f,940,686);Rounded(r,Ink,12);Outline(r,Hairline,12);
             ChapterImage(new Rect(r.x+1,r.y+1,r.width-2,172),7);
             Rounded(new Rect(r.x+25,r.y+42,360,93),new Color(.02f,.07f,.11f,.87f),6);
             DisplayText(new Rect(r.x+49,r.y+59,320,47),"在海风里歇一会",32,CreamInk,true);
             DisplayText(new Rect(r.x+51,r.y+110,300,26),"航程已暂停 · 进度自动保存",15,AmberInk);
             float x=r.x+30,y=r.y+204,w=432;
-            if(Button(new Rect(x,y,w,47),"控制与全屏 / 窗口",true,true))c.MenuControls=true;
+            if(Button(new Rect(x,y,w,47),"操作、画面与声音设置",true,true))c.MenuControls=true;
             if(Button(new Rect(x+w+16,y,w,47),"音效："+(c.QuietMode?"静音":"开启")))c.ToggleQuiet();
             y+=65;
             if(Button(new Rect(x,y,w,47),"舒适航行："+(c.ComfortMode?"开启":"标准")))c.ToggleComfort();

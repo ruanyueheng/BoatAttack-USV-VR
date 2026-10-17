@@ -213,6 +213,6 @@ namespace BoatAttack.Fishing
             return "鱼在冲刺 · 放线避开拉力";
         }
 
-        private void OnDestroy() { ReleaseTerrainMap(); ReleaseOptics(); }
+        private void OnDestroy() { ReleaseTerrainMap(); ReleaseOptics(); if(_titleVeil!=null)Destroy(_titleVeil); }
     }
 }

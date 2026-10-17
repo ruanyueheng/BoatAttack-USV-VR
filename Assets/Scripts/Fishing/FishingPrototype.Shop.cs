@@ -70,6 +70,7 @@ namespace BoatAttack.Fishing
         }
         private Vector3 NavigationWorldPosition()
         {
+            if(NavigationTarget>HomeNavigationIndex)return Ashore?FishingCoastalPresentation.Islets[NavigationTarget-HomeNavigationIndex-1]:FishingCoastalPresentation.Berth(NavigationTarget-HomeNavigationIndex-1);
             if(NavigationTarget==HomeNavigationIndex && Home!=null)return Ashore?Home.ApproachPosition:Home.Berth;
             if (NavigationTarget > ShopNavigationIndex)
                 return Ashore ? FishingIslandWorld.Center(NavigationTarget-ShopNavigationIndex-1) : FishingIslandWorld.Berth(NavigationTarget-ShopNavigationIndex-1);

@@ -31,7 +31,7 @@ namespace BoatAttack.Fishing
 #endif
                 InputSystem.settings=fixtureInputSettings;
                 InputSystem.EnableDevice(keyboard);
-                RequireShop(c.NavigationCount == 15 && c.ShopNavigationIndex == 9 && c.Shore.Sites.Length == 4, "fifteen waypoints including the home, original four survey sites");
+                RequireShop(c.NavigationCount == 17 && c.ShopNavigationIndex == 9 && c.Shore.Sites.Length == 4, "seventeen waypoints including home, two islets and original four survey sites");
                 for (int i = 0; i < c.NavigationCount; i++)
                 {
                     c.SelectNavigation(i); var p = c.NavigationPosition;

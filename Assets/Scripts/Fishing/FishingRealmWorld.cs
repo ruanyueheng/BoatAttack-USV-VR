@@ -13,6 +13,13 @@ namespace BoatAttack.Fishing
         private Quaternion _returnRotation;
         private float _nextUse;
         private Transform _gate;
+        private Material _lightMaterial;
+        private readonly LineRenderer[,] _beams=new LineRenderer[4,3];
+        private readonly Transform[] _saplings=new Transform[3];
+        private Transform _waterGauge;
+        private Transform _cargoBridge,_cargoBarrier;
+        private float _demoAge;
+        private int _demoNote;
         public int Island { get; private set; } = -1;
         public bool Inside => Island >= 0;
         public bool Transitioning { get; private set; }
@@ -24,6 +31,7 @@ namespace BoatAttack.Fishing
         public void Build(FishingPrototype c)
         {
             _c = c; Transform root = null;
+            _lightMaterial=new Material(c.PaletteShader){name="V032 sanctuary light paths"};_lightMaterial.SetFloat("_Unlit",1);_lightMaterial.SetColor("_BaseColor",new Color(1.3f,1.2f,.8f));
             foreach (var go in gameObject.scene.GetRootGameObjects()) if (go.name == RootName) root = go.transform;
             if (root == null) throw new InvalidOperationException("Install v19 sanctuary scene first.");
             for (int i = 0; i < 4; i++)
@@ -32,6 +40,7 @@ namespace BoatAttack.Fishing
                 FishingV019Art.Sign(FishingLore.Inscription(i),_rooms[i],new Vector3(-5,2.3f,-7.5f),.052f,new Color(.95f,.84f,.58f));
                 _portals[i] = c.Islands.WorldRoot.GetChild(i).Find("V019 island character/Portal");
                 if (_portals[i] == null) throw new InvalidOperationException("Missing shrine door " + i);
+                BuildTrialScenery(i);
             }
         }
         public bool TryTarget(out int id, out Transform target)
@@ -55,9 +64,9 @@ namespace BoatAttack.Fishing
                 if (!TryTarget(out int id, out _)) return null;
                 return id >= 8 ? "E 进入 " + FishingLore.ShrineName(id - 8) : id == 4 ? "E 返回岛屿" : id == 3 ? "E 读取潮汐回响"
                     : Island == 0 ? "E 敲响「" + (id == 0 ? "风" : id == 1 ? "潮" : "星") + "」风铃"
-                    : Island == 1 ? "E 切换林灯 · " + (Trial.State(id) == 1 ? "已亮" : "熄灭")
-                    : Island == 2 ? (id == 0 ? "E 推动货箱 · 第 " + Trial.State(0) + " / 2 格" : "E 转动水闸 · " + (Trial.State(1) == 1 ? "已打开" : "未打开"))
-                    : "E 转动星盘 · 朝" + FishingAdventure.DirectionName(Trial.State(id));
+                    : Island == 1 ? "E 转动反光镜 · 朝"+FishingAdventure.DirectionName(Trial.State(id))+" · 生长 "+(Trial.Growth*100).ToString("0")+"%"
+                    : Island == 2 ? (id == 0 ? "E 推动货箱 · 第 " + Trial.State(0) + " / 2 格 · 水位 "+(Trial.WaterLevel*100).ToString("0")+"%" : "E 水闸："+new[]{"关闭","排水","注水"}[Trial.State(1)])
+                    : "E 联动星盘 · 朝" + FishingAdventure.DirectionName(Trial.State(id))+" · 同时带动下一盘";
             }
         }
         public bool Interact()
@@ -78,7 +87,8 @@ namespace BoatAttack.Fishing
             if (Time.time < _nextUse) return false;
             _nextUse = Time.time + .4f;
             bool ok = Trial.Use(id); Refresh();
-            _c.Notice(Island == 0 ? (ok ? "清音回应 · " + Trial.Progress + " / 3" : "音序未合，风铃重归寂静。星 → 风 → 潮。")
+            _c.Notice(Island == 0 ? (ok ? "清音回应 · " + Trial.Progress + " / 3 · 留一拍，再奏下一声" : "音序或节奏未合，风铃重归寂静。听星、风、潮。")
+                : !ok && Island==2?"先排水至15%以下，货箱才推得动；抵达承重台后无需再推。"
                 : Trial.Ready ? "机关共鸣，回响之门已经打开。" : NearbyHint + " · " + FishingLore.TrialHint(Island), 5);
             _c.Regions.Chime(id); return ok;
         }
@@ -109,7 +119,7 @@ namespace BoatAttack.Fishing
                 moved = _c.Shore.Relocate(feet, Quaternion.identity);
                 if (moved)
                 {
-                    Island = destination; Trial = new FishingShrineTrial(destination); _nextUse = 0;
+                    Island = destination; Trial = new FishingShrineTrial(destination); _nextUse = 0;_demoAge=0;_demoNote=0;
                     for (int i = 0; i < 5; i++) _devices[i] = Room.Find("Device " + i);
                     _gate = Room.Find("Echo gate"); Refresh();
                 }
@@ -136,11 +146,17 @@ namespace BoatAttack.Fishing
         public void Tick()
         {
             if (!Inside || Transitioning || _c.Paused) return;
+            bool ready=Trial.Ready;Trial.Tick(Time.deltaTime);
+            if(ready!=Trial.Ready)Refresh();
+            _demoAge+=Time.deltaTime;
+            if(Island==0 && _demoNote<3 && _demoAge>=.7f+_demoNote*1.25f)
+            {_c.Regions.Chime(new[]{2,0,1}[_demoNote]);_demoNote++;}
             if (Island == 2)
             {
                 var p = new Vector3(-3, 0, -5 + Trial.State(0) * 2.5f);
                 _devices[0].localPosition = Vector3.MoveTowards(_devices[0].localPosition, p, Time.deltaTime * 7);
             }
+            PresentTrial();
         }
         private void Refresh()
         {
@@ -148,7 +164,7 @@ namespace BoatAttack.Fishing
             for (int i = 0; i < 3; i++)
             {
                 var t = _devices[i]; if (t == null) continue;
-                var signal = t.Find("Signal"); if (signal != null) signal.gameObject.SetActive(Island == 3 ? Trial.State(i) == (i == 0 ? 1 : i == 1 ? 3 : 2) : Trial.State(i) > 0);
+                var signal = t.Find("Signal"); if (signal != null) signal.gameObject.SetActive(Island == 3 ? Trial.State(i) == (i == 0 ? 1 : i == 1 ? 3 : 2) : Island==1?Trial.State(i)==i+1:Trial.State(i) > 0);
                 if (Island == 3) t.Find("Star pointer").localRotation = Quaternion.Euler(0, Trial.State(i) * 90, 0);
             }
             if (Island == 1)
@@ -156,7 +172,75 @@ namespace BoatAttack.Fishing
                 var bridge = Room.Find("Light bridge"); bridge.gameObject.SetActive(open);
                 Room.Find("Crossing barrier").gameObject.SetActive(!open);
             }
+            if(Island==2){_cargoBarrier.gameObject.SetActive(!open);_cargoBridge.GetComponent<BoxCollider>().enabled=open;}
         }
+        private void BuildTrialScenery(int island)
+        {
+            var room=_rooms[island];
+            if(island==0 || island==1 || island==3)room.Find("Sanctuary ceiling").gameObject.SetActive(false);
+            for(int i=0;i<3;i++)
+            {
+                var line=FishingArt.Line("V032 "+(island==0?"wind score":island==1?"reflected sunlight":island==2?"hydraulic gauge":"linked constellation")+" "+i,room,_lightMaterial,.045f,false);
+                line.positionCount=2;line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;_beams[island,i]=line;
+                if(island==1)
+                {
+                    _saplings[i]=FishingV019Art.Spawn("tree_oak",room,new Vector3((i-1)*3,0,2.2f),1.1f);
+                    var mirror=room.Find("Device "+i);FishingArt.Shape("Rotating mirror",PrimitiveType.Cube,mirror,new Vector3(0,1.5f,0),new Vector3(.8f,.65f,.08f),_c.cream);
+                }
+                if(island==3)
+                {
+                    for(int j=0;j<9;j++)
+                    {
+                        float a=j*2.399963f+i;FishingArt.Shape("Constellation pearl",PrimitiveType.Sphere,room,new Vector3(Mathf.Cos(a)*(2+i*2),5.5f,Mathf.Sin(a)*6),Vector3.one*.065f,_lightMaterial);
+                    }
+                }
+            }
+            if(island==2)
+            {
+                FishingArt.Shape("Water gauge backing",PrimitiveType.Cube,room,new Vector3(-7,1.4f,-3),new Vector3(1,2.8f,.3f),_c.dark);
+                _waterGauge=FishingArt.Shape("Visible hydraulic water level",PrimitiveType.Cube,room,new Vector3(-7,1.4f,-3.2f),new Vector3(.66f,2.5f,.08f),_c.teal).transform;
+                _cargoBridge=FishingArt.Shape("Hydraulic floating crossing",PrimitiveType.Cube,room,new Vector3(0,-.75f,3.8f),new Vector3(3,.24f,3.6f),_c.wood,true).transform;
+                _cargoBridge.GetComponent<BoxCollider>().enabled=false;
+                _cargoBarrier=new GameObject("Hydraulic crossing safety gate").transform;_cargoBarrier.SetParent(room,false);_cargoBarrier.localPosition=new Vector3(0,1.2f,3.8f);
+                var barrier=_cargoBarrier.gameObject.AddComponent<BoxCollider>();barrier.size=new Vector3(19.7f,2.4f,.18f);
+                for(int j=0;j<5;j++)FishingArt.Shape("Hydraulic gate slat",PrimitiveType.Cube,_cargoBarrier,new Vector3((j-2)*.6f,0,0),new Vector3(.09f,2.3f,.12f),_c.teal);
+                FishingV019Art.Sign("排水 → 推箱 → 注水",room,new Vector3(-5,3.7f,-5),.04f,new Color(.95f,.84f,.58f));
+            }
+        }
+        private void PresentTrial()
+        {
+            if(Island==2)
+            {
+                _waterGauge.localScale=new Vector3(.66f,Mathf.Max(.02f,2.5f*Trial.WaterLevel),.08f);
+                _waterGauge.localPosition=new Vector3(-7,.15f+1.25f*Trial.WaterLevel,-3.2f);
+                _cargoBridge.localPosition=new Vector3(0,Mathf.Lerp(-.75f,.12f,Trial.WaterLevel),3.8f);
+            }
+            for(int i=0;i<3;i++)
+            {
+                var line=_beams[Island,i];
+                if(Island==1)
+                {
+                    var mirror=_devices[i].Find("Rotating mirror");mirror.localRotation=Quaternion.Euler(0,Trial.State(i)*90,0);
+                    var start=_devices[i].localPosition+Vector3.up*1.5f;var seed=new Vector3((i-1)*3,.5f,2.2f);
+                    bool lit=Trial.State(i)==i+1;line.SetPosition(0,start);line.SetPosition(1,lit?seed:start+Quaternion.Euler(0,Trial.State(i)*90,0)*Vector3.forward*3);
+                    line.startColor=line.endColor=lit?new Color(1,.88f,.5f):new Color(.30f,.40f,.30f);
+                    _saplings[i].localScale=Vector3.one*(1+Trial.Growth*1.5f);
+                }
+                else if(Island==0)
+                {
+                    var p=_devices[i].localPosition;float pulse=.5f+.5f*Mathf.Sin(_demoAge*Mathf.PI*2/1.25f);
+                    line.SetPosition(0,p+new Vector3(-.7f,.06f,0));line.SetPosition(1,p+new Vector3(.7f,.06f,0));line.widthMultiplier=.03f+pulse*.06f;
+                    line.startColor=line.endColor=Trial.State(i)>0?new Color(.65f,1,.8f):new Color(.8f,.64f,.34f);
+                }
+                else if(Island==3)
+                {
+                    var p=_devices[i].localPosition+Vector3.up*2.5f;var next=_devices[(i+1)%3].localPosition+Vector3.up*2.5f;
+                    line.SetPosition(0,p);line.SetPosition(1,next);line.startColor=line.endColor=Trial.Ready?new Color(.6f,1,.85f):new Color(.55f,.58f,1);
+                }
+                else line.enabled=false;
+            }
+        }
+        private void OnDestroy(){if(_lightMaterial!=null)Destroy(_lightMaterial);}
         private void OnDisable() { if (_c != null) Abort(); }
     }
 }

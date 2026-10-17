@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.31.0";
+        public const string Version = "0.32.0";
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
@@ -56,7 +56,7 @@ namespace BoatAttack.Fishing
         public bool Ashore => Shore != null && Shore.Ashore;
         public Vector3 ExplorerPosition => Ashore ? Shore.Position : Player.transform.position;
         public int HomeNavigationIndex => ShopNavigationIndex + 1 + FishingAdventure.Count;
-        public int NavigationCount => HomeNavigationIndex + 1;
+        public int NavigationCount => HomeNavigationIndex + 3;
         public int IslandNavigationIndex(int island) => ShopNavigationIndex + 1 + island;
         public FishingWeather Weather { get; private set; }
         public FishingNightscape Nightscape { get; private set; }
@@ -75,7 +75,7 @@ namespace BoatAttack.Fishing
         public bool QuietMode { get; private set; }
         public int NavigationTarget { get; private set; }
         public Vector3 NavigationPosition => NavigationWorldPosition();
-        public string NavigationName => NavigationTarget == HomeNavigationIndex ? "回潮渔屋" : NavigationTarget > ShopNavigationIndex ? FishingAdventure.Name(NavigationTarget-ShopNavigationIndex-1) : NavigationTarget == ShopNavigationIndex ? ShopName : NavigationTarget == 0 ? "潮汐渔港" : NavigationTarget <= fishingSpots.Length ? FishingGrounds.Name(NavigationTarget - 1) : FishingExploration.SiteName(NavigationTarget - fishingSpots.Length - 1);
+        public string NavigationName => NavigationTarget>HomeNavigationIndex?FishingCoastalPresentation.IsletName(NavigationTarget-HomeNavigationIndex-1):NavigationTarget == HomeNavigationIndex ? "回潮渔屋" : NavigationTarget > ShopNavigationIndex ? FishingAdventure.Name(NavigationTarget-ShopNavigationIndex-1) : NavigationTarget == ShopNavigationIndex ? ShopName : NavigationTarget == 0 ? "潮汐渔港" : NavigationTarget <= fishingSpots.Length ? FishingGrounds.Name(NavigationTarget - 1) : FishingExploration.SiteName(NavigationTarget - fishingSpots.Length - 1);
         public bool CanChangeBait => Session.Phase == CatchPhase.Idle || Session.Phase == CatchPhase.Caught || Session.Phase == CatchPhase.Escaped;
         public CatchCard LastCatch { get; private set; }
         public bool LegendTrophy => Career != null && Career.LegendCatches > 0;
@@ -212,6 +212,7 @@ namespace BoatAttack.Fishing
                 ?"欢迎来到回潮海。校准完成后将播放序章和手柄教学；B 可随时打开潮汐手册。"
                 :"潮汐回响：N选择岛屿，低速G下船，E与居民交谈 / 进入潮纹秘境。J查看世界航记；店员可介绍商品，离岸可游泳。"):warning,10f);
             _initialized=true;
+            InitializeSettings();
             InitializeStartMenu();
             if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }
             else if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
@@ -419,6 +420,11 @@ namespace BoatAttack.Fishing
             RifleHunting.Present();
             // 全部工具和掌心目标落位后才解同源骨架；随后只读取竿尖画线，不再次采样。
             Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right,UnityEngine.XR.XRSettings.isDeviceActive);
+            if(Acceptance!=null && Acceptance.FreezeScenario && (Acceptance.CurrentCase==FishingAcceptanceCase.ArchIslet || Acceptance.CurrentCase==FishingAcceptanceCase.FireflyIslet))
+            {
+                var island=FishingCoastalPresentation.Islets[Acceptance.CurrentCase==FishingAcceptanceCase.ArchIslet?0:1];
+                var p=island+new Vector3(39,22,42);viewCamera.transform.SetPositionAndRotation(p,Quaternion.LookRotation(island+Vector3.up*2-p));
+            }
             if(Acceptance!=null && Acceptance.FreezeScenario && Acceptance.CurrentCase==FishingAcceptanceCase.HomeMoonlight)
             {
                 var island=Home.Origin;var position=island+new Vector3(26,8,-61);var target=island+new Vector3(-9,17,10);
@@ -466,6 +472,7 @@ namespace BoatAttack.Fishing
             var profile=ScriptableObject.CreateInstance<VolumeProfile>();profile.name="Fishing desktop grade";_owned.Add(profile);volume.sharedProfile=profile;
             var tone=profile.Add<Tonemapping>(true);tone.mode.Override(TonemappingMode.ACES);_owned.Add(tone);
             var color=profile.Add<ColorAdjustments>(true);color.postExposure.Override(0.15f);color.contrast.Override(5f);color.saturation.Override(4f);_owned.Add(color);
+            var bloom=profile.Add<Bloom>(true);bloom.intensity.Override(.24f);bloom.threshold.Override(1.2f);bloom.scatter.Override(.55f);_owned.Add(bloom);
             // Deliberately omit depth of field, motion blur and chromatic distortion.
         }
 
@@ -760,13 +767,14 @@ namespace BoatAttack.Fishing
             }
             else if(phase==CatchPhase.Waiting && !_castSplash)
             {
-                _castSplash=true;Effects?.Burst(target,new Color(.72f,.9f,1));
+                _castSplash=true;Effects?.Splash(target,.6f);
             }
             _bobber.transform.position=target;
             // 入网前由钓鱼轨迹驱动；待处理鱼只交给 CatchRig，避免两套姿态互相覆盖。
             if(!HasPendingCatch)
             {
                 _fish.transform.position=phase==CatchPhase.Caught?Vector3.Lerp(_catchStart,_box.position+Vector3.up*0.5f,Mathf.Clamp01((Time.time-_caughtAt)/0.7f))+Vector3.up*Mathf.Sin(Mathf.Clamp01((Time.time-_caughtAt)/0.7f)*Mathf.PI)*0.8f:target;
+                Effects?.FishSurface(target,phase,Session.Distance,Session.Beat);
                 _fish.transform.rotation=leap>0f?yaw*Quaternion.Euler(-Mathf.Cos(leap*Mathf.PI)*50f,-90f,Mathf.Sin(leap*Mathf.PI*2f)*20f)
                     :yaw*Quaternion.Euler(Mathf.Sin(Time.time*7)*18f,-90+Mathf.Sin(Time.time*9)*22f,Mathf.Sin(Time.time*6)*14f);
                 _fish.transform.localScale=Vector3.one*FishingSpecies.SizeScale(Session.Kind,Session.Grams);

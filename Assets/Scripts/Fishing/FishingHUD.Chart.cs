@@ -21,6 +21,7 @@ namespace BoatAttack.Fishing
             const float radius = TerrainMapRadius;
             Disc(center, radius + 4, MapSurface);
             DrawTerrainMap(center, radius);
+            DrawCompassFrame(center,radius);
             Outline(new Rect(center.x-radius, center.y-radius, radius*2, radius*2), Gold, radius, 1.5f);
             Outline(new Rect(center.x-radius*.5f, center.y-radius*.5f, radius, radius), Hairline*.45f, radius*.5f);
             for (int i=0;i<24;i++)
@@ -47,6 +48,7 @@ namespace BoatAttack.Fishing
                 ChartMarker(c.Home.Origin,center,"家",c.HomeNavigationIndex,Gold);
             for(int i=0;i<FishingAdventure.Count;i++)
                 ChartMarker(c.Ashore?FishingIslandWorld.Center(i):FishingIslandWorld.Berth(i),center,((char)('E'+i)).ToString(),c.IslandNavigationIndex(i),c.Career.Adventure.Restored(i)?Gold:MapShoreColor);
+            for(int i=0;i<2;i++)ChartMarker(c.Ashore?FishingCoastalPresentation.Islets[i]:FishingCoastalPresentation.Berth(i),center,i==0?"拱":"萤",c.HomeNavigationIndex+1+i,MapShoreColor);
             if(c.Ashore)
             {
                 var boat=ChartPoint(c.Player.transform.position,center);Disc(boat,7,MapSurface);Disc(boat,5,MapPortColor);
@@ -73,6 +75,20 @@ namespace BoatAttack.Fishing
             {
                 var tip=new Rect(r.x,r.y-48,r.width,42);Card(tip,MapShoreColor);
                 Label(new Rect(tip.x+8,tip.y+4,tip.width-16,tip.height-8),GUI.tooltip,12,Color.white);
+            }
+        }
+        private void DrawCompassFrame(Vector2 center,float radius)
+        {
+            var brass=new Color(.79f,.60f,.30f,.96f);var dark=new Color(.12f,.19f,.20f,.95f);
+            Outline(new Rect(center.x-radius-7,center.y-radius-7,(radius+7)*2,(radius+7)*2),dark,radius+7,7);
+            Outline(new Rect(center.x-radius-7,center.y-radius-7,(radius+7)*2,(radius+7)*2),brass,radius+7,2);
+            Outline(new Rect(center.x-radius-2,center.y-radius-2,(radius+2)*2,(radius+2)*2),CreamInk,radius+2,1);
+            for(int i=0;i<8;i++)
+            {
+                float a=i*Mathf.PI/4;var d=new Vector2(Mathf.Sin(a),-Mathf.Cos(a));var tangent=new Vector2(-d.y,d.x);
+                var tip=center+d*(radius+(i%2==0?17:12));var foot=center+d*(radius+5);
+                Segment(foot-tangent*5,tip,brass,2);Segment(tip,foot+tangent*5,brass,2);
+                Disc(center+d*(radius+7),2.5f,CreamInk);
             }
         }
         private void DrawWorkshopMarkers(Vector2 center)
@@ -112,7 +128,7 @@ namespace BoatAttack.Fishing
             if(selected)Outline(new Rect(p.x-17,p.y-17,34,34),Gold,17,2);
             Disc(p,12,MapSurface);Outline(new Rect(p.x-12,p.y-12,24,24),color,12,1.5f);
             Label(new Rect(p.x-12,p.y-12,24,24),text,14,Color.white,true,TextAnchor.MiddleCenter);
-            string name=target==c.HomeNavigationIndex?"回潮渔屋":target==c.ShopNavigationIndex?c.ShopName:target==0?"潮汐渔港":target<=c.fishingSpots.Length
+            string name=target>c.HomeNavigationIndex?FishingCoastalPresentation.IsletName(target-c.HomeNavigationIndex-1):target==c.HomeNavigationIndex?"回潮渔屋":target==c.ShopNavigationIndex?c.ShopName:target==0?"潮汐渔港":target<=c.fishingSpots.Length
                 ?FishingGrounds.Name(target-1):target>c.ShopNavigationIndex?FishingAdventure.Name(target-c.ShopNavigationIndex-1):FishingExploration.SiteName(target-c.fishingSpots.Length-1);
             string tip=name+" · "+metres.ToString("0")+" m"+(offRange?"（屏外方位）":"");
             if(GUI.Button(new Rect(p.x-16,p.y-16,32,32),new GUIContent("",tip),GUIStyle.none))c.SelectNavigation(target);

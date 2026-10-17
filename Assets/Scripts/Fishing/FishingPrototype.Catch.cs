@@ -40,7 +40,7 @@ namespace BoatAttack.Fishing
             bool special=FishingSpecies.Of(fish.kind).Legendary || fish.rare || !Career.Discovered(fish.kind,fish.rare) || fish.grams>Career.BestGrams(fish.kind);
             LastCatch=new CatchCard{Fish=fish.Copy(),ShownAt=Time.unscaledTime,Discovery=!Career.Discovered(fish.kind,fish.rare),PersonalBest=Career.BestGrams(fish.kind)>0 && fish.grams>Career.BestGrams(fish.kind)};
             _feedback.PlayOneShot(FishingSpecies.Of(fish.kind).Legendary?_legendTone:_successTone);
-            Effects?.Burst(_fish.transform.position,new Color(1,.79f,.37f));
+            Effects?.Splash(_fish.transform.position,1.5f);Effects?.Burst(_fish.transform.position,new Color(1,.79f,.37f));
             Notice(special?"特别收获！可以拿起观察测量；普通鱼也可直接倾网入箱。":"鱼已入网：可直接倾网入箱，或拿起观察。",7);return true;
         }
         public bool ResolveCatch(bool store)

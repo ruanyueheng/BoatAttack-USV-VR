@@ -62,7 +62,7 @@ namespace BoatAttack.Fishing
                 for (int i = 0; i < 3; i++)
                 {
                     Vector3 p = Quaternion.Euler(0, 35 + i * 120, 0) * new Vector3(13.5f, 0, 0);
-                    Rock(root, rock, stone, p + Vector3.down * .75f, new Vector3(2.7f, 1.2f + i * .12f, 2),true);
+                    Rock(root, rock, stone, p + Vector3.down * 2.3f, new Vector3(2.7f, 1.2f + i * .12f, 2));
                     for (int j = 0; j < 4; j++)
                     {
                         Vector3 stem = p + new Vector3((j - 1.5f) * .35f,-.9f,.8f);
@@ -119,7 +119,7 @@ namespace BoatAttack.Fishing
                 mesh.CombineMeshes(group.Value.ToArray(), true, true); owned.Add(mesh);
                 var go = new GameObject("Batched " + group.Key.name, typeof(MeshFilter), typeof(MeshRenderer)); go.transform.SetParent(root, false);
                 go.GetComponent<MeshFilter>().sharedMesh = mesh;
-                var renderer = go.GetComponent<MeshRenderer>(); renderer.sharedMaterial = group.Key; renderer.shadowCastingMode = ShadowCastingMode.Off;
+                var renderer = go.GetComponent<MeshRenderer>(); renderer.sharedMaterial = group.Key; renderer.shadowCastingMode = ShadowCastingMode.On;renderer.receiveShadows=true;
                 CombinedRenderers++; CombinedVertices += mesh.vertexCount;
             }
         }
