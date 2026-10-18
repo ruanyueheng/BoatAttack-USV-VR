@@ -114,7 +114,16 @@ namespace BoatAttack.EditorTools
                     && c.HasPendingCatch && c.Career.PendingCatch.fish.id==receipt && c.Career.Count==0,"placement leaves the same live fish in the real net without granting it twice");
                 Check(c.Hands.Right.Visible && Vector3.Distance(c.Shore.Character.PalmPosition(false),c.LandingNet.TransformPoint(new Vector3(.05f,.035f,0)))<.035f,"the right hand visibly supports the net after the rod is stowed");
                 FishingV016Validation.Capture(c,output,"live-fish-in-net");
-                Check(c.ResolveCatch(true) && !c.ResolveCatch(true) && c.Career.Count==1,"netted fish stores exactly once through the original transaction");
+                InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.F));InputFrame();
+                typeof(FishingPrototype).GetMethod("ReadPendingDesktop",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(c,new object[]{keyboard});
+                Check(c.WorldActionBusy && c.Actions.Kind==FishingActionKind.Store && c.Career.Count==0,
+                    "the production F input starts storage without granting the fish early");
+                InputSystem.QueueStateEvent(keyboard,new KeyboardState());InputFrame();
+                c.TickWorldAction(.1f,true,false);
+                Check(c.HasPendingCatch && c.Career.Count==0,"storage retains the receipt until hand contact");
+                c.TickWorldAction(1,true,false);
+                Check(c.LastActionSucceeded && !c.HasPendingCatch && !c.RequestCatchResolution(true)
+                    && !c.ResolveCatch(true) && c.Career.Count==1,"the production storage action commits exactly once");
                 var loaded=FishingSaveStore.Load(c.SavePath,out var warning);
                 Check(warning=="" && loaded.Count==1 && !loaded.HasPendingCatch,"new hand-first workflow survives the existing save format");
                 Debug.Log("[MOUSE-FISHING] EVIDENCE: "+output);

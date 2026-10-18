@@ -21,6 +21,8 @@ PICO：原有右握把拿竿、甩竿、左握把转轮收线保留。中鱼后�
 
 鱼靠近后松开再点击左键，左手提起活鱼检视，右手继续持竿。按 E 后收竿、右手拿网，左手把同一条鱼放进抄网；然后 F 入鱼箱，X 确认放生，E 可再次拿起检视。也可在鱼靠近时直接 E 抄网。手里和网里的鱼使用同一份待处理凭证，只有最终入箱或放生才结算。
 
+测量在开始左手检视时记录；检视和入网都不增加鱼箱数量。F 入箱仍通过原有接触动作提交，接触前取消会保留待处理鱼。
+
 抛竿失效的原因是桌面模式每帧关闭未打开的 VR 手册，间接清空蓄力。现在已关闭的手册不再重置桌面交互；鼠标从场景开始的拖动可跨过 HUD 后正常松开，焦点丢失则取消并等待重新点击。
 
 ## 实现与边界
@@ -37,6 +39,7 @@ PICO：原有右握把拿竿、甩竿、左握把转轮收线保留。中鱼后�
 dotnet run --project Tools/FishingTests/FishingTests.csproj --configuration Release
 powershell -ExecutionPolicy Bypass -File Tools/Run-UnityValidation.ps1 -Suite FishingAngling
 powershell -ExecutionPolicy Bypass -File Tools/Run-UnityValidation.ps1 -Suite FishingMouseFishing
+powershell -ExecutionPolicy Bypass -File Tools/Run-UnityValidation.ps1 -Suite FishingInteraction
 powershell -ExecutionPolicy Bypass -File Tools/Run-UnityValidation.ps1 -Suite FishingCatch
 ```
 
@@ -45,3 +48,5 @@ powershell -ExecutionPolicy Bypass -File Tools/Run-UnityValidation.ps1 -Suite Fi
 2026-10-17 本地验证：4038 项规则、70 项输入策略通过；FishingAngling、FishingCatch、FishingFirstPerson、FishingV028 场景回归通过。检查使用临时隔离存档，玩家 v13 主存档及备份逐字节未变。相机几何图保存在 `Logs/Angling`，不等同于完整 HUD 的人工游玩或实体头显画面。
 
 2026-10-18：整合 v0.33 后 4089 项规则通过；MouseFishing 使用真实 Input System 按下、保持、松开与鼠标位移，覆盖 UI 起手、跨 UI 松开、焦点恢复、左右控竿、双向线杯、左手检视、E 放入真实抄网、入箱去重和存档恢复；V033 多存档/继续游戏/角色回归通过。新角色的手持鱼和持网画面保存在 `Logs/MouseFishing`。
+
+2026-10-18 整合回归修复：FishingInteraction 已适配左手检视、再次 E 入网及开始检视时测量的约定，保留入箱取消、普通鱼放生、传说鱼赏金和一次性结算检查；FishingMouseFishing 改为真实 F 键启动入箱，并验证接触前不入箱、完成后不重复结算。两套 Unity 场景回归、4089 项钓鱼规则和 70 项输入策略均通过，正式存档及备份校验值未变。未执行完整 Player 构建或 PICO 真机验收。
