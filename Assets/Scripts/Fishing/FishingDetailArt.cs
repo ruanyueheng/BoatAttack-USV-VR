@@ -32,6 +32,7 @@ namespace BoatAttack.Fishing
             Gear("RodBody",root,Vector3.zero);
             crank=Gear("ReelCrank",root,new Vector3(-.053f,-.14f,-.015f)).transform;
             tip=new GameObject("Rod tip").transform;tip.SetParent(root,false);tip.localPosition=new Vector3(0,-.015f,2.03f);
+            root.gameObject.AddComponent<FishingRodDynamics>().Build(root,tip);
         }
         private static GameObject Gear(string name,Transform parent,Vector3 position)
         {

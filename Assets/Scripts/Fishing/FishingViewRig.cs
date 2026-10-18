@@ -102,7 +102,13 @@ namespace BoatAttack.Fishing
             if (c == null || c.Player == null || c.viewCamera == null || !OwnsCamera) { ReleaseCursor(); return; }
             if (c.Paused || c.InventoryOpen || c.ShopBlocksGameplay || c.StoryBlocksGameplay) { ResetInput(); return; }
             if(c.Ashore){ApplyShoreView(focused,automated);return;}
-            ReleaseCursor();
+            bool fishingDrag=c.DesktopFishingDrag && focused && !automated;
+            if(fishingDrag)
+            {
+                if(_pointer.LockState!=CursorLockMode.Locked)_pointer.LockState=CursorLockMode.Locked;
+                _pointer.Visible=false;_cursorOwned=true;
+            }
+            else ReleaseCursor();
             var boat = c.Player.transform;
             var yaw = Quaternion.Euler(0f, boat.eulerAngles.y, 0f);
             bool fishingSeat=c.UsesFishingSeat;
@@ -112,7 +118,8 @@ namespace BoatAttack.Fishing
             var mouse = Mouse.current;
             bool rightHeld = mouse != null && mouse.rightButton.isPressed;
             bool lookReady = _lookGate.Update(focused, c.Paused, false, rightHeld);
-            IsLooking = !c.InspectingItem && !automated && lookReady && rightHeld;
+            IsLooking = !fishingDrag && !c.InspectingItem && !automated && lookReady && rightHeld;
+
             if (IsLooking)
             {
                 ApplyBoatLookDelta(mouse.delta.ReadValue());

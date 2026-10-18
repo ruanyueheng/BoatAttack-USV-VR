@@ -121,6 +121,14 @@ namespace BoatAttack.EditorTools
         {
             Check(c.Automated && c.HasIsolatedProfile && c.SavePath.StartsWith(Application.temporaryCachePath),"仅操作临时隔离存档");
             int firstFrame=Time.frameCount;while(Time.frameCount==firstFrame)yield return null;
+            if(suite=="MOUSE-FISHING")
+            {
+                var run=FishingMouseFishingValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="ANGLING")
+            {
+                var run=FishingAnglingValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
             if(suite=="V033")
             {
                 var checks=FishingV033Validation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
@@ -140,6 +148,7 @@ namespace BoatAttack.EditorTools
             else if(suite=="V029")
             {
                 var run=FishingV029Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}
+
             }
             else if(suite=="V028")
             {
@@ -571,10 +580,20 @@ namespace BoatAttack.EditorTools
             var fish=new CatchRecord{id="v011-contact-"+Guid.NewGuid().ToString("N"),kind=FishKind.Coral,grams=1000,value=FishingSpecies.Value(FishKind.Coral,false,1000)};
             Check(c.Career.BeginPending(fish,0,c.Player.transform.position.x,c.Player.transform.position.z),"待处理鱼事务夹具");c.CatchRig.ResetFixture();
             var seated=SettleFishingSeat(c);while(seated.MoveNext())yield return null;
-            Check(c.RequestInspectCatch(),"观察鱼使用延时请求");c.TickWorldAction(.1f,true,false);
-            Check(!c.Career.PendingCatch.measured,"接触前不提前测量");c.TickWorldAction(1,true,false);c.PresentCharacterFrame();
-            Check(c.HasPendingCatch && c.Career.PendingCatch.measured,"接触后只更新测量，不偷偷入箱");HandOnGoal(c,false,"托鱼");
-            yield return null;c.TickWorldAction(.01f,true,false);
+            Check(!c.Career.PendingCatch.measured && c.RequestInspectCatch() && c.CatchRig.LeftHandInspecting,
+                "未测量鱼获使用左手检视入口");
+            Check(c.Career.PendingCatch.measured && c.Career.Count==0 && !c.WorldActionBusy,
+                "左手检视开始时记录测量，鱼获仍待处理且不启动旧双手动作");
+            Check(!c.RequestCatchResolution(true) && !c.RequestCatchResolution(false),"手持鱼必须先入网再结算");
+            for(int frame=0;frame<100 && !c.CatchRig.LeftInspectionSettled;frame++)yield return null;
+            c.PresentCharacterFrame();
+            Check(c.CatchRig.LeftInspectionSettled && Vector3.Distance(c.Shore.Character.PalmPosition(true),
+                c.ActiveFish.TransformPoint(c.CatchRig.LeftInspectionGrip))<.035f,"检视完成时左掌接触同一条鱼");
+            Check(c.RequestInspectCatch() && c.CatchRig.PlacingInNet && !c.RequestInspectCatch(),
+                "再次 E 开始放入抄网，重复 E 不重启动作");
+            for(int frame=0;frame<100 && c.CatchRig.PlacingInNet;frame++)yield return null;
+            Check(c.CatchRig.Location==FishingCatchRig.Place.Net && c.HasPendingCatch
+                && c.Career.PendingCatch.fish.id==fish.id && c.Career.Count==0,"入网保留原凭证，不提前入箱");
             bool storing=c.RequestCatchResolution(true);
             Check(storing,"入箱使用动作请求；message="+c.Message+" box="+c.FishBox.position+" shoulder="+c.Shore.Character.ShoulderPosition(false)+" reach="+c.Shore.Character.ArmReach(false)
                 +" surface="+c.CatchRig.ReceivingPoint(c.Shore.Character.ShoulderPosition(false))+" seated="+c.Shore.Character.IsStanceSettled(false,false)+" boat="+c.Player.transform.position+" euler="+c.Player.transform.eulerAngles);

@@ -17,7 +17,9 @@ namespace BoatAttack.Fishing
         public Vector3 NetTray=>BoatPoint(new Vector3(.55f,.99f,-.28f));
         internal Vector3 StowedNetPosition=>new Vector3(-.8f,.70f,-.55f);
         internal Quaternion StowedNetRotation=>Quaternion.Euler(0,Mathf.Lerp(85f,0f,_netDeployment),-Mathf.Sin(_netMotion*Mathf.PI)*35f);
-        public bool BeginNetCatch()
+        public bool BeginNetCatch()=>BeginLandedCatch(false);
+        public bool BeginHandCatch()=>BeginLandedCatch(true);
+        private bool BeginLandedCatch(bool leftHand)
         {
             if(Paused || !Anchored || HasPendingCatch || !Session.LandFromNet())return false;
             var fish=Session.Claim();var p=Player.engine.RB.position;
@@ -41,11 +43,17 @@ namespace BoatAttack.Fishing
             LastCatch=new CatchCard{Fish=fish.Copy(),ShownAt=Time.unscaledTime,Discovery=!Career.Discovered(fish.kind,fish.rare),PersonalBest=Career.BestGrams(fish.kind)>0 && fish.grams>Career.BestGrams(fish.kind)};
             _feedback.PlayOneShot(FishingSpecies.Of(fish.kind).Legendary?_legendTone:_successTone);
             Effects?.Splash(_fish.transform.position,1.5f);Effects?.Burst(_fish.transform.position,new Color(1,.79f,.37f));
+            if(leftHand)
+            {
+                CatchRig.StartLeftInspection(_fish.transform.position);
+                Notice("左手检视活鱼。E 放入抄网，之后可入箱或放生。",7);return true;
+            }
             Notice(special?"特别收获！可以拿起观察测量；普通鱼也可直接倾网入箱。":"鱼已入网：可直接倾网入箱，或拿起观察。",7);return true;
         }
         public bool ResolveCatch(bool store)
         {
             if(Paused || !HasPendingCatch)return false;
+            if(store && CatchRig.LeftHandInspecting){Notice("先按 E 将手里的活鱼放进抄网，再入鱼箱。",4);return false;}
             var p=Career.PendingCatch;bool legend=FishingSpecies.Of(p.fish.kind).Legendary;
             if(legend && store){MeasureCatch();Notice("传说鱼已测量。请确认放生领取纪念，不作为普通鱼售卖。",6);return false;}
             if(legend && !p.measured){Notice("先拿起传说鱼测量，再确认放生。",5);return false;}
