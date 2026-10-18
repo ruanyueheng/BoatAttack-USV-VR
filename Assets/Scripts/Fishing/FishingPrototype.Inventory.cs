@@ -36,6 +36,7 @@ namespace BoatAttack.Fishing
         {
             if(ShopBlocksGameplay || StoryBlocksGameplay || Career==null)return;
             int previous=Career.Backpack.Selected;
+            EndItemInspection();
             if(!Career.Backpack.Select(slot))return;
             if(previous!=Career.Backpack.Selected){CancelWorldAction();FieldWorld?.ClearToolPresentation();}
             BinocularsRaised=false;if(Career.Backpack.Count(FieldItem.Lantern)==0)LanternOn=false;Save();
@@ -53,6 +54,7 @@ namespace BoatAttack.Fishing
         }
         public void UseFieldItem()
         {
+            if(InspectingItem){EndItemInspection();return;}
             if(Paused || ShopBlocksGameplay || StoryBlocksGameplay || WorldActionBlocksGameplay || !Ashore || Expedition.Aligning)return;
             if((Shore.Swimming || Shore.Climbing) && Career.Backpack.Equipped!=FieldItem.CookedMeat && Career.Backpack.Equipped!=FieldItem.GrilledFish){Notice("游泳或攀登时先收起工具；可选择口粮恢复体力。",3);return;}
             switch(Career.Backpack.Equipped)
@@ -66,7 +68,7 @@ namespace BoatAttack.Fishing
                 case FieldItem.HuntingSpear:FieldWorld.BeginHunt();break;
                 case FieldItem.Workbench:case FieldItem.Furnace:case FieldItem.Forge:RequestPlaceEquipped();break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:RequestHarvest();break;
-                case FieldItem.FieldGuide: FieldWorld.Observe();break;
+                case FieldItem.FieldGuide: OpenFieldGuide();break;
                 case FieldItem.Binoculars:
                     BinocularsRaised=!BinocularsRaised;Notice(BinocularsRaised?(_xrActive?"望远镜 · A 记录动物 / 扳机放下":"望远镜 · T 记录动物 / F 放下"):"已放下望远镜",3);break;
                 case FieldItem.Lantern:LanternOn=!LanternOn;Notice(LanternOn?"提灯已点亮":"提灯已熄灭",3);break;
@@ -84,7 +86,11 @@ namespace BoatAttack.Fishing
             if(Ashore && m!=null && (k==null || (!k.leftAltKey.isPressed && !k.rightAltKey.isPressed)))
             {
                 float scroll=m.scroll.ReadValue().y;
-                if(Mathf.Abs(scroll)>.1f)SelectFieldSlot((Career.Backpack.Selected+(scroll>0?8:1))%9);
+                if(Mathf.Abs(scroll)>.1f)
+                {
+                    if(BinocularsRaised && Career.Backpack.Equipped==FieldItem.Binoculars)View.AdjustMagnification(Mathf.Sign(scroll));
+                    else if(!InspectingItem)SelectFieldSlot((Career.Backpack.Selected+(scroll>0?8:1))%9);
+                }
             }
         }
         public bool CollectFieldItem(int id,FieldItem item,int count)
@@ -97,7 +103,7 @@ namespace BoatAttack.Fishing
         {
             if(Paused || !Ashore)return false;
             bool fresh=Career.Backpack.Observe(kind);
-            if(fresh){Save();Notice("自然手册新增："+FishingBackpack.AnimalName(kind)+(UnityEngine.XR.XRSettings.isDeviceActive?" · B 查看自然观察记录":" · I 查看陆地记录"),5);}
+            if(fresh){Save();Notice("自然手册新增："+FishingBackpack.AnimalName(kind)+(UnityEngine.XR.XRSettings.isDeviceActive?" · B 查看自然观察记录":" · F 翻开自然手册"),5);}
             else Notice("已记录："+FishingBackpack.AnimalName(kind)+(UnityEngine.XR.XRSettings.isDeviceActive?"。缓慢接近或轻蹲可以靠得更近。":"。按住 Ctrl 蹲下可以靠得更近。"),4);
             return fresh;
         }

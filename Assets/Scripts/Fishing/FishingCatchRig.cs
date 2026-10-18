@@ -78,7 +78,8 @@ namespace BoatAttack.Fishing
             if(ReleaseConfirmation){_releaseUntil=0;if(animate)_c.RequestCatchResolution(false);else _c.ResolveCatch(false);}
             else{_releaseUntil=Time.unscaledTime+3;_c.Notice("再按 X 确认放生；不出售、不增加普通鱼金币。",3);}
         }
-        public void ResetFixture(){if(!_c.HasIsolatedProfile)throw new System.InvalidOperationException("Isolated fixtures only");_fishId=null;Recover();}
+        public void ResetFixture(){if(!_c.HasIsolatedProfile)throw new System.InvalidOperationException("Isolated fixtures only");ResetForLoad();}
+        internal void ResetForLoad(){_fishId=null;_handFirstCatch=_netCarryPose=false;Recover();_tray.gameObject.SetActive(false);}
         public void Recover()
         {
             bool leftInspection=Location==Place.LeftHand;
@@ -169,12 +170,13 @@ namespace BoatAttack.Fishing
                 var rotation=DesktopNetRotation(_c.LandingTarget);
                 _c.LandingNet.SetPositionAndRotation(_c.LandingTarget-rotation*new Vector3(FishingDetailArt.NetMouthOffset,0,0),rotation);
             }
-            if(_c.HasPendingCatch && (Location==Place.Net || Location==Place.LeftHand) && !_netHeld)
+            if(!xr && _c.HasPendingCatch && _handFirstCatch && (Location==Place.Net || PlacingInNet))HoldInspectionNet();
+            else if(_c.HasPendingCatch && Location==Place.Net && !_netHeld)
             {
                 var parked=Quaternion.Euler(0,_c.Player.transform.eulerAngles.y,0);
                 _c.LandingNet.SetPositionAndRotation(_c.NetTray+Vector3.up*.13f-parked*new Vector3(FishingDetailArt.NetMouthOffset,0,0),parked);
             }
-            else if(!xr && !landing && !_netHeld && !_assist && (!_c.HasPendingCatch || (Location!=Place.Net && Location!=Place.LeftHand)))
+            else if(!xr && !landing && !_netHeld && !_assist && (!_c.HasPendingCatch || Location!=Place.Net))
             {
                 _c.LandingNet.localPosition=_c.StowedNetPosition;_c.LandingNet.localRotation=_c.StowedNetRotation;
             }
@@ -182,7 +184,7 @@ namespace BoatAttack.Fishing
             if(!_c.Paused && (_netHeld || _assist || (!xr && landing)))
                 _c.Hands.SetToolTarget(true,_c.LandingNet,new Vector3(.05f,.035f,0),Quaternion.LookRotation(Vector3.right,Vector3.up),.9f);
             _tray.gameObject.SetActive(_c.HasPendingCatch && Location==Place.Tray && !_c.Ashore);
-            if(!_c.HasPendingCatch){_fishId=null;return;}
+            if(!_c.HasPendingCatch){_fishId=null;_handFirstCatch=_netCarryPose=false;return;}
             var pending=_c.Career.PendingCatch;
             if(_fishId!=pending.fish.id){_fishId=pending.fish.id;_c.RestorePendingFishVisual();}
             var fish=_c.ActiveFish;fish.gameObject.SetActive(true);

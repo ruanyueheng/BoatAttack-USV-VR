@@ -21,7 +21,7 @@ namespace BoatAttack.EditorTools
             var character=c.Shore.Character;
             Check(character!=null && character.Ready,"one ready source-skinned avatar");
             Check(character.LeftFingerJointCount==19 && character.RightFingerJointCount==19,"source fingers: four four-bone chains and one three-bone thumb per hand");
-            var source=Resources.Load<GameObject>("FishingCharacter/BeachCharacter");
+            var source=Resources.Load<GameObject>(FishingCharacter.Resource);
             SkinnedMeshRenderer body=null,head=null;
             foreach(var skin in source.GetComponentsInChildren<SkinnedMeshRenderer>())
             {if(skin.name=="Beach_Body")body=skin;if(skin.name=="Beach_Head")head=skin;}
@@ -39,6 +39,7 @@ namespace BoatAttack.EditorTools
                 foreach(var digit in new[]{"Index","Middle","Ring","Pinky","Thumb"})
                     for(int i=1;i<=(digit=="Thumb"?3:4);i++)Check(names.Contains(digit+i+side),"source skin binds "+digit+i+side);
             }
+            Debug.Log("[CHARACTER] ARM LENGTHS: left="+character.ArmReach(true)+" right="+character.ArmReach(false)+" skin="+character.BodySkin.bounds+" scale="+character.BodySkin.transform.lossyScale);
             Check(character.ArmReach(true)>.25f && character.ArmReach(true)<.9f && character.ArmReach(false)>.25f && character.ArmReach(false)<.9f,"actual imported arm lengths are human-sized after skin calibration");
         }
         public static IEnumerator CheckTargetExpiry()

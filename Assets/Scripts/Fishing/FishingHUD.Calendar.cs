@@ -5,29 +5,28 @@ namespace BoatAttack.Fishing
     {
         private void DrawCalendarPage(Rect r)
         {
-            var day=Controller.Career.Calendar;
-            Label(r.x+32,r.y+116,900,42,day.DateLabel+"    "+day.TimeLabel+" · "+day.TideName,28,InkText,true);
-            Label(r.x+32,r.y+163,1000,24,"每季 28 天 · 四季轮转 · 15 分钟一昼夜 · 日志、背包与暂停时停表",16,Muted);
+            var c=Controller;var day=c.Career.Calendar;
+            Label(r.x,r.y,710,43,day.DateLabel,29,InkText,true);
+            Label(r.x,r.y+54,710,27,day.TimeLabel+"    /    "+day.TideName+"    /    每季28天",17,Muted);
             string[] week={"一","二","三","四","五","六","日"};
-            for(int i=0;i<7;i++)Label(new Rect(r.x+32+i*132,r.y+202,120,30),"周"+week[i],16,Muted,true,TextAnchor.MiddleCenter);
+            for(int i=0;i<7;i++)Label(new Rect(r.x+i*94,r.y+104,84,27),week[i],16,Muted,true,TextAnchor.MiddleCenter);
             for(int i=0;i<28;i++)
             {
-                var cell=new Rect(r.x+32+(i%7)*132,r.y+240+(i/7)*72,122,62);
-                bool today=i+1==day.Date; Rounded(cell,today?FishingUITheme.Selected:InkRaised,6);
-                Label(cell.x+12,cell.y+7,100,27,(i+1).ToString(),22,today?Mint:InkText,today);
-                Label(cell.x+12,cell.y+36,100,20,today?"今天":(i==0?"季节开始":i==27?"季末":""),12,Muted);
+                bool today=i+1==day.Date;var cell=new Rect(r.x+(i%7)*94,r.y+147+(i/7)*78,83,66);
+                Rounded(cell,today?FishingUITheme.Selected:InkRaised,6);if(today)Outline(cell,Gold,6,2);
+                Label(new Rect(cell.x,cell.y+9,83,34),(i+1).ToString("00"),23,today?Gold:InkText,true,TextAnchor.MiddleCenter);
+                if(today)Label(new Rect(cell.x,cell.y+44,83,19),"今天",12,Mint,false,TextAnchor.MiddleCenter);
             }
-            var side=new Rect(r.x+990,r.y+202,310,340);Rounded(side,InkRaised,12);
-            Label(side.x+20,side.y+20,270,36,day.Night?"月下海湾":"今日海风",24,InkText,true);
-            Label(side.x+20,side.y+68,270,88,"现在 · "+BayClimate.Name(Controller.Weather.Climate.Current)+"\n明日白昼 · "+BayClimate.Name(FishingCalendar.Forecast(day.Day+1)),17,Muted);
-            Label(side.x+20,side.y+158,270,66,"切换会推进日历，可能进入次日。夜灯随昼夜自动开关。",16,Muted);
-            if(Button(new Rect(side.x+20,side.y+232,128,40),"白昼 08:00",Controller.CanSetTime,!day.Night,16))Controller.SetDayNight(false);
-            if(Button(new Rect(side.x+162,side.y+232,128,40),"夜晚 21:00",Controller.CanSetTime,day.Night,16))Controller.SetDayNight(true);
-            if(Button(new Rect(side.x+20,side.y+284,270,40),day.Automatic?"自动流逝 · 点击固定":"时间固定 · 点击自动",Controller.CanSetTime,!day.Automatic,16))Controller.ToggleClock();
-            if(Button(new Rect(r.x+32,r.y+553,340,45),"在安全岸边休息至清晨",Controller.CanRest,false,17))Controller.RestUntilMorning();
-            if(Button(new Rect(side.x+20,side.y+350,270,40),"重看序章 · 潮汐回响",Controller.Prologue.CanBegin,false,16))Controller.Prologue.Begin();
-            if(Button(new Rect(side.x+20,side.y+399,270,40),"导航回潮渔屋",true,false,16)){Controller.ToggleJournal();Controller.SelectNavigation(Controller.HomeNavigationIndex);}
-            Label(r.x+398,r.y+558,850,36,"动物在 5 分钟有效游玩后恢复；休息会推进恢复，暂停与重载保留进度。",15,Muted);
+            if(Button(new Rect(r.x,r.y+484,312,42),"岸边休息至清晨",c.CanRest,false,17))c.RestUntilMorning();
+            if(Button(new Rect(r.x+328,r.y+484,312,42),"导航回潮渔屋",true,false,17)){c.ToggleJournal();c.SelectNavigation(c.HomeNavigationIndex);}
+            var d=new Rect(r.x+700,r.y,430,527);Rounded(d,InkRaised,8);ChapterImage(new Rect(d.x,d.y,430,190),day.Night?7:4);
+            WeatherIcon(new Rect(d.x+26,d.y+217,55,55),c.Weather.Climate.Current);
+            Label(d.x+102,d.y+218,300,40,day.Night?"月下海湾":"今日海风",28,InkText,true);
+            Label(d.x+28,d.y+290,374,63,"现在 · "+BayClimate.Name(c.Weather.Climate.Current)+"\n明日 · "+BayClimate.Name(FishingCalendar.Forecast(day.Day+1)),18,Muted);
+            if(Button(new Rect(d.x+28,d.y+375,178,40),"白昼 08:00",c.CanSetTime,!day.Night,16))c.SetDayNight(false);
+            if(Button(new Rect(d.x+222,d.y+375,180,40),"夜晚 21:00",c.CanSetTime,day.Night,16))c.SetDayNight(true);
+            if(Button(new Rect(d.x+28,d.y+434,374,38),day.Automatic?"时间流逝 · 点击固定":"时间固定 · 点击恢复",c.CanSetTime,!day.Automatic,15))c.ToggleClock();
+            if(Button(new Rect(d.x+28,d.y+485,374,30),"重看序章",c.Prologue.CanBegin,false,14))c.Prologue.Begin();
         }
     }
 }

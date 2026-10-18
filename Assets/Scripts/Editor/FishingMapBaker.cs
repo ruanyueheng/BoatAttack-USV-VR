@@ -38,6 +38,9 @@ namespace BoatAttack.Editor
                 || controller.GetComponent<FishingScenery>() == null)
                 throw new InvalidOperationException("Enter the initialized fishing scene first. Do not call Generate. For base-only geometry use the separate base menu.");
             var runtimeRoots = new List<Transform>();
+            if(controller.CoastPresentation!=null)
+                foreach(Transform child in controller.CoastPresentation.transform)
+                    if(child.name==FishingCoastalPresentation.IsletName(0) || child.name==FishingCoastalPresentation.IsletName(1))runtimeRoots.Add(child);
             if(controller.ShopStaticRoot!=null)runtimeRoots.Add(controller.ShopStaticRoot);
             if(controller.Home!=null)
             {
@@ -145,6 +148,8 @@ namespace BoatAttack.Editor
 
                 if (!hasCoverage || coverage.size.x <= 0 || coverage.size.z <= 0 || terrainCount == 0)
                     throw new InvalidOperationException("No valid terrain coverage. Open the fishing island scene and inspect source selection.");
+                // Keep the largest chart range around outer-island shores inside mapped open water.
+                coverage.Expand(new Vector3(640,0,640));
                 int width = coverage.size.x >= coverage.size.z ? longEdge : Mathf.Max(64, Mathf.RoundToInt(longEdge * coverage.size.x / coverage.size.z));
                 int height = coverage.size.z >= coverage.size.x ? longEdge : Mathf.Max(64, Mathf.RoundToInt(longEdge * coverage.size.z / coverage.size.x));
                 pixels = CaptureDraws(draws, coverage, width, height, seaLevel);

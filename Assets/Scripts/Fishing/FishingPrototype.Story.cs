@@ -14,7 +14,7 @@ namespace BoatAttack.Fishing
         public FishingPrologue Prologue { get; private set; }
         private int _storyConsumedFrame = -1;
         public bool DialogueOpen => Residents != null && Residents.Open;
-        public bool StoryBlocksGameplay => DialogueOpen || (CoastWorld != null && CoastWorld.MenuOpen) || (Letter != null && Letter.Open) || (Prologue != null && Prologue.Open)
+        public bool StoryBlocksGameplay => HomeChartBlocksGameplay || DialogueOpen || (CoastWorld != null && CoastWorld.MenuOpen) || (Letter != null && Letter.Open) || (Prologue != null && Prologue.Open)
             || (Home != null && Home.Sleeping) || (Realms != null && Realms.Transitioning) || _storyConsumedFrame == Time.frameCount;
         internal void StoryModalChanged()
         {

@@ -88,8 +88,8 @@ namespace BoatAttack.Fishing
         }
         public void ApplyTraversalPose()
         {
-            if (!Ashore || (!Swimming && !Climbing)) return;
-            _character.ApplyTraversalPose(Swimming, Climbing, WalkSpeed, UnityEngine.XR.XRSettings.isDeviceActive, Controller.Paused);
+            if (_character==null) return;
+            _character.ApplyTraversalPose(Ashore && Swimming, Ashore && Climbing, WalkSpeed, UnityEngine.XR.XRSettings.isDeviceActive, Controller.Paused);
         }
         public bool EatRation()
         {

@@ -17,7 +17,7 @@ namespace BoatAttack.EditorTools
             for(int frame=0;frame<30;frame++)yield return null;
             FishingV019WorldBuilder.CaptureThumbnails();
             Check(c.Realms!=null && c.Residents!=null && c.Regions!=null,"World systems initialized with production scene");
-            Check(c.NavigationCount==15 && c.Career.Lore.ClearCount==0,"Existing island navigation, home and new empty story progress");
+            Check(c.NavigationCount==17 && c.Career.Lore.ClearCount==0,"Existing island navigation, home, two islets and new empty story progress");
             Check(!c.Residents.Talk(0) && !c.Realms.Enter(0),"Remote dialogue/entry rejected from the boat");
             for(int i=0;i<6;i++)Check(c.Residents.Person(i)!=null && c.Residents.Person(i).GetComponentsInChildren<Renderer>().Length>0,"Real NPC geometry "+i);
             var wait=Wait(.5f);while(wait.MoveNext())yield return null;
@@ -56,15 +56,20 @@ namespace BoatAttack.EditorTools
                 }
                 else if(island==1)
                 {
-                    foreach(int key in new[]{0,2}){var device=Use(c,key,true);while(device.MoveNext())yield return null;}
+                    foreach(int key in new[]{0,1,1,2,2,2}){var device=Use(c,key,true);while(device.MoveNext())yield return null;}
+                    var growth=Wait(5.2f);while(growth.MoveNext())yield return null;
                     Check(room.Find("Light bridge").gameObject.activeSelf && !room.Find("Crossing barrier").gameObject.activeSelf,"Forest light creates traversable bridge");
                 }
                 else if(island==2)
                 {
+                    var drain=Use(c,1,true);while(drain.MoveNext())yield return null;
+                    var low=Wait(4.2f);while(low.MoveNext())yield return null;
                     foreach(int key in new[]{0,0,1}){var device=Use(c,key,true);while(device.MoveNext())yield return null;}
+                    var rise=Wait(4.2f);while(rise.MoveNext())yield return null;
+                    Check(room.Find("Hydraulic floating crossing").localPosition.y>.1f && !room.Find("Hydraulic crossing safety gate").gameObject.activeSelf,"Water pressure raises the actual crossing and releases its safety gate");
                     Check(c.Realms.Trial.State(0)==2 && Vector3.Distance(c.Realms.Device(0).localPosition,new Vector3(-3,0,0))<.1f,"Cargo visibly moves onto load plate");
                 }
-                else foreach(int key in new[]{0,1,1,1,2,2}){var device=Use(c,key,true);while(device.MoveNext())yield return null;}
+                else foreach(int key in new[]{0,1,1}){var device=Use(c,key,true);while(device.MoveNext())yield return null;}
                 Check(c.Realms.Trial.Ready && !room.Find("Echo gate").gameObject.activeSelf,"Distinct puzzle opens real gate "+island);
                 walk=Walk(c,c.Realms.Device(3).position+Vector3.back*1.4f);while(walk.MoveNext())yield return null;
                 int coins=c.Career.Coins;
@@ -87,7 +92,7 @@ namespace BoatAttack.EditorTools
             approach=Walk(c,c.TackleShop.transform.TransformPoint(new Vector3(0,0,-4)));while(approach.MoveNext())yield return null;
             approach=Walk(c,c.TackleShop.purchasePoint.position);while(approach.MoveNext())yield return null;
             Check(c.ToggleShop() && c.Residents.Talk(4) && c.DialogueOpen && !c.ShopOpen,"Shop switches to clerk dialogue without input leak");
-            c.Residents.Choose(1);Check(c.Residents.Speech.Contains("金币不足"),"Clerk explains actual goods and purchase rules");c.Residents.Close();yield return null;yield return null;
+            c.Residents.Choose(1);Check(c.Residents.Speech.Contains("只有确认购买才付款") && c.Residents.Speech.Contains("余额不足"),"Clerk explains actual goods and purchase rules");c.Residents.Close();yield return null;yield return null;
             Check(c.ToggleShop() && c.TackleShop.BuySupply(12) && c.Career.Backpack.Count(FieldItem.CookedMeat)==3,"Remote voyage ration is a real bought item");c.TackleShop.Close();yield return null;yield return null;
             c.viewCamera.transform.SetPositionAndRotation(c.TackleShop.transform.TransformPoint(new Vector3(0,1.75f,-4.3f)),Quaternion.LookRotation(c.TackleShop.transform.forward));
             FishingV016Validation.Capture(c,evidence,"shop-interior");

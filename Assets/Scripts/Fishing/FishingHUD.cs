@@ -8,7 +8,7 @@ namespace BoatAttack.Fishing
     public sealed partial class FishingHUD : MonoBehaviour
     {
         public FishingPrototype Controller;
-        private const float CardSeconds = 5f;
+        private const float CardSeconds = 7f;
         private Font _font;
         private GUIStyle _label;
         private int _journalPage;
@@ -19,10 +19,10 @@ namespace BoatAttack.Fishing
         public static float LayoutScale(int width, int height) => Mathf.Max(0.01f, Mathf.Min(width / 1600f, height / 900f));
         public int JournalPage { get => _journalPage; set => _journalPage = Mathf.Clamp(value, 0, JournalTabs.Length - 1); }
         private float CatchAge => Controller.Acceptance != null && Controller.Acceptance.KeepCatchCardVisible ? 1f : Time.unscaledTime - Controller.LastCatch.ShownAt;
-        private bool CatchVisible => Controller.LastCatch.Fish != null && CatchAge < CardSeconds;
+        private bool CatchVisible => (Controller.LastCatch.Fish != null || Controller.LastCatch.Find != FieldItem.Empty) && CatchAge < CardSeconds;
 
         public bool BlocksPointer(Vector2 screen, int width, int height)
-            => Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || Controller.InventoryOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
+            => Controller.StartMenuOpen || Controller.JournalOpen || Controller.Paused || Controller.GuideOpening || Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || Controller.InventoryOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
                 Controller.HarborDeskOpen && Controller.AtHarbor, Controller.AtHarbor,
                 Controller.Ecology.Candidate.HasValue && !CatchVisible, Controller.Acceptance != null);
 
@@ -43,6 +43,7 @@ namespace BoatAttack.Fishing
 
         private void Update()
         {
+            if(Controller==null || !Controller.JournalOpen){_journalDrawn=false;_journalOrderOpen=false;}
             if(Controller!=null && Controller.Career!=null)FishingUITheme.Tick(Controller.Career.Calendar.Daylight,Time.unscaledDeltaTime);
         }
 
@@ -50,6 +51,7 @@ namespace BoatAttack.Fishing
         {
             var c = Controller;
             if (c == null || c.Career == null || c.Player == null || XRSettings.isDeviceActive) return;
+            c.HandleDisplayShortcut(Event.current);
             if(c.Prologue.Open || c.Home.Sleeping)return;
             if(Event.current.rawType==EventType.MouseDown)_pressedButton=default;
             DrawOpticalView();
@@ -63,7 +65,15 @@ namespace BoatAttack.Fishing
                 GUI.matrix = Matrix4x4.TRS(new Vector3(_offset, 0, 0), Quaternion.identity, new Vector3(_scale, _scale, 1));
                 if (_label == null) _label = new GUIStyle(GUI.skin.label) { font = _font, wordWrap = true, richText = false, padding = new RectOffset() };
                 _fade = 1f;
-                if (c.Letter.Open) DrawLetter();
+                if(c.StartMenuOpen) DrawStartMenu();
+                else if(c.HomeChartOpen) DrawHomeChart();
+                else if(c.SaveMenuOpen) DrawSaveSlots();
+                else if(c.GuideOpening)
+                {
+                    Rounded(new Rect(550,_height-78,500,43),Ink,6);
+                    Label(new Rect(562,_height-70,476,29),"翻开自然手册……  /  Esc 收起",20,InkText,true,TextAnchor.MiddleCenter);
+                }
+                else if (c.Letter.Open) DrawLetter();
                 else if (c.DialogueOpen) DrawDialogue();
                 else if (c.ShopOpen) DrawTackleShop();
                 else if (c.CoastWorld!=null && c.CoastWorld.MenuOpen) DrawBarbecue();
@@ -205,6 +215,6 @@ namespace BoatAttack.Fishing
             return "鱼在冲刺 · 放线避开拉力";
         }
 
-        private void OnDestroy() { ReleaseTerrainMap(); ReleaseOptics(); }
+        private void OnDestroy() { ReleaseTerrainMap(); ReleaseOptics(); if(_titleVeil!=null)Destroy(_titleVeil); }
     }
 }

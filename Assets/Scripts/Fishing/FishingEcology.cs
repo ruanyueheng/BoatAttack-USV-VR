@@ -14,10 +14,10 @@ namespace BoatAttack.Fishing
         public int MeshVertices { get; private set; }
         private sealed class Creature
         {
-            public Transform transform; public MarineKind kind; public Vector3 home; public float phase, radius;
+            public Transform transform; public MarineKind kind; public Vector3 home; public float phase, radius;public Wander motion;
         }
         private readonly List<Creature> _creatures=new List<Creature>();
-        private sealed class ShoalFish { public Transform root; public FishKind kind; public int zone; public float phase; }
+        private sealed class ShoalFish { public Transform root; public FishKind kind; public int zone; public float phase;public Wander motion; }
         private readonly List<ShoalFish> _shoal=new List<ShoalFish>();
         public int ShoalFishCount=>_shoal.Count;
         private readonly List<Object> _owned=new List<Object>();
@@ -31,35 +31,40 @@ namespace BoatAttack.Fishing
             _palette=new Material(Controller.PaletteShader){name="Living bay vertex palette",enableInstancing=true};_owned.Add(_palette);
             for(int kind=0;kind<5;kind++)
             {
-                var mesh=FishingMeshBuilder.Animal((MarineKind)kind);_owned.Add(mesh);MeshVertices+=mesh.vertexCount;
+                var supplied=FishingV029Art.Animal(kind==0?"Turtle":kind==4?"Seagull":null);
+                var mesh=supplied!=null?Object.Instantiate(supplied):FishingMeshBuilder.Animal((MarineKind)kind);_owned.Add(mesh);MeshVertices+=mesh.vertexCount;
                 int count=kind==3 || kind==4?3:1;
                 for(int i=0;i<count;i++)
                 {
                     int zone=kind==0?0:kind==1?2:kind==2?1:i;
-                    Vector3 home=kind==4?Controller.harbor:Controller.fishingSpots[zone];
+                    Vector3 home=kind==4?Controller.fishingSpots[i]:Controller.fishingSpots[zone];
                     var go=MeshObject("Wildlife / "+BayClimate.MarineName((MarineKind)kind),mesh);
-                    if(kind==0 || kind==1 || kind==4)
+                    if(supplied!=null)FishingV029Art.Apply(go.GetComponent<Renderer>(),kind==0?"Turtle":"Seagull",_owned,Controller.PaletteShader);
+                    if((supplied==null && (kind==0 || kind==1)) || kind==4)
                     {
                         var motion=new MaterialPropertyBlock();
                         motion.SetVector("_FinMotion",new Vector4(kind==4?.2f:kind==1?.16f:.07f,kind==4?3.2f:2f,.25f,i));
                         go.GetComponent<MeshRenderer>().SetPropertyBlock(motion);
                     }
-                    // Surface swimmers circle between the 9 m station ring and the reef rocks (~10.8 m inner edge),
-                    // inside the 15 m radius the scene generator verified as open water. Schools stay underwater.
-                    _creatures.Add(new Creature{transform=go.transform,kind=(MarineKind)kind,home=home,radius=kind==4?10:kind==2?10.5f:kind==3?7.5f:10f,phase=i*2.1f+kind*.65f});
-                    go.transform.position=home+Vector3.up*(kind==4?6:0);
+                    _creatures.Add(new Creature{transform=go.transform,kind=(MarineKind)kind,home=home,radius=12,phase=i*2.1f+kind*.65f,
+                        motion=NewWander(home,kind==4?6:kind==0?-.08f:-.12f,kind*13+i)});
+                    go.transform.position=_creatures[_creatures.Count-1].motion.position;
                     Controller.RifleHunting?.RegisterMarine((MarineKind)kind,i,go.transform);
                 }
             }
-            for(int i=0;i<3;i++)BuildReef(i);
-            for(int kind=4;kind<FishingSpecies.Count;kind++)
+            for(int i=0;i<Controller.fishingSpots.Length;i++)BuildReef(i);
+            for(int zone=0;zone<Controller.fishingSpots.Length;zone++)
             {
-                var species=(FishKind)kind;
-                for(int i=0;i<3;i++)
+                foreach(var species in HabitatSpecies(zone))
                 {
-                    int zone=species==FishKind.Mackerel || species==FishKind.Tuna || species==FishKind.Stingray || species==FishKind.Cuttlefish?1:species==FishKind.Grouper || species==FishKind.Lionfish || species==FishKind.Octopus || species==FishKind.Lobster?2:species==FishKind.Sardine || species==FishKind.Lanternfish || species==FishKind.Jellyfish?i:0;
+                    for(int i=0;i<2;i++)
+                    {
                     var fish=FishingArt.Fish(transform,_owned,Controller.PaletteShader,species);
-                    _shoal.Add(new ShoalFish{root=fish.transform,kind=species,zone=zone,phase=kind*.7f+i*.4f});
+                    float depth=species==FishKind.SeaTurtle?-.28f:species==FishKind.Crab || species==FishKind.Lobster || species==FishKind.Octopus?-.35f:-.12f;
+                    var motion=NewWander(Controller.fishingSpots[zone],depth,(int)species*17+i+zone*101);
+                    fish.transform.position=motion.position;
+                    _shoal.Add(new ShoalFish{root=fish.transform,kind=species,zone=zone,phase=(int)species*.7f+i*.4f,motion=motion});
+                    }
                 }
             }
             InitializeSeaSurprises();
@@ -124,28 +129,31 @@ namespace BoatAttack.Fishing
                 if(Controller.RifleHunting!=null && Controller.RifleHunting.DeadWildlife(c.transform))continue;
                 // Integrate speed rather than multiplying absolute time: weather changes cannot teleport animals.
                 float activity=Mathf.Lerp(BayClimate.Activity(c.kind,climate.Previous),BayClimate.Activity(c.kind,climate.Current),climate.Blend);
-                float speed=c.kind==MarineKind.Dolphin?.34f:c.kind==MarineKind.Gull?.22f:c.kind==MarineKind.School?.25f:.11f;
-                c.phase=Mathf.Repeat(c.phase+Time.deltaTime*speed*activity,Mathf.PI*2);
-                float a=c.phase;Vector3 pos=c.home+new Vector3(Mathf.Cos(a)*c.radius,0,Mathf.Sin(a)*c.radius);
+                float speed=c.kind==MarineKind.Dolphin?2.1f:c.kind==MarineKind.Gull?2.8f:c.kind==MarineKind.School?1.2f:.48f;
+                c.phase+=Time.deltaTime;float a=c.phase;
+                if(SeaBeatActive(c.transform))continue;
+                TickWander(c.motion,c.home,c.radius,speed*activity,Time.deltaTime,c.kind==MarineKind.Gull);
+                Vector3 pos=c.motion.position;
                 float roll=0,pitch=0;
                 if(c.kind==MarineKind.Gull){pos.y=6+Mathf.Sin(a*2)*.6f;roll=Mathf.Sin(a)*12;}
                 else if(c.kind==MarineKind.Dolphin)
                 {
-                    float leap=Mathf.Max(0,Mathf.Sin(a*3));pos.y=.02f+leap*activity*.95f;pitch=-Mathf.Cos(a*3)*leap*27;
+                    float leap=Mathf.Clamp01((Mathf.Sin(a*.35f)-.88f)/.12f);pos.y=-.12f+leap*activity*1.3f;pitch=-Mathf.Cos(a*.35f)*leap*27;
                 }
                 // The turtle rides low so only its shell breaks the surface.
-                else {pos.y=c.kind==MarineKind.School?-.06f:c.kind==MarineKind.Turtle?-.04f:.04f;roll=Mathf.Sin(a*4)*(c.kind==MarineKind.Ray?9:4);}
-                c.transform.SetPositionAndRotation(pos,Quaternion.Euler(pitch,-a*Mathf.Rad2Deg,roll));
+                else {pos.y=c.kind==MarineKind.School?-.10f:c.kind==MarineKind.Turtle?-.28f:-.10f;roll=Mathf.Sin(a*2)*(c.kind==MarineKind.Ray?6:2);}
+                c.transform.SetPositionAndRotation(pos,Quaternion.LookRotation(c.motion.heading)*Quaternion.Euler(pitch,0,roll));
             }
             foreach(var fish in _shoal)
             {
-                bool visible=FishingSpecies.InHabitat(fish.kind,fish.zone,Controller.Career.Calendar,climate.Current)
+                int habitat=fish.zone==FishingGrounds.NorthIsland?0:fish.zone;
+                bool visible=FishingSpecies.InHabitat(fish.kind,habitat,Controller.Career.Calendar,climate.Current)
                     && (Controller.ExplorerPosition-Controller.fishingSpots[fish.zone]).sqrMagnitude<65*65;
                 fish.root.gameObject.SetActive(visible);if(!visible)continue;
-                fish.phase=Mathf.Repeat(fish.phase+Time.deltaTime*(fish.kind==FishKind.Tuna?.32f:.17f),Mathf.PI*2);
-                float a=fish.phase,r=6+(int)fish.kind*.18f;
-                var point=Controller.fishingSpots[fish.zone]+new Vector3(Mathf.Cos(a)*r,-.09f+Mathf.Sin(a*3)*.02f,Mathf.Sin(a)*r);
-                fish.root.SetPositionAndRotation(point,Quaternion.LookRotation(new Vector3(-Mathf.Sin(a),0,Mathf.Cos(a))));
+                if(SeaBeatActive(fish.root))continue;
+                bool benthic=fish.kind==FishKind.Crab || fish.kind==FishKind.Lobster || fish.kind==FishKind.Octopus;
+                TickWander(fish.motion,Controller.fishingSpots[fish.zone],12,fish.kind==FishKind.Tuna?1.7f:benthic?.18f:.65f,Time.deltaTime,false);
+                fish.root.SetPositionAndRotation(fish.motion.position,Quaternion.LookRotation(fish.motion.heading));
             }
             TickSeaSurprises(Time.deltaTime);
             if(Time.time<_nextSense)return;_nextSense=Time.time+.25f;Sense();

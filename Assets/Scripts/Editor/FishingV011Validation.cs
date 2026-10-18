@@ -123,13 +123,32 @@ namespace BoatAttack.EditorTools
             int firstFrame=Time.frameCount;while(Time.frameCount==firstFrame)yield return null;
             if(suite=="MOUSE-FISHING")
             {
-                var run=FishingMouseFishingValidation.Checks(c);while(run.MoveNext())yield return run.Current;
+                var run=FishingMouseFishingValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
             }
-            else if(suite=="ANGLING")
+            if(suite=="ANGLING")
             {
-                var run=FishingAnglingValidation.Checks(c);
-                try{while(run.MoveNext())yield return run.Current;}
-                finally{(run as IDisposable)?.Dispose();}
+                var run=FishingAnglingValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V033")
+            {
+                var checks=FishingV033Validation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V032")
+            {
+                var checks=FishingV032Validation.Checks(c);while(checks.MoveNext())yield return checks.Current;yield break;
+            }
+            if(suite=="V031")
+            {
+                var run=FishingV031Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as System.IDisposable)?.Dispose();}
+            }
+            else if(suite=="V030")
+            {
+                var run=FishingV030Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}
+            }
+            else if(suite=="V029")
+            {
+                var run=FishingV029Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}
+
             }
             else if(suite=="V028")
             {
@@ -339,6 +358,7 @@ namespace BoatAttack.EditorTools
             foreach(var item in new[]{FieldItem.FieldGuide,FieldItem.Binoculars,FieldItem.Lantern,FieldItem.StonePickaxe,FieldItem.IronPickaxe})
             {
                 Equip(c,item);yield return null;
+                if(item==FieldItem.Lantern)Check(c.InspectFieldItem(c.Career.Backpack.Selected),"显式拿起检视腰挂灯");
                 for(int view=0;view<2;view++)
                 {
                     if(c.FirstPerson!=(view==0))c.ToggleView();c.PresentCharacterFrame();
@@ -346,6 +366,7 @@ namespace BoatAttack.EditorTools
                     HandOnGoal(c,false,item+"右手");HandOnGoal(c,true,item+"左手/休息位");
                     Check(Vector3.Distance(c.FieldWorld.HeldTool.position,c.Shore.Character.HandReferencePosition)<1.2f,"工具没有跟随远处第三人称相机");
                 }
+                if(item==FieldItem.Lantern)c.EndItemInspection();
                 if(item==FieldItem.Binoculars)
                 {
                     c.UseFieldItem();

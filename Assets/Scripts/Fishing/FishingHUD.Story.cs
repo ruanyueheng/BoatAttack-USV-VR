@@ -6,7 +6,6 @@ namespace BoatAttack.Fishing
     public sealed partial class FishingHUD
     {
         private readonly Dictionary<string,Texture2D> _artIcons=new Dictionary<string,Texture2D>();
-        private int _loreIsland;
         private void ArtIllustration(Rect rect,string name)
         {
             if(!_artIcons.TryGetValue(name,out var image))_artIcons[name]=image=Resources.Load<Texture2D>((name.StartsWith("Resident")?"FishingV022":"FishingV019")+"/Thumbnails/"+name);
@@ -21,9 +20,10 @@ namespace BoatAttack.Fishing
                 :item==FieldItem.Coal||item==FieldItem.Charcoal?"campfire_logs":item==FieldItem.Sand?"bag":null;
             if(art!=null)ArtIllustration(rect,art);else FieldIcon(new Rect(rect.x+16,rect.y+14,rect.width-32,rect.height-28),item);
         }
+        internal bool RegionTitleVisible=>Controller.Regions!=null && Controller.Regions.Alpha>.001f && !Controller.Realms.Transitioning && !CatchVisible;
         private void DrawRegionTitle()
         {
-            var region=Controller.Regions;if(region==null || region.Alpha<=.001f || Controller.Realms.Transitioning)return;
+            var region=Controller.Regions;if(!RegionTitleVisible)return;
             float previous=_fade;_fade=region.Alpha;
             float y=Mathf.Max(174,_height*.16f)+(1-Mathf.SmoothStep(0,1,Mathf.Clamp01(region.Age/1.1f)))*8;
             Rounded(new Rect(600,y-8,400,90),Ink,12);Outline(new Rect(600,y-8,400,90),Hairline,12);
@@ -63,31 +63,7 @@ namespace BoatAttack.Fishing
             Label(goal.x+18,goal.y+60,352,76,FishingLore.TrialObjective(c.Realms.Island),17,Muted);
             Label(goal.x+18,goal.y+148,352,27,c.Career.Lore.Cleared(c.Realms.Island)?"回响已收录 · 可自由重访":c.Realms.Trial.Ready?"共鸣已成 · 前往回响台":"解开机关 · 回响之门尚未打开",15,Mint);
         }
-        private void DrawLorePage(Rect r)
-        {
-            var c=Controller;var lore=c.Career.Lore;
-            string[] illustrations={"WindBell","tree_oak","ship-wreck","StarPrism"};
-            for(int i=0;i<4;i++)
-            {
-                var row=new Rect(r.x+32,r.y+118+i*110,820,98);Rounded(row,InkRaised,10);
-                Outline(row,_loreIsland==i?Gold*new Color(1,1,1,.55f):Hairline,10);
-                ArtIllustration(new Rect(row.x+12,row.y+8,90,82),illustrations[i]);
-                Label(row.x+116,row.y+12,500,27,FishingAdventure.Name(i)+" · "+FishingLore.ShrineName(i),20,Gold,true);
-                Label(row.x+116,row.y+45,500,24,FishingLore.ResidentName(i)+" · "+FishingLore.ResidentRole(i),15,Muted);
-                Label(row.x+116,row.y+73,500,20,lore.Cleared(i)?"回响已取回 · 首通奖励已领取":lore.Met(i)?"已结识居民 · E进入潮纹石门":"先结识岛上居民，听听当地的故事",13,lore.Cleared(i)?Mint:Faint);
-                if(Button(new Rect(row.xMax-148,row.y+12,130,30),"阅读故事",c.Letter.CanRead,false,14))
-                {_loreIsland=i;c.ToggleJournal();c.Letter.Show(FishingLore.ShrineName(i)+"航记",FishingLore.ResidentName(i),"回潮海档案：\n\n"+(lore.Cleared(i)?FishingLore.Echo(i):FishingLore.TrialHint(i))+"\n\n风、林、潮与星，仍在等待新的领航员。");}
-                if(Button(new Rect(row.xMax-148,row.y+53,130,30),"设为航点",true,false,14)){c.ToggleJournal();c.SelectNavigation(c.IslandNavigationIndex(i));}
-            }
-            var side=new Rect(r.x+884,r.y+118,420,462);Rounded(side,InkRaised,10);
-            Label(side.x+22,side.y+18,376,32,"回潮海 · 守望者航路",23,Gold,true);
-            Label(side.x+22,side.y+64,376,110,"风、林、潮、星，曾将四座岛的灯火连成回家的路。风暴让秘境沉寂，新任领航员将取回四段潮汐回响。",17,Muted);
-            Fill(side.x+22,side.y+186,376,1,Hairline);
-            Label(side.x+22,side.y+204,376,92,lore.Cleared(_loreIsland)?FishingLore.Echo(_loreIsland):FishingLore.TrialHint(_loreIsland),17,lore.Cleared(_loreIsland)?Mint:Color.white);
-            Label(side.x+22,side.y+322,376,28,lore.Finale?"航路重生 · 终章已完成":"回响收集  "+lore.ClearCount+" / 4",20,Gold,true);
-            Bar(new Rect(side.x+22,side.y+366,376,6),lore.ClearCount/4f,Mint);
-            Label(side.x+22,side.y+392,376,50,lore.ClearCount==4&&!lore.Finale?"回港找钓具店门前的林舟，汇报回响领取180金币。":"每处首通90金币；四处完成后，找港口林舟领取180金币。",15,Muted);
-        }
+        private void DrawLorePage(Rect r)=>DrawIslandSpread(r,true);
         private void DrawRealmChart()
         {
             var c=Controller;var r=Layout.Chart;Card(r,Gold);

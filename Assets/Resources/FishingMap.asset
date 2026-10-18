@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 1
   texture: {fileID: 2800000, guid: 6ad228c9c30e02f4a86f7edc4bca0ad4, type: 3}
-  worldXZBounds: {x: -500, y: -371.50238, z: 505.98267, w: 249.99994}
+  worldXZBounds: {x: -820, y: -691.5024, z: 825.98267, w: 569.99994}
   seaLevel: 0
   sourceScene: Assets/scenes/Fishing/fishing_Island.unity
-  bakedUtc: 2026-10-15T12:13:40.8831852Z
+  bakedUtc: 2026-10-17T05:33:55.0389243Z
   includesInitializedScenery: 1
   terrainCount: 2
-  staticRendererCount: 920
+  staticRendererCount: 1052
   terrainVertexCount: 526338
-  metersPerTexel: {x: 0.49120247, y: 0.4913062}
+  metersPerTexel: {x: 0.8037025, y: 0.80350465}
   captureNotes: "North = +Z; UV origin = SW. One-shot explicit CommandBuffer.DrawMesh,
     no camera render callbacks. Static batches use renderer.subMeshStartIndex + material
     slot, renderer.localToWorldMatrix and renderer.bounds; never clone the whole
@@ -1889,15 +1889,6 @@ MonoBehaviour:
   - 'Mesh Fishing Prototype/V027 IslandGround | GEO-IslandGround | staticBatch=False
     firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-185.83, 2.65, 14.08), Extents:
     (29.33, 3.15, 24.23)'
-  - 'Mesh Fishing Prototype/V03 habitat 0/Batched Stratified reef palette | V03 habitat
-    0 batch | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-107.55, -0.62, 19.13), Extents: (14.30, 0.99, 12.53)'
-  - 'Mesh Fishing Prototype/V03 habitat 1/Batched Stratified reef palette | V03 habitat
-    1 batch | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-96.84, -0.62, 82.46), Extents: (14.30, 0.99, 12.53)'
-  - 'Mesh Fishing Prototype/V03 habitat 2/Batched Stratified reef palette | V03 habitat
-    2 batch | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-54.52, -0.62, 76.16), Extents: (14.30, 0.99, 12.53)'
   - 'Mesh Fishing Prototype/V03 harbor lighthouse/Batched Harbor teal | V03 harbor
     lighthouse batch | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-77.47, 4.72, -15.78), Extents: (0.98, 2.55, 0.98)'
@@ -2087,6 +2078,411 @@ MonoBehaviour:
   - "Mesh Fishing Prototype/\u7194\u7089 #2/Hot coals | Sphere | staticBatch=False
     firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-60.36, 2.42, -12.15), Extents:
     (0.21, 0.04, 0.20)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/CoastalArch/CoastalArch(Clone)
+    | GEO-CoastalArch | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-414.00, 7.00, 200.00), Extents: (5.45, 3.57, 5.45)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-401.22, 0.96, 205.83), Extents: (1.34, 1.22, 1.40)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-402.86, 1.46, 211.19), Extents: (1.56, 0.84, 1.59)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-404.25, 2.28, 195.06), Extents: (1.91, 1.17, 1.81)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-406.65, 3.32, 217.12), Extents: (3.39, 2.69, 3.33)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-410.94, 3.00, 191.88), Extents: (2.95, 1.90, 2.90)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-412.18, 2.57, 220.72), Extents: (2.86, 1.85, 2.93)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-416.68, 3.04, 189.70), Extents: (2.57, 1.51, 2.59)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-426.13, 3.21, 219.48), Extents: (2.96, 2.20, 2.91)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-430.83, 5.46, 190.92), Extents: (2.76, 2.32, 2.77)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-433.41, 2.65, 216.98), Extents: (2.22, 1.48, 2.19)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-437.69, 3.17, 212.30), Extents: (1.80, 1.71, 1.74)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-438.24, 3.35, 201.40), Extents: (1.54, 1.05, 1.58)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/Lantern/Lantern(Clone) | GEO-Lantern
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-424.00,
+    5.11, 203.00), Extents: (0.21, 0.40, 0.21)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/Walkable sculpted shoreline
+    | V032 sculpted islet 0 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-419.30, -0.14, 203.06), Extents: (33.20, 6.39, 26.59)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/campfire_logs/campfire_logs(Clone)
+    | GEO-campfire_logs | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-424.00, 4.40, 205.00), Extents: (0.60, 0.13, 0.60)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-410.72, 3.52, 197.63), Extents: (0.31, 0.34, 0.32)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-413.22, 3.12, 189.41), Extents: (0.43, 0.43, 0.42)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-414.00, 3.65, 203.00), Extents: (0.16, 0.25, 0.19)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-420.77, 5.23, 195.07), Extents: (0.46, 0.52, 0.43)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-425.80, 4.71, 205.80), Extents: (0.40, 0.43, 0.42)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-427.05, 6.01, 193.02), Extents: (0.21, 0.25, 0.19)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-427.47, 3.69, 214.75), Extents: (0.37, 0.52, 0.42)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-435.24, 4.91, 201.18), Extents: (0.34, 0.34, 0.33)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-401.44, 1.61, 201.71), Extents: (0.48, 0.21, 0.48)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-402.30, 1.68, 207.65), Extents: (0.35, 0.21, 0.35)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-402.64, 1.79, 205.91), Extents: (0.61, 0.27, 0.61)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-404.57, 2.73, 200.06), Extents: (0.46, 0.27, 0.46)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-406.85, 2.91, 207.46), Extents: (0.33, 0.15, 0.33)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-408.05, 3.33, 198.16), Extents: (0.73, 0.32, 0.73)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-408.11, 3.17, 204.87), Extents: (0.44, 0.21, 0.44)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-410.03, 3.45, 201.76), Extents: (0.57, 0.27, 0.57)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-411.27, 3.35, 207.44), Extents: (0.45, 0.21, 0.45)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-412.54, 3.35, 207.34), Extents: (0.33, 0.15, 0.33)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-413.62, 3.59, 195.24), Extents: (0.54, 0.27, 0.54)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-414.52, 3.53, 209.35), Extents: (0.55, 0.32, 0.55)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-414.65, 3.37, 208.80), Extents: (0.35, 0.15, 0.35)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-414.91, 3.26, 218.27), Extents: (0.66, 0.32, 0.66)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-416.21, 3.80, 192.91), Extents: (0.71, 0.32, 0.71)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-416.93, 2.91, 187.39), Extents: (0.58, 0.32, 0.58)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-419.30, 4.66, 196.03), Extents: (0.58, 0.27, 0.58)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-419.94, 4.73, 198.00), Extents: (0.35, 0.15, 0.35)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-423.12, 3.50, 213.62), Extents: (0.47, 0.27, 0.47)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-425.16, 4.18, 207.05), Extents: (0.47, 0.21, 0.47)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-425.99, 5.77, 192.35), Extents: (0.73, 0.32, 0.73)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-426.43, 6.09, 194.53), Extents: (0.34, 0.15, 0.34)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-426.95, 3.87, 210.38), Extents: (0.70, 0.32, 0.70)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-427.12, 6.23, 194.43), Extents: (0.47, 0.21, 0.47)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-427.99, 5.25, 203.41), Extents: (0.41, 0.21, 0.41)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-429.05, 6.34, 194.54), Extents: (0.40, 0.21, 0.40)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-429.85, 5.70, 201.43), Extents: (0.35, 0.15, 0.35)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-430.67, 3.59, 211.57), Extents: (0.60, 0.27, 0.60)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-431.50, 3.94, 208.73), Extents: (0.53, 0.27, 0.53)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-433.87, 3.82, 208.34), Extents: (0.39, 0.21, 0.39)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-433.94, 5.00, 202.35), Extents: (0.49, 0.27, 0.49)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-435.57, 4.71, 200.49), Extents: (0.30, 0.15, 0.30)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-436.90, 3.57, 208.48), Extents: (0.65, 0.32, 0.65)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/tent_detailedOpen/tent_detailedOpen(Clone)
+    | GEO-tent_detailedOpen | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-427.00, 6.99, 200.00), Extents: (2.39, 1.22, 2.33)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/tree_palmDetailedTall/tree_palmDetailedTall(Clone)
+    | GEO-tree_palmDetailedTall | staticBatch=False firstSubmesh=0 opaqueDraws=1
+    rendererBounds=Center: (-410.75, 6.84, 209.44), Extents: (2.86, 3.75, 2.86)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/tree_palmDetailedTall/tree_palmDetailedTall(Clone)
+    | GEO-tree_palmDetailedTall | staticBatch=False firstSubmesh=0 opaqueDraws=1
+    rendererBounds=Center: (-411.22, 5.95, 197.09), Extents: (2.78, 2.75, 2.78)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/tree_palmDetailedTall/tree_palmDetailedTall(Clone)
+    | GEO-tree_palmDetailedTall | staticBatch=False firstSubmesh=0 opaqueDraws=1
+    rendererBounds=Center: (-412.00, 5.55, 201.00), Extents: (1.63, 2.25, 1.63)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/tree_palmDetailedTall/tree_palmDetailedTall(Clone)
+    | GEO-tree_palmDetailedTall | staticBatch=False firstSubmesh=0 opaqueDraws=1
+    rendererBounds=Center: (-412.49, 5.57, 202.92), Extents: (2.29, 2.25, 2.29)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/tree_palmDetailedTall/tree_palmDetailedTall(Clone)
+    | GEO-tree_palmDetailedTall | staticBatch=False firstSubmesh=0 opaqueDraws=1
+    rendererBounds=Center: (-414.57, 6.53, 192.88), Extents: (3.03, 3.25, 3.03)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/tree_palmDetailedTall/tree_palmDetailedTall(Clone)
+    | GEO-tree_palmDetailedTall | staticBatch=False firstSubmesh=0 opaqueDraws=1
+    rendererBounds=Center: (-418.88, 7.11, 192.07), Extents: (3.25, 3.25, 3.25)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/tree_palmDetailedTall/tree_palmDetailedTall(Clone)
+    | GEO-tree_palmDetailedTall | staticBatch=False firstSubmesh=0 opaqueDraws=1
+    rendererBounds=Center: (-427.01, 9.10, 191.56), Extents: (3.57, 3.75, 3.57)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/tree_palmDetailedTall/tree_palmDetailedTall(Clone)
+    | GEO-tree_palmDetailedTall | staticBatch=False firstSubmesh=0 opaqueDraws=1
+    rendererBounds=Center: (-427.67, 7.10, 205.92), Extents: (2.72, 2.75, 2.72)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/tree_palmDetailedTall/tree_palmDetailedTall(Clone)
+    | GEO-tree_palmDetailedTall | staticBatch=False firstSubmesh=0 opaqueDraws=1
+    rendererBounds=Center: (-427.88, 8.09, 200.02), Extents: (2.19, 2.25, 2.19)"
+  - "Mesh Fishing Prototype/\u767D\u5E06\u62F1\u6E7E/tree_palmDetailedTall/tree_palmDetailedTall(Clone)
+    | GEO-tree_palmDetailedTall | staticBatch=False firstSubmesh=0 opaqueDraws=1
+    rendererBounds=Center: (-429.61, 7.69, 203.78), Extents: (2.29, 2.75, 2.29)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (401.76, 3.44, 201.40), Extents: (1.54, 1.05, 1.58)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (402.31, 3.04, 212.30), Extents: (1.80, 1.71, 1.74)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (406.59, 2.71, 216.98), Extents: (2.22, 1.48, 2.19)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (409.17, 5.40, 190.92), Extents: (2.76, 2.32, 2.77)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (413.87, 3.18, 219.48), Extents: (2.96, 2.20, 2.91)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (423.32, 3.09, 189.70), Extents: (2.57, 1.51, 2.59)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (427.82, 2.50, 220.72), Extents: (2.86, 1.85, 2.93)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (429.06, 2.98, 191.88), Extents: (2.95, 1.90, 2.90)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (433.35, 3.33, 217.12), Extents: (3.39, 2.69, 3.33)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (435.75, 2.28, 195.06), Extents: (1.91, 1.17, 1.81)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (437.15, 1.46, 211.19), Extents: (1.56, 0.84, 1.59)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/CoastalRock/CoastalRock(Clone)
+    | GEO-V020-CoastalRock | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (438.78, 0.96, 205.83), Extents: (1.34, 1.22, 1.40)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/Lantern/Lantern(Clone) | GEO-Lantern
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (416.00,
+    5.14, 203.00), Extents: (0.21, 0.40, 0.21)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/Walkable sculpted shoreline
+    | V032 sculpted islet 1 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (422.61, -0.27, 203.81), Extents: (33.12, 6.51, 26.00)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/campfire_logs/campfire_logs(Clone)
+    | GEO-campfire_logs | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (416.00, 4.44, 205.00), Extents: (0.60, 0.13, 0.60)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (404.76, 4.92, 201.18), Extents: (0.34, 0.34, 0.33)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (412.53, 3.69, 214.75), Extents: (0.37, 0.52, 0.42)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (412.95, 5.95, 193.02), Extents: (0.21, 0.25, 0.19)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (414.20, 4.77, 205.80), Extents: (0.40, 0.43, 0.42)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (419.23, 5.23, 195.07), Extents: (0.46, 0.52, 0.43)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (426.00, 3.71, 203.00), Extents: (0.16, 0.25, 0.19)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (426.78, 3.14, 189.41), Extents: (0.43, 0.43, 0.42)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/flower_purpleA/flower_purpleA(Clone)
+    | GEO-flower_purpleA | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (429.28, 3.55, 197.63), Extents: (0.31, 0.34, 0.32)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (403.10, 3.41, 208.48), Extents: (0.65, 0.32, 0.65)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (404.43, 4.75, 200.49), Extents: (0.30, 0.15, 0.30)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (406.06, 4.92, 202.35), Extents: (0.49, 0.27, 0.49)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (406.13, 3.72, 208.34), Extents: (0.39, 0.21, 0.39)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (408.50, 3.99, 208.73), Extents: (0.53, 0.27, 0.53)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (409.33, 3.65, 211.57), Extents: (0.60, 0.27, 0.60)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (410.15, 5.66, 201.43), Extents: (0.35, 0.15, 0.35)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (410.95, 6.29, 194.54), Extents: (0.40, 0.21, 0.40)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (412.01, 5.23, 203.41), Extents: (0.41, 0.21, 0.41)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (412.88, 6.19, 194.43), Extents: (0.47, 0.21, 0.47)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (413.05, 4.00, 210.38), Extents: (0.70, 0.32, 0.70)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (413.57, 6.06, 194.53), Extents: (0.34, 0.15, 0.34)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (414.01, 5.75, 192.35), Extents: (0.73, 0.32, 0.73)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (414.84, 4.26, 207.05), Extents: (0.47, 0.21, 0.47)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (416.88, 3.60, 213.62), Extents: (0.47, 0.27, 0.47)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (420.06, 4.75, 198.00), Extents: (0.35, 0.15, 0.35)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (420.70, 4.69, 196.03), Extents: (0.58, 0.27, 0.58)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (423.07, 2.90, 187.39), Extents: (0.58, 0.32, 0.58)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (423.79, 3.88, 192.91), Extents: (0.71, 0.32, 0.71)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (425.09, 3.16, 218.27), Extents: (0.66, 0.32, 0.66)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (425.35, 3.43, 208.80), Extents: (0.35, 0.15, 0.35)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (425.48, 3.58, 209.35), Extents: (0.55, 0.32, 0.55)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (426.38, 3.62, 195.24), Extents: (0.54, 0.27, 0.54)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (427.46, 3.37, 207.34), Extents: (0.33, 0.15, 0.33)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (428.73, 3.37, 207.44), Extents: (0.45, 0.21, 0.45)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (429.97, 3.48, 201.76), Extents: (0.57, 0.27, 0.57)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (431.89, 3.17, 204.87), Extents: (0.44, 0.21, 0.44)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (431.95, 3.36, 198.16), Extents: (0.73, 0.32, 0.73)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (433.15, 2.93, 207.46), Extents: (0.33, 0.15, 0.33)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (435.43, 2.74, 200.06), Extents: (0.46, 0.27, 0.46)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (437.36, 1.79, 205.91), Extents: (0.61, 0.27, 0.61)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (437.70, 1.68, 207.65), Extents: (0.35, 0.21, 0.35)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/plant_bush/plant_bush(Clone)
+    | GEO-plant_bush | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (438.56, 1.61, 201.71), Extents: (0.48, 0.21, 0.48)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/tent_detailedOpen/tent_detailedOpen(Clone)
+    | GEO-tent_detailedOpen | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (413.00, 7.02, 200.00), Extents: (2.39, 1.22, 2.33)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/tree_oak/tree_oak(Clone) | GEO-tree_oak
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (410.39,
+    7.64, 203.78), Extents: (1.68, 2.75, 1.86)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/tree_oak/tree_oak(Clone) | GEO-tree_oak
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (412.12,
+    8.11, 200.02), Extents: (1.74, 2.25, 1.65)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/tree_oak/tree_oak(Clone) | GEO-tree_oak
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (412.33,
+    7.16, 205.92), Extents: (2.15, 2.75, 2.06)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/tree_oak/tree_oak(Clone) | GEO-tree_oak
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (412.99,
+    9.06, 191.56), Extents: (2.85, 3.75, 2.69)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/tree_oak/tree_oak(Clone) | GEO-tree_oak
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (421.12,
+    7.19, 192.07), Extents: (2.56, 3.25, 2.48)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/tree_oak/tree_oak(Clone) | GEO-tree_oak
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (425.43,
+    6.57, 192.88), Extents: (2.42, 3.25, 2.27)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/tree_oak/tree_oak(Clone) | GEO-tree_oak
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (427.51,
+    5.60, 202.92), Extents: (1.79, 2.25, 1.76)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/tree_oak/tree_oak(Clone) | GEO-tree_oak
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (428.00,
+    5.59, 201.00), Extents: (1.18, 2.25, 1.36)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/tree_oak/tree_oak(Clone) | GEO-tree_oak
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (428.78,
+    5.97, 197.09), Extents: (2.18, 2.75, 2.13)"
+  - "Mesh Fishing Prototype/\u8424\u706B\u6C99\u6D32/tree_oak/tree_oak(Clone) | GEO-tree_oak
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (429.25,
+    6.88, 209.44), Extents: (2.07, 3.75, 2.36)"
   - "Mesh Fishing Prototype/\u897F\u6E7E\u79D1\u8003\u5CB8/Amber landing flag | Cube
     | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-76.00,
     3.65, -14.00), Extents: (0.50, 0.28, 0.05)"
@@ -2658,10 +3054,10 @@ MonoBehaviour:
     rendererBounds=Center: (118.24, 7.53, -66.63), Extents: (6.59, 12.61, 4.65)'
   - 'Mesh Island Level/Environment Objects/Props_Floating/KayakRoot (2)/Geo_Props_Kayak
     (4) | Geo_Props_Kayak | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-83.76, -0.16, -41.82), Extents: (0.76, 0.45, 2.09)'
+    (-83.76, 0.01, -41.82), Extents: (0.76, 0.28, 2.07)'
   - 'Mesh Island Level/Environment Objects/Props_Floating/KayakRoot/Geo_Props_Kayak
     (4) | Geo_Props_Kayak | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-84.71, -0.16, -44.55), Extents: (0.83, 0.45, 2.10)'
+    (-84.71, 0.01, -44.56), Extents: (0.83, 0.28, 2.08)'
   - 'Mesh Island Level/Environment Objects/SmallIsland/Rocks/Rock_Large_01 (2)/Rock_Large_01_LOD0
     | Combined Mesh (root: scene) 7 | staticBatch=True firstSubmesh=60 opaqueDraws=1
     rendererBounds=Center: (10.07, 3.07, 70.93), Extents: (6.78, 12.84, 4.70)'

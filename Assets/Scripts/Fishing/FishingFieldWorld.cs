@@ -47,13 +47,16 @@ namespace BoatAttack.Fishing
                     if(TryLocation(shore.Landing,4f+j*1.3f,40+id*113,out var home))
                     {
                         var kind=(LandAnimalKind)(id%3);var root=MeshObject("Land animal / "+kind,animalMeshes[(int)kind]);root.position=home;
+                        FishingV029Art.Apply(root.GetComponent<Renderer>(),kind==LandAnimalKind.Rabbit?"Rabbit":kind==LandAnimalKind.Fox?"Fox":null,_owned,c.PaletteShader);
                         _animals.Add(new Animal{Id=id,Kind=kind,Root=root,Home=home,Feet=home,Target=home,Rest=id*.2f});
                     }
                 }
             }
             _held=MeshObject("Equipped field tool",_tools[FieldItem.FieldGuide]);_heldMesh=_held.GetComponent<MeshFilter>();
             _lamp=new GameObject("Field lantern light").AddComponent<Light>();_lamp.transform.SetParent(transform,false);
-            _lamp.type=LightType.Point;_lamp.color=new Color(1,.70f,.34f);_lamp.range=8;_lamp.intensity=1.35f;_lamp.shadows=LightShadows.None;
+            _lamp.type=LightType.Point;_lamp.color=new Color(1,.67f,.30f);_lamp.range=11;_lamp.intensity=2.6f;
+            _lamp.shadows=UnityEngine.XR.XRSettings.isDeviceActive?LightShadows.None:LightShadows.Soft;
+            _lamp.shadowStrength=.72f;_lamp.shadowBias=.035f;_lamp.shadowNormalBias=.12f;_lamp.renderMode=LightRenderMode.ForcePixel;
             RefreshPickups();Debug.Log("[FIELD] Built "+_pickups.Count+" pickups and "+_animals.Count+" ground-constrained land animals.");
         }
         private Transform MeshObject(string name,Mesh mesh)
@@ -189,7 +192,7 @@ namespace BoatAttack.Fishing
             Sense();if(_candidate==null){_c.Notice("看向附近陆地动物（8m 内）再按 T；望远镜可观察至 22m。Ctrl 蹲下不易惊动动物。",5);return false;}
             return _c.RecordLandAnimal(_candidate.Kind);
         }
-        public void ApplyHeldTool(){UpdateLanternGrip();PresentHeldTool();PresentLanternHolster();}
+        public void ApplyHeldTool(){UpdateLanternGrip();PresentHeldTool();PresentLanternHolster();PresentLanternLight();}
         private void OnDestroy(){foreach(var item in _owned)if(item!=null)Destroy(item);}
     }
 }

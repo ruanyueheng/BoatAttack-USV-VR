@@ -11,10 +11,11 @@ using Object = UnityEngine.Object;
 
 namespace BoatAttack.Fishing
 {
-    /// <summary>The most recent landed fish, for the HUD's catch card.</summary>
+    /// <summary>The most recent landed fish or sea find, for the HUD's catch card.</summary>
     public struct CatchCard
     {
         public CatchRecord Fish;
+        public FieldItem Find;
         public float ShownAt;
         public bool Discovery;
         public bool PersonalBest;
@@ -25,7 +26,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.28.0";
+        public const string Version = "0.33.0";
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
@@ -55,9 +56,10 @@ namespace BoatAttack.Fishing
         public bool Ashore => Shore != null && Shore.Ashore;
         public Vector3 ExplorerPosition => Ashore ? Shore.Position : Player.transform.position;
         public int HomeNavigationIndex => ShopNavigationIndex + 1 + FishingAdventure.Count;
-        public int NavigationCount => HomeNavigationIndex + 1;
+        public int NavigationCount => HomeNavigationIndex + 3;
         public int IslandNavigationIndex(int island) => ShopNavigationIndex + 1 + island;
         public FishingWeather Weather { get; private set; }
+        public FishingNightscape Nightscape { get; private set; }
         public FishingEcology Ecology { get; private set; }
         public Shader PaletteShader { get; private set; }
         public bool FirstPerson => View != null && View.FirstPerson;
@@ -73,7 +75,7 @@ namespace BoatAttack.Fishing
         public bool QuietMode { get; private set; }
         public int NavigationTarget { get; private set; }
         public Vector3 NavigationPosition => NavigationWorldPosition();
-        public string NavigationName => NavigationTarget == HomeNavigationIndex ? "回潮渔屋" : NavigationTarget > ShopNavigationIndex ? FishingAdventure.Name(NavigationTarget-ShopNavigationIndex-1) : NavigationTarget == ShopNavigationIndex ? ShopName : NavigationTarget == 0 ? "潮汐渔港" : NavigationTarget <= fishingSpots.Length ? FishingGrounds.Name(NavigationTarget - 1) : FishingExploration.SiteName(NavigationTarget - fishingSpots.Length - 1);
+        public string NavigationName => NavigationTarget>HomeNavigationIndex?FishingCoastalPresentation.IsletName(NavigationTarget-HomeNavigationIndex-1):NavigationTarget == HomeNavigationIndex ? "回潮渔屋" : NavigationTarget > ShopNavigationIndex ? FishingAdventure.Name(NavigationTarget-ShopNavigationIndex-1) : NavigationTarget == ShopNavigationIndex ? ShopName : NavigationTarget == 0 ? "潮汐渔港" : NavigationTarget <= fishingSpots.Length ? FishingGrounds.Name(NavigationTarget - 1) : FishingExploration.SiteName(NavigationTarget - fishingSpots.Length - 1);
         public bool CanChangeBait => Session.Phase == CatchPhase.Idle || Session.Phase == CatchPhase.Caught || Session.Phase == CatchPhase.Escaped;
         public CatchCard LastCatch { get; private set; }
         public bool LegendTrophy => Career != null && Career.LegendCatches > 0;
@@ -195,6 +197,7 @@ namespace BoatAttack.Fishing
             WaterRoute=gameObject.AddComponent<FishingWaterRoute>();WaterRoute.Build(this);
             Home=gameObject.AddComponent<FishingHome>();Home.Build(this);
             CoastWorld=gameObject.AddComponent<FishingV028CoastWorld>();CoastWorld.Build(this);
+            Nightscape=gameObject.AddComponent<FishingNightscape>();Nightscape.Build(this);
             Prologue=gameObject.AddComponent<FishingPrologue>();Prologue.Build(this);
             Shore.RefreshClimbRoutes();
             ConfigurePresentation();
@@ -209,8 +212,9 @@ namespace BoatAttack.Fishing
                 ?"欢迎来到回潮海。校准完成后将播放序章和手柄教学；B 可随时打开潮汐手册。"
                 :"潮汐回响：N选择岛屿，低速G下船，E与居民交谈 / 进入潮纹秘境。J查看世界航记；店员可介绍商品，离岸可游泳。"):warning,10f);
             _initialized=true;
-            if(!Automated && !HasIsolatedProfile && !Career.PrologueSeen && !HasPendingCatch
-                && !_xrActive && Application.platform!=RuntimePlatform.Android)Prologue.Begin();
+            InitializeSettings();
+            InitializeSaveSlots(legacy);
+            InitializeStartMenu();
             if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }
             else if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
             Debug.Log("[FISHING] Prototype v"+Version+" initialized. Procedural and Hunyuan fish; desktop/XR input.");
@@ -229,6 +233,10 @@ namespace BoatAttack.Fishing
             }
             var k=Keyboard.current;var m=Mouse.current;var g=Gamepad.current;
             bool focused=Automated || Application.isFocused;
+            TickAutosave();
+            if(TickStartMenu(k)){Shore.Tick(false);AnimateEquipment();return;}
+            if(TickHomeChart(k)){Shore.Tick(false);AnimateEquipment();return;}
+            if(TickGuideOpening(k,focused)){Shore.Tick(false);AnimateEquipment();return;}
             if(TickStoryInput(k,focused,xr)){Shore.Tick(false);AnimateEquipment();return;}
             if(!Anchored || HasPendingCatch)CastMotion.Reset();
             else if(Paused || !focused)CastMotion.CancelPreparation();
@@ -250,7 +258,8 @@ namespace BoatAttack.Fishing
                 else if(!Automated && focused)ReadFieldShortcuts(k,null);
                 Shore.Tick(false);return;
             }
-            if(!xr && !Automated && _input.Current.pause) { if(alignmentFrame)Expedition.Cancel();else if(JournalOpen)ToggleJournal();else TogglePause(); }
+            if(TickItemInspection(k,m,focused)){Shore.Tick(false);AnimateEquipment();return;}
+            if(!xr && !Automated && _input.Current.pause) { if(SaveMenuOpen){if(SaveConfirmation.Length>0)CancelSaveConfirmation();else CloseSaveMenu();}else if(alignmentFrame)Expedition.Cancel();else if(JournalOpen)ToggleJournal();else if(MenuControls){MenuControls=false;SaveSettings();}else TogglePause(); }
             if(!Automated && focused && k!=null && k.jKey.wasPressedThisFrame && (!Paused || JournalOpen))ToggleJournal();
             TickWorldAction(Time.deltaTime,focused,xr);
             if(WorldActionBlocksGameplay)
@@ -313,13 +322,8 @@ namespace BoatAttack.Fishing
                 if(!xr && _input.Current.interact && !DockConsole.BlocksGameplay && !(_xrActive && Hands.HoldingRod))RequestWorldInteraction();
                 if(ShopBlocksGameplay || StoryBlocksGameplay){Shore.Tick(false);AnimateEquipment();return;}
                 bool press=(pointerReady && !overTools && !rightHeld && m!=null && m.leftButton.wasPressedThisFrame) || (gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame);
-                if(!_xrActive)TickDesktopAngling(m,pointerReady,overTools);
-                if(gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame && Anchored)
-                {
-                    if(Session.Phase==CatchPhase.Bite)Hook();
-                    else if(Session.Phase==CatchPhase.Landing)CatchRig.RequestLiftForInspection();
-                    else if(CanChangeBait && !CastMotion.Casting)Cast();
-                }
+                TickDesktopCast(press,pointerReady,overTools,rightHeld,m);
+
                 if(press && Ashore && (k==null || (!k.leftAltKey.isPressed && !k.rightAltKey.isPressed)))RifleHunting.TryFire();
             }
             Shore.Tick(focused && !Automated && !Expedition.Aligning);
@@ -348,6 +352,17 @@ namespace BoatAttack.Fishing
                 // Caught fish remain pending until an explicit store/release.
             }
             AnimateEquipment();
+        }
+
+        private void TickDesktopCast(bool press,bool pointerReady,bool overTools,bool rightHeld,Mouse mouse)
+        {
+            if(!_xrActive)TickDesktopAngling(mouse,pointerReady && !rightHeld,overTools);
+            if(press && Anchored && (mouse==null || !mouse.leftButton.wasPressedThisFrame))
+            {
+                if(Session.Phase==CatchPhase.Bite)Hook();
+                else if(Session.Phase==CatchPhase.Landing)CatchRig.RequestLiftForInspection();
+                else if(CanChangeBait && !CastMotion.Casting)Cast();
+            }
         }
 
         private void FixedUpdate()
@@ -406,6 +421,16 @@ namespace BoatAttack.Fishing
             RifleHunting.Present();
             // 全部工具和掌心目标落位后才解同源骨架；随后只读取竿尖画线，不再次采样。
             Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right,UnityEngine.XR.XRSettings.isDeviceActive);
+            if(Acceptance!=null && Acceptance.FreezeScenario && (Acceptance.CurrentCase==FishingAcceptanceCase.ArchIslet || Acceptance.CurrentCase==FishingAcceptanceCase.FireflyIslet))
+            {
+                var island=FishingCoastalPresentation.Islets[Acceptance.CurrentCase==FishingAcceptanceCase.ArchIslet?0:1];
+                var p=island+new Vector3(39,22,42);viewCamera.transform.SetPositionAndRotation(p,Quaternion.LookRotation(island+Vector3.up*2-p));
+            }
+            if(Acceptance!=null && Acceptance.FreezeScenario && Acceptance.CurrentCase==FishingAcceptanceCase.HomeMoonlight)
+            {
+                var island=Home.Origin;var position=island+new Vector3(26,8,-61);var target=island+new Vector3(-9,17,10);
+                viewCamera.transform.SetPositionAndRotation(position,Quaternion.LookRotation(target-position));
+            }
             Shore.Character.SetOpticalView(View.OpticalView || ((Letter.Open || Prologue.Open) && !UnityEngine.XR.XRSettings.isDeviceActive));DockConsole.Present();
         }
         public void ToggleView()
@@ -416,13 +441,15 @@ namespace BoatAttack.Fishing
         }
         public void TogglePause()
         {
-            if(!Paused){_resumeTimeScale=Time.timeScale;Time.timeScale=0f;Paused=true;}
+            if(!Paused){Save();_resumeTimeScale=Time.timeScale;Time.timeScale=0f;Paused=true;}
             else{Time.timeScale=_resumeTimeScale;Paused=false;}
-            ResetToolInput();
+            ResetToolInput();SaveSettings();ApplyAudioSettings();
         }
         private void ResetToolInput()
         {
             RodControl=0;_rodControlReady=false;_mouseAngling.Reset();Angling?.Tick(0,false,false);
+            EndItemInspection();
+
             CancelWorldAction();FieldWorld?.ClearToolPresentation();
             TackleShop?.Close();
             Residents?.Close();
@@ -437,7 +464,7 @@ namespace BoatAttack.Fishing
         private void OnApplicationFocus(bool focused){if(!focused){ResetToolInput();SaveOnSuspend();}}
         private void OnApplicationPause(bool paused){if(paused){ResetToolInput();SaveOnSuspend();}}
         private void OnApplicationQuit()=>SaveOnSuspend();
-        private void SaveOnSuspend(){if(_initialized && !Automated)Save();}
+        private void SaveOnSuspend(){if(_initialized){SaveSettings();if(!Automated)Save();}}
         private void ConfigurePresentation()
         {
             // The grade is isolated to this desktop camera, not the original race or XR camera.
@@ -448,6 +475,7 @@ namespace BoatAttack.Fishing
             var profile=ScriptableObject.CreateInstance<VolumeProfile>();profile.name="Fishing desktop grade";_owned.Add(profile);volume.sharedProfile=profile;
             var tone=profile.Add<Tonemapping>(true);tone.mode.Override(TonemappingMode.ACES);_owned.Add(tone);
             var color=profile.Add<ColorAdjustments>(true);color.postExposure.Override(0.15f);color.contrast.Override(5f);color.saturation.Override(4f);_owned.Add(color);
+            var bloom=profile.Add<Bloom>(true);bloom.intensity.Override(.24f);bloom.threshold.Override(1.2f);bloom.scatter.Override(.55f);_owned.Add(bloom);
             // Deliberately omit depth of field, motion blur and chromatic distortion.
         }
 
@@ -610,7 +638,7 @@ namespace BoatAttack.Fishing
             TackleShop?.Close();
             if(InventoryOpen)return;
             if(Paused && !JournalOpen)return;
-            JournalOpen=!JournalOpen;TogglePause();
+            JournalOpen=!JournalOpen;if(!JournalOpen){ReadingFieldGuide=false;GuideOpenAmount=0;}TogglePause();
         }
         public void ToggleComfort()
         {
@@ -620,7 +648,7 @@ namespace BoatAttack.Fishing
         public void ToggleInstruments() { WorldInstruments=!WorldInstruments; }
         public void ToggleQuiet()
         {
-            QuietMode=!QuietMode;_feedback.mute=QuietMode;
+            QuietMode=!QuietMode;ApplyAudioSettings();
             if(!HasIsolatedProfile){PlayerPrefs.SetInt("Fishing.V3.Quiet",QuietMode?1:0);PlayerPrefs.Save();}
         }
         public int DeliverOrder()
@@ -657,11 +685,7 @@ namespace BoatAttack.Fishing
             for(int i=0;i<fishingSpots.Length;i++){float d=FlatDistance(Player.engine.RB.position,fishingSpots[i]);if(d<SpotDistance){SpotDistance=d;Spot=i;}}
         }
         public void CommitExpedition(string message) { Save();Notice(message,9f); }
-        internal void Save()
-        {
-            try{FishingSaveStore.Save(SavePath,Career);SaveWarning=string.Empty;}
-            catch(Exception ex) when(ex is IOException || ex is UnauthorizedAccessException){SaveWarning="存档失败：进度仅保留在内存，请检查磁盘权限后再进行一次交易。";Notice(SaveWarning,10f);Debug.LogWarning("[FISHING] Save failed: "+ex.Message);}
-        }
+        internal void Save() => SaveProgress();
         public void Notice(string text,float seconds=5f,bool catchNotice=false){Message=text;MessageIsCatch=catchNotice;_messageUntil=Time.unscaledTime+seconds;}
         public string VisibleMessage=>Time.unscaledTime<_messageUntil?Message:string.Empty;
         public static float FlatDistance(Vector3 a,Vector3 b)=>Vector2.Distance(new Vector2(a.x,a.z),new Vector2(b.x,b.z));
@@ -743,7 +767,7 @@ namespace BoatAttack.Fishing
             }
             else if(phase==CatchPhase.Waiting && !_castSplash)
             {
-                _castSplash=true;Effects?.Burst(target,new Color(.72f,.9f,1));
+                _castSplash=true;Effects?.Splash(target,.6f);
             }
             _bobber.transform.position=target;
             TickAnglingPresentation();
@@ -751,6 +775,7 @@ namespace BoatAttack.Fishing
             if(!HasPendingCatch)
             {
                 _fish.transform.position=phase==CatchPhase.Caught?Vector3.Lerp(_catchStart,_box.position+Vector3.up*0.5f,Mathf.Clamp01((Time.time-_caughtAt)/0.7f))+Vector3.up*Mathf.Sin(Mathf.Clamp01((Time.time-_caughtAt)/0.7f)*Mathf.PI)*0.8f:target;
+                Effects?.FishSurface(target,phase,Session.Distance,Session.Beat);
                 _fish.transform.rotation=leap>0f?yaw*Quaternion.Euler(-Mathf.Cos(leap*Mathf.PI)*50f,-90f,Mathf.Sin(leap*Mathf.PI*2f)*20f)
                     :yaw*Quaternion.Euler(Mathf.Sin(Time.time*7)*18f,-90+Mathf.Sin(Time.time*9)*22f,Mathf.Sin(Time.time*6)*14f);
                 _fish.transform.localScale=Vector3.one*FishingSpecies.SizeScale(Session.Kind,Session.Grams);
@@ -783,6 +808,7 @@ namespace BoatAttack.Fishing
         }
         private void OnDestroy()
         {
+            RestoreAudioSettings();
             if(Paused)Time.timeScale=_resumeTimeScale;
             Application.targetFrameRate=_previousTargetFrameRate;
             foreach(var o in _owned)if(o!=null)Destroy(o);

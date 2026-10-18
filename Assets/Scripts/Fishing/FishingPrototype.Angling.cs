@@ -9,13 +9,14 @@ namespace BoatAttack.Fishing
         public float RodControl { get; private set; }
         private bool _rodControlReady;
         private readonly FishingMouseAngling _mouseAngling=new FishingMouseAngling();
-        public bool DesktopFishingDrag=>_mouseAngling.Captured && Anchored && !HasPendingCatch && !Paused;
+        public bool DesktopFishingDrag=>_mouseAngling.Captured && Anchored && !HasPendingCatch && !Paused && !InspectingItem && !StartMenuOpen;
         public bool DesktopReeling=>DesktopFishingDrag && Session.Phase==CatchPhase.Fighting && Mouse.current!=null
             && Mouse.current.leftButton.isPressed && !Mouse.current.rightButton.isPressed;
         // Shared production adapter; isolated validation feeds real Input System mouse events here.
         public void TickDesktopAngling(Mouse mouse,bool ready,bool overUI)
         {
             bool allowed=ready && mouse!=null && Anchored && !HasPendingCatch && !Paused && !_xrActive
+                && !InspectingItem && !StartMenuOpen && !SaveMenuOpen && !GuideOpening
                 && !InventoryOpen && !JournalOpen && !StoryBlocksGameplay && !ShopBlocksGameplay && !DockConsole.BlocksGameplay
                 && !mouse.rightButton.isPressed;
             bool pressed=mouse!=null && mouse.leftButton.wasPressedThisFrame;
@@ -35,6 +36,7 @@ namespace BoatAttack.Fishing
             && FishingXRTracking.TryPose(viewCamera,XRNode.RightHand,out _,out _)
             && FishingXRTracking.TryPose(viewCamera,XRNode.LeftHand,out _,out _));
         private bool AnglingAvailable=>Anchored && !HasPendingCatch && !Paused && !InventoryOpen && !JournalOpen && !StoryBlocksGameplay
+            && !InspectingItem && !StartMenuOpen && !SaveMenuOpen && !GuideOpening
             && !ShopBlocksGameplay && !XRNotebook.BlocksGameplay && !DockConsole.BlocksGameplay && AnglingTrackingReady
             && (Application.isFocused || (Automated && HasIsolatedProfile));
         private float ReadRodControl(Keyboard keyboard,Gamepad gamepad,bool pointerReady,bool gamepadReady)

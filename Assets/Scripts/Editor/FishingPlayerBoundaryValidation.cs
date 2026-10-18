@@ -288,6 +288,8 @@ namespace BoatAttack.EditorTools
                 C.Shore.Body.enabled = false;
                 C.Shore.Actor.SetPositionAndRotation(position, Quaternion.identity);
                 C.Shore.Body.enabled = true;
+                Check(C.Shore.Relocate(position,Quaternion.identity), "fixture 在真实支撑上清除上例的游泳/攀登状态");
+                C.Shore.SetCrouch(crouched,true);
                 C.Shore.ResetMoveInput();
                 C.View.ResetLook();
                 Physics.SyncTransforms();
@@ -694,17 +696,18 @@ namespace BoatAttack.EditorTools
                 for (int i = 0; i < 70; i++)
                 {
                     Walk(c, Vector2.up, sprint: true);
-                    if (c.Shore.Position.z > f.Origin.z + c.Shore.Body.radius + .05f || c.Shore.Position.y < .6f)
-                        throw new InvalidOperationException("floor seam fallback 跨出近岸进入开放水面/远岸；feet=" + c.Shore.Position.ToString("F4"));
+                    if(c.Shore.Swimming)break;
+                    Check(c.Shore.Position.z<=f.Origin.z+c.Shore.Body.radius+.05f && c.Shore.Position.y>=.6f,
+                        "无支撑时不能继续当作干地步行");
                     yield return null;
                 }
-                Check(c.Shore.Position.z < far.bounds.min.z - .5f, "连续快走不能跨1.2m水沟取得远岸支撑");
+                Check(c.Shore.Swimming && c.Shore.Position.z < far.bounds.min.z - .5f, "离岸后进入V026真实游泳，没有借远岸作为地缝支撑");
                 far.enabled = false;
                 Physics.SyncTransforms();
                 Check(!c.Shore.Ground(f.At(0, 0, 1.6f), out _), "移除远岸后开放水面无支撑");
-                for (int i = 0; i < 35; i++) { Walk(c, new Vector2(.15f, 1), sprint: true); yield return null; }
-                Check(c.Shore.Position.z <= f.Origin.z + c.Shore.Body.radius + .05f && c.Shore.Position.y >= .6f,
-                    "无远岸时斜向反复输入也不会把窄缝容差累计成水面桥");
+                for (int i = 0; i < 12; i++) { Walk(c, new Vector2(.15f, 1), sprint: true); yield return null; }
+                Check(c.Shore.Swimming && !c.Shore.Ground(f.At(0,0,.6f),out _),
+                    "开放水面保持真实游泳，不生成干地支撑或隐形水面桥");
             }
         }
     }

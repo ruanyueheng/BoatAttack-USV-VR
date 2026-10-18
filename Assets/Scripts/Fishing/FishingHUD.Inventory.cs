@@ -23,11 +23,18 @@ namespace BoatAttack.Fishing
         private void DrawHotbar()
         {
             var c=Controller;var r=HotbarRect(_height);
-            Label(new Rect(r.x,r.y-23,r.width,20),"I 背包   ·   "+FishingBackpack.Name(c.Career.Backpack.Equipped)+"   ·   F 使用",13,Muted,false,TextAnchor.MiddleCenter);
+            WorldLabel(new Rect(r.x,r.y-23,r.width,20),"I 背包 · "+FishingBackpack.Name(c.Career.Backpack.Equipped)+" · F 使用 · Z 检视",13,Muted,false,TextAnchor.MiddleCenter);
             for(int i=0;i<9;i++)
             {
                 var slot=new Rect(r.x+4+i*54,r.y+2,48,48);
-                DrawFieldSlot(slot,i,c.Career.Backpack.Selected==i,false);
+                var stack=c.Career.Backpack.At(i);bool selected=c.Career.Backpack.Selected==i;
+                if(stack.count>0)
+                {
+                    FieldIcon(new Rect(slot.x+5,slot.y+1,38,36),stack.item);
+                    if(stack.count>1)DisplayText(new Rect(slot.x+23,slot.y+23,24,20),stack.count.ToString(),13,CreamInk,false,TextAnchor.MiddleRight);
+                }
+                DisplayText(new Rect(slot.x,slot.yMax-16,slot.width,18),(i+1).ToString(),12,selected?AmberInk:CreamInk,false,TextAnchor.MiddleCenter);
+                if(selected)Fill(slot.x+9,slot.yMax+3,30,2,AmberInk);
                 if(GUI.Button(slot,GUIContent.none,GUIStyle.none))c.SelectFieldSlot(i);
             }
         }
@@ -68,7 +75,8 @@ namespace BoatAttack.Fishing
                 if(confirming){Controller.DiscardFieldItem(_moveFrom,selected.item,selected.count);ClearFieldSelection();}
                 else{_discardSlot=_moveFrom;_discardItem=selected.item;_discardCount=selected.count;}
             }
-            Label(545,698,365,45,confirming?"不可撤销；点击其他格取消确认。":"自然手册受保护；满包不吞拾取物。",13,confirming?Danger:Faint);
+            if(Button(new Rect(545,697,190,35),"拿起检视",selected.count>0,false,14)){int slot=_moveFrom;ClearFieldSelection();Controller.InspectFieldItem(slot);return;}
+            Label(747,698,164,45,confirming?"不可撤销":"Z 检视快捷栏物品",13,confirming?Danger:Faint);
             Fill(933,235,1,495,Hairline);
             Label(958,239,300,30,"野外手册",23,Mint,true);
             string[] notes={"野兔掉落兔肉和兔毛。","赤狐掉落狐狸肉和狐皮。","龟类掉落海龟肉和龟壳；海鸥掉落肉和羽毛。"};
@@ -80,7 +88,7 @@ namespace BoatAttack.Fishing
                 Label(972,y+40,286,34,notes[i],13,Faint);
             }
             Label(958,595,316,30,"工具使用",20,Gold,true);
-            Label(958,635,312,92,"自然手册：F 记录 · 望远镜：F 举镜\n提灯：F 点亮 · 夜间照路\n猎矛：蹲下接近，F 刺击野兔 / 赤狐\n生兽肉 + 燃料 → 熔炉炭烤兽肉",14,Muted);
+            Label(958,635,312,92,"自然手册：F 翻开 · T 观察 · 望远镜：F 举镜\n提灯：F 点亮 · 夜间照路\n猎矛：蹲下接近，F 刺击野兔 / 赤狐\n生兽肉 + 燃料 → 熔炉炭烤兽肉",14,Muted);
         }
         private void DrawFieldSlot(Rect r,int index,bool equipped,bool source)
         {

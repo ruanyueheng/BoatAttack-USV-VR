@@ -34,7 +34,7 @@ namespace BoatAttack.Fishing
         public Vector3 Muzzle=>_rifle.TransformPoint(MuzzleLocal);
         public bool Equipped=>_c!=null && _c.Career.Backpack.Equipped==FieldItem.HuntingRifle;
         private Vector3 Eye=>XRSettings.isDeviceActive?_c.viewCamera.transform.position:_c.Shore.Character.EyePosition;
-        private bool Context=>Equipped && _c.Ashore && !_c.Paused && !_c.InventoryOpen && !_c.JournalOpen
+        private bool Context=>Equipped && !_c.InspectingItem && _c.Ashore && !_c.Paused && !_c.InventoryOpen && !_c.JournalOpen
             && !_c.ShopBlocksGameplay && !_c.StoryBlocksGameplay && !_c.Shore.Swimming && !_c.Shore.Climbing
             && !_c.WorldActionBlocksGameplay && !_c.HasPendingCatch && !_c.Expedition.Aligning
             && !_c.DockConsole.BlocksGameplay && (_c.XRNotebook==null || !_c.XRNotebook.BlocksGameplay) && _c.Hands.CanPresentTools
@@ -51,6 +51,7 @@ namespace BoatAttack.Fishing
                 Register(animal);
             }
             _audio=gameObject.AddComponent<AudioSource>();_audio.playOnAwake=false;_audio.spatialBlend=0;_audio.volume=.23f;
+            _c.RegisterAudioSource(_audio,FishingAudioCategory.Effects,.23f);
             _shot=AudioClip.Create("Hunting report",7056,1,44100,false);
             var samples=new float[7056];var random=new System.Random(71);
             for(int i=0;i<samples.Length;i++){float t=i/44100f;samples[i]=(float)((random.NextDouble()*2-1)*Math.Exp(-t*45)+.3*Math.Sin(t*1050)*Math.Exp(-t*25));}

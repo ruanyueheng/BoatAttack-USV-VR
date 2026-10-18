@@ -331,7 +331,7 @@ namespace BoatAttack.Fishing
                 var facing=XRSettings.isDeviceActive?yaw:yaw*Quaternion.Euler(0,fishing?FishingPrototype.FishingSeatYaw:0,0);
                 Actor.SetPositionAndRotation(boat.position+yaw*(fishing?new Vector3(.55f,.45f,.2f):new Vector3(0,.25f,-.25f)),facing);
             }
-            _character.Pose(Ashore,WalkSpeed,Crouched,Grounded,Controller.FirstPerson || XRSettings.isDeviceActive,Controller.Paused);
+            _character.Pose(Ashore,WalkSpeed,Crouched,Grounded,Controller.FirstPerson || XRSettings.isDeviceActive,Controller.Paused,Swimming,Climbing);
         }
         public string LocationName => Controller.Home!=null && Controller.Home.Inside ? "回潮渔屋" : Controller.Realms!=null && Controller.Realms.Inside ? FishingLore.ShrineName(Controller.Realms.Island) : ShopLanding ? FishingTackleShop.Name : Controller.Islands!=null && Controller.Islands.NearIsland(out int island) ? FishingAdventure.Name(island) : FreeLanding ? "自由海岸" : FishingExploration.SiteName(CurrentSite);
         public string ActionTitle => !Ashore ? "G 靠岸下船 · 自动寻找安全岸面 / 码头" : NearbyTask>=0 ? "E "+FishingExploration.TaskName(NearbyTask)

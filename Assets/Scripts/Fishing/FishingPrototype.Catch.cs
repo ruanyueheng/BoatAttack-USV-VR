@@ -29,19 +29,25 @@ namespace BoatAttack.Fishing
                 if(find!=FieldItem.Empty && Career.CollectSeaFind(fish,find))
                 {
                     _caughtAt=-100;_fish.SetActive(false);CoastWorld.ShowSeaFind(find);CatchRig.Recover();Save();
-                    Notice(find==FieldItem.SeaTreasure?"海底惊喜！沉海宝匣已放入背包；选中后使用，可开启金币。":"钓到了 "+FishingBackpack.Name(find)+"！已捞起放入背包，海面又干净了一点。",7);
+                    LastCatch=new CatchCard{Find=find,ShownAt=Time.unscaledTime};
+                    _feedback.PlayOneShot(find==FieldItem.SeaTreasure?_legendTone:_successTone);
+                    Effects?.Burst(LandingTarget,find==FieldItem.SeaTreasure?new Color(1,.79f,.37f):new Color(.46f,.82f,.80f));
+                    Notice(FishingCoastRules.FindQuip(find)+" 已放入背包。",7,true);
                     return true;
                 }
             }
             if(fish==null || !Career.BeginPending(fish,_castGround,p.x,p.z))
             {Debug.LogError("[CATCH] Failed to stage a new unique fish");return false;}
             Save();
+            bool special=FishingSpecies.Of(fish.kind).Legendary || fish.rare || !Career.Discovered(fish.kind,fish.rare) || fish.grams>Career.BestGrams(fish.kind);
+            LastCatch=new CatchCard{Fish=fish.Copy(),ShownAt=Time.unscaledTime,Discovery=!Career.Discovered(fish.kind,fish.rare),PersonalBest=Career.BestGrams(fish.kind)>0 && fish.grams>Career.BestGrams(fish.kind)};
+            _feedback.PlayOneShot(FishingSpecies.Of(fish.kind).Legendary?_legendTone:_successTone);
+            Effects?.Splash(_fish.transform.position,1.5f);Effects?.Burst(_fish.transform.position,new Color(1,.79f,.37f));
             if(leftHand)
             {
                 CatchRig.StartLeftInspection(_fish.transform.position);
                 Notice("左手检视活鱼。E 放入抄网，之后可入箱或放生。",7);return true;
             }
-            bool special=FishingSpecies.Of(fish.kind).Legendary || fish.rare || !Career.Discovered(fish.kind,fish.rare) || fish.grams>Career.BestGrams(fish.kind);
             Notice(special?"特别收获！可以拿起观察测量；普通鱼也可直接倾网入箱。":"鱼已入网：可直接倾网入箱，或拿起观察。",7);return true;
         }
         public bool ResolveCatch(bool store)

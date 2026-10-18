@@ -45,7 +45,10 @@ namespace BoatAttack.Fishing
                 GUI.DrawTexture(new Rect(x,y+3,1,6),Texture2D.whiteTexture);
                 if(_opticLabel==null)_opticLabel=new GUIStyle(GUI.skin.label){font=_font,alignment=TextAnchor.MiddleCenter};
                 _opticLabel.fontSize=Mathf.RoundToInt(Mathf.Clamp(Screen.height/48f,13,22));
-                GUI.Label(new Rect(x-180,Screen.height*.77f,360,30),"望远镜 · T 记录 / F 放下",_opticLabel);
+                var labelRect=new Rect(x-250,Screen.height*.77f,500,30);var paper=FishingUITheme.Paper;
+                GUI.color=new Color(paper.r,paper.g,paper.b,.96f*opacity);GUI.DrawTexture(labelRect,Texture2D.whiteTexture);
+                GUI.color=new Color(1,1,1,opacity);_opticLabel.normal.textColor=FishingUITheme.Ink;
+                GUI.Label(labelRect,"望远镜  "+Controller.View.BinocularMagnification.ToString("0.0")+"× · 滚轮调倍 · T 记录 / F 放下",_opticLabel);
             }
             finally{GUI.color=old;}
         }

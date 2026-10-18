@@ -71,7 +71,7 @@ namespace BoatAttack.Fishing
         }
         private GameObject Model(string name,Transform parent)
         {
-            var source=Resources.Load<GameObject>("FishingV028/Coast/"+name);
+            var source=Resources.Load<GameObject>("FishingV029/"+name) ?? Resources.Load<GameObject>("FishingV028/Coast/"+name);
             if(source==null)throw new InvalidOperationException("Missing V028 coast model: "+name);
             var result=Instantiate(source,parent,false);result.name=name;
             foreach(var renderer in result.GetComponentsInChildren<Renderer>()){renderer.sharedMaterial=_palette;renderer.shadowCastingMode=ShadowCastingMode.Off;}
@@ -116,6 +116,7 @@ namespace BoatAttack.Fishing
             _c.Save();RefreshFishView();_c.FieldWorld.ShowPickupPreview(FieldItem.GrilledFish);
             _c.Notice("香烤海鱼已装入背包 · 选入快捷栏后使用，恢复50%体力。",6);return true;
         }
+        public void RefreshSavedProgress(){_saveClock=0;RefreshFishView();}
         private void RefreshFishView()
         {
             var data=_c.Career.Barbecue;string id=data.fish?.id??"";
@@ -139,6 +140,8 @@ namespace BoatAttack.Fishing
             _sign.gameObject.SetActive((_c.ExplorerPosition-Grill.position).sqrMagnitude<18*18);
             if(_sign.gameObject.activeSelf)_sign.transform.rotation=Quaternion.LookRotation(_sign.transform.position-_c.viewCamera.transform.position);
         }
+        public void ClearFindPresentation(){if(_find!=null)Destroy(_find);_find=null;}
+        public bool ShowingSeaFind=>_find!=null;
         public void ShowSeaFind(FieldItem item)
         {
             if(_find!=null)Destroy(_find);_find=Model(item.ToString(),transform);_findAge=0;

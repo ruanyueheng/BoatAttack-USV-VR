@@ -97,6 +97,9 @@ namespace BoatAttack.EditorTools
                 var grip=c.ActiveFish.TransformPoint(c.CatchRig.LeftInspectionGrip);
                 Check(c.CatchRig.LeftInspectionSettled && c.Hands.Left.Visible && Vector3.Distance(c.Shore.Character.PalmPosition(true),grip)<.035f,"the real left hand reaches the fish grip without stretching the source arm");
                 Check(c.Hands.Rod.gameObject.activeInHierarchy && c.Hands.Right.Visible,"the right hand keeps the rod during left-hand inspection");
+                Debug.Log("[MOUSE-FISHING] INSPECTION GEOMETRY: eye="+c.viewCamera.transform.position+" palm="+grip+" fish="+c.ActiveFish.position+" viewport="+c.viewCamera.WorldToViewportPoint(c.ActiveFish.position)+" mesh="+c.ActiveFish.GetComponentInChildren<MeshRenderer>().bounds);
+                var fishView=c.viewCamera.WorldToViewportPoint(c.ActiveFish.GetComponentInChildren<MeshRenderer>().bounds.center);
+                Check(fishView.z>.08f && fishView.x>.04f && fishView.x<.9f && fishView.y>.08f && fishView.y<.95f,"the left-held live fish is actually visible in first-person view");
                 FishingV016Validation.Capture(c,output,"left-hand-live-fish");
                 string receipt=c.Career.PendingCatch.fish.id;
                 InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.E));InputFrame();
@@ -104,10 +107,12 @@ namespace BoatAttack.EditorTools
                 Check(c.CatchRig.PlacingInNet,"the production E input starts hand-to-net placement");
                 InputSystem.QueueStateEvent(keyboard,new KeyboardState());InputFrame();
                 for(int i=0;i<100 && c.CatchRig.PlacingInNet;i++)yield return null;
+                for(int i=0;i<3;i++)yield return null;
                 c.PresentCharacterFrame();
                 var net=c.LandingNet.TransformPoint(new Vector3(FishingDetailArt.NetMouthOffset,-.13f,0));
                 Check(c.CatchRig.Location==FishingCatchRig.Place.Net && Vector3.Distance(c.ActiveFish.position,net)<.045f
                     && c.HasPendingCatch && c.Career.PendingCatch.fish.id==receipt && c.Career.Count==0,"placement leaves the same live fish in the real net without granting it twice");
+                Check(c.Hands.Right.Visible && Vector3.Distance(c.Shore.Character.PalmPosition(false),c.LandingNet.TransformPoint(new Vector3(.05f,.035f,0)))<.035f,"the right hand visibly supports the net after the rod is stowed");
                 FishingV016Validation.Capture(c,output,"live-fish-in-net");
                 Check(c.ResolveCatch(true) && !c.ResolveCatch(true) && c.Career.Count==1,"netted fish stores exactly once through the original transaction");
                 var loaded=FishingSaveStore.Load(c.SavePath,out var warning);

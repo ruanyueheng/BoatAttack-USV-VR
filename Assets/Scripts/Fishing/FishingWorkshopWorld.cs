@@ -125,6 +125,15 @@ namespace BoatAttack.Fishing
             if(_c.Home!=null && s.permanent && Vector3.Distance(root.position,_c.Home.StationPosition(s.kind))<.2f)root.SetParent(_c.Home.House,true);
             var collider=root.gameObject.AddComponent<BoxCollider>();collider.center=Vector3.up*.5f;collider.size=new Vector3(1.3f,1,.95f);
             _stations.Add(s.id,root);
+            if(s.permanent && FishingPrototype.FlatDistance(root.position,_c.Shore.Sites[0].Landing)<45)
+            {
+                var sign=new GameObject("West bay facility sign",typeof(TextMesh));sign.transform.SetParent(root,false);
+                sign.transform.localPosition=new Vector3(0,1.75f,-.05f);sign.transform.localRotation=Quaternion.Euler(0,180,0);
+                var label=sign.GetComponent<TextMesh>();label.font=FishingUIFont.Font;label.fontSize=40;label.characterSize=.023f;
+                label.anchor=TextAnchor.MiddleCenter;label.alignment=TextAlignment.Center;label.color=FishingUITheme.Ink;
+                label.text=FishingRecipes.StationName(s.kind)+"\nE 制作 / 加工";
+                sign.GetComponent<MeshRenderer>().sharedMaterial=FishingUIFont.Font.material;
+            }
             if(s.kind==CraftStation.Forge)
             {
                 collider.center=Vector3.up*.65f;collider.size=new Vector3(1.3f,1.3f,.95f);
@@ -167,6 +176,12 @@ namespace BoatAttack.Fishing
                 Sense();_senseAt=Time.time+.15f;
                 foreach(var n in _nodes)if(n.Root!=null)n.Root.localScale=Vector3.one*(State.ResourceReady(n.Id)?1:.32f);
                 foreach(var fire in _fires){bool burning=State.Station(fire.Key).remaining>0;fire.Value.intensity=burning?1.8f:0;var coals=_stations[fire.Key].Find("Hot coals");if(coals!=null)coals.gameObject.SetActive(burning);}
+                foreach(var station in _stations.Values)
+                {
+                    var sign=station.Find("West bay facility sign");if(sign==null)continue;
+                    sign.gameObject.SetActive((_c.ExplorerPosition-sign.position).sqrMagnitude<32*32);
+                    if(sign.gameObject.activeSelf){sign.rotation=Quaternion.LookRotation(sign.position-_c.viewCamera.transform.position);sign.GetComponent<TextMesh>().color=FishingUITheme.Ink;}
+                }
             }
             if(done || Time.time>=_saveAt){_saveAt=Time.time+10;_c.Save();}
         }

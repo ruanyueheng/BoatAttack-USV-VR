@@ -129,7 +129,7 @@ namespace BoatAttack.Fishing
             if(page==11){_guideLesson=0;ResetGuidePractice();}
             _canvas.gameObject.SetActive(true);_c.WorkshopWorld.SelectNearby();Refresh();
         }
-        public void Close(){IsOpen=false;if(_canvas!=null)_canvas.gameObject.SetActive(false);if(_ray!=null)_ray.enabled=false;ResetInput();_c?.Hands?.ResetInteraction();}
+        public void Close(){bool wasOpen=IsOpen;IsOpen=false;if(_canvas!=null)_canvas.gameObject.SetActive(false);if(_ray!=null)_ray.enabled=false;ResetInput();if(wasOpen)_c?.Hands?.ResetInteraction();}
         public void ResetInput(){_menu.Reset();_primary.Reset();_board.Reset();_slot.Reset();_trigger.Reset();_turnReady=false;_tipSample=false;MotionReady=false;_guideLeftTrigger.Reset();_guideLeftGrip.Reset();_guideRightGrip.Reset();_guideBoost.Reset();if(_homeDecor!=null)UpdateHomePointer(-1,false);}
         private bool ReArmMotion(Vector2 leftAxis,Vector2 rightAxis,bool boost)
         {
@@ -388,7 +388,7 @@ namespace BoatAttack.Fishing
                 slot=bag.Selected;
             }
 
-            _c.SelectFieldSlot(slot);Close();
+            _c.SelectFieldSlot(slot);Close();_c.InspectFieldItem(slot);
         }
         private void Craft(CraftRecipe recipe)
         {
@@ -449,6 +449,7 @@ namespace BoatAttack.Fishing
         }
         private void UseTrackedTool()
         {
+            if(_c.InspectingItem){_c.EndItemInspection();return;}
             var item=_c.Career.Backpack.Equipped;
             if(FishingRecipes.IsStation(item)){_c.WorkshopWorld.PlaceEquipped();return;}
             if(item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe){TryStrike(true);return;}

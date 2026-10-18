@@ -31,6 +31,8 @@ namespace BoatAttack.Fishing
                 throw new InvalidOperationException("Acceptance fixtures require an explicitly opted-in test profile.");
             // Validate before changing any live state. FreePlay is intentionally never synthesized.
             FishingCareer fixture = selected == FishingAcceptanceCase.FreePlay ? null : FishingAcceptanceCases.CreateCareer(selected);
+            CloseHomeChart();CloseSaveMenu();
+            if(StartMenuOpen)TitleVoyage.Close();StartMenuOpen=false;MenuControls=false;CancelGuideOpening();
             Letter?.Close();CancelWorldAction();_workshopReceipt=false;TackleShop?.Close();Residents?.Close();Realms?.Abort();CoastWorld?.CloseMenu();
             if (InventoryOpen) ToggleInventory();
             if (JournalOpen) ToggleJournal();
@@ -72,7 +74,7 @@ namespace BoatAttack.Fishing
             Notice(string.Empty, 0f);
 
             CastMotion.Reset();
-            if (FishingAcceptanceCases.IsCatchCase(selected) || selected == FishingAcceptanceCase.FullHold || selected == FishingAcceptanceCase.Details || selected == FishingAcceptanceCase.CastFlight)
+            if (FishingAcceptanceCases.IsCatchCase(selected) || FishingAcceptanceCases.IsFindCase(selected) || selected == FishingAcceptanceCase.FullHold || selected == FishingAcceptanceCase.Details || selected == FishingAcceptanceCase.CastFlight)
             {
                 int spot = selected == FishingAcceptanceCase.LegendLeap ? FishingSpecies.LegendArea : 0;
                 Teleport(fishingSpots[spot] + Vector3.up, spawnRotation);
@@ -95,6 +97,10 @@ namespace BoatAttack.Fishing
             }
             switch (selected)
             {
+                case FishingAcceptanceCase.BootCatch:case FishingAcceptanceCase.CanCatch:case FishingAcceptanceCase.TreasureCatch:
+                    PrepareAcceptanceFind(selected);break;
+                case FishingAcceptanceCase.LetterEnvelope:case FishingAcceptanceCase.LetterPaper:
+                    Letter.ShowIsland(0);if(selected==FishingAcceptanceCase.LetterPaper)Letter.Reveal();break;
                 case FishingAcceptanceCase.ResidentDialogue:
                 case FishingAcceptanceCase.WindSanctuary:
                 case FishingAcceptanceCase.ForestSanctuary:
@@ -146,6 +152,48 @@ namespace BoatAttack.Fishing
                     break;
                 case FishingAcceptanceCase.CashierDialogue: PrepareAcceptanceShore(selected);break;
                 case FishingAcceptanceCase.ShopSupplies: PrepareAcceptanceShore(selected);_hud.ShopCategory=2;break;
+                case FishingAcceptanceCase.SaveSlots:
+                case FishingAcceptanceCase.SaveOverwrite:
+                    ActiveSaveSlot=0;
+                    OpenStartMenu();
+                    for(int slot=1;slot<FishingSlotStore.Count;slot++)
+                        foreach(var kind in new[]{FishingSlotKind.Manual,FishingSlotKind.Auto})
+                        {
+                            string path=FishingSlotStore.PathFor(SavePath,slot,kind);
+                            File.Delete(path);File.Delete(path+".bak");
+                        }
+                    FishingSlotStore.Write(SavePath,0,FishingSlotKind.Manual,Career,new FishingResumeData(),"acceptance");
+                    FishingSlotStore.Write(SavePath,0,FishingSlotKind.Auto,Career,new FishingResumeData(),"acceptance");
+                    OpenSaveMenu(selected==FishingAcceptanceCase.SaveSlots?"load":"save");
+                    if(selected==FishingAcceptanceCase.SaveOverwrite)RequestSlotAction(0,"save");
+                    break;
+                case FishingAcceptanceCase.HomeChart:
+                    PrepareAcceptanceHome(FishingAcceptanceCase.HomeInterior);
+                    if(!Shore.Relocate(Home.WakePoint,Quaternion.identity))throw new InvalidOperationException("家中海图夹具无法到达安全落脚点。");
+                    View.ResetLook();
+                    if(!OpenHomeChart())throw new InvalidOperationException("家中海图夹具无法打开独立窗口。");
+                    break;
+                case FishingAcceptanceCase.StartMenu:OpenStartMenu();break;
+                case FishingAcceptanceCase.MenuControls:OpenStartMenu();MenuControls=true;_hud.SettingsTab=0;break;
+                case FishingAcceptanceCase.MenuGraphics:OpenStartMenu();MenuControls=true;_hud.SettingsTab=1;break;
+                case FishingAcceptanceCase.MenuAudio:OpenStartMenu();MenuControls=true;_hud.SettingsTab=2;break;
+                case FishingAcceptanceCase.Departure:OpenStartMenu();StartFromMenu();break;
+                case FishingAcceptanceCase.ArchIslet:
+                case FishingAcceptanceCase.FireflyIslet:
+                    int islet=selected==FishingAcceptanceCase.ArchIslet?0:1;
+                    Teleport(FishingCoastalPresentation.Berth(islet)+Vector3.up,Quaternion.identity);
+                    NavigationTarget=HomeNavigationIndex+1+islet;if(FirstPerson)ToggleView();break;
+                case FishingAcceptanceCase.NatureJournal:_hud.JournalPage=2;ToggleJournal();break;
+                case FishingAcceptanceCase.LegendJournal:_hud.JournalPage=1;ToggleJournal();break;
+                case FishingAcceptanceCase.ShoreJournal:_hud.JournalPage=3;ToggleJournal();break;
+                case FishingAcceptanceCase.GuideOpening:
+                    PrepareAcceptanceShore(FishingAcceptanceCase.ShoreFirstPerson);
+                    View.ResetLook();
+                    if(!OpenFieldGuide())throw new InvalidOperationException("Guide fixture could not start opening");
+                    GuideOpenAmount=.82f;_guideAge=.82f;break;
+                case FishingAcceptanceCase.HomeMoonlight:
+                    Teleport(Home.Berth+Vector3.back*55+Vector3.up,Quaternion.identity);
+                    if(FirstPerson)ToggleView();SetDayNight(true);View.ResetLook();break;
                 case FishingAcceptanceCase.Settings: TogglePause(); break;
                 case FishingAcceptanceCase.ShoreFirstPerson:
                 case FishingAcceptanceCase.ShoreThirdPerson:

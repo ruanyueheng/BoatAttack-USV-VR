@@ -11,11 +11,10 @@ namespace BoatAttack.Fishing
         {
             var c = Controller;
             var r = Layout.Heading;
-            Glass(r);
             WeatherIcon(new Rect(r.x + 12, r.y + 15, 32, 32), c.Weather.Climate.Current);
             string title = c.Ashore ? c.Shore.LocationName : c.Anchored ? FishingGrounds.Name(c.Spot) : c.NavigationName + "  " + FishingPrototype.FlatDistance(c.ExplorerPosition, c.NavigationPosition).ToString("0") + " m";
-            Label(r.x + 56, r.y + 9, 262, 27, title, 19, Color.white, true);
-            Label(r.x + 56, r.y + 36, 262, 20, c.Career.Calendar.SeasonName+" "+c.Career.Calendar.Date+"日  "+c.Career.Calendar.TimeLabel+" · "+BayClimate.Name(c.Weather.Climate.Current), 13, Muted);
+            WorldLabel(r.x + 56, r.y + 9, 262, 27, title, 19, Color.white, true);
+            WorldLabel(r.x + 56, r.y + 36, 262, 20, c.Career.Calendar.SeasonName+" "+c.Career.Calendar.Date+"日  "+c.Career.Calendar.TimeLabel+" · "+BayClimate.Name(c.Weather.Climate.Current), 13, Muted);
             if (c.Ecology.Candidate.HasValue && !CatchVisible && Button(Layout.Observe, "T 观察 · " + BayClimate.MarineName(c.Ecology.Candidate.Value), true, false, 14)) c.Ecology.Observe();
         }
 
@@ -23,12 +22,10 @@ namespace BoatAttack.Fishing
         {
             var c = Controller.Career;
             var r = Layout.Pocket;
-            Glass(r);
-            PocketIcon(new Rect(r.x+10,r.y+6,25,25),FishingUITheme.Coins,Gold);
-            Label(new Rect(r.x + 43, r.y, 104, r.height), c.Coins.ToString("N0", CultureInfo.InvariantCulture), 16, Gold, true, TextAnchor.MiddleLeft);
-            Fill(r.x + 148, r.y + 12, 1, 16, Hairline);
-            PocketIcon(new Rect(r.x+160,r.y+6,25,25),FishingUITheme.FishBox,Mint);
-            Label(new Rect(r.x + 193, r.y, 105, r.height), "鱼箱 " + c.Count + "/" + c.Capacity, 15, c.Count == c.Capacity ? Danger : Color.white, false, TextAnchor.MiddleLeft);
+            PocketIcon(new Rect(r.x+10,r.y+2,32,32),FishingUITheme.Coins,Gold);
+            WorldLabel(new Rect(r.x + 43, r.y, 104, r.height), c.Coins.ToString("N0", CultureInfo.InvariantCulture), 16, Gold, true, TextAnchor.MiddleLeft);
+            PocketIcon(new Rect(r.x+160,r.y+2,32,32),FishingUITheme.FishBox,Mint);
+            WorldLabel(new Rect(r.x + 201, r.y, 97, r.height), c.Count + "/" + c.Capacity, 18, c.Count == c.Capacity ? Danger : Color.white, false, TextAnchor.MiddleLeft);
         }
 
         private void PocketIcon(Rect rect,Sprite icon,Color tint)
@@ -40,7 +37,6 @@ namespace BoatAttack.Fishing
         private void DrawCompactToolbar()
         {
             var r = Layout.Toolbar;
-            Glass(r);
             if (TextButton(new Rect(r.x, r.y, 76, r.height), "J 日志")) Controller.ToggleJournal();
             if (TextButton(new Rect(r.x + 86, r.y, 76, r.height), "C 视角")) Controller.ToggleView();
             if (TextButton(new Rect(r.x + 172, r.y, 76, r.height), Controller.ShowDetails ? "H 收起" : "H 详情")) Controller.ToggleDetails();
@@ -48,7 +44,7 @@ namespace BoatAttack.Fishing
         }
         private bool TextButton(Rect r,string text)
         {
-            Label(r,text,14,r.Contains(Event.current.mousePosition)?Mint:Muted,false,TextAnchor.MiddleCenter);
+            WorldLabel(r,text,14,r.Contains(Event.current.mousePosition)?Mint:Muted,false,TextAnchor.MiddleCenter);
             return GUI.Button(r,GUIContent.none,GUIStyle.none);
         }
 
@@ -57,7 +53,7 @@ namespace BoatAttack.Fishing
             var c = Controller;
             var s = c.Session;
             var r = Layout.Action;
-            Glass(r);
+            if(c.HasPendingCatch || (c.Anchored && (s.Phase==CatchPhase.Fighting || s.Phase==CatchPhase.Landing)))Rounded(r,new Color(.02f,.055f,.075f,.72f),8);
             string title, help;
             Color accent = Mint;
             if(c.HasPendingCatch)
@@ -74,8 +70,8 @@ namespace BoatAttack.Fishing
             {
                 if (c.AtHarbor)
                 {
-                    Label(r.x + 18, r.y + 10, r.width - 175, 25, "潮汐渔港 · E 快速交付 / 出售", 18, Color.white, true);
-                    Label(r.x + 18, r.y + 42, r.width - 175, 22, "Ctrl + W 加速 · Shift 刹车 · G 下船", 14, Muted);
+                    WorldLabel(r.x + 18, r.y + 10, r.width - 175, 25, "潮汐渔港 · E 快速交付 / 出售", 18, Color.white, true);
+                    WorldLabel(r.x + 18, r.y + 42, r.width - 175, 22, "Ctrl + W 加速 · Shift 刹车 · G 下船", 14, Muted);
                     if (Button(Layout.HarborButton, c.HarborDeskOpen ? "Tab 收起" : "Tab 交易台", true, c.HarborDeskOpen, 15)) c.ToggleHarborDesk();
                     return;
                 }
@@ -105,18 +101,18 @@ namespace BoatAttack.Fishing
             if(c.CastMotion.Preparing)
             {title="松开左键甩竿 · 蓄力 "+(c.CastMotion.Charge*100).ToString("0")+"%";help="轻点近抛 · 按住远抛 · B 换饵 · Q 起航";}
             Rounded(new Rect(r.x + 8, r.y + 15, 3, r.height - 30), accent, 1.5f);
-            Label(r.x + 20, r.y + 12, r.width - 40, 28, title, 20, accent, true);
+            WorldLabel(r.x + 20, r.y + 12, r.width - 40, 28, title, 20, accent, true);
             if(c.CastMotion.Preparing)Bar(new Rect(r.x+20,r.yMax-5,r.width-40,2),c.CastMotion.Charge,Mint);
             if (c.Anchored && s.Phase == CatchPhase.Fighting) DrawCompactFight(r, s, accent);
             else if (c.Anchored && s.Phase == CatchPhase.Landing)
             {
-                Label(r.x + 20, r.y + 43, r.width - 40, 20, help, 14, Muted);
-                Label(r.x+20,r.y+77,r.width-40,20,"张力 "+(s.Tension*100).ToString("0")+"% · 持续硬拉会断线，拖延会脱钩",13,Faint);
+                WorldLabel(r.x + 20, r.y + 43, r.width - 40, 20, help, 14, Muted);
+                WorldLabel(r.x+20,r.y+77,r.width-40,20,"张力 "+(s.Tension*100).ToString("0")+"% · 持续硬拉会断线，拖延会脱钩",13,Faint);
                 Bar(new Rect(r.x+20,r.yMax-7,r.width-40,3),s.Remaining/10f,Gold);
             }
             else
             {
-                Label(r.x + 20, r.y + 44, r.width - 40, 22, help, 14, Muted);
+                WorldLabel(r.x + 20, r.y + 44, r.width - 40, 22, help, 14, Muted);
                 if(!c.Ashore && !c.Anchored)Bar(new Rect(r.x+20,r.yMax-7,r.width-40,3),c.Boost.Heat,c.Boost.Overheated?Danger:Gold);
                 if (c.Anchored && s.Phase == CatchPhase.Bite) Bar(new Rect(r.x + 20, r.yMax - 7, r.width - 40, 3), s.Remaining / 2.5f, Gold);
             }
@@ -127,16 +123,17 @@ namespace BoatAttack.Fishing
             string direction=s.FishDirection<-.2f?"鱼向左游  ←":s.FishDirection>.2f?"→  鱼向右游":"鱼在转向";
             string steer=s.FishDirection<-.2f?"按住左键，鼠标向右控竿":s.FishDirection>.2f?"按住左键，鼠标向左控竿":"保持收线节奏";
             string quality=s.ControlQuality>.25f?"反向控竿有效":s.ControlQuality<-.25f?"顺着鱼拉会增加张力":steer;
-            Label(r.x+20,r.y+43,588,22,direction+"  ·  "+quality,15,s.ControlQuality<-.25f?Danger:Mint,true);
-            Label(r.x+20,r.y+69,344,20,"鱼线张力 "+(s.Tension*100).ToString("0")+"%"+(s.Tension>.86f?" · 松线！":""),13,Muted);
-            Label(new Rect(r.x+390,r.y+69,218,20),"余线 "+s.Distance.ToString("0.0")+" m",13,Muted,false,TextAnchor.MiddleRight);
+            WorldLabel(r.x+20,r.y+43,588,22,direction+"  ·  "+quality,15,s.ControlQuality<-.25f?Danger:Mint,true);
+            WorldLabel(r.x+20,r.y+69,344,20,"鱼线张力 "+(s.Tension*100).ToString("0")+"%"+(s.Tension>.86f?" · 松线！":""),13,Muted);
+            WorldLabel(new Rect(r.x+390,r.y+69,218,20),"余线 "+s.Distance.ToString("0.0")+" m",13,Muted,false,TextAnchor.MiddleRight);
             var bar = new Rect(r.x + 20, r.y + 95, 344, 7);
             Bar(bar, s.Tension, s.Tension>.78f?Danger:accent);
             Fill(bar.x + bar.width * .78f, bar.y - 4, 1, 17, Muted);
             Bar(new Rect(r.x+394,r.y+95,214,7),1-s.Distance/Mathf.Max(.01f,s.MaxDistance),Sky);
-            Label(r.x+20,r.y+115,158,20,"鱼的体力 "+(s.Stamina*100).ToString("0")+"%",13,Faint);
+            WorldLabel(r.x+20,r.y+115,158,20,"鱼的体力 "+(s.Stamina*100).ToString("0")+"%",13,Faint);
             Bar(new Rect(r.x+174,r.y+123,126,4),s.Stamina,Gold);
-            Label(new Rect(r.x+304,r.y+111,304,24),"按住左键收线并移动鼠标 · 松开放线",13,Muted,false,TextAnchor.MiddleRight);
+            WorldLabel(new Rect(r.x+304,r.y+111,304,24),"按住左键收线并移动鼠标 · 松开放线",13,Muted,false,TextAnchor.MiddleRight);
+
         }
 
         private void DrawCatchToast()
@@ -145,14 +142,25 @@ namespace BoatAttack.Fishing
             var card = Controller.LastCatch;
             float age = CatchAge;
             _fade = Mathf.Min(Mathf.Clamp01(age / .2f), Mathf.Clamp01((CardSeconds - age) / .5f));
-            var r = Layout.Catch;
+            var r = new Rect(530,116,540,172);
             var fish = card.Fish;
-            Glass(r);
-            FishGlyph(new Rect(r.x + 12, r.y + 26, 76, 48), fish.kind, fish.rare);
-            Label(r.x + 102, r.y + 12, 236, 27, FishingSpecies.Name(fish.kind) + "  " + FishingText.Weight(fish.grams), 18, Color.white, true);
-            string result = FishingSpecies.Of(fish.kind).Legendary ? "已放生 · 奖励 +" + card.Bounty : card.Released ? "已放生 · 图鉴与纪录保留" : "已入箱 · 价值 " + fish.value + " 金币";
-            Label(r.x + 102, r.y + 43, 236, 23, result, 14, Gold);
-            Label(r.x + 102, r.y + 69, 236, 20, card.Discovery ? "首次发现 · 写入渔获记录册" : card.PersonalBest ? "刷新个人最大鱼纪录！" : fish.rare ? "珍珠变体" : "J 查看鱼获图鉴", 13, Mint);
+            Card(r,Gold);
+            if(card.Find!=FieldItem.Empty)
+            {
+                FieldIcon(new Rect(r.x+20,r.y+40,112,112),card.Find);
+                Label(r.x+154,r.y+12,360,45,card.Find==FieldItem.SeaTreasure?"捞到宝啦！":"咦？钓到了！",34,Gold,true);
+                Label(r.x+154,r.y+60,360,30,FishingBackpack.Name(card.Find),22,Color.white,true);
+                Label(r.x+154,r.y+96,366,42,FishingCoastRules.FindQuip(card.Find),16,Mint);
+                Label(r.x+154,r.y+142,366,22,card.Find==FieldItem.SeaTreasure?"已放入背包 · 选中后 F 开启":"已放入背包 · 海面又干净了一点",14,Gold);
+                _fade=1f;return;
+            }
+            FishGlyph(new Rect(r.x+20,r.y+52,112,76),fish.kind,fish.rare);
+            Label(r.x+154,r.y+12,360,45,"钓到了！",34,Gold,true);
+            Label(r.x+154,r.y+60,360,30,FishingSpecies.Name(fish.kind)+"  "+FishingText.Weight(fish.grams),22,Color.white,true);
+            bool pending=Controller.HasPendingCatch && Controller.Career.PendingCatch.fish.id==fish.id;
+            string result=pending?"E 拿起检视  ·  F 入箱  ·  X 放生":FishingSpecies.Of(fish.kind).Legendary?"已放生 · 奖励 +"+card.Bounty:card.Released?"已放生 · 图鉴与纪录保留":"已入箱 · 价值 "+fish.value+" 金币";
+            Label(r.x+154,r.y+99,366,23,result,15,Gold);
+            Label(r.x+154,r.y+133,366,22,card.Discovery?"首次发现！":card.PersonalBest?"刷新个人最大鱼纪录！":fish.rare?"珍珠变体":"海风送来的收获",15,Mint);
             _fade = 1f;
         }
 

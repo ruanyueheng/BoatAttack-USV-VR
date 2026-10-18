@@ -151,12 +151,15 @@ namespace BoatAttack.Fishing
                 if(useLeft)FitOne(true,leftPalm);if(useRight)FitOne(false,rightPalm);
             }
             return (!useLeft || WristReach(true,leftPalm,leftRotation)) && (!useRight || WristReach(false,rightPalm,rightRotation));
-            bool WristReach(bool left,Vector3 local,Quaternion rotation)=>Vector3.Distance(character.ShoulderPosition(left),character.WristForPalm(left,tool.TransformPoint(local),tool.rotation*rotation))<=character.ArmReach(left)-.005f;
+            bool WristReach(bool left,Vector3 local,Quaternion rotation)=>Vector3.Distance(character.ShoulderPosition(left),character.WristForPalm(left,tool.TransformPoint(local),tool.rotation*rotation))<=character.ArmReach(left)-.005f
+                && Vector3.Distance(character.ShoulderPosition(left),tool.TransformPoint(local))<=character.ArmReach(left)-.005f;
             void FitOne(bool left,Vector3 local)
             {
                 var shoulder=character.ShoulderPosition(left);var rotation=left?leftRotation:rightRotation;
                 var delta=character.WristForPalm(left,tool.TransformPoint(local),tool.rotation*rotation)-shoulder;
                 tool.position+=Vector3.ClampMagnitude(delta,Mathf.Max(.01f,character.ArmReach(left)-.025f))-delta;
+                var palmDelta=tool.TransformPoint(local)-shoulder;
+                tool.position+=Vector3.ClampMagnitude(palmDelta,Mathf.Max(.01f,character.ArmReach(left)-.025f))-palmDelta;
             }
         }
         /// <summary>Call AFTER Apply and AFTER positioning the tool, BEFORE final character IK.</summary>
@@ -198,8 +201,9 @@ namespace BoatAttack.Fishing
             // Sleep owns the desktop resting arms; tracked controllers above retain their physical poses.
             if(_c.Home.Sleeping){StowRod();return;}
             GetToolFrame(out var origin,out var frame);
-            bool inspection=_c.CatchRig!=null && _c.CatchRig.LeftHandInspecting;
-            bool fishing=_c.Anchored && !_c.Ashore && (!_c.HasPendingCatch || inspection);
+            bool inspection=_c.CatchRig!=null && _c.CatchRig.LeftHandInspecting && !_c.CatchRig.PlacingInNet;
+            bool fishing=_c.Anchored && !_c.Ashore && (!_c.HasPendingCatch || inspection) && !_c.InspectingItem;
+
             if(fishing)
             {
                 _rod.gameObject.SetActive(true);

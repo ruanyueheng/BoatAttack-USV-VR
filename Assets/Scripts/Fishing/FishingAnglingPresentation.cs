@@ -17,6 +17,7 @@ namespace BoatAttack.Fishing
         private Material _lineMaterial;
         private LineRenderer _spoolThread;
         private float _lastLineMeters;
+        private float _lastReelVolume=.1f;
         public float LineTravel { get; private set; }
         private CatchPhase _lastPhase;
         private float _clock,_nextRipple,_strikeAt=-100;
@@ -56,6 +57,7 @@ namespace BoatAttack.Fishing
             for(int i=0;i<samples.Length;i++){float p=(i%441)/441f;samples[i]=Mathf.Sin(i*1.71f)*Mathf.Exp(-p*50)*.23f;}
             _clicks=AudioClip.Create("Original angling reel teeth",samples.Length,1,22050,false);_clicks.SetData(samples,0);
             _reelAudio=gameObject.AddComponent<AudioSource>();_reelAudio.clip=_clicks;_reelAudio.loop=true;_reelAudio.playOnAwake=false;_reelAudio.spatialBlend=0;
+            c.RegisterAudioSource(_reelAudio,FishingAudioCategory.Effects,.1f);
         }
         public void BeginCast(float power)
         {
@@ -134,9 +136,8 @@ namespace BoatAttack.Fishing
                 for(int k=0;k<41;k++){float a=k/40f*Mathf.PI*2;ring.SetPosition(k,centre+new Vector3(Mathf.Cos(a)*radius,0,Mathf.Sin(a)*radius));}
             }
             _lastPhase=s.Phase;
-            _reelAudio.mute=_c.QuietMode;
             bool sound=live && fighting && Mathf.Abs(LineTravel)>.00001f;
-            if(sound){_reelAudio.volume=reeling?.1f:.075f;_reelAudio.pitch=reeling?1.25f:1.7f;if(!_reelAudio.isPlaying)_reelAudio.Play();}
+            if(sound){float volume=reeling?.1f:.075f;if(volume!=_lastReelVolume){_lastReelVolume=volume;_c.SetAudioBaseVolume(_reelAudio,volume);}_reelAudio.pitch=reeling?1.25f:1.7f;if(!_reelAudio.isPlaying)_reelAudio.Play();}
             else if(_reelAudio.isPlaying)_reelAudio.Stop();
             _line.startWidth=_line.endWidth=fighting?.012f:.009f;
             _line.startColor=_line.endColor=s.Tension>.86f?new Color(1,.40f,.22f):new Color(.91f,.91f,.70f);

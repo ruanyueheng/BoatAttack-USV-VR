@@ -83,6 +83,48 @@ namespace BoatAttack.Fishing
         private void ValidateCase()
         {
             var c = Controller;
+            if(CurrentCase==FishingAcceptanceCase.StartMenu || CurrentCase==FishingAcceptanceCase.MenuControls || CurrentCase==FishingAcceptanceCase.MenuGraphics || CurrentCase==FishingAcceptanceCase.MenuAudio || CurrentCase==FishingAcceptanceCase.Departure)
+            {
+                if(!c.StartMenuOpen || !c.Paused || c.TitleVoyage.Boat==null)throw new InvalidOperationException("Live title presentation fixture failed");
+                if(CurrentCase==FishingAcceptanceCase.Departure && !c.TitleVoyage.Sailing)throw new InvalidOperationException("Title boat never began sailing");
+                if(CurrentCase==FishingAcceptanceCase.MenuGraphics && c.GetComponent<FishingHUD>().SettingsTab!=1)throw new InvalidOperationException("Graphics settings fixture has the wrong tab");
+                if(CurrentCase==FishingAcceptanceCase.MenuAudio && c.GetComponent<FishingHUD>().SettingsTab!=2)throw new InvalidOperationException("Audio settings fixture has the wrong tab");
+            }
+            if(CurrentCase==FishingAcceptanceCase.SaveSlots || CurrentCase==FishingAcceptanceCase.SaveOverwrite)
+            {
+                if(!c.StartMenuOpen || !c.Paused || !c.SaveMenuOpen || !c.CanContinue || c.TitleVoyage.Boat==null
+                    || c.SaveMenuMode!=(CurrentCase==FishingAcceptanceCase.SaveSlots?"load":"save"))
+                    throw new InvalidOperationException("存档夹具未打开真实启航菜单和三槽窗口。");
+                for(int slot=0;slot<FishingSlotStore.Count;slot++)
+                    foreach(var kind in new[]{FishingSlotKind.Manual,FishingSlotKind.Auto})
+                    {
+                        var info=c.SlotInfo(slot,kind);
+                        if(slot==0?!info.Valid:info.Exists)
+                            throw new InvalidOperationException("存档夹具必须包含一个有效手动/自动槽和两个空槽。");
+                    }
+                if(CurrentCase==FishingAcceptanceCase.SaveOverwrite && c.SaveConfirmation.Length==0)
+                    throw new InvalidOperationException("覆盖夹具未经过真实保存操作或缺少覆盖确认。");
+                if(CurrentCase==FishingAcceptanceCase.SaveSlots && c.SaveConfirmation.Length!=0)
+                    throw new InvalidOperationException("读取窗口夹具保留了上一场景的确认弹窗。");
+            }
+            if(CurrentCase==FishingAcceptanceCase.HomeChart
+                && (!c.HomeChartOpen || !c.Paused || !c.Ashore || c.Shore.Swimming
+                    || FishingPrototype.FlatDistance(c.Shore.Position,c.Home.WakePoint)>.5f
+                    || c.NavigationCount==0 || !c.HomeChartWaypoint(c.HomeNavigationIndex,out _,out _,out _)
+                    || c.StartMenuOpen || c.SaveMenuOpen))
+                throw new InvalidOperationException("家中海图夹具缺少安全落脚点、独立窗口或真实航点。");
+            if(CurrentCase==FishingAcceptanceCase.ArchIslet || CurrentCase==FishingAcceptanceCase.FireflyIslet)
+                if(c.NavigationTarget<=c.HomeNavigationIndex || Resources.Load<GameObject>("FishingV032/CoastalArch")==null)throw new InvalidOperationException("New islet/Tripo asset fixture failed");
+            if(FishingAcceptanceCases.IsFindCase(CurrentCase))
+            {
+                var expectedFind=CurrentCase==FishingAcceptanceCase.BootCatch?FieldItem.OldBoot:CurrentCase==FishingAcceptanceCase.CanCatch?FieldItem.RustyCan:FieldItem.SeaTreasure;
+                if(c.LastCatch.Find!=expectedFind || c.LastCatch.Fish!=null || c.HasPendingCatch || c.Career.Backpack.Count(expectedFind)!=1)
+                    throw new InvalidOperationException("Sea-find feedback or inventory receipt is missing.");
+                if(c.GetComponent<FishingHUD>().RegionTitleVisible)throw new InvalidOperationException("Region banner obscures the sea-find catch card.");
+            }
+            if((CurrentCase==FishingAcceptanceCase.LetterEnvelope || CurrentCase==FishingAcceptanceCase.LetterPaper)
+                && (!c.Letter.Open || (CurrentCase==FishingAcceptanceCase.LetterPaper && !c.Letter.Ready)))
+                throw new InvalidOperationException("Stationery capture is missing its actual envelope or readable paper.");
             if(CurrentCase==FishingAcceptanceCase.HomeBarbecue && (!c.CoastWorld.NearGrill || !c.CoastWorld.MenuOpen || c.Career.Count!=3))
                 throw new InvalidOperationException("Barbecue capture lacks the reachable fish-selection menu.");
             if(CurrentCase==FishingAcceptanceCase.HomeGrilledFish)
@@ -135,8 +177,11 @@ namespace BoatAttack.Fishing
             if(FishingAcceptanceCases.IsShoreCase(CurrentCase) && !FishingAcceptanceCases.IsShopCase(CurrentCase))
             {
                 bool thirdPerson=CurrentCase==FishingAcceptanceCase.ShoreThirdPerson || CurrentCase==FishingAcceptanceCase.BinocularThirdPerson;
-                if(!c.Ashore || c.FirstPerson==thirdPerson || c.FieldWorld.HeldTool==null || !c.FieldWorld.HeldTool.gameObject.activeInHierarchy
-                    || c.FieldWorld.PresentedItem!=FishingAcceptanceCases.ViewItem(CurrentCase))
+                var item=FishingAcceptanceCases.ViewItem(CurrentCase);
+                bool visible=item==FieldItem.Lantern
+                    ?c.FieldWorld.LanternHeld && c.FieldWorld.HeldTool.gameObject.activeInHierarchy
+                    :c.FieldWorld.HeldTool!=null && c.FieldWorld.HeldTool.gameObject.activeInHierarchy && c.FieldWorld.PresentedItem==item;
+                if(!c.Ashore || c.FirstPerson==thirdPerson || !visible)
                     throw new InvalidOperationException("Shore avatar/tool capture fixture failed.");
                 if(CurrentCase==FishingAcceptanceCase.BinocularObserve && (!c.View.OpticalView || c.FieldWorld.HeldToolRenderer.enabled
                     || Mathf.Abs(c.viewCamera.fieldOfView-FishingViewRig.BinocularFieldOfView)>.01f))

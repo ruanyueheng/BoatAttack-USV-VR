@@ -36,26 +36,37 @@ namespace BoatAttack.Fishing
             Quad("Triangular flap", _flap, new[] { new Vector3(-.34f,0,0),new Vector3(0,-.23f,0),new Vector3(.34f,0,0) }, paper);
             var wax = new Material(c.PaletteShader); wax.SetFloat("_Unlit",1); wax.SetColor("_BaseColor",new Color(.48f,.14f,.10f)); _owned.Add(wax);
             _seal = FishingArt.Shape("Wax seal",PrimitiveType.Sphere,_envelope,new Vector3(0,-.055f,-.04f),new Vector3(.069f,.069f,.014f),wax).transform;
+            var stamp=new GameObject("Coastal postage and cancellation",typeof(RectTransform),typeof(Canvas),typeof(Image));
+            stamp.transform.SetParent(_envelope,false);stamp.transform.localPosition=new Vector3(.16f,.015f,-.033f);stamp.transform.localScale=Vector3.one*.00048f;
+            stamp.GetComponent<RectTransform>().sizeDelta=new Vector2(640,320);
+            stamp.GetComponent<Canvas>().renderMode=RenderMode.WorldSpace;
+            var postage=stamp.GetComponent<Image>();postage.sprite=Stationery("CoastalPostmark");postage.raycastTarget=false;
             var canvas = new GameObject("Letter paper", typeof(RectTransform), typeof(Canvas), typeof(CanvasGroup));
             _paper = canvas.transform; _paper.SetParent(_root,false); _paper.localScale = Vector3.one * .00105f;
             var rect = canvas.GetComponent<RectTransform>(); rect.sizeDelta = new Vector2(560,640);
             canvas.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace; canvas.GetComponent<Canvas>().worldCamera = c.viewCamera;
             _paperFade = canvas.GetComponent<CanvasGroup>();
-            var image = canvas.AddComponent<Image>(); image.color = new Color(.96f,.91f,.79f); image.raycastTarget = false;
-            _heading = Label("Title",new Vector2(34,-48),new Vector2(492,76),28,TextAnchor.UpperLeft);
+            var image = canvas.AddComponent<Image>(); image.sprite=Stationery("KraftPaper");image.color=Color.white; image.raycastTarget = false;
+            _heading = Label("Title",new Vector2(34,-54),new Vector2(492,76),32,TextAnchor.UpperLeft);
             Label("Letterhead",new Vector2(34,-22),new Vector2(492,24),14,TextAnchor.UpperLeft).text = "回 潮 海  /  航 海 来 信";
             _body = Label("Letter body",new Vector2(34,-160),new Vector2(492,310),24,TextAnchor.UpperLeft);
             _sender = Label("Signature",new Vector2(34,-495),new Vector2(492,64),19,TextAnchor.UpperRight);
             _hint = Label("Reading hint",new Vector2(34,-590),new Vector2(492,32),15,TextAnchor.MiddleCenter);
             _root.gameObject.SetActive(false);
         }
+        private Sprite Stationery(string name)
+        {
+            var texture=Resources.Load<Texture2D>("FishingStationery/"+name);
+            if(texture==null)throw new System.InvalidOperationException("Missing stationery: "+name);
+            var sprite=Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f));_owned.Add(sprite);return sprite;
+        }
         private Text Label(string name, Vector2 position, Vector2 size, int font, TextAnchor alignment)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(Text)); go.transform.SetParent(_paper,false);
             var rect = go.GetComponent<RectTransform>(); rect.anchorMin = rect.anchorMax = new Vector2(0,1); rect.pivot = new Vector2(0,1);
             rect.anchoredPosition = position; rect.sizeDelta = size;
-            var text = go.GetComponent<Text>(); text.font = FishingUIFont.Font; text.fontSize = font;
-            text.color = new Color(.18f,.23f,.22f); text.alignment = alignment; text.raycastTarget = false;
+            var text = go.GetComponent<Text>(); text.font = FishingUITheme.Heading ?? FishingUIFont.Font; text.fontSize = font;text.lineSpacing=1.15f;
+            text.color = new Color(.20f,.13f,.075f); text.alignment = alignment; text.raycastTarget = false;
             text.horizontalOverflow = HorizontalWrapMode.Wrap; text.verticalOverflow = VerticalWrapMode.Truncate; return text;
         }
         private void Quad(string name, Transform parent, Vector3[] vertices, Color color)
@@ -65,9 +76,13 @@ namespace BoatAttack.Fishing
             for (int i=1;i<vertices.Length-1;i++) { triangles.Add(0);triangles.Add(i+1);triangles.Add(i); triangles.Add(0);triangles.Add(i);triangles.Add(i+1); }
             mesh.SetTriangles(triangles,0); var colors = new Color[vertices.Length]; for(int i=0;i<colors.Length;i++)colors[i]=color;
             mesh.colors=colors; mesh.RecalculateNormals(); mesh.RecalculateBounds(); _owned.Add(mesh);
+            var uv=new Vector2[vertices.Length];
+            for(int i=0;i<uv.Length;i++)uv[i]=new Vector2((vertices[i].x+.34f)/.68f,(vertices[i].y+.18f)/.36f);
+            mesh.uv=uv;
             var go = new GameObject(name,typeof(MeshFilter),typeof(MeshRenderer)); go.transform.SetParent(parent,false);
             go.GetComponent<MeshFilter>().sharedMesh=mesh;
             var material = FishingArt.Palette(_owned,_c.PaletteShader,"Stationery linen",0,0); material.SetFloat("_Unlit",1);
+            material.SetTexture("_BaseMap",Resources.Load<Texture2D>("FishingStationery/EnvelopePaper"));material.SetFloat("_Textured",1);
             go.GetComponent<MeshRenderer>().sharedMaterial=material; go.GetComponent<MeshRenderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
         }
         public void ShowIsland(int island) => Show(FishingAdventure.Name(island)+"的来信",FishingLore.ResidentName(island),

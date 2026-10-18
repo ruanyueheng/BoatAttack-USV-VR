@@ -22,18 +22,18 @@ namespace BoatAttack.Fishing
             : island == 1 ? "林之回响：守望者留出一片阴影，让幼苗和归来的渔人都有地方歇脚。"
             : island == 2 ? "潮之回响：风暴之夜，旧船长放下货物，把最后的舱位留给岛上的孩子。"
             : "星之回响：四灯从未为了寻找财宝而建。它们只为回答一句话：回家的人，走哪条路？";
-        public static string TrialHint(int island) => island == 0 ? "按『星 → 风 → 潮』敲响三座风铃。错误会重新开始。"
-            : island == 1 ? "让两侧的灯照亮幼苗，中央灯保持熄灭。到尽头的回响台确认。"
-            : island == 2 ? "将货箱推进两格，压住铜色承重台，再转动水闸。"
-            : "转动三个星盘，让朝向依次为『东 → 西 → 南』，再到回响台确认。";
-        public static string TrialObjective(int island) => island == 0 ? "按归航铭文的顺序敲响风铃，让三种声音共鸣。"
-            : island == 1 ? "为幼苗安排光与阴影，接通庭院中的光桥。"
-            : island == 2 ? "将货箱送上承重台，再恢复旧机库的水闸。"
-            : "解读日月星辰的铭文，让三个星盘指向归航之路。";
-        public static string Inscription(int island) => island == 0 ? "星指引方向\n风扬起船帆\n潮迎你归港"
-            : island == 1 ? "晨光与夕光，唤醒幼苗\n正午林荫，让万物歇息"
-            : island == 2 ? "两格货程，落箱压台\n一次开闸，听潮归来"
-            : "一望日出\n二送落日\n三寻南星";
+        public static string TrialHint(int island) => island == 0 ? "听取星、风、潮的示范，再以留有间隔的节奏敲响。连按或停顿超过8秒会重新开始。"
+            : island == 1 ? "转动三面反光镜，使光束分别指向东、南、西。保持照亮幼苗5秒，光桥才会生长。"
+            : island == 2 ? "先开闸排水，水位降到底后将货箱推进两格；再切到注水，让浮桥升起。"
+            : "每个星盘会同时带动下一个。使三盘朝向东、西、南；从全北开始可转一盘一次、二盘两次。";
+        public static string TrialObjective(int island) => island == 0 ? "听取风铃示范，以星、风、潮的顺序和间隔回应。"
+            : island == 1 ? "转动反光镜引导光束，持续照亮幼苗，使光桥生长。"
+            : island == 2 ? "先排水推动货箱，再注水抬升浮桥。"
+            : "解开相邻星盘的联动，使三盘指向东、西、南。";
+        public static string Inscription(int island) => island == 0 ? "听星，听风，再听潮\n留一拍，等风回应\n八息之后，重奏归航"
+            : island == 1 ? "东光入林，南光养叶，西光归根\n五息不散，幼苗成桥"
+            : island == 2 ? "退潮推货，箱落铜台\n再引海水，浮桥自来"
+            : "三环相牵，转此亦转彼\n一望日出，二送落日，三寻南星";
         public bool Met(int id) => id >= 0 && id < ResidentCount && (_data.residents & (1 << id)) != 0;
         public bool Cleared(int island) => island >= 0 && island < 4 && (_data.shrines & (1 << island)) != 0;
         public int ClearCount { get { int n = 0; for (int i = 0; i < 4; i++) if (Cleared(i)) n++; return n; } }
@@ -68,14 +68,26 @@ namespace BoatAttack.Fishing
         public readonly int Island;
         private readonly int[] _states = new int[3];
         public int Progress { get; private set; }
+        private float _clock,_lastBell=-100;
+        public float Growth { get; private set; }
+        public float WaterLevel { get; private set; }=1;
+        public bool LightAligned=>_states[0]==1 && _states[1]==2 && _states[2]==3;
+        public void Tick(float delta)
+        {
+            if(float.IsNaN(delta) || float.IsInfinity(delta) || delta<=0)return;
+            _clock+=delta;
+            if(Island==0 && Progress>0 && !Ready && _clock-_lastBell>8){Progress=0;Array.Clear(_states,0,3);}
+            if(Island==1)Growth=Math.Max(0,Math.Min(1,Growth+(LightAligned?delta/5:-delta/3)));
+            if(Island==2 && _states[1]!=0)WaterLevel=Math.Max(0,Math.Min(1,WaterLevel+(_states[1]==1?-delta:delta)/4));
+        }
         public FishingShrineTrial(int island)
         {
             if (island < 0 || island >= 4) throw new ArgumentOutOfRangeException(nameof(island));
             Island = island;
         }
         public int State(int device) => device >= 0 && device < 3 ? _states[device] : 0;
-        public bool Ready => Island == 0 ? Progress == 3 : Island == 1 ? _states[0] == 1 && _states[1] == 0 && _states[2] == 1
-            : Island == 2 ? _states[0] == 2 && _states[1] == 1 : _states[0] == 1 && _states[1] == 3 && _states[2] == 2;
+        public bool Ready => Island == 0 ? Progress == 3 : Island == 1 ? Growth>=1
+            : Island == 2 ? _states[0] == 2 && _states[1] == 2 && WaterLevel>=.95f : _states[0] == 1 && _states[1] == 3 && _states[2] == 2;
         public bool Use(int device)
         {
             if (device < 0 || device >= (Island == 2 ? 2 : 3)) return false;
@@ -83,11 +95,19 @@ namespace BoatAttack.Fishing
             {
                 if (Ready) return false;
                 int expected = Progress == 0 ? 2 : Progress == 1 ? 0 : 1;
-                if (device != expected) { Progress = 0; Array.Clear(_states, 0, 3); return false; }
-                _states[device] = 1; Progress++; return true;
+                if (device != expected || (Progress>0 && (_clock-_lastBell<.4f || _clock-_lastBell>8))) { Progress = 0; Array.Clear(_states, 0, 3); return false; }
+                _states[device] = 1; Progress++;_lastBell=_clock;return true;
             }
-            if (Island == 2 && device == 0) _states[0] = (_states[0] + 1) % 3;
-            else _states[device] = (_states[device] + 1) % (Island == 3 ? 4 : 2);
+            if(Island==2)
+            {
+                if(device==0){if(WaterLevel>.15f || _states[0]>=2)return false;_states[0]++;}
+                else _states[1]=(_states[1]+1)%3;
+            }
+            else
+            {
+                _states[device]=(_states[device]+1)%4;
+                if(Island==3)_states[(device+1)%3]=(_states[(device+1)%3]+1)%4;
+            }
             return true;
         }
     }

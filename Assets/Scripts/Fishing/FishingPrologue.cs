@@ -55,6 +55,7 @@ namespace BoatAttack.Fishing
             var fade=new GameObject("Shot dissolve",typeof(RectTransform),typeof(Image));fade.layer=5;fade.transform.SetParent(root.transform,false);Stretch(fade.GetComponent<RectTransform>());
             _fade=fade.GetComponent<Image>();_fade.color=Color.black;_fade.raycastTarget=false;root.SetActive(false);
             _music=gameObject.AddComponent<AudioSource>();_music.spatialBlend=0;_music.volume=.20f;_music.playOnAwake=false;
+            _c.RegisterAudioSource(_music,FishingAudioCategory.Music,.20f);
             const int rate=22050;var samples=new float[rate*(int)(ShotCount*ShotSeconds)];float[] notes={146.83f,174.61f,220f,196f,164.81f,220f};
             for(int i=0;i<samples.Length;i++)
             {
@@ -91,7 +92,7 @@ namespace BoatAttack.Fishing
             if(_c.Paused)return false;
             _c.XRNotebook.Close();_c.CloseBoatPanels();Open=true;Age=0;_skip.Reset();_c.StoryModalChanged();
             ConfigureScreen(XRSettings.isDeviceActive);
-            _canvas.gameObject.SetActive(true);_camera.enabled=true;_music.mute=_c.QuietMode;_music.Play();Present();return true;
+            _canvas.gameObject.SetActive(true);_camera.enabled=true;_c.ApplyAudioSettings();_music.Play();Present();return true;
         }
         public void Tick(float seconds,bool tracked)
         {

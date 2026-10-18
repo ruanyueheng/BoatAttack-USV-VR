@@ -85,7 +85,15 @@ namespace BoatAttack.Fishing
             {
                 if(station>=0)
                 {
-                    var root=WorkshopWorld.StationRoot(station);if(root!=null)Offer(new WorldTarget{Kind=WorldTargetKind.Station,Id=station,Root=root},root.position);
+                    var root=WorkshopWorld.StationRoot(station);
+                    if(root!=null)
+                    {
+                        var target=new WorldTarget{Kind=WorldTargetKind.Station,Id=station,Root=root};
+                        var aim=root.position+Vector3.up*.85f-viewCamera.transform.position;
+                        // A nearby station the player faces must not lose E to the repair note behind its apron.
+                        if(FlatDistance(ExplorerPosition,root.position)<1.9f && Vector3.Dot(viewCamera.transform.forward,aim.normalized)>.84f)return target;
+                        Offer(target,root.position);
+                    }
                 }
                 else if(resource!=null)Offer(new WorldTarget{Kind=WorldTargetKind.Resource,Id=resource.Id,Root=resource.Root,Resource=resource},resource.Feet);
             }
@@ -156,32 +164,37 @@ namespace BoatAttack.Fishing
         private InteractionPreflight EvaluateActionStart(FishingActionKind kind,Transform root,Vector3 contact,Quaternion rotation,bool fish)
         {
             var character=Shore.Character;bool pick=kind==FishingActionKind.Harvest && IsPick(Career.Backpack.Equipped);
+            bool lowAction=kind==FishingActionKind.Pickup || kind==FishingActionKind.Harvest;
             var check=new InteractionPreflight{Actor=ExplorerPosition,RootPosition=root==null?contact:root.position,Contact=contact,
                 Shoulder=character.ShoulderPosition(false),Grounded=Shore.Grounded,Crouched=Shore.Crouched,ArmReach=character.ArmReach(false)};
             check.BaseShoulder=check.Shoulder-character.AppliedInteractionLean;
             check.Palm=pick?FishingFieldWorld.PickContactPalm(contact,rotation):contact;
+            var wrist=pick?ActionPickWrist(check.Palm,rotation):check.Palm;
+            float ReachDistance(Vector3 shoulder)=>Mathf.Max(Vector3.Distance(shoulder,check.Palm),Vector3.Distance(shoulder,wrist));
             // 使用当前输入最终对应的姿态；起身途中的瞬时可达不能冒充站姿可达。
-            if(kind==FishingActionKind.Pickup && Ashore)check.BaseShoulder+=character.AshoreStanceOffset(Shore.Crouched);
+            if(lowAction && Ashore)check.BaseShoulder+=character.AshoreStanceOffset(Shore.Crouched);
             // 先保留当前可达且无遮挡的姿态，不能为台面物品强行蹲到栏杆后面。
-            bool currentReachable=Vector3.Distance(check.BaseShoulder,check.Palm)<=check.ArmReach-.015f+.22f
+            bool currentReachable=ReachDistance(check.BaseShoulder)<=check.ArmReach-.015f+.22f
                 && ClearActionSight(check.BaseShoulder,check.Palm,root);
-            if(kind==FishingActionKind.Pickup && Ashore && check.Grounded
+            if(lowAction && Ashore && check.Grounded
                 && !Shore.Crouched && !currentReachable && contact.y<check.BaseShoulder.y-.4f)
             {
                 // 三个方向共用剩余蹲姿权重，起身中再次 E 不重复扣除后移量。
                 var crouchedShoulder=check.Shoulder-character.AppliedInteractionLean+character.RemainingCrouchOffset;
-                if(Vector3.Distance(crouchedShoulder,check.Palm)<=check.ArmReach-.015f+.22f)
+                if(ReachDistance(crouchedShoulder)<=check.ArmReach-.015f+.22f)
                 {check.BaseShoulder=crouchedShoulder;check.AutoCrouch=true;}
             }
-            var delta=check.Palm-check.BaseShoulder;check.Distance=delta.magnitude;
+            // Palm and wrist must both fit the unchanged arm reach; short new-character forearms cannot be stretched by an action.
+            var reachPoint=Vector3.Distance(check.BaseShoulder,wrist)>Vector3.Distance(check.BaseShoulder,check.Palm)?wrist:check.Palm;
+            var delta=reachPoint-check.BaseShoulder;check.Distance=delta.magnitude;
             // 与原生产守卫保持同一臂长余量和 22cm 俯身上限，不为夹具放宽。
             check.LeanNeed=Mathf.Max(0,check.Distance-(check.ArmReach-.04f));
             check.Lean=delta.sqrMagnitude>.0001f?delta.normalized*Mathf.Min(.22f,check.LeanNeed):Vector3.zero;
-            check.DistanceAfterLean=Vector3.Distance(check.BaseShoulder+check.Lean,check.Palm);
+            check.DistanceAfterLean=ReachDistance(check.BaseShoulder+check.Lean);
             check.ArmSight=ClearActionSight(check.BaseShoulder,check.Palm,root,out check.ArmBlocker);
             check.ToolSight=!pick || ClearActionSight(check.Palm,contact,root,out check.ToolBlocker);
-            if(Ashore && !check.Grounded)check.GeometryReason="请落地站稳后再互动，低处物品可以蹲下触及。";
-            else if(check.DistanceAfterLean>check.ArmReach-.015f)check.GeometryReason="超过真实可达范围，请靠近或蹲下";
+            if(Ashore && !check.Grounded)check.GeometryReason="请落地站稳后再互动；靠近低处物品会自动俯身。";
+            else if(check.DistanceAfterLean>check.ArmReach-.015f)check.GeometryReason="请再靠近一点，低处物资会自动蹲下采集";
             else if(!check.ArmSight || !check.ToolSight)check.GeometryReason="手臂/工具到目标的视线被阻挡";
             if(Paused || InventoryOpen || JournalOpen)check.Reason="暂停或背包/日志模态";
             else if(ShopBlocksGameplay)check.Reason="商店模态或开关帧";
@@ -334,12 +347,14 @@ namespace BoatAttack.Fishing
             if(!Actions.TryBegin(kind,targetId,duration,contactTime))return false;
             if(check.AutoCrouch)Shore.SetCrouch(true);
             Hands.GetToolFrame(out _,out var frame);
-            _action=new ActionRequest{Profile=Career,Tool=Career.Backpack.Equipped,Slot=Career.Backpack.Selected,Ashore=Ashore,Crouched=Shore.Crouched,Fish=fish,WaitForStance=check.AutoCrouch || (kind==FishingActionKind.Pickup && Ashore && !Shore.Character.IsStanceSettled(true,Shore.Crouched)),
+            _action=new ActionRequest{Profile=Career,Tool=Career.Backpack.Equipped,Slot=Career.Backpack.Selected,Ashore=Ashore,Crouched=Shore.Crouched,Fish=fish,WaitForStance=check.AutoCrouch || ((kind==FishingActionKind.Pickup || kind==FishingActionKind.Harvest) && Ashore && !Shore.Character.IsStanceSettled(true,Shore.Crouched)),
                 ContactRoot=root,HadRoot=root!=null,ContactLocal=root==null?Vector3.zero:root.InverseTransformPoint(contact),ContactWorld=contact,ToolRotation=rotation,Commit=commit,
                 ContactFraction=contactTime/duration,StartPalm=shoulder+frame*new Vector3(.025f,-.18f,.20f),Lean=lean,StartFish=fish?ActiveFish.position:Vector3.zero};
             _actionContactFrame=-1;_actionConsumedFrame=Time.frameCount;LastActionSucceeded=false;LowerFieldTools();Shore.ResetMoveInput();
             return true;
         }
+        private Vector3 ActionPickWrist(Vector3 palm,Quaternion toolRotation)
+            =>Shore.Character.WristForPalm(false,palm,toolRotation*FishingFieldWorld.PickHandRotation(toolRotation,Quaternion.Euler(0,Shore.Actor.eulerAngles.y,0)));
         private bool ClearActionSight(Vector3 from,Vector3 to,Transform target)=>ClearActionSight(from,to,target,out _);
         private bool ClearActionSight(Vector3 from,Vector3 to,Transform target,out string blocker)
         {
@@ -371,7 +386,9 @@ namespace BoatAttack.Fishing
                 request.Attempted=true;_actionContactFrame=_actionConsumedFrame=Time.frameCount;
                 var character=Shore.Character;var baseShoulder=character.ShoulderPosition(false)-character.AppliedInteractionLean;
                 var palm=ActionUsesHeldTool?FishingFieldWorld.PickContactPalm(ActionTargetPosition,request.ToolRotation):ActionTargetPosition;
-                bool reachable=Vector3.Distance(baseShoulder+request.Lean,palm)<=character.ArmReach(false)-.005f && ClearActionSight(baseShoulder,palm,request.ContactRoot)
+                bool reachable=Vector3.Distance(baseShoulder+request.Lean,palm)<=character.ArmReach(false)-.005f
+                    && (!ActionUsesHeldTool || Vector3.Distance(baseShoulder+request.Lean,ActionPickWrist(palm,request.ToolRotation))<=character.ArmReach(false)-.005f)
+                    && ClearActionSight(baseShoulder,palm,request.ContactRoot)
                     && (!ActionUsesHeldTool || ClearActionSight(palm,ActionTargetPosition,request.ContactRoot));
                 var contact=ActionTargetPosition;
                 if(reachable && request.Fish)CatchRig.ApplyActionContactPose(ActionFishPosition,request.ToolRotation);
