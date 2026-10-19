@@ -60,7 +60,7 @@ half SoftShadows(float3 screenUV, float3 positionWS, half3 viewDir, half depth)
 	for (uint i = 0u; i < SHADOW_ITERATIONS; ++i)
     {
 #ifndef _STATIC_SHADER
-        jitterUV += frac(half2(_Time.x, -_Time.z));
+        jitterUV += frac(half2((_Time.y + _FishingVisualTimeOffset) / 20, -(_Time.y + _FishingVisualTimeOffset) * 2));
 #endif
         float3 jitterTexture = SAMPLE_TEXTURE2D(_DitherPattern, sampler_DitherPattern, jitterUV + i * _ScreenParams.xy).xyz * 2 - 1;
 	    half3 j = jitterTexture.xzy * depthFrac * i * 0.1;

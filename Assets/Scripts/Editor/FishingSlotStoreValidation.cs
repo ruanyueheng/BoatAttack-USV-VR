@@ -97,9 +97,9 @@ namespace BoatAttack.EditorTools
                 seed.format = 2;
                 Invalid(invalid, invalidPath, seed, "未来封装版本拒绝读取");
                 seed.format = 1;
-                seed.career.version = 14;
+                seed.career.version = new FishingSaveData().version+1;
                 Invalid(invalid, invalidPath, seed, "未来career版本拒绝读取");
-                seed.career.version = 13;
+                seed.career.version = new FishingSaveData().version;
                 seed.career.coins = -1;
                 Invalid(invalid, invalidPath, seed, "当前career版本也必须通过TryRestore校验");
                 seed.career = Career(5).Snapshot();

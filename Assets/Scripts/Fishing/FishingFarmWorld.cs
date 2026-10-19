@@ -46,7 +46,9 @@ namespace BoatAttack.Fishing
         internal static Transform Model(string name,Transform parent,Vector3 p,bool solid)
         {
             var source=Resources.Load<GameObject>("FishingV035/"+name);if(source==null)throw new InvalidOperationException("Missing V035 home asset: "+name);
-            var t=new GameObject(name).transform;t.SetParent(parent,false);t.localPosition=p;Instantiate(source,t,false);FishingV035Materials.Apply(t);
+            var t=new GameObject(name).transform;t.SetParent(parent,false);t.localPosition=p;Instantiate(source,t,false);
+            bool leaves=name=="FlowerPatch" || name=="MeadowPatch" || name=="IvyDrape" || name=="FernClump" || name.StartsWith("Turnip",StringComparison.Ordinal);
+            FishingV035Materials.Apply(t,leaves);
             if(solid)foreach(var f in t.GetComponentsInChildren<MeshFilter>())f.gameObject.AddComponent<MeshCollider>().sharedMesh=Resources.Load<Mesh>("FishingV035/"+name+"Collision")??f.sharedMesh;
             return t;
         }

@@ -155,6 +155,7 @@ namespace BoatAttack.EditorTools
                 var climb=Empty("Windmill rope ladder",character,Vector3.zero).gameObject.AddComponent<FishingClimbRoute>();
                 climb.bottom=climb.transform.InverseTransformPoint(FishingRealmWorld.Marker(hero,"ClimbBottom").position);
                 climb.top=climb.transform.InverseTransformPoint(FishingRealmWorld.Marker(hero,"ClimbTop").position);
+                climb.topOutset=climb.transform.InverseTransformVector(FishingRealmWorld.Marker(hero,"ClimbEnd").position-FishingRealmWorld.Marker(hero,"ClimbTop").position);
             }
             if(id==1)
             {

@@ -124,7 +124,7 @@ WaterVertexOutput WaveVertexOperations(WaterVertexOutput input)
 #ifdef _STATIC_SHADER
 	float time = 0;
 #else
-	float time = _Time.y;
+	float time = _Time.y + _FishingVisualTimeOffset;
 #endif
 
     input.normal = float3(0, 1, 0);

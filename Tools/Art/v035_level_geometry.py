@@ -397,12 +397,16 @@ def windmill():
     for h in [3.9,4.5,5.1]:box((0,h,-2.16),(1.0,.055,.055),3,.008)
     profile((0,3.15,0),[(0,3.22),(.18,3.22),(.24,3.10)],3,64)
     for j in range(28):
-        a=j*math.tau/28;x,z=math.cos(a)*3.13,math.sin(a)*3.13;profile((x,3.39,z),[(0,.045),(.85,.04)],3,8)
-    ring((0,4.25,0),3.13,.045,3)
+        a=j*math.tau/28
+        if min(a,math.tau-a)<.28:continue
+        x,z=math.cos(a)*3.13,math.sin(a)*3.13;profile((x,3.39,z),[(0,.045),(.85,.04)],3,8)
+    ring((0,4.25,0),3.13,.045,3,start=.28,end=math.tau-.28)
     for j in range(15):
-        h=j*3.2/14;box((2.92,h,0),(.10,.05,.65),3,.008)
-    for z in [-.34,.34]:tube([(2.92,0,z),(2.92,3.3,z)],.025,13)
-    for key,p in {'Portal':(0,0,-2.85),'Rotor':(0,5.35,-2.25),'ClimbBottom':(2.92,0,0),'ClimbTop':(2.92,3.4,0)}.items():mark('Windmill',key,p)
+        h=j*3.2/14;box((3.6,h,0),(.10,.05,.65),3,.008)
+    for z in [-.34,.34]:
+        tube([(3.6,0,z),(3.6,3.4,z)],.025,13)
+        flow([(3.6,3.3,z),(3.6,4.0,z),(3.2,4.15,z),(2.9,4.0,z)],.025,4,9)
+    for key,p in {'Portal':(0,0,-2.85),'Rotor':(0,5.35,-2.25),'ClimbBottom':(3.6,0,0),'ClimbTop':(2.8,3.4,0),'ClimbEnd':(3.6,3.4,0)}.items():mark('Windmill',key,p)
 
 def windmill_rotor():
     for k in range(4):

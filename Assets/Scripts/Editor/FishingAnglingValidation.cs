@@ -177,7 +177,7 @@ namespace BoatAttack.EditorTools
                 string id = c.Career.PendingCatch.fish.id;
                 var loaded = FishingSaveStore.Load(c.SavePath, out string warning);
                 Check(warning == "" && loaded.HasPendingCatch && loaded.PendingCatch.fish.id == id
-                    && loaded.Snapshot().version == 13, "Pending ownership survives the existing v13 JSON save format");
+                    && loaded.Snapshot().version == 14, "Pending ownership survives the current v14 JSON save format");
                 c.PresentCharacterFrame();
                 Check(!c.Cast() && !c.BeginNetCatch(), "A staged fish blocks duplicate casts and net claims");
                 Check(c.ResolveCatch(true) && !c.ResolveCatch(true) && !c.HasPendingCatch

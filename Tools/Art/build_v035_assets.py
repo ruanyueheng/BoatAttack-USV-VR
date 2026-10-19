@@ -548,9 +548,17 @@ def preview(name,filename,inside=False):
 
 def export_kit():
     bpy.ops.object.select_all(action='DESELECT')
-    for i,(name,obj) in enumerate(MODELS.items()):
-        obj.hide_render=False;obj.location=U(((i%5)*25,0,(i//5)*36));obj.select_set(True)
+    x=y=row_depth=0;rectangles=[]
+    for name,obj in MODELS.items():
+        points=[Vector(p) for p in obj.bound_box];low=Vector(tuple(min(p[a] for p in points) for a in range(3)));high=Vector(tuple(max(p[a] for p in points) for a in range(3)))
+        width,depth=high.x-low.x,high.y-low.y
+        if x>0 and x+width>128:x=0;y+=row_depth+5;row_depth=0
+        obj.hide_render=False;obj.location=(x-low.x,y-low.y,0);obj.select_set(True)
+        rectangles.append((name,x,y,x+width,y+depth));x+=width+5;row_depth=max(row_depth,depth)
         for child in obj.children:child.select_set(True)
+    for i,a in enumerate(rectangles):
+        for b in rectangles[i+1:]:assert a[3]<=b[1] or b[3]<=a[1] or a[4]<=b[2] or b[4]<=a[2],(a[0],b[0])
+    (SOURCE/'gallery-layout.json').write_text(json.dumps(rectangles,indent=2),encoding='utf-8')
     bpy.ops.export_scene.gltf(filepath=str(SOURCE/'coastal-craftsmanship-kit.glb'),export_format='GLB',use_selection=True,use_active_scene=True,export_animations=False,export_cameras=False,export_lights=False)
     markers={name:{child.name.split('.')[0][4:]:[child.location.x,child.location.z,-child.location.y] for child in obj.children if child.name.startswith('V35_')} for name,obj in MODELS.items()}
     (SOURCE/'level-marker-manifest.json').write_text(json.dumps(markers,indent=2),encoding='utf-8')
