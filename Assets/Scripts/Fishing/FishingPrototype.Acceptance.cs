@@ -338,7 +338,11 @@ namespace BoatAttack.Fishing
         {
             yield return null;yield return null;
             if(Acceptance.CurrentCase!=FishingAcceptanceCase.ClimbingView)yield break;
-            if(!Shore.Ground(route.Bottom+Vector3.forward*.6f,out var ladderFoot) || !Shore.Relocate(ladderFoot,Quaternion.identity))throw new InvalidOperationException("Climbing showcase has no supported approach: "+route.Bottom);
+            var outward=Vector3.ProjectOnPlane(route.ClimbEnd-route.Top,Vector3.up).normalized;
+            if(outward.sqrMagnitude<.1f)outward=Vector3.forward;
+            var approach=route.Bottom+outward*(Shore.Body.radius+.4f);
+            if(!Shore.Ground(approach,out var ladderFoot))throw new InvalidOperationException("Climbing showcase has no ground at "+approach);
+            if(!Shore.Relocate(ladderFoot,Quaternion.identity))throw new InvalidOperationException("Climbing showcase capsule is obstructed at "+ladderFoot);
             yield return null;
             if(Acceptance.CurrentCase!=FishingAcceptanceCase.ClimbingView)yield break;
             if(!Shore.TryClimb())throw new InvalidOperationException("Climbing showcase input is blocked: paused="+Paused+" story="+StoryBlocksGameplay+" shop="+ShopBlocksGameplay+" action="+WorldActionBusy);

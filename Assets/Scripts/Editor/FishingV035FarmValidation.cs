@@ -18,6 +18,9 @@ namespace BoatAttack.EditorTools
             try
             {
                 c.ReturnToHarbor();yield return null;c.RestoreShopTestProfile(new FishingCareer().Snapshot());c.SelectFieldSlot(8);
+                var ladder=UnityEngine.Object.FindObjectsOfType<FishingClimbRoute>().First(r=>FishingPrototype.FlatDistance(r.Bottom,FishingIslandWorld.Center(0))<35);
+                var approach=ladder.Bottom+Vector3.ProjectOnPlane(ladder.ClimbEnd-ladder.Top,Vector3.up).normalized*(c.Shore.Body.radius+.4f);
+                Check(c.Shore.Ground(approach,out var ladderFoot) && c.Shore.Clearance(ladderFoot),"Actual player capsule fits beside the rebuilt ladder at "+ladderFoot);
                 var home=c.Home;var rb=c.Player.engine.RB;var p=home.Berth+Vector3.up*.7f;rb.position=p;rb.rotation=Quaternion.identity;rb.velocity=rb.angularVelocity=Vector3.zero;c.Player.transform.SetPositionAndRotation(p,Quaternion.identity);Physics.SyncTransforms();
                 Check(Vector3.Distance(c.Nightscape.LighthouseSweep.position,home.LighthouseLens)<.001f,"Night sweep uses the rebuilt lighthouse's authored lens marker");
                 for(int i=0;i<20;i++)yield return null;
