@@ -16,7 +16,7 @@ namespace BoatAttack.Fishing
                 Chart = new Rect(24, height - 310, 248, 282);
                 ChartTab = new Rect(24, height - 62, 248, 34);
                 bool fight = anchored && (phase == CatchPhase.Fighting || phase == CatchPhase.Landing);
-                Action = fight ? new Rect(486, height - 248, 628, 146) : new Rect(510, height - 176, 580, 74);
+                Action = fight ? new Rect(486, height - 240, 628, 138) : new Rect(510, height - 176, 580, 74);
                 Notice = new Rect(480, 24, 640, 48);
                 Catch = new Rect(24, 102, 350, 96);
                 Observe = new Rect(24, 102, 328, 34);
