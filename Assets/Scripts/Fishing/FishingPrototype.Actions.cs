@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text;
 using UnityEngine;
 
@@ -32,7 +32,7 @@ namespace BoatAttack.Fishing
         public Vector3 ActionStartPalm=>_action==null?Vector3.zero:_action.StartPalm;
         public Quaternion ActionToolRotation=>_action==null?Quaternion.identity:_action.ToolRotation;
         public bool ActionUsesHeldTool=>_action!=null && Actions.Kind==FishingActionKind.Harvest && IsPick(_action.Tool);
-        public bool ActionSuppressesHeldTool=>_action!=null && !ActionUsesHeldTool;
+        public bool ActionSuppressesHeldTool=>(_action!=null && !ActionUsesHeldTool) || (Realms!=null && (Realms.PushingCargo || Realms.ObservingStars));
         public bool ActionMovesFish=>_action!=null && _action.Fish && HasPendingCatch;
         public float ActionContactBlend
         {
@@ -58,7 +58,8 @@ namespace BoatAttack.Fishing
         }
         private static bool IsPick(FieldItem item)=>item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe;
 
-        private enum WorldTargetKind { None,Expedition,Station,Resource,Pickup,Survey,Island,Carcass,Home,Barbecue }
+        public FishingFarmWorld Farm {get;private set;}
+        private enum WorldTargetKind { None,Expedition,Station,Resource,Pickup,Survey,Island,Carcass,Home,Barbecue,HandGame,Farm }
         private struct WorldTarget
         {
             public WorldTargetKind Kind;public int Id;public Transform Root;
@@ -98,7 +99,9 @@ namespace BoatAttack.Fishing
                 else if(resource!=null)Offer(new WorldTarget{Kind=WorldTargetKind.Resource,Id=resource.Id,Root=resource.Root,Resource=resource},resource.Feet);
             }
             if(Home!=null && Home.TryTarget(out int homeItem,out var homeRoot))Offer(new WorldTarget{Kind=WorldTargetKind.Home,Id=homeItem,Root=homeRoot},Home.InteractionPoint(homeItem));
+            if(Farm!=null && Farm.TryTarget(out int plot,out var farmRoot))Offer(new WorldTarget{Kind=WorldTargetKind.Farm,Id=plot,Root=farmRoot},farmRoot.position);
             if(CoastWorld!=null && CoastWorld.TryTarget(out var grillRoot))Offer(new WorldTarget{Kind=WorldTargetKind.Barbecue,Root=grillRoot},grillRoot.position);
+            if(HandGames!=null && HandGames.TryTarget(out int game,out var gameRoot))Offer(new WorldTarget{Kind=WorldTargetKind.HandGame,Id=game,Root=gameRoot},gameRoot.position);
             if(FieldWorld.TryPickupTarget(out var pickup,refresh))Offer(new WorldTarget{Kind=WorldTargetKind.Pickup,Id=pickup.Id,Root=pickup.Root,Pickup=pickup},pickup.Feet);
             if(RifleHunting!=null && RifleHunting.TryLootTarget(out var carcass))Offer(new WorldTarget{Kind=WorldTargetKind.Carcass,Id=carcass.Id,Root=carcass.Root},carcass.Feet);
             if(refresh)Shore.UpdateProximity();int task=Shore.NearbyTask;var marker=Shore.SurveyMarker(task);
@@ -130,10 +133,10 @@ namespace BoatAttack.Fishing
             bool shop=TackleShop!=null && TackleShop.NearCounter;
             trace.Append(" shopNear=").Append(shop).Append(" frame=").Append(Time.frameCount);
             InteractionPreflight check;
-            if(shop || target.Kind==WorldTargetKind.None || target.Kind==WorldTargetKind.Station || target.Kind==WorldTargetKind.Home || target.Kind==WorldTargetKind.Barbecue || target.Root==null)
+            if(shop || target.Kind==WorldTargetKind.None || target.Kind==WorldTargetKind.Station || target.Kind==WorldTargetKind.Home || target.Kind==WorldTargetKind.Barbecue || target.Kind==WorldTargetKind.HandGame || target.Root==null)
             {
-                check=new InteractionPreflight{TargetId=shop?"shop":target.Kind==WorldTargetKind.Station?"station:"+target.Id:target.Kind==WorldTargetKind.Home?"home:"+target.Id:target.Kind==WorldTargetKind.Barbecue?"barbecue":"none",
-                    Reason=shop || target.Kind==WorldTargetKind.Station || target.Kind==WorldTargetKind.Home || target.Kind==WorldTargetKind.Barbecue?"当前候选是即时交互，不是接触动作":"没有有效接触候选",
+                check=new InteractionPreflight{TargetId=shop?"shop":target.Kind==WorldTargetKind.Station?"station:"+target.Id:target.Kind==WorldTargetKind.Home?"home:"+target.Id:target.Kind==WorldTargetKind.Barbecue?"barbecue":target.Kind==WorldTargetKind.HandGame?"handgame:"+target.Id:"none",
+                    Reason=shop || target.Kind==WorldTargetKind.Station || target.Kind==WorldTargetKind.Home || target.Kind==WorldTargetKind.Barbecue || target.Kind==WorldTargetKind.HandGame?"当前候选是即时交互，不是接触动作":"没有有效接触候选",
                     Actor=ExplorerPosition,RootPosition=target.Root==null?Vector3.zero:target.Root.position,
                     Shoulder=Shore.Character.ShoulderPosition(false),ArmReach=Shore.Character.ArmReach(false),Grounded=Shore.Grounded,Crouched=Shore.Crouched};
                 check.BaseShoulder=check.Shoulder-Shore.Character.AppliedInteractionLean;check.GeometryReason=check.Reason;
@@ -141,7 +144,11 @@ namespace BoatAttack.Fishing
             else
             {
                 Vector3 point;Quaternion rotation;FishingActionKind kind;string targetId;
-                if(target.Kind==WorldTargetKind.Resource)
+                if(target.Kind==WorldTargetKind.Farm)
+                {
+                    point=FarmContact(target.Root);rotation=Shore.Actor.rotation;kind=FishingActionKind.Pickup;targetId="farm:"+target.Id;
+                }
+                else if(target.Kind==WorldTargetKind.Resource)
                 {
                     HarvestContact(target.Resource,out point,out rotation);kind=FishingActionKind.Harvest;targetId="resource:"+target.Id;
                 }
@@ -221,10 +228,12 @@ namespace BoatAttack.Fishing
                 switch(target.Kind)
                 {
                     case WorldTargetKind.Home:return Home.InteractionTitle(target.Id);
+                    case WorldTargetKind.Farm:return Farm.Hint(target.Id);
                     case WorldTargetKind.Expedition:return "E "+Expedition.InteractionLabel(target.Id);
                     case WorldTargetKind.Station:
                         var station=Career.Workshop.Station(target.Id);return station==null?null:"E 打开"+FishingRecipes.StationName(station.kind);
                     case WorldTargetKind.Barbecue:return CoastWorld.InteractionTitle;
+                    case WorldTargetKind.HandGame:return FishingHandGames.StartHint(DesktopDisplay)+" · "+FishingHandGames.Name(target.Id);
                     case WorldTargetKind.Resource:return target.Resource.Item==FieldItem.Coal?"E 开采山脚煤矿 · 需手持石镐 / 铁镐":"E 采集 "+FishingBackpack.Name(target.Resource.Item);
                     case WorldTargetKind.Pickup:return "E 拾取 "+FishingBackpack.Name(target.Pickup.Item)+" ×"+target.Pickup.Count;
                     case WorldTargetKind.Carcass:return "E 收取猎物 · "+FishingAnimalLoot.Description(Career.HuntedAnimal(target.Id).kind);
@@ -237,7 +246,7 @@ namespace BoatAttack.Fishing
         /// <summary>真实输入与 HUD 使用同一候选选择；接触阶段只提交已经锁定的目标。</summary>
         internal bool HomeInteractionTargetSelected
         {
-            get{var kind=ResolveWorldTarget(true).Kind;return kind==WorldTargetKind.Home || kind==WorldTargetKind.Barbecue;}
+            get{var kind=ResolveWorldTarget(true).Kind;return kind==WorldTargetKind.Home || kind==WorldTargetKind.Barbecue || kind==WorldTargetKind.HandGame || kind==WorldTargetKind.Farm;}
         }
         public bool RequestWorldInteraction()
         {
@@ -251,8 +260,18 @@ namespace BoatAttack.Fishing
             var target=ResolveWorldTarget(true);
             if(target.Kind==WorldTargetKind.None){Notice("靠近可互动对象后按 E；低处物品可蹲下触及。",3);return false;}
             if(target.Kind==WorldTargetKind.Home)return Home.InteractAt(target.Id);
+            if(target.Kind==WorldTargetKind.Farm)
+            {
+                if(_xrActive || target.Id>=12)return Farm.InteractAt(target.Id);
+                int plot=target.Id;var work=Farm.Work(plot);
+                if(work==FarmWork.Wait || (work==FarmWork.Plant && Career.Backpack.Count(FieldItem.TurnipSeeds)==0) || (work==FarmWork.Water && Career.Farm.Water==0))return Farm.InteractAt(plot);
+                var contact=FarmContact(target.Root);
+                bool started=BeginWorldAction(FishingActionKind.Pickup,"farm:"+plot,target.Root,contact,Shore.Actor.rotation,()=>Farm.CommitAt(plot,work));
+                if(started)Farm.PresentAction(plot,work);return started;
+            }
             if(target.Kind==WorldTargetKind.Station)return WorkshopWorld.OpenStation(target.Id);
             if(target.Kind==WorldTargetKind.Barbecue){CoastWorld.OpenMenu();return true;}
+            if(target.Kind==WorldTargetKind.HandGame)return HandGames.Begin(target.Id);
             if(target.Kind==WorldTargetKind.Resource)return RequestHarvest(target.Resource);
             var point=FishingContactGeometry.ClosestPoint(target.Root,Shore.Character.ShoulderPosition(false));int id=target.Id;
             if(target.Kind==WorldTargetKind.Carcass)
@@ -276,6 +295,11 @@ namespace BoatAttack.Fishing
         {
             if(!WorkshopWorld.TryHarvestTarget(out var node)){Notice("靠近可采资源后再使用工具。",3);return false;}
             return RequestHarvest(node);
+        }
+        private Vector3 FarmContact(Transform root)
+        {
+            var local=root.InverseTransformPoint(Shore.Character.ShoulderPosition(false));
+            return root.TransformPoint(new Vector3(Mathf.Clamp(local.x,-.9f,.9f),.43f,Mathf.Clamp(local.z,-.9f,.9f)));
         }
         private bool RequestHarvest(FishingWorkshopWorld.ResourceNode node)
         {
@@ -398,7 +422,11 @@ namespace BoatAttack.Fishing
                     // 放置等成功事务会消费当前物品；收手阶段不能把这次消费误判成用户换装备。
                     request.Tool=Career.Backpack.Equipped;request.Slot=Career.Backpack.Selected;
                 }
-                if(!LastActionSucceeded){CancelWorldAction();Notice("接触未提交：目标、距离、工具或背包状态已改变，请重新确认后再操作。",4);return;}
+                if(!LastActionSucceeded)
+                {
+                    bool farmNotice=reachable && Actions.TargetId.StartsWith("farm:",StringComparison.Ordinal);CancelWorldAction();
+                    if(!farmNotice)Notice("接触未提交：目标、距离、工具或背包状态已改变，请重新确认后再操作。",4);return;
+                }
                 if(_action!=request)return;
             }
             if(!Actions.Active && !Actions.ContactPending && _actionContactFrame!=Time.frameCount)
@@ -422,19 +450,23 @@ namespace BoatAttack.Fishing
     }
     public static class FishingContactGeometry
     {
+        private static readonly System.Collections.Generic.List<MeshFilter> Filters=new System.Collections.Generic.List<MeshFilter>();
+        private static readonly System.Collections.Generic.List<Vector3> Vertices=new System.Collections.Generic.List<Vector3>();
         /// <summary>优先取实际可读网格的最近顶点；只读网格退回其渲染包围盒，仍须经过实际臂长与视线检查。</summary>
         public static Vector3 ClosestPoint(Transform root,Vector3 from)
         {
             Vector3 best=root.position;float distance=float.MaxValue;
-            foreach(var filter in root.GetComponentsInChildren<MeshFilter>())
+            root.GetComponentsInChildren(false,Filters);
+            foreach(var filter in Filters)
             {
                 var mesh=filter.sharedMesh;var renderer=filter.GetComponent<Renderer>();
                 if(mesh==null || renderer==null || !renderer.enabled || !renderer.gameObject.activeInHierarchy)continue;
                 if(mesh.isReadable)
                 {
-                    foreach(var local in mesh.vertices)
+                    mesh.GetVertices(Vertices);var matrix=filter.transform.localToWorldMatrix;
+                    foreach(var local in Vertices)
                     {
-                        var p=filter.transform.TransformPoint(local);float d=(p-from).sqrMagnitude;
+                        var p=matrix.MultiplyPoint3x4(local);float d=(p-from).sqrMagnitude;
                         if(d<distance){distance=d;best=p;}
                     }
                 }

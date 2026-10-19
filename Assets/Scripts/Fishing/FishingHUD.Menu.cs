@@ -58,7 +58,7 @@ namespace BoatAttack.Fishing
             if(SeaButton(new Rect(120,top+632,278,48),"退出游戏",false,true,26))Application.Quit();
             if(c.SaveMenuMessage.Length>0 || c.SaveWarning.Length>0)DisplayText(new Rect(452,top+570,660,80),c.SaveWarning.Length>0?c.SaveWarning:c.SaveMenuMessage,17,AmberInk);
             KeyCap(new Rect(120,_height-56,62,30),"Enter");DisplayText(new Rect(196,_height-54,800,30),"继续 / 新建  ·  F11 显示模式  ·  自动与手动存档独立",15,CreamInk);
-            DisplayText(new Rect(1190,_height-56,290,25),"第 33 版  /  v"+FishingPrototype.Version,14,AmberInk,false,TextAnchor.UpperRight);
+            DisplayText(new Rect(1190,_height-56,290,25),"第 34 版  /  v"+FishingPrototype.Version,14,AmberInk,false,TextAnchor.UpperRight);
         }
         private void KeyCap(Rect r,string key)
         {

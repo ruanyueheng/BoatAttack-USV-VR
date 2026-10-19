@@ -192,7 +192,7 @@ namespace BoatAttack.Fishing
             if (!Automated || !HasIsolatedProfile) throw new InvalidOperationException("Shop fixtures require automation and an isolated profile.");
             if (!FishingCareer.TryRestore(data, out var career)) throw new InvalidOperationException("Invalid shop test profile.");
             CancelWorldAction();
-            Career = career; RefreshHold(); WorkshopWorld.RefreshFromCareer(); FieldWorld.RefreshPickups(); Shore.RefreshMarkers(); Save();
+            Career = career; RefreshHold(); WorkshopWorld.RefreshFromCareer(); FieldWorld.RefreshPickups(); Shore.RefreshMarkers(); Farm?.Refresh(); Save();
         }
     }
 }

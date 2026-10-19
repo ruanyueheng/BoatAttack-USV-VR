@@ -61,7 +61,7 @@ namespace BoatAttack.Fishing
             var goal=new Rect(1188,126,388,190);Card(goal,Gold);
             Label(goal.x+18,goal.y+18,352,28,FishingLore.ShrineName(c.Realms.Island),21,Gold,true);
             Label(goal.x+18,goal.y+60,352,76,FishingLore.TrialObjective(c.Realms.Island),17,Muted);
-            Label(goal.x+18,goal.y+148,352,27,c.Career.Lore.Cleared(c.Realms.Island)?"回响已收录 · 可自由重访":c.Realms.Trial.Ready?"共鸣已成 · 前往回响台":"解开机关 · 回响之门尚未打开",15,Mint);
+            Label(goal.x+18,goal.y+148,352,27,c.Career.Lore.Cleared(c.Realms.Island)?"回响已收录 · 可自由重访":c.Realms.Trial.Ready?"旅程已回应 · 前往回响所在":"循线索探索这片秘境",15,Mint);
         }
         private void DrawLorePage(Rect r)=>DrawIslandSpread(r,true);
         private void DrawRealmChart()

@@ -28,6 +28,8 @@ namespace BoatAttack.Fishing
         internal void CompleteRest()
         {
             Career.Calendar.RestUntilMorning();
+            Career.Farm.AdvanceDay(Career.Calendar.Day);
+            Farm?.Refresh();
             for(int i=0;i<64;i++)Career.Workshop.Tick(1);
             Weather.ApplyEnvironment();Save();Notice("海风渐暖 · "+Career.Calendar.DateLabel+" 06:00",6);
         }

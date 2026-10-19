@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 using UnityEngine;
@@ -83,6 +83,11 @@ namespace BoatAttack.Fishing
         private void ValidateCase()
         {
             var c = Controller;
+            if(CurrentCase==FishingAcceptanceCase.SandSieve || CurrentCase==FishingAcceptanceCase.RopeWinder)
+            {
+                if(!c.HandGames.Active || !c.StoryBlocksGameplay || !c.HandGames.Task.HasMaterials(c.Career.Backpack))
+                    throw new InvalidOperationException("Handcraft must use a reachable production interaction with unspent real materials.");
+            }
             if(CurrentCase==FishingAcceptanceCase.StartMenu || CurrentCase==FishingAcceptanceCase.MenuControls || CurrentCase==FishingAcceptanceCase.MenuGraphics || CurrentCase==FishingAcceptanceCase.MenuAudio || CurrentCase==FishingAcceptanceCase.Departure)
             {
                 if(!c.StartMenuOpen || !c.Paused || c.TitleVoyage.Boat==null)throw new InvalidOperationException("Live title presentation fixture failed");
@@ -147,6 +152,8 @@ namespace BoatAttack.Fishing
                 if(CurrentCase==FishingAcceptanceCase.HomeWorkbench && (!c.InventoryOpen || c.WorkshopWorld.Context!=CraftStation.Workbench))
                     throw new InvalidOperationException("Home capture is missing the real workbench crafting page.");
             }
+            if(CurrentCase==FishingAcceptanceCase.StarObservation && (!c.Realms.ObservingStars || c.Realms.Island!=3 || c.Realms.Trial.StarFocus<.2f))throw new InvalidOperationException("Observation fixture lacks the actual continuous focus state.");
+            if((CurrentCase==FishingAcceptanceCase.HomeGarden || CurrentCase==FishingAcceptanceCase.FarmHarvest) && (!c.Ashore || !c.Farm.Nearby || !c.Career.Farm.Ready(0) || c.Career.Farm.Plot(8).growth!=1))throw new InvalidOperationException("Garden fixture lacks its saved crops at distinct actual growth stages.");
             if(CurrentCase>=FishingAcceptanceCase.WindSanctuary && CurrentCase<=FishingAcceptanceCase.StarSanctuary
                 && (!c.Realms.Inside || c.Realms.Island!=(int)CurrentCase-(int)FishingAcceptanceCase.WindSanctuary))throw new InvalidOperationException("V19 sanctuary capture state failed");
             if(CurrentCase==FishingAcceptanceCase.ResidentDialogue && (!c.DialogueOpen || c.Residents.ActiveId!=0))throw new InvalidOperationException("V19 dialogue capture state failed");

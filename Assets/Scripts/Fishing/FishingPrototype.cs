@@ -26,7 +26,8 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.33.0";
+        public const string Version = "0.35.0";
+        public FishingHandGames HandGames { get; private set; }
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
         public FishingCastMotion CastMotion { get; } = new FishingCastMotion();
@@ -196,7 +197,9 @@ namespace BoatAttack.Fishing
             Letter=gameObject.AddComponent<FishingLetter>();Letter.Build(this);
             WaterRoute=gameObject.AddComponent<FishingWaterRoute>();WaterRoute.Build(this);
             Home=gameObject.AddComponent<FishingHome>();Home.Build(this);
+            Farm=gameObject.AddComponent<FishingFarmWorld>();Farm.Build(this);
             CoastWorld=gameObject.AddComponent<FishingV028CoastWorld>();CoastWorld.Build(this);
+            HandGames=gameObject.AddComponent<FishingHandGames>();HandGames.Build(this);
             Nightscape=gameObject.AddComponent<FishingNightscape>();Nightscape.Build(this);
             Prologue=gameObject.AddComponent<FishingPrologue>();Prologue.Build(this);
             Shore.RefreshClimbRoutes();
@@ -235,6 +238,7 @@ namespace BoatAttack.Fishing
             bool focused=Automated || Application.isFocused;
             TickAutosave();
             if(TickStartMenu(k)){Shore.Tick(false);AnimateEquipment();return;}
+            if(HandGames.Tick(k,m,focused,xr)){Shore.Tick(false);AnimateEquipment();return;}
             if(TickHomeChart(k)){Shore.Tick(false);AnimateEquipment();return;}
             if(TickGuideOpening(k,focused)){Shore.Tick(false);AnimateEquipment();return;}
             if(TickStoryInput(k,focused,xr)){Shore.Tick(false);AnimateEquipment();return;}
@@ -420,7 +424,7 @@ namespace BoatAttack.Fishing
         {
             if(!_initialized)return;
             XRSeat.Apply();Shore.SyncRider();Home.PresentSleepPose();Shore.ApplyTraversalPose();View.ApplyView();Hands.Apply();FieldWorld.ApplyHeldTool();XRNotebook.SampleTool();ApplyWorldActionPose();CatchRig.Apply(deltaTime);
-            RifleHunting.Present();
+            RifleHunting.Present();HandGames.Present();Realms.PresentObservation();
             // 全部工具和掌心目标落位后才解同源骨架；随后只读取竿尖画线，不再次采样。
             Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right,UnityEngine.XR.XRSettings.isDeviceActive);
             if(Acceptance!=null && Acceptance.FreezeScenario && (Acceptance.CurrentCase==FishingAcceptanceCase.ArchIslet || Acceptance.CurrentCase==FishingAcceptanceCase.FireflyIslet))
@@ -433,7 +437,7 @@ namespace BoatAttack.Fishing
                 var island=Home.Origin;var position=island+new Vector3(26,8,-61);var target=island+new Vector3(-9,17,10);
                 viewCamera.transform.SetPositionAndRotation(position,Quaternion.LookRotation(target-position));
             }
-            Shore.Character.SetOpticalView(View.OpticalView || ((Letter.Open || Prologue.Open) && !UnityEngine.XR.XRSettings.isDeviceActive));DockConsole.Present();
+            Shore.Character.SetOpticalView(View.OpticalView || ((Letter.Open || Prologue.Open || Realms.ObservingStars) && !UnityEngine.XR.XRSettings.isDeviceActive));DockConsole.Present();
         }
         public void ToggleView()
         {
@@ -449,6 +453,8 @@ namespace BoatAttack.Fishing
         }
         private void ResetToolInput()
         {
+            HandGames?.Cancel();
+            Realms?.ResetInteraction();
             EndItemInspection();
             CancelWorldAction();FieldWorld?.ClearToolPresentation();
             TackleShop?.Close();
@@ -470,6 +476,7 @@ namespace BoatAttack.Fishing
             // The grade is isolated to this desktop camera, not the original race or XR camera.
             if(UnityEngine.XR.XRSettings.isDeviceActive)return;
             var data=viewCamera.GetUniversalAdditionalCameraData();data.renderPostProcessing=true;data.volumeLayerMask=1<<30;
+            data.antialiasing=AntialiasingMode.SubpixelMorphologicalAntiAliasing;data.antialiasingQuality=AntialiasingQuality.High;
             var grade=new GameObject("Fishing-only color grade");grade.layer=30;grade.transform.SetParent(transform);
             var volume=grade.AddComponent<Volume>();volume.isGlobal=true;volume.priority=100;
             var profile=ScriptableObject.CreateInstance<VolumeProfile>();profile.name="Fishing desktop grade";_owned.Add(profile);volume.sharedProfile=profile;

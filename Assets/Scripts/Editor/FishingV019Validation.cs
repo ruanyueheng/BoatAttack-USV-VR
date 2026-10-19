@@ -23,64 +23,7 @@ namespace BoatAttack.EditorTools
             var wait=Wait(.5f);while(wait.MoveNext())yield return null;
             for(int island=0;island<4;island++)
             {
-                c.ReturnToHarbor();yield return null;
-                PlaceBoat(c,FishingIslandWorld.Berth(island));wait=Wait(.5f);while(wait.MoveNext())yield return null;
-                Check(c.Shore.TryDisembark(),"Physical island landing "+island);yield return null;
-                var npc=c.Residents.Person(island);var walk=Walk(c,npc.position+Vector3.forward*1.8f);while(walk.MoveNext())yield return null;
-                Check(c.RequestWorldInteraction() && c.DialogueOpen && c.Residents.ActiveId==island,"Production interaction selects island resident "+island);
-                c.Residents.Choose(1);c.Residents.Reveal();
-                Check(c.Career.Lore.Met(island) && c.Residents.Speech.Contains(FishingLore.ShrineName(island)),"Dialogue provides concrete shrine clue "+island);
-                var before=c.Shore.Position;c.Shore.Move(Vector2.up,true,true,false,.05f);
-                Check(c.Shore.Position==before && !c.RequestWorldInteraction(),"Dialogue owns movement and duplicate E input "+island);
-                c.viewCamera.transform.SetPositionAndRotation(npc.position+new Vector3(0,1.45f,2.5f),Quaternion.LookRotation(new Vector3(0,-.3f,-2.5f)));
-                FishingV016Validation.Capture(c,evidence,"resident-"+island);
-                c.Residents.Close();yield return null;yield return null;
-                var portal=c.Realms.Portal(island);walk=Walk(c,portal.position+Vector3.forward*1.8f);while(walk.MoveNext())yield return null;
-                Check(c.Realms.TryTarget(out int id,out _) && id==8+island,"Shrine door reachable from actual island motor "+island);
-                Check(c.RequestWorldInteraction() && c.Realms.Transitioning,"Production E starts shrine fade "+island);
-                before=c.Shore.Position;c.Shore.Move(Vector2.up,true,false,false,.05f);
-                Check(c.Shore.Position==before && !c.RequestWorldInteraction(),"Transition blocks movement and double entry "+island);
-                while(c.Realms.Transitioning)yield return null;yield return null;yield return null;
-                Check(c.Realms.Inside && c.Shore.Ground(c.Shore.Position,out var floor) && c.Shore.Position.y-floor.y<.2f,"Safe supported interior transfer "+island);
-                Check(!c.Shore.TryBoard(),"Indoor boarding rejected "+island);
-                Check(!c.Realms.Trial.Ready && Physics.Raycast(c.Realms.Room.position+new Vector3(0,1.4f,4),Vector3.forward,out var blocked,5)
-                    && blocked.collider.name=="Echo gate","Unsolved gate physically blocks altar "+island);
-                var room=c.Realms.Room;
-                c.viewCamera.transform.SetPositionAndRotation(room.position+new Vector3(6,3,-10),Quaternion.LookRotation(new Vector3(-6,-1.4f,12)));
-                FishingV016Validation.Capture(c,evidence,"shrine-"+island);
-                if(island==0)
-                {
-                    var device=Use(c,0,false);while(device.MoveNext())yield return null;
-                    Check(c.Realms.Trial.Progress==0,"Wrong bell resets real room");
-                    foreach(int key in new[]{2,0,1}){device=Use(c,key,true);while(device.MoveNext())yield return null;}
-                }
-                else if(island==1)
-                {
-                    foreach(int key in new[]{0,1,1,2,2,2}){var device=Use(c,key,true);while(device.MoveNext())yield return null;}
-                    var growth=Wait(5.2f);while(growth.MoveNext())yield return null;
-                    Check(room.Find("Light bridge").gameObject.activeSelf && !room.Find("Crossing barrier").gameObject.activeSelf,"Forest light creates traversable bridge");
-                }
-                else if(island==2)
-                {
-                    var drain=Use(c,1,true);while(drain.MoveNext())yield return null;
-                    var low=Wait(4.2f);while(low.MoveNext())yield return null;
-                    foreach(int key in new[]{0,0,1}){var device=Use(c,key,true);while(device.MoveNext())yield return null;}
-                    var rise=Wait(4.2f);while(rise.MoveNext())yield return null;
-                    Check(room.Find("Hydraulic floating crossing").localPosition.y>.1f && !room.Find("Hydraulic crossing safety gate").gameObject.activeSelf,"Water pressure raises the actual crossing and releases its safety gate");
-                    Check(c.Realms.Trial.State(0)==2 && Vector3.Distance(c.Realms.Device(0).localPosition,new Vector3(-3,0,0))<.1f,"Cargo visibly moves onto load plate");
-                }
-                else foreach(int key in new[]{0,1,1}){var device=Use(c,key,true);while(device.MoveNext())yield return null;}
-                Check(c.Realms.Trial.Ready && !room.Find("Echo gate").gameObject.activeSelf,"Distinct puzzle opens real gate "+island);
-                walk=Walk(c,c.Realms.Device(3).position+Vector3.back*1.4f);while(walk.MoveNext())yield return null;
-                int coins=c.Career.Coins;
-                Check(c.RequestWorldInteraction() && c.Career.Lore.Cleared(island) && c.Career.Coins==coins+90,"Altar pays first reward through production E "+island);
-                Check(c.RequestWorldInteraction() && c.Career.Coins==coins+90,"Repeated altar never duplicates coins "+island);
-                walk=Walk(c,c.Realms.Device(4).position+Vector3.forward*1.5f);while(walk.MoveNext())yield return null;
-                Check(c.RequestWorldInteraction() && c.Realms.Transitioning,"Return portal reachable "+island);
-                while(c.Realms.Transitioning)yield return null;yield return null;yield return null;
-                Check(!c.Realms.Inside && Vector3.Distance(c.Shore.Position,portal.position)<2.2f,"Return restores actual island feet "+island);
-                c.viewCamera.transform.SetPositionAndRotation(FishingIslandWorld.Center(island)+new Vector3(35,25,42),Quaternion.LookRotation(new Vector3(-35,-23,-42)));
-                FishingV016Validation.Capture(c,evidence,"island-"+island);
+                var level=FishingV035Levels.Island(c,island,evidence);while(level.MoveNext())yield return level.Current;
             }
             c.ReturnToHarbor();yield return null;yield return null;
             PlaceBoat(c,c.TackleShop.mooringPoint.position);wait=Wait(.5f);while(wait.MoveNext())yield return null;
@@ -98,19 +41,12 @@ namespace BoatAttack.EditorTools
             FishingV016Validation.Capture(c,evidence,"shop-interior");
             var display=c.TackleShop.transform.Find("V018 stocked chandlery");Check(display.childCount>70 && display.GetComponents<BoxCollider>().Length==2,"Store has distinct 3D goods and retained clear aisle colliders");
             var saved=FishingSaveStore.Load(c.SavePath,out string warning);
-            Check(warning=="" && saved.Snapshot().version==13 && saved.Lore.Finale && saved.Lore.ClearCount==4,"Real Unity JSON story save round trip");
+            Check(warning=="" && saved.Snapshot().version==14 && saved.Lore.Finale && saved.Lore.ClearCount==4,"Real Unity JSON story save round trip");
             c.ReturnToHarbor();yield return null;yield return null;
             var traversal=Traversal(c,evidence);while(traversal.MoveNext())yield return null;
             c.ReturnToHarbor();yield return null;yield return null;
             var steering=Steering(c);while(steering.MoveNext())yield return null;
             Debug.Log("[V019] EVIDENCE: "+evidence);
-        }
-        private static IEnumerator Use(FishingPrototype c,int device,bool expected)
-        {
-            var target=c.Realms.Device(device);var walk=Walk(c,target.position+Vector3.back*1.6f);while(walk.MoveNext())yield return null;
-            Check(c.Realms.TryTarget(out int found,out _) && found==device,"Device proximity/line of sight "+device+" in "+c.Realms.Island);
-            Check(c.RequestWorldInteraction()==expected,"Physical puzzle command "+device+" in "+c.Realms.Island);
-            var wait=Wait(.8f);while(wait.MoveNext())yield return null;
         }
         private static IEnumerator Walk(FishingPrototype c,Vector3 target)
         {

@@ -47,6 +47,8 @@ internal static class AcceptanceTests
                 check(career.Count==3 && FishingCoastRules.Edible(career.Inventory[0].kind),"Barbecue fixture supplies real roastable fish: "+value);
             if(value==FishingAcceptanceCase.CashierDialogue)
                 check(FishingAcceptanceCases.IsShopCase(value),"Cashier conversation fixture uses the actual shop landing");
+            if(value==FishingAcceptanceCase.HomeGarden || value==FishingAcceptanceCase.FarmHarvest)
+                check(career.Farm.Ready(0) && career.Farm.Plot(4).growth==2 && career.Farm.Plot(8).growth==1,"Garden fixtures grow through the actual calendar and watering rules");
             if (!FishingAcceptanceCases.IsCatchCase(value)) continue;
             var session = new CatchSession();
             FishingAcceptanceCases.PrepareSession(session, value, career);

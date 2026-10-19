@@ -65,6 +65,8 @@ namespace BoatAttack.Fishing
                 GUI.matrix = Matrix4x4.TRS(new Vector3(_offset, 0, 0), Quaternion.identity, new Vector3(_scale, _scale, 1));
                 if (_label == null) _label = new GUIStyle(GUI.skin.label) { font = _font, wordWrap = true, richText = false, padding = new RectOffset() };
                 _fade = 1f;
+                if(c.HandGames!=null && c.HandGames.Active){DrawHandcraft();if(c.Acceptance!=null)DrawAcceptanceToolbar();return;}
+                if(c.Realms!=null && c.Realms.ObservingStars && !c.Paused){DrawStarObservation();if(c.Acceptance!=null)DrawAcceptanceToolbar();return;}
                 if(c.StartMenuOpen) DrawStartMenu();
                 else if(c.HomeChartOpen) DrawHomeChart();
                 else if(c.SaveMenuOpen) DrawSaveSlots();
@@ -89,6 +91,10 @@ namespace BoatAttack.Fishing
                     if (c.HarborDeskOpen && c.AtHarbor) DrawHarborDesk();
                     else if (c.ShowDetails) DrawLegendCard(DrawOrderCard(130) + 14);
                     DrawFocusedAction();
+                    if(c.Farm!=null && c.Farm.Nearby)
+                    {
+                        Rounded(new Rect(485,132,630,38),Ink,6);Label(new Rect(500,138,600,26),c.Farm.Status,17,InkText,true,TextAnchor.MiddleCenter);
+                    }
                     DrawCatchToast();
                     DrawCompactNotice();
                     DrawHotbar();

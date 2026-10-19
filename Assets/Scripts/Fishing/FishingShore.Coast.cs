@@ -13,7 +13,7 @@ namespace BoatAttack.Fishing
         {
             feet=Vector3.zero;namedSite=false;surveySite=-1;shopLanding=false;
             var home=Controller.Home;
-            if(home!=null && Controller.NavigationTarget==Controller.HomeNavigationIndex && FishingPrototype.FlatDistance(Controller.Player.transform.position,home.Berth)<=9)
+            if(home!=null && FishingPrototype.FlatDistance(Controller.Player.transform.position,home.Berth)<=9)
             {
                 var landing=home.BoardwalkStart;
                 if(Ground(landing,out feet) && Mathf.Abs(feet.y-landing.y)<.35f && Clearance(feet) && SafeCoastalFooting(feet) && ClearTransfer(feet))
@@ -57,6 +57,7 @@ namespace BoatAttack.Fishing
         }
         public bool SafeCoastalFooting(Vector3 p)
         {
+            if(p.y<.35f)return false;
             // Four supporting samples reject narrow ledges, posts and a capsule hanging over water.
             foreach(var offset in new[]{new Vector3(.24f,0,0),new Vector3(-.24f,0,0),new Vector3(0,0,.24f),new Vector3(0,0,-.24f)})
                 if(!GroundBelow(p+offset,p.y+.25f,.65f,out var floor) || Mathf.Abs(floor.y-p.y)>.28f)return false;

@@ -1,0 +1,37 @@
+using UnityEngine;
+
+namespace BoatAttack.Fishing
+{
+    public sealed partial class FishingHome
+    {
+        private void DressGarden()
+        {
+            var root=new GameObject("V035 Home flowers and orchard").transform;root.SetParent(transform,false);root.position=Origin;
+            foreach(var p in new[]{new Vector3(-11,0,10),new Vector3(-7,0,17),new Vector3(7,0,19),new Vector3(32,0,12),new Vector3(30,0,19)})
+                FishingFarmWorld.Model("OrchardTree",root,p,true);
+            for(int j=0;j<140;j++)
+            {
+                float a=j*2.399963f;float r=10+Mathf.Sqrt((j+.5f)/140)*17;var p=new Vector3(4+Mathf.Cos(a)*r,0,2+Mathf.Sin(a)*r*.75f);
+                if((p.x>7 && p.x<33 && p.z>-13 && p.z<20) || (Mathf.Abs(p.x)<8 && p.z<8) || (p.x< -10 && p.x> -23 && p.z<12 && p.z>-10))continue;
+                var t=FishingFarmWorld.Model(j%4==0?"FlowerPatch":"MeadowPatch",root,p,false);t.localScale=Vector3.one*(j%4==0?1.5f:1.8f);t.localRotation=Quaternion.Euler(0,j*47,0);
+            }
+            foreach(float side in new[]{-1f,1f})
+            {
+                for(int j=0;j<8;j++)
+                {
+                    var flowers=FishingFarmWorld.Model("FlowerPatch",root,new Vector3(side*(7.4f+j*.15f),0,-6+j*1.7f),false);flowers.localScale=Vector3.one*1.2f;
+                }
+                var ivy=FishingFarmWorld.Model("IvyDrape",House,new Vector3(side*5.9f,3.1f,-5.3f),false);ivy.localScale=Vector3.one*.85f;
+            }
+        }
+        private void HideProxySurfaces()
+        {
+            foreach(Transform child in transform)
+                if(child.name.StartsWith("Home ") || child.name.StartsWith("Boardwalk "))
+                    foreach(var r in child.GetComponentsInChildren<MeshRenderer>())r.enabled=false;
+            foreach(Transform child in House)
+                if(child.name=="Home foundation" || child.name=="Porch foundation")
+                    foreach(var r in child.GetComponentsInChildren<MeshRenderer>())r.enabled=false;
+        }
+    }
+}

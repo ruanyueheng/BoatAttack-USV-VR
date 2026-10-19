@@ -45,8 +45,9 @@ namespace BoatAttack.Editor
             if(controller.Home!=null)
             {
                 runtimeRoots.Add(controller.Home.House);
+                if(controller.Farm!=null)runtimeRoots.Add(controller.Farm.Root);
                 foreach(Transform child in controller.transform)
-                    if(child.name.StartsWith("V027 Island",StringComparison.Ordinal) || child.name.StartsWith("Home ",StringComparison.Ordinal)
+                    if(child.name.StartsWith("V027 Island",StringComparison.Ordinal) || child.name.StartsWith("V035 Home",StringComparison.Ordinal) || child.name.StartsWith("Home ",StringComparison.Ordinal)
                         || child.name.StartsWith("Boardwalk ",StringComparison.Ordinal))runtimeRoots.Add(child);
             }
             foreach (Transform child in controller.transform)

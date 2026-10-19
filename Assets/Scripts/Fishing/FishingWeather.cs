@@ -137,16 +137,24 @@ namespace BoatAttack.Fishing
             if(Controller.StartMenuOpen){a=b=Preset(BayWeather.Sunset);t=1;}
             var sky=Color.Lerp(a.sky,b.sky,t);var sun=Color.Lerp(a.sun,b.sun,t);float intensity=Mathf.Lerp(a.light,b.light,t);
             float daylight=Controller.StartMenuOpen?.82f:Daylight;
+            int shrine=Controller.Realms!=null && Controller.Realms.Inside && !Controller.StartMenuOpen?Controller.Realms.Island:-1;
+            if(shrine>=0)
+            {
+                daylight=shrine==3?.14f:shrine==2?.48f:shrine==1?.75f:.82f;
+                intensity=shrine==3?.70f:.72f;
+                sky=shrine==3?new Color(.17f,.22f,.45f):shrine==1?new Color(.62f,.84f,.70f):new Color(.91f,.81f,.67f);
+            }
             if(DeckLight!=null){DeckLight.intensity=3f*(1-daylight);DeckLight.enabled=daylight<.95f;}
             float twilight=4*daylight*(1-daylight);
             var nightSky=new Color(.07f,.12f,.24f);
             sky=Color.Lerp(nightSky,sky,daylight);
             sun=Color.Lerp(new Color(.38f,.52f,.84f),Color.Lerp(sun,new Color(1,.52f,.27f),twilight*.65f),daylight);
+            if(shrine>=0)sun=shrine==3?new Color(.48f,.63f,1):shrine==1?new Color(.81f,.94f,.74f):new Color(1,.88f,.69f);
             if(_sun!=null)
             {
                 _sun.color=_sunColor*sun;_sun.intensity=_sunIntensity*intensity*Mathf.Lerp(.025f,1,daylight);
                 float hour=Controller.StartMenuOpen?17.2f:Controller.Career.Calendar.Hour;
-                float elevation=daylight>.01f?Mathf.Lerp(8,65,Mathf.Sin(Mathf.Clamp01((hour-6)/12)*Mathf.PI)):32;
+                float elevation=shrine>=0?42:daylight>.01f?Mathf.Lerp(8,65,Mathf.Sin(Mathf.Clamp01((hour-6)/12)*Mathf.PI)):32;
                 _sun.transform.rotation=Quaternion.Euler(elevation,_sunRotation.eulerAngles.y+(hour-12)*7,0);
             }
             if(_sky!=null)
@@ -167,7 +175,7 @@ namespace BoatAttack.Fishing
             RenderSettings.ambientGroundColor=Color.Lerp(new Color(.008f,.012f,.019f),new Color(.15f,.18f,.18f),daylight);
             RenderSettings.ambientIntensity=_ambientIntensity*Mathf.Lerp(.82f,1,intensity);
             RenderSettings.reflectionIntensity=_reflection*Mathf.Lerp(.08f,1,daylight);
-            _rainAmount=Mathf.Lerp(a.rain,b.rain,t);
+            _rainAmount=shrine>=0?0:Mathf.Lerp(a.rain,b.rain,t);
         }
         public void RefreshForCapture()
         {

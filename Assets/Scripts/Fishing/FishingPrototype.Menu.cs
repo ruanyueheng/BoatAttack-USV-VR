@@ -37,11 +37,11 @@ namespace BoatAttack.Fishing
         public void FinishTitleVoyage()
         {
             if(!StartMenuOpen)return;
-            TitleVoyage.Close();
+            bool resumeLook=TitleVoyage.ResumeLook;TitleVoyage.Close(resumeLook);
             StartMenuOpen=false;MenuControls=false;
             if(Paused)TogglePause();
             ApplyAudioSettings();
-            if(!Automated && !HasIsolatedProfile && !Career.PrologueSeen)Prologue.Begin();
+            if(!resumeLook && !Automated && !HasIsolatedProfile && !Career.PrologueSeen)Prologue.Begin();
             _titleStarted=true;
         }
         public void SetFullscreen(bool fullscreen)
