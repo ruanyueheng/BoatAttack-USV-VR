@@ -166,6 +166,11 @@ namespace BoatAttack.Fishing
             {_c.Notice("再靠近一点，站到桌沿旁就能动手了。",4);return false;}
             var task=new FishingHandTask((FishingHandTaskKind)index);
             if(!task.HasMaterials(_c.Career.Backpack)){_c.Notice(Name(index)+"需要"+(index==0?"砂×2":"植物纤维×3")+"，完成前不会扣除材料。",5);return false;}
+            if(_c.DesktopDisplay)
+            {
+                _c.Shore.SetCrouch(false);
+                if(_c.Shore.Crouched){_c.Notice("站起身后再开始桌边手作。",4);return false;}
+            }
             _index=index;_task=task;_career=_c.Career;_ready=_calibrated=false;_exitHeld=true;_mouse=_motion=new Vector2(.1f,0);
             _motionSpeed=_visualSpeed=_shakePhase=_emission=0;
             _frame=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0);_toolHome=_tools[index].localPosition;
@@ -286,6 +291,8 @@ namespace BoatAttack.Fishing
                 _feedCoil.localScale=Vector3.one*Mathf.Lerp(.65f,.38f,_task.Progress);PresentThread();
             }
             if(XRSettings.isDeviceActive)return;
+            // 开始时可能仍处于坐起或蹲起过渡，镜头必须继续跟随同源眼位。
+            _cameraPosition=_c.Shore.Character.EyePosition;
             var target=_stations[_index].TransformPoint(new Vector3(0,1.08f,0));
             _c.viewCamera.transform.SetPositionAndRotation(_cameraPosition,Quaternion.Slerp(_cameraRotation,Quaternion.LookRotation(target-_cameraPosition),Mathf.SmoothStep(0,1,(Time.unscaledTime-_started)/.25f)));
             var facing=Quaternion.LookRotation(_c.Shore.Actor.forward,Vector3.up);

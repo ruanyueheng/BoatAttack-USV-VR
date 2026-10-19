@@ -25,9 +25,17 @@ namespace BoatAttack.EditorTools
                 var station=c.HandGames.Station(game);
                 Check(c.Shore.Relocate(c.HandGames.Approach(game),Quaternion.LookRotation(-station.forward)),"Hands-on approach "+game);
                 c.View.ResetLook();yield return null;c.PresentCharacterFrame();
+                if(game==0)
+                {
+                    c.Shore.SetCrouch(true);
+                    for(int frame=0;frame<15;frame++)yield return null;
+                    c.PresentCharacterFrame();
+                }
                 c.viewCamera.transform.rotation=Quaternion.LookRotation(station.TransformPoint(new Vector3(0,1.1f,0))-c.viewCamera.transform.position);
                 Check(c.HandGames.Begin(game),"Real handcraft can begin "+game);
                 for(int i=0;i<15;i++)yield return null;
+                Check(!c.Shore.Crouched && Vector3.Distance(c.viewCamera.transform.position,c.Shore.Character.EyePosition)<.002f
+                    && c.viewCamera.transform.position.y>station.position.y+1.30f,"Tabletop camera follows the settled standing eye after a crouched start "+game);
                 var shells=(Transform[])Field("_shells").GetValue(c.HandGames);
                 var grains=(Transform[])Field("_grains").GetValue(c.HandGames);
                 Vector3 shellStart=shells[0].localPosition;bool falling=false;float maxGripError=0;

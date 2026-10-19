@@ -1,0 +1,76 @@
+{
+  "version": "0.35.0",
+  "selectedScreenshots": {
+    "player-sandsieve-wide.png": {
+      "source": "Logs/desktop-acceptance-a3c779737531435f957416f881e96f3e/capture-20261019-152247-f70e4a55/74-SandSieve-1600x900.png",
+      "sha256": "d700041d0bf91a06bce12aecb51f3ecbcc76c64905306808bd39c51cb7fb1732",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-ropewinder-wide.png": {
+      "source": "Logs/desktop-acceptance-a3c779737531435f957416f881e96f3e/capture-20261019-152247-f70e4a55/75-RopeWinder-1600x900.png",
+      "sha256": "2d498ce905b4a6787c5de8e8500f5399ba16cb554fa717556cedf9af62276fd0",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-homegarden-wide.png": {
+      "source": "Logs/desktop-acceptance-a3c779737531435f957416f881e96f3e/capture-20261019-152247-f70e4a55/77-HomeGarden-1600x900.png",
+      "sha256": "d677954fa4a11c46826495b02fc12114cf6650c9f49d6dad74043bd718a1bbc2",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-farmharvest-wide.png": {
+      "source": "Logs/desktop-acceptance-a3c779737531435f957416f881e96f3e/capture-20261019-152247-f70e4a55/78-FarmHarvest-1600x900.png",
+      "sha256": "167d98d9cab5184214620715ef658778e2d2d97d5257b4ba8ceb453e50368ca5",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-homeinterior-wide.png": {
+      "source": "Logs/desktop-acceptance-a3c779737531435f957416f881e96f3e/capture-20261019-152247-f70e4a55/49-HomeInterior-1600x900.png",
+      "sha256": "a13ddda6471361aec2c2c32e794eda70eb7b7ffa8586c0d19aa13184922d2c5a",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-starobservation-wide.png": {
+      "source": "Logs/desktop-acceptance-a3c779737531435f957416f881e96f3e/capture-20261019-152247-f70e4a55/76-StarObservation-1600x900.png",
+      "sha256": "c7aeda28ae3bc5138d6a97235ab079b742588a85b39922270885022341061dce",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-sandsieve-5x4.png": {
+      "source": "Logs/desktop-acceptance-cd141919235248cfbdae516eaca1e22f/capture-20261019-152424-eb0d5eea/74-SandSieve-1280x1024.png",
+      "sha256": "b3d2b63d88de5ad4a99041a6a0597a665ecf24fe5a6eca798872a728e745b44e",
+      "width": 1280,
+      "height": 1024,
+      "fullHudProbeVerified": true
+    },
+    "player-ropewinder-5x4.png": {
+      "source": "Logs/desktop-acceptance-cd141919235248cfbdae516eaca1e22f/capture-20261019-152424-eb0d5eea/75-RopeWinder-1280x1024.png",
+      "sha256": "64266bdb4b2a42ad8300506dae71f4723a4782e68d73a61cb2ca04708660d8ee",
+      "width": 1280,
+      "height": 1024,
+      "fullHudProbeVerified": true
+    },
+    "player-homegarden-5x4.png": {
+      "source": "Logs/desktop-acceptance-cd141919235248cfbdae516eaca1e22f/capture-20261019-152424-eb0d5eea/77-HomeGarden-1280x1024.png",
+      "sha256": "bae083d7e05599ca69981d82b77cf89d270d6defde7aa201b74f9a227dc1fb62",
+      "width": 1280,
+      "height": 1024,
+      "fullHudProbeVerified": true
+    },
+    "player-starobservation-5x4.png": {
+      "source": "Logs/desktop-acceptance-cd141919235248cfbdae516eaca1e22f/capture-20261019-152424-eb0d5eea/76-StarObservation-1280x1024.png",
+      "sha256": "c3075aa5f2f825a76ba074a7dda28083980fa1dce864814729e642cd0c3478a5",
+      "width": 1280,
+      "height": 1024,
+      "fullHudProbeVerified": true
+    }
+  },
+  "scope": "Selected new-feature screenshots manually reviewed; 78 captures per aspect passed the automated full-HUD probe. Physical inputs untested."
+}

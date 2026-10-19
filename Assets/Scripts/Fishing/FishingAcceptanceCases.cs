@@ -92,6 +92,7 @@ namespace BoatAttack.Fishing
                     career.Calendar.RestUntilMorning();career.Farm.AdvanceDay(career.Calendar.Day);career.Farm.Refill();
                     if(day<2)for(int i=0;i<(day==0?8:4);i++)career.Farm.WaterPlot(i);
                 }
+                career.Calendar.AdvanceToHour(10.5f);
             }
             return career;
         }

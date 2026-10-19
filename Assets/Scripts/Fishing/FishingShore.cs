@@ -333,7 +333,7 @@ namespace BoatAttack.Fishing
             }
             _character.Pose(Ashore,WalkSpeed,Crouched,Grounded,Controller.FirstPerson || XRSettings.isDeviceActive,Controller.Paused,Swimming,Climbing);
         }
-        public string LocationName => Controller.Home!=null && Controller.Home.Inside ? "回潮渔屋" : Controller.Realms!=null && Controller.Realms.Inside ? FishingLore.ShrineName(Controller.Realms.Island) : ShopLanding ? FishingTackleShop.Name : Controller.Islands!=null && Controller.Islands.NearIsland(out int island) ? FishingAdventure.Name(island) : FreeLanding ? "自由海岸" : FishingExploration.SiteName(CurrentSite);
+        public string LocationName => Controller.Home!=null && FishingPrototype.FlatDistance(Position,Controller.Home.Origin)<55 ? Controller.Home.Inside?"回潮渔屋":Controller.Farm!=null && Controller.Farm.Nearby?"回潮菜园":"回潮家岛" : Controller.Realms!=null && Controller.Realms.Inside ? FishingLore.ShrineName(Controller.Realms.Island) : ShopLanding ? FishingTackleShop.Name : Controller.Islands!=null && Controller.Islands.NearIsland(out int island) ? FishingAdventure.Name(island) : FreeLanding ? "自由海岸" : FishingExploration.SiteName(CurrentSite);
         public string ActionTitle => !Ashore ? "G 靠岸下船 · 自动寻找安全岸面 / 码头" : NearbyTask>=0 ? "E "+FishingExploration.TaskName(NearbyTask)
             : CanBoard() ? "G 返回船上" : "靠近船边 G 上船 · 船体距离 "+BoatEdgeDistance().ToString("0.0")+" m";
     }

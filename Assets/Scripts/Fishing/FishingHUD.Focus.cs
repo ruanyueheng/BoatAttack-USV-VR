@@ -175,7 +175,7 @@ namespace BoatAttack.Fishing
             string text = NoticeText;
             if (text.Length == 0) return;
             var r = Layout.Notice;
-            if(c.Acceptance!=null)r.y=102;
+            if(c.Acceptance!=null && !c.Acceptance.IsCapturing)r.y=102;
             Glass(r);
             Label(new Rect(r.x + 14, r.y + 3, r.width - 28, r.height - 6), text, 14, warning ? Danger : Muted, false, TextAnchor.MiddleCenter);
         }

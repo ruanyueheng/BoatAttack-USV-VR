@@ -91,9 +91,10 @@ namespace BoatAttack.Fishing
                     if (c.HarborDeskOpen && c.AtHarbor) DrawHarborDesk();
                     else if (c.ShowDetails) DrawLegendCard(DrawOrderCard(130) + 14);
                     DrawFocusedAction();
-                    if(c.Farm!=null && c.Farm.Nearby)
+                    if(c.Farm!=null && c.Farm.Nearby && !RegionTitleVisible)
                     {
-                        Rounded(new Rect(485,132,630,38),Ink,6);Label(new Rect(500,138,600,26),c.Farm.Status,17,InkText,true,TextAnchor.MiddleCenter);
+                        float y=c.Acceptance!=null && !c.Acceptance.IsCapturing?160:88;
+                        Rounded(new Rect(485,y,630,38),Ink,6);Label(new Rect(500,y+6,600,26),c.Farm.Status,17,InkText,true,TextAnchor.MiddleCenter);
                     }
                     DrawCatchToast();
                     DrawCompactNotice();

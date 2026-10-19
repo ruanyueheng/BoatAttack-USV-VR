@@ -135,7 +135,8 @@ namespace BoatAttack.Fishing
             if(_raw!=null)_raw.SetActive(cooking && !_c.Career.BarbecueReady);
             _cooked.SetActive(_c.Career.BarbecueReady);
             _embers.intensity=cooking?Mathf.Lerp(.35f,.55f,Mathf.Sin(Time.time*4)*.5f+.5f):.06f;
-            _sign.text=cooking?(_c.Career.BarbecueReady?"香烤海鱼已熟\nE / A 领取":Mathf.CeilToInt(data.remaining)+" 秒 · 海风炭烤\n收起面板后继续"):"海风烧烤\nE / A 从鱼箱取鱼";
+            string interact=_c.DesktopDisplay?"E":"右手柄 A";
+            _sign.text=cooking?(_c.Career.BarbecueReady?"香烤海鱼已熟\n"+interact+" 领取":Mathf.CeilToInt(data.remaining)+" 秒 · 海风炭烤\n收起面板后继续"):"海风烧烤\n"+interact+" 从鱼箱取鱼";
             _sign.color=FishingUITheme.Ink;
             _sign.gameObject.SetActive((_c.ExplorerPosition-Grill.position).sqrMagnitude<18*18);
             if(_sign.gameObject.activeSelf)_sign.transform.rotation=Quaternion.LookRotation(_sign.transform.position-_c.viewCamera.transform.position);

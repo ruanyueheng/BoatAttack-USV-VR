@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "models": 77,
+  "triangles": 1030912,
+  "maxWorldBoundsErrorM": 0,
+  "uvs": true,
+  "materials": true,
+  "finiteVertices": true
+}
