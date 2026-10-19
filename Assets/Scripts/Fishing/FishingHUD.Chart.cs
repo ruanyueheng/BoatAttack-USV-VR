@@ -11,12 +11,12 @@ namespace BoatAttack.Fishing
             if(c.Realms!=null && c.Realms.Inside){DrawRealmChart();return;}
             if (!c.ChartExpanded)
             {
-                if (Button(Layout.ChartTab, "M 航海图  ·  " + FishingPrototype.FlatDistance(c.ExplorerPosition, c.NavigationPosition).ToString("0") + " m", true, false, 14)) c.ToggleChart();
+                if (SeaButton(Layout.ChartTab, "M 航海图  ·  " + FishingPrototype.FlatDistance(c.ExplorerPosition, c.NavigationPosition).ToString("0") + " m",false,true,14)) c.ToggleChart();
                 return;
             }
             var r = Layout.Chart;
-            if (Button(new Rect(r.x, r.y, 156, 28), "M 收起航海图", true, false, 14)) c.ToggleChart();
-            if (Button(new Rect(r.xMax - 60, r.y, 60, 28), c.ChartRangeMeters + "m", true, false, 13)) c.CycleChartRange();
+            if (SeaButton(new Rect(r.x, r.y, 156, 28), "M 收起航海图",false,true,14)) c.ToggleChart();
+            if (SeaButton(new Rect(r.xMax - 60, r.y, 60, 28), c.ChartRangeMeters + "m",false,true,13)) c.CycleChartRange();
             var center = new Vector2(r.center.x, r.y + 130);
             const float radius = TerrainMapRadius;
             Disc(center, radius + 4, MapSurface);

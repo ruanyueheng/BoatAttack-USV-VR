@@ -176,7 +176,7 @@ namespace BoatAttack.Fishing
             Ashore=true;_lastSafe=feet+Vector3.up*.08f;_motion.Reset();
             Actor.SetPositionAndRotation(_lastSafe,Quaternion.LookRotation(Vector3.ProjectOnPlane(feet-Controller.Player.transform.position,Vector3.up).normalized));
             Body.enabled=true;SetCrouch(false);Controller.View.ResetLook();Controller.CloseBoatPanels();
-            Controller.Notice("已登岸 · WASD 行走 / Shift 快走 / 空格跳跃 / Ctrl 蹲下 / 鼠标转头 / Alt 释放鼠标 / E 勘测 / 靠近船边 G 上船",8);
+            Controller.Notice(Controller.DesktopDisplay?"已登岸 · WASD 行走 · E 互动 · 靠近船边 G 上船":"已登岸 · 左摇杆行走 · 右手柄 A 互动 · 靠近船边登船",6);
             UpdateProximity();return true;
         }
         public bool TryBoard()

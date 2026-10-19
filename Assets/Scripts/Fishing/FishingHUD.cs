@@ -72,8 +72,7 @@ namespace BoatAttack.Fishing
                 else if(c.SaveMenuOpen) DrawSaveSlots();
                 else if(c.GuideOpening)
                 {
-                    Rounded(new Rect(550,_height-78,500,43),Ink,6);
-                    Label(new Rect(562,_height-70,476,29),"翻开自然手册……  /  Esc 收起",20,InkText,true,TextAnchor.MiddleCenter);
+                    WorldLabel(new Rect(562,_height-70,476,29),"翻开自然手册……  /  Esc 收起",20,CreamInk,true,TextAnchor.MiddleCenter);
                 }
                 else if (c.Letter.Open) DrawLetter();
                 else if (c.DialogueOpen) DrawDialogue();
@@ -94,7 +93,8 @@ namespace BoatAttack.Fishing
                     if(c.Farm!=null && c.Farm.Nearby && !RegionTitleVisible)
                     {
                         float y=c.Acceptance!=null && !c.Acceptance.IsCapturing?160:88;
-                        Rounded(new Rect(485,y,630,38),Ink,6);Label(new Rect(500,y+6,600,26),c.Farm.Status,17,InkText,true,TextAnchor.MiddleCenter);
+                        ReadingVeil(new Rect(485,y-2,630,42));
+                        WorldLabel(new Rect(500,y+6,600,26),c.Farm.Status,17,CreamInk,false,TextAnchor.MiddleCenter);
                     }
                     DrawCatchToast();
                     DrawCompactNotice();
@@ -222,6 +222,6 @@ namespace BoatAttack.Fishing
             return "鱼在冲刺 · 放线避开拉力";
         }
 
-        private void OnDestroy() { ReleaseTerrainMap(); ReleaseOptics(); if(_titleVeil!=null)Destroy(_titleVeil); }
+        private void OnDestroy() { ReleaseTerrainMap(); ReleaseOptics(); if(_titleVeil!=null)Destroy(_titleVeil);if(_readingVeil!=null)Destroy(_readingVeil); }
     }
 }

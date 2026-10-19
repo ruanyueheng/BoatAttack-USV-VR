@@ -5,7 +5,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingHUD
     {
-        private void Glass(Rect r) { Rounded(r,Ink,8);Outline(r,Hairline,8); }
+        private void Glass(Rect r)=>Card(r,Gold);
 
         private void DrawCompactHeading()
         {
@@ -53,6 +53,7 @@ namespace BoatAttack.Fishing
             var c = Controller;
             var s = c.Session;
             var r = Layout.Action;
+            ReadingVeil(new Rect(r.x-8,r.y-3,r.width+16,r.height+6));
             if(c.HasPendingCatch || (c.Anchored && (s.Phase==CatchPhase.Fighting || s.Phase==CatchPhase.Landing)))Rounded(r,new Color(.02f,.055f,.075f,.72f),8);
             string title, help;
             Color accent = Mint;
@@ -144,23 +145,23 @@ namespace BoatAttack.Fishing
             _fade = Mathf.Min(Mathf.Clamp01(age / .2f), Mathf.Clamp01((CardSeconds - age) / .5f));
             var r = new Rect(530,116,540,172);
             var fish = card.Fish;
-            Card(r,Gold);
+            GiltRule(r.x+154,r.y+55,260);
             if(card.Find!=FieldItem.Empty)
             {
                 FieldIcon(new Rect(r.x+20,r.y+40,112,112),card.Find);
-                Label(r.x+154,r.y+12,360,45,card.Find==FieldItem.SeaTreasure?"捞到宝啦！":"咦？钓到了！",34,Gold,true);
-                Label(r.x+154,r.y+60,360,30,FishingBackpack.Name(card.Find),22,Color.white,true);
-                Label(r.x+154,r.y+96,366,42,FishingCoastRules.FindQuip(card.Find),16,Mint);
-                Label(r.x+154,r.y+142,366,22,card.Find==FieldItem.SeaTreasure?"已放入背包 · 选中后 F 开启":"已放入背包 · 海面又干净了一点",14,Gold);
+                WorldLabel(r.x+154,r.y+12,360,45,card.Find==FieldItem.SeaTreasure?"捞到宝啦！":"咦？钓到了！",34,Gold,true);
+                WorldLabel(r.x+154,r.y+60,360,30,FishingBackpack.Name(card.Find),22,Color.white,true);
+                WorldLabel(r.x+154,r.y+96,366,42,FishingCoastRules.FindQuip(card.Find),16,Mint);
+                WorldLabel(r.x+154,r.y+142,366,22,card.Find==FieldItem.SeaTreasure?"已放入背包 · 选中后 F 开启":"已放入背包 · 海面又干净了一点",14,Gold);
                 _fade=1f;return;
             }
             FishGlyph(new Rect(r.x+20,r.y+52,112,76),fish.kind,fish.rare);
-            Label(r.x+154,r.y+12,360,45,"钓到了！",34,Gold,true);
-            Label(r.x+154,r.y+60,360,30,FishingSpecies.Name(fish.kind)+"  "+FishingText.Weight(fish.grams),22,Color.white,true);
+            WorldLabel(r.x+154,r.y+12,360,45,"钓到了！",34,Gold,true);
+            WorldLabel(r.x+154,r.y+60,360,30,FishingSpecies.Name(fish.kind)+"  "+FishingText.Weight(fish.grams),22,Color.white,true);
             bool pending=Controller.HasPendingCatch && Controller.Career.PendingCatch.fish.id==fish.id;
             string result=pending?"E 拿起检视  ·  F 入箱  ·  X 放生":FishingSpecies.Of(fish.kind).Legendary?"已放生 · 奖励 +"+card.Bounty:card.Released?"已放生 · 图鉴与纪录保留":"已入箱 · 价值 "+fish.value+" 金币";
-            Label(r.x+154,r.y+99,366,23,result,15,Gold);
-            Label(r.x+154,r.y+133,366,22,card.Discovery?"首次发现！":card.PersonalBest?"刷新个人最大鱼纪录！":fish.rare?"珍珠变体":"海风送来的收获",15,Mint);
+            WorldLabel(r.x+154,r.y+99,366,23,result,15,Gold);
+            WorldLabel(r.x+154,r.y+133,366,22,card.Discovery?"首次发现！":card.PersonalBest?"刷新个人最大鱼纪录！":fish.rare?"珍珠变体":"海风送来的收获",15,Mint);
             _fade = 1f;
         }
 
@@ -176,8 +177,9 @@ namespace BoatAttack.Fishing
             if (text.Length == 0) return;
             var r = Layout.Notice;
             if(c.Acceptance!=null && !c.Acceptance.IsCapturing)r.y=102;
-            Glass(r);
-            Label(new Rect(r.x + 14, r.y + 3, r.width - 28, r.height - 6), text, 14, warning ? Danger : Muted, false, TextAnchor.MiddleCenter);
+            r.x-=60;r.width+=120;r.height+=12;
+            ReadingVeil(r,true);
+            WorldLabel(new Rect(r.x + 24, r.y + 7, r.width - 48, r.height - 14), text, 16, warning ? new Color(1,.65f,.44f) : CreamInk, false, TextAnchor.MiddleCenter);
         }
     }
 }

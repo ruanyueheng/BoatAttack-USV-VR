@@ -1,7 +1,7 @@
 {
   "version": "0.35.0",
   "unity": "2022.3.62f1",
-  "date": "2026-10-19",
+  "date": "2026-10-20",
   "pureFishingChecks": 4161,
   "pureInputChecks": 70,
   "unitySuites": [
@@ -28,8 +28,8 @@
   ],
   "fullHudProbePassed": true,
   "windowsFiles": 210,
-  "windowsZipSha256": "F3A278DD235D8E64DEA358ADC1A432B5787DFBC7D639983494B05AE67E650B35",
-  "androidApkSha256": "EDC8B277930E7D936A0192CED4EFC174599C6B3B9D9EC37B66908DBA3A0F88D1",
+  "windowsZipSha256": "95C62F8F515D8142397ED7D38520083FE361AEE2686853711864094C77A5E893",
+  "androidApkSha256": "9A9842F810F87B1A6DFA807F56FE1048D2394ED306A3A053643876B9E56C1EA8",
   "androidPackage": "com.ruanyueheng.tidefin.vr",
   "androidVersionCode": 35,
   "apkV2SignatureVerified": true,
@@ -45,5 +45,6 @@
     "unexpectedStartupObjects": 0
   },
   "physicalHeadsetTested": false,
-  "longDurationPerformanceTested": false
+  "longDurationPerformanceTested": false,
+  "finalUIRegression": "FishingSmoke passed after selective feathered reading panels, gilt headings, scalable vellum and device-specific landing notices"
 }

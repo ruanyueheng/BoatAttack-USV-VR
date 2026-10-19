@@ -11,6 +11,14 @@ namespace BoatAttack.Fishing
         {
             ink=ink==Gold?AmberInk:ink==Mint?new Color(.70f,.94f,.83f):ink==Color.white || ink==Muted || ink==Faint?CreamInk:ink;
             DisplayText(new Rect(r.x+1,r.y+2,r.width,r.height),text,size,new Color(.015f,.035f,.045f,.95f),heading,align);
+            // 深色外缘保持亮天/白石上的对比，标题内缘再薄描金，正文不加装饰字重。
+            for(int i=0;i<4;i++)
+            {
+                var offset=i==0?Vector2.left:i==1?Vector2.right:i==2?Vector2.up:Vector2.down;
+                float width=heading?1.25f:.6f;
+                DisplayText(new Rect(r.x+offset.x*width,r.y+offset.y*width,r.width,r.height),text,size,new Color(.025f,.045f,.065f,.90f),heading,align);
+                if(heading)DisplayText(new Rect(r.x+offset.x*.35f,r.y+offset.y*.35f,r.width,r.height),text,size,new Color(.88f,.69f,.36f,.85f),true,align);
+            }
             DisplayText(r,text,size,ink,heading,align);
         }
         private void WorldLabel(float x,float y,float width,float height,string text,int size,Color ink,bool heading=false)
@@ -24,7 +32,7 @@ namespace BoatAttack.Fishing
         {
             bool hover=enabled && r.Contains(Event.current.mousePosition);
             if(primary || hover)Fill(r.x,r.yMax-3,r.width,1,AmberInk);
-            DisplayText(new Rect(r.x+4,r.y,r.width-8,r.height),text,size,!enabled?new Color(.52f,.58f,.59f):primary || hover?AmberInk:CreamInk,false,TextAnchor.MiddleLeft);
+            WorldLabel(new Rect(r.x+4,r.y,r.width-8,r.height),text,size,!enabled?new Color(.52f,.58f,.59f):primary || hover?AmberInk:CreamInk,false,TextAnchor.MiddleLeft);
             return GUI.Button(r,GUIContent.none,GUIStyle.none) && enabled;
         }
         private void DrawStartMenu()

@@ -7,8 +7,8 @@ namespace BoatAttack.Fishing
         private void DrawStarObservation()
         {
             var trial=Controller.Realms.Trial;int stage=Mathf.Min(2,trial.StarStage);
-            Rounded(new Rect(45,35,310,240),new Color(.035f,.06f,.12f,.90f),9);
             WorldLabel(65,50,270,36,"观测星图 · "+FishingRealmWorld.StarPatternName(stage),23,CreamInk,true);
+            GiltRule(65,92,250);
             var pattern=FishingRealmWorld.StarPattern(stage);var origin=new Vector2(200,172);
             for(int i=0;i<pattern.Count;i++)
             {
