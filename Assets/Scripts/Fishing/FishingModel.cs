@@ -34,6 +34,14 @@ namespace BoatAttack.Fishing
         public FishBeat Beat => FishingVoyage.Beat(Kind, _beatTime);
         public float BeatProgress => _beatTime / Species.BeatSeconds;
         public float FightTime { get; private set; }
+        public float FishDirection => Phase == CatchPhase.Fighting
+            ? FishingFightControl.Direction(FightTime, Species.BeatSeconds, _directionSeed) : 0;
+        public float ControlQuality { get; private set; }
+        public float Stamina { get; private set; } = 1;
+        public float BitePreview => Phase == CatchPhase.Waiting ? FishingFightControl.BitePreview(_timer, _deadline)
+            : Phase == CatchPhase.Bite ? 1 : 0;
+        public float StrikeQuality { get; private set; }
+        public bool PerfectStrike => StrikeQuality >= .85f;
         public float Struggle => (Beat == FishBeat.Leap ? LeapEffort : Beat == FishBeat.Surge ? Species.SurgeEffort : Beat == FishBeat.Windup ? 1f : .75f) * _surgeScale;
         /// <summary>0-1 across the current leap and 0 outside one; drives the airborne arc.</summary>
         public float LeapProgress => Beat == FishBeat.Leap
@@ -51,7 +59,7 @@ namespace BoatAttack.Fishing
         private float _timer, _deadline, _overload, _slack, _sizeTension = 1f;
         private int _lineLevel, _reelLevel, _misses;
         private bool _claimed;
-        private uint _rhythmSeed;
+        private uint _rhythmSeed, _directionSeed;
         private float _beatTime, _rhythmRate = 1f, _surgeScale = 1f;
 
         public static float LineFactor(int level) => level >= 2 ? 0.58f : level == 1 ? 0.72f : 1f;
@@ -80,7 +88,11 @@ namespace BoatAttack.Fishing
             _claimed = false;
             _rhythmSeed = 2166136261;
             foreach (char letter in id) _rhythmSeed = unchecked((_rhythmSeed ^ letter) * 16777619);
+            // Rhythm advances once per beat; lateral direction keeps this immutable cast seed.
+            _directionSeed = _rhythmSeed;
             _beatTime = FightTime = 0;
+            ControlQuality = StrikeQuality = 0;
+            Stamina = 1;
             NextRhythm();
             _misses = 0;
             _overload = _slack = 0f;
@@ -90,7 +102,9 @@ namespace BoatAttack.Fishing
             return true;
         }
 
-        public void Tick(float deltaTime, bool reel)
+        public void Tick(float deltaTime, bool reel) => Tick(deltaTime, reel, 0);
+
+        public void Tick(float deltaTime, bool reel, float rodSide)
         {
             if (float.IsNaN(deltaTime) || float.IsInfinity(deltaTime) || deltaTime <= 0f) return;
             // Do not skip entire reaction windows on an application hitch.
@@ -108,6 +122,7 @@ namespace BoatAttack.Fishing
                     FightTime += dt;
                     _beatTime += dt * _rhythmRate;
                     if (_beatTime >= Species.BeatSeconds) { _beatTime -= Species.BeatSeconds; NextRhythm(); }
+                    ControlQuality = FishingFightControl.Quality(rodSide, FishDirection);
                     Fight(dt, reel);
                     break;
                 case CatchPhase.Landing:
@@ -137,6 +152,13 @@ namespace BoatAttack.Fishing
             float gain = species.TensionGain * effort * FishingVoyage.TensionScale(Bait) * LineFactor(_lineLevel) * _sizeTension;
             float retrieve = beat == FishBeat.Rest ? 2.65f : beat == FishBeat.Windup ? 1.8f : beat == FishBeat.Leap ? 0f : 0.8f;
             retrieve *= FishingVoyage.ReelScale(Bait) * ReelFactor(_reelLevel);
+            // Neutral input preserves the original arithmetic exactly. A good lean is assistance,
+            // not permission to reel through a legendary leap or ignore excess line tension.
+            if (ControlQuality != 0 && beat != FishBeat.Leap)
+            {
+                gain *= FishingFightControl.TensionMultiplier(ControlQuality);
+                retrieve *= FishingFightControl.RetrieveMultiplier(ControlQuality);
+            }
             // An airborne legend takes line quickly when it is not being fought.
             float run = beat == FishBeat.Leap ? 1.1f : 0.35f;
             Tension = Clamp(Tension + (reel ? gain : -0.48f) * dt, 0f, 1f);
@@ -151,11 +173,16 @@ namespace BoatAttack.Fishing
                 if (species.Legendary && FightTime < 20f) Distance = .7f;
                 else { Tension = Math.Min(Tension, .74f); _overload = 0; Enter(CatchPhase.Landing, 10f); }
             }
+            // Fatigue is feedback, not another landing gate. A fish can take line without regaining stamina.
+            if (Phase == CatchPhase.Fighting)
+                Stamina = Math.Max(0, Math.Min(Stamina, Distance / MaxDistance)
+                    - Math.Max(0, ControlQuality) * dt * (reel ? .012f : .004f));
         }
 
         public bool Hook()
         {
             if (Phase != CatchPhase.Bite) return false;
+            StrikeQuality = FishingFightControl.StrikeQuality(_timer);
             Enter(CatchPhase.Fighting, Species.FightSeconds);
             return true;
         }
@@ -177,9 +204,18 @@ namespace BoatAttack.Fishing
             return new CatchRecord { id = _id, kind = Kind, rare = Rare, grams = Grams, value = FishingSpecies.Value(Kind, Rare, Grams) };
         }
 
-        public void Cancel() { Phase = CatchPhase.Idle; Failure = CatchFailure.None; }
+        public void Cancel()
+        {
+            Phase = CatchPhase.Idle; Failure = CatchFailure.None;
+            ControlQuality = StrikeQuality = FightTime = _beatTime = 0; Stamina = 1;
+        }
         private void Escape(CatchFailure reason) { Failure = reason; Enter(CatchPhase.Escaped, 0f); }
-        private void Enter(CatchPhase phase, float deadline) { Phase = phase; _timer = 0f; _deadline = deadline; }
+        private void Enter(CatchPhase phase, float deadline)
+        {
+            Phase = phase; _timer = 0f; _deadline = deadline;
+            if (phase != CatchPhase.Fighting) ControlQuality = 0;
+            if (phase == CatchPhase.Landing || phase == CatchPhase.Caught) Stamina = 0;
+        }
         private static float Clamp(float x, float min, float max) => Math.Max(min, Math.Min(max, x));
     }
 

@@ -332,6 +332,7 @@ namespace BoatAttack.Fishing
         public bool RequestInspectCatch()
         {
             if(!HasPendingCatch || Paused || WorldActionBlocksGameplay)return false;
+            if(!UnityEngine.XR.XRSettings.isDeviceActive)return CatchRig.ToggleLeftInspection();
             if(FishingSpecies.Of(Career.PendingCatch.fish.kind).Legendary){CatchRig.PrepareHandAction();return MeasureCatch();}
             Shore.SyncRider();
             Hands.GetToolFrame(out var origin,out var frame);
@@ -344,6 +345,7 @@ namespace BoatAttack.Fishing
         public bool RequestCatchResolution(bool store)
         {
             if(!HasPendingCatch || Paused || WorldActionBlocksGameplay)return false;
+            if(CatchRig.LeftHandInspecting){Notice("先按 E 把活鱼放进抄网。",4);return false;}
             if(store && FishingSpecies.Of(Career.PendingCatch.fish.kind).Legendary)
             {MeasureCatch();Notice("传说鱼请测量后确认放生。",4);return false;}
             CatchRig.ConfigureLayout(false);

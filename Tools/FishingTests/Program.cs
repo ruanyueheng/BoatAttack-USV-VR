@@ -16,6 +16,7 @@ internal static class Program
         {
             FarmTests.Run(Check);
             HandTaskTests.Run(Check);
+            FightControlTests.Run(Check);
             CoastRulesTests.Run(Check);
             CashierConversationTests.Run(Check);
             ShopEconomyTests.Run(Check);

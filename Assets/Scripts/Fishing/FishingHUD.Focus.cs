@@ -59,7 +59,7 @@ namespace BoatAttack.Fishing
             if(c.HasPendingCatch)
             {
                 title="待处理鱼获 · "+FishingSpecies.Name(c.Career.PendingCatch.fish.kind)+" "+FishingText.Weight(c.Career.PendingCatch.fish.grams);
-                help=c.CatchRig.ReleaseConfirmation?"再次按 X 确认放生；普通鱼不增加金币":"E 拿起/放回 · F 入箱 · X 放生确认 · R 安全返港";accent=Gold;
+                help=c.CatchRig.LeftHandInspecting?(c.CatchRig.PlacingInNet?"正在把活鱼放进抄网…":"左手检视活鱼 · E 放入抄网"):c.CatchRig.ReleaseConfirmation?"再次按 X 确认放生；普通鱼不增加金币":"E 左手检视 · F 入箱 · X 放生确认 · R 安全返港";accent=Gold;
             }
             else if(c.Ashore)
             {
@@ -89,10 +89,10 @@ namespace BoatAttack.Fishing
             {
                 switch (s.Phase)
                 {
-                    case CatchPhase.Waiting: title = c.CastMotion.Casting?"浮标飞向海面":"等待咬钩…"; help = c.CastMotion.Casting?"鱼线正在放出 · 落水后开始等待":"留意浮标与声音，出现咬钩提示再点击左键"; break;
+                    case CatchPhase.Waiting: title = c.CastMotion.Casting?"浮标飞向海面":s.BitePreview>0?"浮标轻啄 · 还没吞钩":"等待咬钩…"; help = c.CastMotion.Casting?"鱼线正在放出 · 落水后开始等待":s.BitePreview>0?"先别提竿，等浮标明显下沉、出现咬钩提示":"留意浮标与声音，出现咬钩提示再点击左键"; break;
                     case CatchPhase.Bite: title = (s.Species.Legendary ? "金帆旗鱼！" : "咬钩了！") + "点击左键提竿"; help = "剩余 " + s.Remaining.ToString("0.0") + " 秒"; accent = Gold; break;
                     case CatchPhase.Fighting: title = FightTitle(s); help = ""; accent = s.Beat == FishBeat.Leap || s.Tension > .78f ? Danger : Mint; break;
-                    case CatchPhase.Landing: title = "剩余 "+s.Remaining.ToString("0.0")+"秒 · 松开收线，E 抄网"; help = "XR：自动泄力；左握键拿网，覆盖鱼体后轻抬"; break;
+                    case CatchPhase.Landing: title = "鱼已靠近 · 松开后点击左键，提鱼检视"; help = "左手拿起活鱼后，E 放入抄网 · 也可直接 E 抄网"; break;
                     case CatchPhase.Caught: title = "捕获成功 · 点击左键再抛一竿"; help = "B 换饵 · Q 起航 · J 查看图鉴与纪录"; break;
                     case CatchPhase.Escaped: title = "鱼逃走了 · 点击左键重试"; help = "B 换饵 · Q 起航"; break;
                     default: title = c.CastMotion.Preparing?"松开左键甩竿 · 蓄力 "+(c.CastMotion.Charge*100).ToString("0")+"%":"按住左键后摆，松开甩竿"; help = "轻点近抛 · 按住远抛 · B 换饵 · Q 起航"; break;
@@ -120,12 +120,20 @@ namespace BoatAttack.Fishing
 
         private void DrawCompactFight(Rect r, CatchSession s, Color accent)
         {
-            WorldLabel(r.x + 20, r.y + 47, 300, 22, FishingSpecies.Name(s.Kind) + " · 张力 " + (s.Tension * 100).ToString("0") + "%", 15, Color.white);
-            var bar = new Rect(r.x + 20, r.y + 80, 344, 9);
-            Bar(bar, s.Tension, accent);
+            string direction=s.FishDirection<-.2f?"鱼向左游  ←":s.FishDirection>.2f?"→  鱼向右游":"鱼在转向";
+            string steer=s.FishDirection<-.2f?"按住左键，鼠标向右控竿":s.FishDirection>.2f?"按住左键，鼠标向左控竿":"保持收线节奏";
+            string quality=s.ControlQuality>.25f?"反向控竿有效":s.ControlQuality<-.25f?"顺着鱼拉会增加张力":steer;
+            WorldLabel(r.x+20,r.y+43,588,22,direction+"  ·  "+quality,15,s.ControlQuality<-.25f?Danger:Mint,true);
+            WorldLabel(r.x+20,r.y+69,344,20,"鱼线张力 "+(s.Tension*100).ToString("0")+"%"+(s.Tension>.86f?" · 松线！":""),13,Muted);
+            WorldLabel(new Rect(r.x+390,r.y+69,218,20),"余线 "+s.Distance.ToString("0.0")+" m",13,Muted,false,TextAnchor.MiddleRight);
+            var bar = new Rect(r.x + 20, r.y + 95, 344, 7);
+            Bar(bar, s.Tension, s.Tension>.78f?Danger:accent);
             Fill(bar.x + bar.width * .78f, bar.y - 4, 1, 17, Muted);
-            WorldLabel(new Rect(r.x + 390, r.y + 47, 218, 22), "余线 " + s.Distance.ToString("0.0") + " m", 15, Muted, false, TextAnchor.UpperRight);
-            Bar(new Rect(r.x + 394, r.y + 80, 214, 9), 1 - s.Distance / Mathf.Max(.01f, s.MaxDistance), Sky);
+            Bar(new Rect(r.x+394,r.y+95,214,7),1-s.Distance/Mathf.Max(.01f,s.MaxDistance),Sky);
+            WorldLabel(r.x+20,r.y+115,158,20,"鱼的体力 "+(s.Stamina*100).ToString("0")+"%",13,Faint);
+            Bar(new Rect(r.x+174,r.y+123,126,4),s.Stamina,Gold);
+            WorldLabel(new Rect(r.x+304,r.y+111,304,24),"按住左键收线并移动鼠标 · 松开放线",13,Muted,false,TextAnchor.MiddleRight);
+
         }
 
         private void DrawCatchToast()
