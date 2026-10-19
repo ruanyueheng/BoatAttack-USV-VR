@@ -19,6 +19,7 @@ namespace BoatAttack.EditorTools
             {
                 c.ReturnToHarbor();yield return null;c.RestoreShopTestProfile(new FishingCareer().Snapshot());c.SelectFieldSlot(8);
                 var home=c.Home;var rb=c.Player.engine.RB;var p=home.Berth+Vector3.up*.7f;rb.position=p;rb.rotation=Quaternion.identity;rb.velocity=rb.angularVelocity=Vector3.zero;c.Player.transform.SetPositionAndRotation(p,Quaternion.identity);Physics.SyncTransforms();
+                Check(Vector3.Distance(c.Nightscape.LighthouseSweep.position,home.LighthouseLens)<.001f,"Night sweep uses the rebuilt lighthouse's authored lens marker");
                 for(int i=0;i<20;i++)yield return null;
                 Check(c.Shore.TryDisembark(),"Land at the real home berth after expanding the coastline");yield return null;
                 Check(c.Shore.Position.y>.9f && !c.Shore.SafeCoastalFooting(home.Berth-Vector3.up),"Home berth prefers its named dry platform and rejects seabed landings");

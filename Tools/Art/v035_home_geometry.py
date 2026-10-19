@@ -178,10 +178,12 @@ def home_details():
     x,z=-19,12
     profile((x,0,z),[(0,2.5),(.3,2.5),(.5,2.15),(9.0,1.38),(9.3,1.7),(9.55,1.8)],0,40)
     for h in [2.3,4.7,7.1]:profile((x,h,z),[(0,1.95-h*.055),(.22,1.95-h*.055)],2,40)
-    profile((x,9.55,z),[(0,1.45),(1.5,1.45),(1.6,1.8),(2.4,.03)],2,40)
+    profile((x,9.55,z),[(0,1.45),(.08,1.45)],0,40)
+    profile((x,11.05,z),[(0,1.8),(.10,1.8),(.85,.03)],2,40)
     for j in range(10):
         a=j*math.tau/10;tube([(x+math.cos(a)*1.42,9.55,z+math.sin(a)*1.42),(x+math.cos(a)*1.42,11.05,z+math.sin(a)*1.42)],.04,4)
     rock((x,10.2,z),(.48,.60,.48),10)
+    API['MARKERS'].setdefault('HomeLandscaping',{})['LighthouseLens']=[-x,10.2,z]
     ring((x,9.35,z),2.2,.055,4,n=64)
     for j in range(18):
         a=j*math.tau/18;tube([(x+math.cos(a)*2.2,8.7,z+math.sin(a)*2.2),(x+math.cos(a)*2.2,9.35,z+math.sin(a)*2.2)],.025,4)

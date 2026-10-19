@@ -331,7 +331,17 @@ namespace BoatAttack.Fishing
             }
             FishingClimbRoute route=null;
             foreach(var candidate in FindObjectsOfType<FishingClimbRoute>())if(FlatDistance(candidate.Bottom,FishingIslandWorld.Center(0))<35)route=candidate;
-            if(route==null || !Shore.Ground(route.Bottom+Vector3.forward*.6f,out var ladderFoot) || !Shore.Relocate(ladderFoot,Quaternion.identity) || !Shore.TryClimb())throw new InvalidOperationException("Climbing fixture route rejected");
+            if(route==null)throw new InvalidOperationException("Climbing fixture has no authored route");
+            StartCoroutine(PrepareClimbingFixture(route));
+        }
+        private System.Collections.IEnumerator PrepareClimbingFixture(FishingClimbRoute route)
+        {
+            yield return null;yield return null;
+            if(Acceptance.CurrentCase!=FishingAcceptanceCase.ClimbingView)yield break;
+            if(!Shore.Ground(route.Bottom+Vector3.forward*.6f,out var ladderFoot) || !Shore.Relocate(ladderFoot,Quaternion.identity))throw new InvalidOperationException("Climbing showcase has no supported approach: "+route.Bottom);
+            yield return null;
+            if(Acceptance.CurrentCase!=FishingAcceptanceCase.ClimbingView)yield break;
+            if(!Shore.TryClimb())throw new InvalidOperationException("Climbing showcase input is blocked: paused="+Paused+" story="+StoryBlocksGameplay+" shop="+ShopBlocksGameplay+" action="+WorldActionBusy);
             int steps=Mathf.Max(1,Mathf.CeilToInt(Vector3.Distance(route.Bottom,route.ClimbEnd)/1.8f*.45f/.05f));
             for(int i=0;i<steps;i++)Shore.Move(Vector2.up,false,false,false,.05f);
             ToggleView();View.ResetLook();

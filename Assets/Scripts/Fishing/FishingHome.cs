@@ -26,6 +26,7 @@ namespace BoatAttack.Fishing
         public bool LightsOn { get; private set; }=true;
         public Transform House { get; private set; }
         public Transform Bed { get; private set; }
+        public Vector3 LighthouseLens {get;private set;}
         public Vector3 Origin { get; private set; }
         public Vector3 Entry => Origin+new Vector3(0,.22f,-6.5f);
         public Vector3 WakePoint => Origin+new Vector3(-1.6f,.22f,2.5f);
@@ -59,6 +60,7 @@ namespace BoatAttack.Fishing
             {
                 var island=FishingFarmWorld.Model(name,transform,Origin,name!="HomeJetty");island.name="V035 Home "+name;
                 if(name=="HomeLand")foreach(var filter in island.GetComponentsInChildren<MeshFilter>())filter.gameObject.layer=10;
+                if(name=="HomeLandscaping")LighthouseLens=FishingRealmWorld.Marker(island,"LighthouseLens").position;
             }
             DressGarden();
             Solid("Home floor",new Vector3(0,.10f,0),new Vector3(12,.20f,10));
