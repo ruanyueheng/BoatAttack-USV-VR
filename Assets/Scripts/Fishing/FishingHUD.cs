@@ -94,7 +94,7 @@ namespace BoatAttack.Fishing
                     {
                         float y=c.Acceptance!=null && !c.Acceptance.IsCapturing?160:88;
                         ReadingVeil(new Rect(485,y-2,630,42));
-                        WorldLabel(new Rect(500,y+6,600,26),c.Farm.Status,17,CreamInk,false,TextAnchor.MiddleCenter);
+                        WorldLabel(new Rect(500,y+6,600,26),c.Farm.Status,17,CreamInk,false,TextAnchor.MiddleCenter,onPaper:true);
                     }
                     DrawCatchToast();
                     DrawCompactNotice();

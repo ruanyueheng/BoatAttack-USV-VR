@@ -94,7 +94,7 @@ namespace BoatAttack.Fishing
                 Destroy(_fish);
                 _fish = MakeFish(transform, Session.Kind, Session.Rare);
                 AnimateEquipment();
-                if (selected == FishingAcceptanceCase.Catch && !CatchRig.CaptureAndStoreForAutomation())
+                if ((selected == FishingAcceptanceCase.Catch || selected==FishingAcceptanceCase.CatchNight) && !CatchRig.CaptureAndStoreForAutomation())
                     throw new InvalidOperationException("Acceptance catch did not pass the real scoop/store path.");
                 _previousPhase = Session.Phase;
             }
@@ -143,11 +143,12 @@ namespace BoatAttack.Fishing
                 case FishingAcceptanceCase.HomeWorkbench:
                     PrepareAcceptanceHome(selected);break;
                 case FishingAcceptanceCase.HomeGarden:
+                case FishingAcceptanceCase.HomeGardenNight:
                 case FishingAcceptanceCase.FarmHarvest:
                     PrepareAcceptanceHome(FishingAcceptanceCase.HomeInterior);
-                    var gardenFoot=selected==FishingAcceptanceCase.HomeGarden?Home.Origin+new Vector3(12.2f,0,-11):Farm.Target(0).position+new Vector3(-.25f,0,-1.1f);
+                    var gardenFoot=selected!=FishingAcceptanceCase.FarmHarvest?Home.Origin+new Vector3(12.2f,0,-11):Farm.Target(0).position+new Vector3(-.25f,0,-1.1f);
                     if(!Shore.Relocate(gardenFoot,Quaternion.identity))throw new InvalidOperationException("Garden fixture footing is blocked.");
-                    View.ResetLook();View.ApplyShoreLookDelta(new Vector2(0,-(selected==FishingAcceptanceCase.HomeGarden?12:35)/.12f));Farm.Refresh();break;
+                    View.ResetLook();View.ApplyShoreLookDelta(new Vector2(0,-(selected!=FishingAcceptanceCase.FarmHarvest?12:35)/.12f));Farm.Refresh();break;
                 case FishingAcceptanceCase.HomeBarbecue:
                 case FishingAcceptanceCase.HomeGrilledFish:
                     PrepareAcceptanceHome(FishingAcceptanceCase.HomeInterior);

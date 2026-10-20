@@ -27,9 +27,9 @@ namespace BoatAttack.Fishing
             float previous=_fade;_fade=region.Alpha;
             float y=Mathf.Max(174,_height*.16f)+(1-Mathf.SmoothStep(0,1,Mathf.Clamp01(region.Age/1.1f)))*8;
             ReadingVeil(new Rect(542,y-20,516,154),true);
-            WorldLabel(new Rect(600,y-5,400,48),region.Title,34,CreamInk,true,TextAnchor.MiddleCenter);
+            WorldLabel(new Rect(600,y-12,400,62),region.Title,40,CreamInk,true,TextAnchor.MiddleCenter,onPaper:true);
             GiltRule(700,y+46,200);
-            WorldLabel(new Rect(580,y+60,440,60),region.Subtitle.Replace("，","\n").TrimEnd('。'),16,CreamInk,false,TextAnchor.UpperCenter);
+            WorldLabel(new Rect(580,y+60,440,60),region.Subtitle.Replace("，","\n").TrimEnd('。'),16,CreamInk,false,TextAnchor.UpperCenter,onPaper:true);
             _fade=previous;
         }
         private void DrawDialogue()
@@ -61,10 +61,10 @@ namespace BoatAttack.Fishing
             if(!c.Realms.Inside)return;
             var goal=new Rect(1188,126,388,190);
             ReadingVeil(goal,true);
-            WorldLabel(goal.x+18,goal.y+18,352,32,FishingLore.ShrineName(c.Realms.Island),23,AmberInk,true);
+            WorldLabel(goal.x+18,goal.y+14,352,40,FishingLore.ShrineName(c.Realms.Island),27,AmberInk,true,onPaper:true);
             GiltRule(goal.x+18,goal.y+54,240);
-            WorldLabel(goal.x+22,goal.y+68,344,70,FishingLore.TrialObjective(c.Realms.Island).Replace("，","\n").TrimEnd('。'),18,CreamInk);
-            WorldLabel(goal.x+18,goal.y+148,352,27,c.Career.Lore.Cleared(c.Realms.Island)?"回响已收录 · 可自由重访":c.Realms.Trial.Ready?"旅程已回应 · 前往回响所在":"循线索探索这片秘境",15,Mint);
+            WorldLabel(goal.x+22,goal.y+68,344,70,FishingLore.TrialObjective(c.Realms.Island).Replace("，","\n").TrimEnd('。'),18,CreamInk,onPaper:true);
+            WorldLabel(goal.x+18,goal.y+148,352,27,c.Career.Lore.Cleared(c.Realms.Island)?"回响已收录 · 可自由重访":c.Realms.Trial.Ready?"旅程已回应 · 前往回响所在":"循线索探索这片秘境",15,Mint,onPaper:true);
         }
         private void DrawLorePage(Rect r)=>DrawIslandSpread(r,true);
         private void DrawRealmChart()

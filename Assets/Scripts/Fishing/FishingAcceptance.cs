@@ -15,7 +15,7 @@ namespace BoatAttack.Fishing
         public FishingAcceptanceCase CurrentCase { get; private set; }
         public bool FreezeScenario { get; private set; }
         public string Status { get; private set; } = string.Empty;
-        public bool KeepCatchCardVisible => FreezeScenario && (CurrentCase == FishingAcceptanceCase.Catch || FishingAcceptanceCases.IsFindCase(CurrentCase))
+        public bool KeepCatchCardVisible => FreezeScenario && (CurrentCase == FishingAcceptanceCase.Catch || CurrentCase==FishingAcceptanceCase.CatchNight || FishingAcceptanceCases.IsFindCase(CurrentCase))
             && Controller.Session.Phase == CatchPhase.Caught;
         private float _started;
         private FishingAcceptanceOptions Options => Controller.AcceptanceOptions;

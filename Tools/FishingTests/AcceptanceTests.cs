@@ -29,6 +29,8 @@ internal static class AcceptanceTests
         check(Rejects(() => FishingAcceptanceOptions.Parse(new[] { "-fishing-acceptance", "-fishing-acceptance-output", "relative" })), "Acceptance output must be explicit and rooted");
         check(Rejects(() => FishingAcceptanceOptions.Parse(new[] { "-fishing-acceptance", "-fishing-acceptance-smoke", "-fishing-acceptance-capture" })), "Acceptance smoke and screenshot runs are mutually exclusive");
         check(FishingAcceptanceCases.Count == Enum.GetValues(typeof(FishingAcceptanceCase)).Length, "Acceptance catalog covers every case");
+        check(FishingAcceptanceCases.CreateCareer(FishingAcceptanceCase.HomeGarden).Calendar.Hour==10.5f && FishingAcceptanceCases.CreateCareer(FishingAcceptanceCase.HomeGardenNight).Calendar.Hour==22, "Garden day and night captures use the same real location at distinct calendar hours");
+        check(FishingAcceptanceCases.IsCatchCase(FishingAcceptanceCase.CatchNight) && FishingAcceptanceCases.CreateCareer(FishingAcceptanceCase.CatchNight).Calendar.Night,"Night catch card uses a real catch fixture at night");
         var last=(FishingAcceptanceCase)(FishingAcceptanceCases.Count-1);
         check(FishingAcceptanceCases.Cycle(FishingAcceptanceCase.FreePlay, -1) == last
             && FishingAcceptanceCases.Cycle(last, 1) == FishingAcceptanceCase.FreePlay, "Acceptance case cycling wraps safely");
@@ -47,7 +49,7 @@ internal static class AcceptanceTests
                 check(career.Count==3 && FishingCoastRules.Edible(career.Inventory[0].kind),"Barbecue fixture supplies real roastable fish: "+value);
             if(value==FishingAcceptanceCase.CashierDialogue)
                 check(FishingAcceptanceCases.IsShopCase(value),"Cashier conversation fixture uses the actual shop landing");
-            if(value==FishingAcceptanceCase.HomeGarden || value==FishingAcceptanceCase.FarmHarvest)
+            if(value==FishingAcceptanceCase.HomeGarden || value==FishingAcceptanceCase.FarmHarvest || value==FishingAcceptanceCase.HomeGardenNight)
                 check(career.Farm.Ready(0) && career.Farm.Plot(4).growth==2 && career.Farm.Plot(8).growth==1,"Garden fixtures grow through the actual calendar and watering rules");
             if (!FishingAcceptanceCases.IsCatchCase(value)) continue;
             var session = new CatchSession();

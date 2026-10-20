@@ -33,6 +33,7 @@ namespace BoatAttack.EditorTools
             float sixty=0,ninety=0;for(int i=0;i<60;i++)sixty=FishingUITheme.AdvanceNight(sixty,0,1f/60);for(int i=0;i<90;i++)ninety=FishingUITheme.AdvanceNight(ninety,0,1f/90);
             Check(Mathf.Abs(sixty-ninety)<.0001f,"Theme transition duration is stable at desktop and headset frame rates");
             bool headingsComplete=true;
+            Check(FishingUITheme.Heading.name=="MaShanZheng-Regular","Game headings load the expressive Ma Shan Zheng brush-script asset");
             foreach(char glyph in "枪械铁件海风烧烤渔屋鱼箱海边烧烤铁镐头沉海宝匣香烤海鱼海漂旧靴锈蚀铁罐")headingsComplete&=FishingUITheme.Heading.HasCharacter(glyph);
             Check(headingsComplete,"Bundled handwritten font covers the V028 crafting and coast headings");
             foreach(var sprite in new[]{FishingUITheme.Coins,FishingUITheme.FishBox})Check(sprite!=null && sprite.texture.width>=128 && sprite.texture.height>=128,"Resource counter has a bundled pictogram: "+sprite.texture.name);
@@ -52,10 +53,21 @@ namespace BoatAttack.EditorTools
                     FishingUITheme.Tick(night==0?1:0,100);
                     Check(Contrast(FishingUITheme.Ink,FishingUITheme.Paper)>7,"Primary text has strong contrast in "+(night==0?"day":"night"));
                     Check(Contrast(FishingUITheme.Muted,FishingUITheme.Light)>4.5f,"Secondary text stays readable in "+(night==0?"day":"night"));
+                    for(int style=0;style<5;style++)Check(Contrast(FishingUITheme.TitleFill(style),FishingUITheme.Paper)>4.5f,"Coloured glyph fill contrasts with its day/night reading surface: "+night+" style="+style);
+                    if(night==0)Check(Luminance(FishingUITheme.Paper)>.70f,"Day reading surfaces use light parchment instead of a fixed dark wash");
                     if(night==0)Check(Luminance(FishingUITheme.MapWater)>.55f,"Day map water belongs to the cream/light palette");
                     else Check(FishingUITheme.Paper.b>FishingUITheme.Paper.r && Luminance(FishingUITheme.Paper)<.04f,"Night paper uses a restrained deep blue slate");
                     string label=night==0?"day":"night";
                     for(int i=0;i<3;i++)yield return null;
+                    var gameplayHud=c.GetComponent<FishingHUD>();var mask=(Texture2D)typeof(FishingHUD).GetMethod("ReadingMask",Private).Invoke(gameplayHud,null);
+                    Check(mask!=null,"The production reading-mask generator creates the actual gameplay texture");
+                    var rt=RenderTexture.GetTemporary(128,64,0,RenderTextureFormat.ARGB32);var oldTarget=RenderTexture.active;var sample=new Texture2D(128,64,TextureFormat.RGBA32,false);
+                    try
+                    {
+                        Graphics.Blit(mask,rt);RenderTexture.active=rt;sample.ReadPixels(new Rect(0,0,128,64),0,0);sample.Apply();var pixel=sample.GetPixel(64,32);
+                        Check(pixel.r>.98f && pixel.g>.98f && pixel.b>.98f && pixel.a>.85f,"Rendered reading mask remains neutral so the shared day/night tint controls its colour");
+                    }
+                    finally{RenderTexture.active=oldTarget;RenderTexture.ReleaseTemporary(rt);Object.DestroyImmediate(sample);}
                     string hud=Path.Combine(evidence,"desktop-hud-"+label+".png");ScreenCapture.CaptureScreenshot(hud);
                     for(int frame=0;frame<10 && !File.Exists(hud);frame++)yield return null;
                     if(File.Exists(hud))Debug.Log("[V028 UI] DESKTOP CAPTURE: "+hud+" ("+Screen.width+"x"+Screen.height+")");

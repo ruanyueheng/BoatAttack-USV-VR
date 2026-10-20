@@ -63,7 +63,7 @@ namespace BoatAttack.Fishing
                 c.Shore.Tick(true, .05f); c.SelectFieldSlot(0); c.UseFieldItem();
                 RequireShop(!c.ShopOpen && c.Career.Coins == coins && c.Career.Backpack.Selected == 2 && c.Shore.Position == feet && !c.Shore.TryBoard(), "dialogue opening frame cannot purchase, move, equip, use tools or board");
                 c.Residents.Choose(1);
-                RequireShop(c.Residents.Speech.Contains("望远镜") && c.Residents.Speech.Contains("金币不足"), "cashier explains actual goods and purchase rules");
+                RequireShop(c.Residents.CashierTopic==CashierTopic.Goods && c.Residents.Speech.Contains("望远镜") && c.Residents.Speech.Contains("余额不足"), "cashier explains actual goods and purchase rules");
                 c.Residents.Close(); yield return null;
                 RequireShop(ShopKeys(c, keyboard, Key.Tab, Key.Digit1, Key.W, Key.F, Key.G), "opening Tab frame consumed");
                 c.Shore.Tick(true, .05f); c.SelectFieldSlot(0); c.UseFieldItem();
@@ -92,8 +92,8 @@ namespace BoatAttack.Fishing
                     RequireShop(c.Career.Level(track) == 1 && c.Career.Coins == before - price && bag.Selected == 2, "exact price/effect without hotbar leak " + track);
                 }
                 var reloaded = FishingSaveStore.Load(c.SavePath, out var warning);
-                RequireShop(warning.Length == 0 && reloaded.Snapshot().version == 12 && reloaded.Coins == c.Career.Coins
-                    && reloaded.LineLevel == 1 && reloaded.ReelLevel == 1 && reloaded.HoldLevel == 1, "v9 upgrade save round trip");
+                RequireShop(warning.Length == 0 && reloaded.Snapshot().version == c.Career.Snapshot().version && reloaded.Coins == c.Career.Coins
+                    && reloaded.LineLevel == 1 && reloaded.ReelLevel == 1 && reloaded.HoldLevel == 1, "current-schema upgrade save round trip");
                 RequireShop(reloaded.ShoreTaskMask == 1 && reloaded.Backpack.Collected(0) && reloaded.Backpack.Seen(LandAnimalKind.Fox)
                     && reloaded.Backpack.Selected == 2 && reloaded.Backpack.Count(FieldItem.Plank) == bag.Count(FieldItem.Plank), "survey, pickup, animal, hotbar and crafted materials survive shopping");
                 RequireShop(JsonUtility.ToJson(reloaded.Workshop.Snapshot()) == workshopBefore, "all v8 stations, furnace reservation/progress and 64 resource cooldowns preserved exactly");

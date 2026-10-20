@@ -57,21 +57,25 @@ namespace BoatAttack.Fishing
             Segment(centre-Vector2.right*radius*.55f,centre+Vector2.right*radius*.55f,color,1.2f);
             Disc(centre,1.4f,color);
         }
-        private void ReadingVeil(Rect r,bool ornament=false)
+        private Texture2D ReadingMask()
         {
             if(_readingVeil==null)
             {
-                _readingVeil=new Texture2D(128,64,TextureFormat.RGBA32,false){name="Feathered midnight reading wash",wrapMode=TextureWrapMode.Clamp,filterMode=FilterMode.Bilinear,hideFlags=HideFlags.HideAndDontSave};
+                _readingVeil=new Texture2D(128,64,TextureFormat.RGBA32,false){name="Neutral feathered reading mask",wrapMode=TextureWrapMode.Clamp,filterMode=FilterMode.Bilinear,hideFlags=HideFlags.HideAndDontSave};
                 var pixels=new Color[128*64];
                 for(int y=0;y<64;y++)for(int x=0;x<128;x++)
                 {
                     float u=x/127f,v=y/63f;
                     float alpha=.88f*Mathf.SmoothStep(0,1,Mathf.Min(u,1-u)/.08f)*Mathf.SmoothStep(0,1,Mathf.Min(v,1-v)/.18f);
-                    pixels[y*128+x]=new Color(.025f,.055f,.085f,alpha);
+                    pixels[y*128+x]=new Color(1,1,1,alpha);
                 }
                 _readingVeil.SetPixels(pixels);_readingVeil.Apply(false,true);
             }
-            var previous=GUI.color;GUI.color=Faded(Color.white);GUI.DrawTexture(new Rect(r.x-22,r.y-8,r.width+44,r.height+16),_readingVeil,ScaleMode.StretchToFill,true);GUI.color=previous;
+            return _readingVeil;
+        }
+        private void ReadingVeil(Rect r,bool ornament=false)
+        {
+            var previous=GUI.color;GUI.color=Faded(FishingUITheme.Paper);GUI.DrawTexture(new Rect(r.x-22,r.y-8,r.width+44,r.height+16),ReadingMask(),ScaleMode.StretchToFill,true);GUI.color=previous;
             if(ornament)foreach(float x in new[]{r.x+5,r.xMax-5})foreach(float y in new[]{r.y+5,r.yMax-5})
             {
                 float sx=x<r.center.x?1:-1,sy=y<r.center.y?1:-1;var gilt=AmberInk*new Color(1,1,1,.65f);
@@ -107,6 +111,7 @@ namespace BoatAttack.Fishing
 
         private void Label(Rect r, string text, int size, Color color, bool bold = false, TextAnchor align = TextAnchor.UpperLeft)
         {
+            if(bold && size>=25){GildedTitle(r,text,size,TitleFill,align);return;}
             _label.fontSize = size;
             _label.font=bold && size>=25?FishingUITheme.Heading:_font;
             // The bundled face is Medium; synthetic bold distorts small Chinese counters.

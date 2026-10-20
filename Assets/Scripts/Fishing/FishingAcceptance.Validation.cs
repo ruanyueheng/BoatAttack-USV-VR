@@ -42,7 +42,7 @@ namespace BoatAttack.Fishing
                     FreezeScenario = true;
                     if (!Check(() => { if (Controller.Session.Remaining >= remaining) throw new InvalidOperationException("Unfreezing did not resume the real catch clock."); })) yield break;
                 }
-                if (!capture && selected == FishingAcceptanceCase.Catch)
+                if (!capture && (selected == FishingAcceptanceCase.Catch || selected==FishingAcceptanceCase.CatchNight))
                 {
                     yield return new WaitForSecondsRealtime(5f);
                     if (!Check(() =>
@@ -153,7 +153,7 @@ namespace BoatAttack.Fishing
                     throw new InvalidOperationException("Home capture is missing the real workbench crafting page.");
             }
             if(CurrentCase==FishingAcceptanceCase.StarObservation && (!c.Realms.ObservingStars || c.Realms.Island!=3 || c.Realms.Trial.StarFocus<.2f))throw new InvalidOperationException("Observation fixture lacks the actual continuous focus state.");
-            if((CurrentCase==FishingAcceptanceCase.HomeGarden || CurrentCase==FishingAcceptanceCase.FarmHarvest) && (!c.Ashore || !c.Farm.Nearby || !c.Career.Farm.Ready(0) || c.Career.Farm.Plot(8).growth!=1))throw new InvalidOperationException("Garden fixture lacks its saved crops at distinct actual growth stages.");
+            if((CurrentCase==FishingAcceptanceCase.HomeGarden || CurrentCase==FishingAcceptanceCase.FarmHarvest || CurrentCase==FishingAcceptanceCase.HomeGardenNight) && (!c.Ashore || !c.Farm.Nearby || !c.Career.Farm.Ready(0) || c.Career.Farm.Plot(8).growth!=1))throw new InvalidOperationException("Garden fixture lacks its saved crops at distinct actual growth stages.");
             if(CurrentCase>=FishingAcceptanceCase.WindSanctuary && CurrentCase<=FishingAcceptanceCase.StarSanctuary
                 && (!c.Realms.Inside || c.Realms.Island!=(int)CurrentCase-(int)FishingAcceptanceCase.WindSanctuary))throw new InvalidOperationException("V19 sanctuary capture state failed");
             if(CurrentCase==FishingAcceptanceCase.ResidentDialogue && (!c.DialogueOpen || c.Residents.ActiveId!=0))throw new InvalidOperationException("V19 dialogue capture state failed");
@@ -168,7 +168,7 @@ namespace BoatAttack.Fishing
             if (CurrentCase == FishingAcceptanceCase.Landing && (!c.Session.CanLand || !c.NetDeployed)) throw new InvalidOperationException("Landing/net fixture failed.");
             if(CurrentCase==FishingAcceptanceCase.NightBoat && (!c.Career.Calendar.Night || c.FirstPerson || c.Weather.DeckLight==null || !c.Weather.DeckLight.enabled))
                 throw new InvalidOperationException("Night boat fixture did not enable local deck illumination.");
-            if (CurrentCase == FishingAcceptanceCase.Catch && (c.Session.Phase != CatchPhase.Caught || c.LastCatch.Fish == null || c.Career.Count != 1)) throw new InvalidOperationException("Catch/store fixture failed.");
+            if ((CurrentCase == FishingAcceptanceCase.Catch || CurrentCase==FishingAcceptanceCase.CatchNight) && (c.Session.Phase != CatchPhase.Caught || c.LastCatch.Fish == null || c.Career.Count != 1)) throw new InvalidOperationException("Catch/store fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.LegendLeap && (c.Session.Kind != FishKind.Sailfish || c.Session.Beat != FishBeat.Leap)) throw new InvalidOperationException("Legend fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.FullHold && (c.Career.Count != c.Career.Capacity || c.Cast())) throw new InvalidOperationException("Full-hold cast guard failed.");
             if ((CurrentCase == FishingAcceptanceCase.HarborOrders || CurrentCase == FishingAcceptanceCase.MaxUpgrades)

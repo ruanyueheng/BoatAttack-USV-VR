@@ -2,7 +2,7 @@
   "version": "0.35.0",
   "unity": "2022.3.62f1",
   "date": "2026-10-20",
-  "pureFishingChecks": 4161,
+  "pureFishingChecks": 4169,
   "pureInputChecks": 70,
   "unitySuites": [
     "FishingV035Farm",
@@ -12,10 +12,12 @@
     "FishingV019",
     "FishingFirstPerson",
     "FishingV033",
-    "FishingSmoke"
+    "FishingSmoke",
+    "FishingV028UI",
+    "FishingShop"
   ],
   "unitySuitesPassed": true,
-  "standaloneCases": 78,
+  "standaloneCases": 80,
   "captureResolutions": [
     [
       1600,
@@ -28,8 +30,8 @@
   ],
   "fullHudProbePassed": true,
   "windowsFiles": 210,
-  "windowsZipSha256": "95C62F8F515D8142397ED7D38520083FE361AEE2686853711864094C77A5E893",
-  "androidApkSha256": "9A9842F810F87B1A6DFA807F56FE1048D2394ED306A3A053643876B9E56C1EA8",
+  "windowsZipSha256": "820972E3E751515618FFE3E2B001E46163297641168CE2C607FABB02C7D573E1",
+  "androidApkSha256": "71A421A6691FF0B8BBEF90F54F5B8F0070DBC790F17BBCA032936FE64AEB7116",
   "androidPackage": "com.ruanyueheng.tidefin.vr",
   "androidVersionCode": 35,
   "apkV2SignatureVerified": true,
@@ -46,5 +48,6 @@
   },
   "physicalHeadsetTested": false,
   "longDurationPerformanceTested": false,
-  "finalUIRegression": "FishingSmoke passed after selective feathered reading panels, gilt headings, scalable vellum and device-specific landing notices"
+  "finalUIRegression": "Light day/dark night; actual brush-script glyph contours and five independent fill colours; filled day/night catch cards; V028-UI, Shop, V035, V033 and Smoke passed",
+  "glyphPixelVerificationPassed": true
 }

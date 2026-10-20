@@ -102,8 +102,9 @@ namespace BoatAttack.Fishing
             var panel=new GameObject("Small XR table-side instruction",typeof(RectTransform),typeof(Canvas));panel.layer=5;panel.transform.SetParent(transform,false);
             _canvas=panel.GetComponent<Canvas>();_canvas.renderMode=RenderMode.WorldSpace;_canvas.worldCamera=c.viewCamera;
             panel.GetComponent<RectTransform>().sizeDelta=new Vector2(430,148);panel.transform.localScale=Vector3.one*.00065f;
-            var paper=panel.AddComponent<Image>();paper.color=FishingUITheme.Paper;paper.sprite=FishingUITheme.PaperSprite;paper.type=Image.Type.Sliced;paper.material=FishingUITheme.WorldMaterial;paper.raycastTarget=false;
+            var paper=panel.AddComponent<Image>();FishingUITheme.Bind(paper,0);paper.sprite=FishingUITheme.PaperSprite;paper.type=Image.Type.Sliced;paper.material=FishingUITheme.WorldMaterial;paper.raycastTarget=false;
             _title=Label(panel.transform,new Vector2(16,-10),new Vector2(398,38),28);
+            _title.font=FishingUITheme.Heading;var outline=_title.gameObject.AddComponent<UnityEngine.UI.Outline>();outline.effectColor=new Color32(221,171,67,255);outline.effectDistance=new Vector2(1.25f,-1.25f);
             _status=Label(panel.transform,new Vector2(16,-50),new Vector2(398,92),21);panel.SetActive(false);
         }
         private static Transform Marker(Transform model,string name)
@@ -142,7 +143,7 @@ namespace BoatAttack.Fishing
         private static Text Label(Transform parent,Vector2 position,Vector2 size,int font)
         {
             var go=new GameObject("Caption",typeof(RectTransform),typeof(Text));go.layer=5;go.transform.SetParent(parent,false);
-            var text=go.GetComponent<Text>();text.font=FishingUIFont.Font;text.fontSize=font;text.color=FishingUITheme.Ink;text.material=FishingUITheme.WorldMaterial;text.raycastTarget=false;
+            var text=go.GetComponent<Text>();text.font=FishingUIFont.Font;text.fontSize=font;FishingUITheme.Bind(text,2);text.material=FishingUITheme.WorldMaterial;text.raycastTarget=false;
             var rect=text.rectTransform;rect.anchorMin=rect.anchorMax=rect.pivot=new Vector2(0,1);rect.anchoredPosition=position;rect.sizeDelta=size;return text;
         }
         public bool TryTarget(out int index,out Transform root)
