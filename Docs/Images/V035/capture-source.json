@@ -1,0 +1,167 @@
+{
+  "version": "0.35.0",
+  "selectedScreenshots": {
+    "player-sandsieve-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/74-SandSieve-1600x900.png",
+      "sha256": "89e75bc068fe68034b94528f7882bcb4a67b961ad2ea7e3d33b9784fd288eb88",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-ropewinder-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/75-RopeWinder-1600x900.png",
+      "sha256": "22342c7acfce7cc23f6bff754bfe2ed77c309fa9c843c1c7f31583c842260ecd",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-homegarden-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/77-HomeGarden-1600x900.png",
+      "sha256": "d82534dd5023ff86498d5782ec03e3528dda17002dfe7647c813c6cc27c576ea",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-homegardennight-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/79-HomeGardenNight-1600x900.png",
+      "sha256": "60573ff90b5833709b1719ff401b4fc84da94f32987ef476e7cef27711296d96",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-farmharvest-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/78-FarmHarvest-1600x900.png",
+      "sha256": "83605afaee77323ece93cd3292ce59c24a4985ed9ab33922e24562f7184361bf",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-homeinterior-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/49-HomeInterior-1600x900.png",
+      "sha256": "be231d08423b1884b9a2ae3767e03b2f5fbf3aee8b991d8ac988700ce55f4b08",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-starobservation-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/76-StarObservation-1600x900.png",
+      "sha256": "4cd6634e825176a658e60b8a67d40c01d5bc3d908b6b9d2cca2cb4b3a517f40d",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-windsanctuary-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/37-WindSanctuary-1600x900.png",
+      "sha256": "6b0f39f1cf23ed5ea2276615ac18b4d5832ff143bcba681f24f552aaed6f2303",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-forestsanctuary-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/38-ForestSanctuary-1600x900.png",
+      "sha256": "0c0b9ab4488ebea4e42610ea61ba1cc7a162ec0e0197a57d3aeb05104f43fef6",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-wrecksanctuary-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/39-WreckSanctuary-1600x900.png",
+      "sha256": "e8866704f72911c65559e1e8c8ec6bc9c8fea228672696ff54435bba07febd77",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-starsanctuary-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/40-StarSanctuary-1600x900.png",
+      "sha256": "489122039caabe82ade11946248159a6f4b4bd72f26b9db5cb82e948112fddba",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-residentdialogue-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/36-ResidentDialogue-1600x900.png",
+      "sha256": "3a320795cb2124cfe4a763241bfae47d4cd0a11c07423dad2c7219d151ec4d83",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-shopsupplies-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/34-ShopSupplies-1600x900.png",
+      "sha256": "1a17db2ef89c9188cb1a86882bcf4408054e8845f0e4064feeb22b1a5d9f5515",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-startmenu-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/59-StartMenu-1600x900.png",
+      "sha256": "4fce0fb0e6fc1a666deb5e66ccb08b54891dfe9f94236fe9224b3ea710b0673b",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-catch-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/05-Catch-1600x900.png",
+      "sha256": "1f9cf5b0f257baf68b0f228a1b46f01f4f121c60e7b55d536b63a3820a4d334c",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-catchnight-wide.png": {
+      "source": "Logs/desktop-acceptance-717f9b5cdcde4027a79e1ca54d61dc5c/capture-20261020-032850-756a23e1/80-CatchNight-1600x900.png",
+      "sha256": "a7cf12391bca86e6476a834cc988462ced58dd54c3e603a1a882bd940091c51b",
+      "width": 1600,
+      "height": 900,
+      "fullHudProbeVerified": true
+    },
+    "player-sandsieve-5x4.png": {
+      "source": "Logs/desktop-acceptance-7712c478ff5c4822b14576a10e3d7724/capture-20261020-033030-fc31fd2c/74-SandSieve-1280x1024.png",
+      "sha256": "c73dc7282ceda9ca7d7dcbd4b0a842cf55a65aeabcf4330efd6c61da720b8b2e",
+      "width": 1280,
+      "height": 1024,
+      "fullHudProbeVerified": true
+    },
+    "player-ropewinder-5x4.png": {
+      "source": "Logs/desktop-acceptance-7712c478ff5c4822b14576a10e3d7724/capture-20261020-033030-fc31fd2c/75-RopeWinder-1280x1024.png",
+      "sha256": "225372ee246527ae4949aa1acee78db19051a3a2f847c3a45a9e77e319304c81",
+      "width": 1280,
+      "height": 1024,
+      "fullHudProbeVerified": true
+    },
+    "player-homegarden-5x4.png": {
+      "source": "Logs/desktop-acceptance-7712c478ff5c4822b14576a10e3d7724/capture-20261020-033030-fc31fd2c/77-HomeGarden-1280x1024.png",
+      "sha256": "94f2754a98f5965418ae0e5f06117302bef947b8f3959483bd1927a774f66f69",
+      "width": 1280,
+      "height": 1024,
+      "fullHudProbeVerified": true
+    },
+    "player-homegardennight-5x4.png": {
+      "source": "Logs/desktop-acceptance-7712c478ff5c4822b14576a10e3d7724/capture-20261020-033030-fc31fd2c/79-HomeGardenNight-1280x1024.png",
+      "sha256": "c61f578caf98e61e57ac94c3866c65c0bdb5266eb5491b253d49f60350411b4d",
+      "width": 1280,
+      "height": 1024,
+      "fullHudProbeVerified": true
+    },
+    "player-starobservation-5x4.png": {
+      "source": "Logs/desktop-acceptance-7712c478ff5c4822b14576a10e3d7724/capture-20261020-033030-fc31fd2c/76-StarObservation-1280x1024.png",
+      "sha256": "b63ddb7f632e7822f0e360e549cb5b3ea19dcba0851f0265b72ed800cbf92393",
+      "width": 1280,
+      "height": 1024,
+      "fullHudProbeVerified": true
+    },
+    "player-catch-5x4.png": {
+      "source": "Logs/desktop-acceptance-7712c478ff5c4822b14576a10e3d7724/capture-20261020-033030-fc31fd2c/05-Catch-1280x1024.png",
+      "sha256": "8e3750bad5015ef620fb32c9791fe84d99055251a9ccf26f5b1b64e4181cb40f",
+      "width": 1280,
+      "height": 1024,
+      "fullHudProbeVerified": true
+    },
+    "player-catchnight-5x4.png": {
+      "source": "Logs/desktop-acceptance-7712c478ff5c4822b14576a10e3d7724/capture-20261020-033030-fc31fd2c/80-CatchNight-1280x1024.png",
+      "sha256": "dd095d8e4eb6c909e52d037c4bd0bc8317e83435470959602fd8c3c017514b23",
+      "width": 1280,
+      "height": 1024,
+      "fullHudProbeVerified": true
+    }
+  },
+  "scope": "80 captures per aspect passed the full-HUD probe. Selected UI/new-feature screenshots reviewed; physical inputs untested."
+}

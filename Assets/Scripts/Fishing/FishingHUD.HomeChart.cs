@@ -115,6 +115,11 @@ namespace BoatAttack.Fishing
                     c.SelectHomeChartNavigation(i);
                 GUI.enabled = enabled;
             }
+            if(c.Home!=null && c.HomeChartRangeMeters<180)
+            {
+                var garden=HomeChartProject(c.Home.Origin+new Vector3(20,0,0),c.HomeChartCenterXZ,c.HomeChartRangeMeters,area);
+                if(area.Contains(garden)){Disc(garden,5,Mint);Label(garden.x+9,garden.y-10,100,22,"回潮菜园",12,InkText,true);}
+            }
             if (area.Contains(boat) && c.Ashore) { Disc(boat, 7, MapPortColor); Label(boat.x + 9, boat.y - 10, 70, 20, "停泊船", 12, InkText, true); }
             if (player.x > area.x + 12 && player.x < area.xMax - 12 && player.y > area.y + 12 && player.y < area.yMax - 12)
             {

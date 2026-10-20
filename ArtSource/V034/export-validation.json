@@ -1,0 +1,13 @@
+{
+  "meshes": 9,
+  "embeddedImages": 3,
+  "triangles": 23454,
+  "glbBytes": 1595272,
+  "sha256": "2e5eb4d7f26978903301043e990bdf7384721666f2f962a88d9bd45522b46d3d",
+  "fbxHashesMatch": true,
+  "atlasSize": [
+    1024,
+    512
+  ],
+  "source": "harbour-handcraft-v3.blend"
+}

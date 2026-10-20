@@ -114,6 +114,15 @@ namespace BoatAttack.Fishing
         private WorkshopData _data=new WorkshopData();
         public FishingWorkshop(){for(int i=0;i<ResourceCount;i++)_data.resourceCooldowns.Add(0);}
         public bool Initialized=>_data.initialized;
+        public bool HasTimedWork
+        {
+            get
+            {
+                foreach(var station in _data.stations)if(station.remaining>0)return true;
+                foreach(var remaining in _data.resourceCooldowns)if(remaining>0)return true;
+                return false;
+            }
+        }
         public void FinishInitialization()=>_data.initialized=true;
         public IEnumerable<WorkshopStationData> Stations { get {foreach(var s in _data.stations)yield return s.Copy();} }
         public WorkshopStationData Station(int id){var s=Find(id);return s==null?null:s.Copy();}

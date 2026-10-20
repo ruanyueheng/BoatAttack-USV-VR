@@ -45,8 +45,7 @@ namespace BoatAttack.Fishing
             Quad(new Vector3(-.28f,.40f,.87f).normalized*radius,radius*.038f,Color.white);
             Moon=Render("Waxing coastal moon",_sky,Finish("Crescent disc"),_moon);
             _sweep=new GameObject("Home lighthouse rotating amber beam").transform;_sweep.SetParent(transform,false);
-            // V027 authored lens: island origin + (-14, base 3.680129 + 14.46, 10).
-            _sweep.position=_c.Home.Origin+new Vector3(-14,18.14013f,10);
+            _sweep.position=_c.Home.LighthouseLens;
             _beam=Material("FishingLighthouseBeam",new Color(4,3.6f,2.8f,.055f),"Lighthouse sea mist beam");
             var cone=BeamMesh();_owned.Add(cone);
             for(int i=0;i<2;i++)
@@ -58,7 +57,7 @@ namespace BoatAttack.Fishing
             }
             _lens=Material("FishingNightSky",new Color(1.6f,1.1f,.45f),"Warm lighthouse lens");_lens.SetFloat("_Solid",1);
             var lens=GameObject.CreatePrimitive(PrimitiveType.Sphere);lens.name="Home lighthouse warm exterior lens";Destroy(lens.GetComponent<Collider>());
-            lens.transform.SetParent(_sweep,false);lens.transform.localScale=new Vector3(3.02f,.34f,3.02f);lens.GetComponent<Renderer>().sharedMaterial=_lens;
+            lens.transform.SetParent(_sweep,false);lens.transform.localScale=new Vector3(2.6f,.26f,2.6f);lens.GetComponent<Renderer>().sharedMaterial=_lens;
             var lensMesh=Object.Instantiate(lens.GetComponent<MeshFilter>().sharedMesh);lensMesh.name="Luminous lighthouse lens with white vertices";
             var lensColors=new Color[lensMesh.vertexCount];for(int i=0;i<lensColors.Length;i++)lensColors[i]=Color.white;lensMesh.colors=lensColors;
             lens.GetComponent<MeshFilter>().sharedMesh=lensMesh;_owned.Add(lensMesh);

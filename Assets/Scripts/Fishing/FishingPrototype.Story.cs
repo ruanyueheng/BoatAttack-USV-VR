@@ -14,8 +14,8 @@ namespace BoatAttack.Fishing
         public FishingPrologue Prologue { get; private set; }
         private int _storyConsumedFrame = -1;
         public bool DialogueOpen => Residents != null && Residents.Open;
-        public bool StoryBlocksGameplay => HomeChartBlocksGameplay || DialogueOpen || (CoastWorld != null && CoastWorld.MenuOpen) || (Letter != null && Letter.Open) || (Prologue != null && Prologue.Open)
-            || (Home != null && Home.Sleeping) || (Realms != null && Realms.Transitioning) || _storyConsumedFrame == Time.frameCount;
+        public bool StoryBlocksGameplay => HomeChartBlocksGameplay || (HandGames!=null && HandGames.Active) || DialogueOpen || (CoastWorld != null && CoastWorld.MenuOpen) || (Letter != null && Letter.Open) || (Prologue != null && Prologue.Open)
+            || (Home != null && Home.Sleeping) || (Realms != null && (Realms.Transitioning || Realms.ObservingStars)) || _storyConsumedFrame == Time.frameCount;
         internal void StoryModalChanged()
         {
             _storyConsumedFrame = Time.frameCount; CancelWorldAction(); LowerFieldTools();
@@ -26,6 +26,7 @@ namespace BoatAttack.Fishing
         {
             if(CoastWorld!=null && CoastWorld.TickMenuInput(keyboard,focused,xr))return true;
             Regions.Tick(); Realms.Tick();
+            if(Realms.TickObservationInput(keyboard,Mouse.current,focused,xr))return true;
             if(Prologue.Open)
             {
                 if(!focused || Paused){Prologue.Suspend();return true;}

@@ -133,19 +133,19 @@ namespace BoatAttack.Fishing
                     Segment(new Vector2(x, y), new Vector2(x + pixels, y), Muted, 2);
                     Segment(new Vector2(x, y - 3), new Vector2(x, y + 3), Muted, 1);
                     Segment(new Vector2(x + pixels, y - 3), new Vector2(x + pixels, y + 3), Muted, 1);
-                    Label(x + pixels + 5, footer.y + 1, 46, 18, metres.ToString("0.##") + " m", 11, Muted);
+                    WorldLabel(x + pixels + 5, footer.y + 1, 46, 18, metres.ToString("0.##") + " m", 11, Muted);
                 }
                 float legendX = footer.x + 94;
                 Fill(legendX, footer.y + 7, 6, 7, MapLow);
                 Fill(legendX + 6, footer.y + 7, 6, 7, MapLand);
                 Fill(legendX + 12, footer.y + 7, 6, 7, MapHigh);
-                Label(legendX + 21, footer.y + 1, 78, 18, "高程0–20m", 10, Muted);
+                WorldLabel(legendX + 21, footer.y + 1, 78, 18, "高程0–20m", 10, Muted);
                 Fill(legendX + 102, footer.y + 7, 7, 7, MapWater);
-                Label(legendX + 112, footer.y + 1, 40, 18, "水面", 10, Muted);
+                WorldLabel(legendX + 112, footer.y + 1, 40, 18, "水面", 10, Muted);
                 string note = _terrainMap != null && _terrainMap.IsUsable
                     ? "北↑ · 斜纹未知 · 不代表水深 / 可通航" : "北↑ · 地形未烘焙 · 仅显示方位标记";
                 if(!Controller.Ashore && Controller.WaterRoute!=null && Controller.WaterRoute.Failure.Length>0)note=Controller.WaterRoute.Failure;
-                Label(new Rect(footer.x, footer.y + 18, footer.width, 18), note, 11, Muted, false, TextAnchor.MiddleCenter);
+                WorldLabel(new Rect(footer.x, footer.y + 18, footer.width, 18), note, 11, Muted, false, TextAnchor.MiddleCenter);
             }
             finally { GUI.matrix = matrix; GUI.color = color; }
         }

@@ -79,7 +79,6 @@ namespace BoatAttack.Fishing
         private void Update()
         {
             if(_c==null)return;
-            _c.RifleHunting?.RefreshAnimals();
             foreach(var animal in _animals)
             {
                 if(animal.Dead)continue;

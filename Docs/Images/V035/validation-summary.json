@@ -1,0 +1,53 @@
+{
+  "version": "0.35.0",
+  "unity": "2022.3.62f1",
+  "date": "2026-10-20",
+  "pureFishingChecks": 4169,
+  "pureInputChecks": 70,
+  "unitySuites": [
+    "FishingV035Farm",
+    "FishingV035",
+    "FishingMouseFishing",
+    "FishingAngling",
+    "FishingV019",
+    "FishingFirstPerson",
+    "FishingV033",
+    "FishingSmoke",
+    "FishingV028UI",
+    "FishingShop"
+  ],
+  "unitySuitesPassed": true,
+  "standaloneCases": 80,
+  "captureResolutions": [
+    [
+      1600,
+      900
+    ],
+    [
+      1280,
+      1024
+    ]
+  ],
+  "fullHudProbePassed": true,
+  "windowsFiles": 210,
+  "windowsZipSha256": "820972E3E751515618FFE3E2B001E46163297641168CE2C607FABB02C7D573E1",
+  "androidApkSha256": "71A421A6691FF0B8BBEF90F54F5B8F0070DBC790F17BBCA032936FE64AEB7116",
+  "androidPackage": "com.ruanyueheng.tidefin.vr",
+  "androidVersionCode": 35,
+  "apkV2SignatureVerified": true,
+  "sameCertificateAsV034": true,
+  "certificateSha256": "9e285a6d982524c420722d7ebc157fa0643b62c65eca5a0285c5311e000b5437",
+  "portableModel": {
+    "passed": true,
+    "models": 77,
+    "triangles": 1030912,
+    "embeddedImages": 3,
+    "bytes": 80545328,
+    "sha256": "407d025be120ba6d0fc1e6c9195cabe7945019f5e31cbb234827f2a6eb2c15c2",
+    "unexpectedStartupObjects": 0
+  },
+  "physicalHeadsetTested": false,
+  "longDurationPerformanceTested": false,
+  "finalUIRegression": "Light day/dark night; actual brush-script glyph contours and five independent fill colours; filled day/night catch cards; V028-UI, Shop, V035, V033 and Smoke passed",
+  "glyphPixelVerificationPassed": true
+}

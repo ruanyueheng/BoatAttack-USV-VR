@@ -9,12 +9,15 @@ namespace BoatAttack.Fishing
     {
         private static readonly Color[] Day={new Color32(244,228,195,255),new Color32(255,247,230,255),new Color32(49,79,72,255),new Color32(82,104,93,255),new Color32(210,167,110,255),new Color32(109,159,137,255),new Color32(239,145,107,255),new Color32(224,234,211,255),new Color32(226,223,207,255)};
         private static readonly Color[] Night={new Color32(30,42,58,255),new Color32(41,56,74,255),new Color32(246,235,209,255),new Color32(182,198,206,255),new Color32(224,184,119,255),new Color32(137,195,177,255),new Color32(247,166,132,255),new Color32(61,85,99,255),new Color32(51,62,76,255)};
+        private static readonly Color[] DayTitles={new Color32(30,75,79,255),new Color32(43,60,105,255),new Color32(31,76,49,255),new Color32(104,43,54,255),new Color32(70,42,99,255)};
+        private static readonly Color[] NightTitles={new Color32(178,229,218,255),new Color32(188,213,250,255),new Color32(174,227,185,255),new Color32(246,186,176,255),new Color32(220,199,247,255)};
         public static float NightAmount { get; private set; }
         private static bool _initialized;
         public static Color Paper=>Tone(0);public static Color Light=>Tone(1);public static Color Ink=>Tone(2);public static Color Muted=>Tone(3);
         public static Color Gold=>Tone(4);public static Color Sage=>Tone(5);public static Color Coral=>Tone(6);public static Color Selected=>Tone(7);public static Color Disabled=>Tone(8);
         public static Color Tone(int role)=>Color.Lerp(Day[role],Night[role],NightAmount);
         public static Color Blend(Color day,Color night)=>Color.Lerp(day,night,NightAmount);
+        public static Color TitleFill(int style){style=Mathf.Clamp(style,0,DayTitles.Length-1);return Blend(DayTitles[style],NightTitles[style]);}
         public static Color MapWater=>Blend(new Color(.76f,.85f,.82f),new Color(.12f,.22f,.30f));
         public static Color MapLow=>Blend(new Color(.91f,.82f,.63f),new Color(.51f,.49f,.38f));
         public static Color MapLand=>Blend(new Color(.66f,.74f,.58f),new Color(.26f,.39f,.39f));
@@ -60,7 +63,7 @@ namespace BoatAttack.Fishing
         private static Material _material;
         private static Sprite _paper,_edge;
         private static readonly Sprite[] Glyphs=new Sprite[9];
-        public static Font Heading=>_heading!=null?_heading:(_heading=Resources.Load<Font>("FishingUIPrototype/TideHandSC"));
+        public static Font Heading=>_heading!=null?_heading:(_heading=Resources.Load<Font>("FishingUIPrototype/MaShanZheng-Regular"));
         public static Material WorldMaterial=>_material!=null?_material:(_material=new Material(Graphic.defaultGraphicMaterial){name="Coastal paper after water guidance",renderQueue=3200});
         public static Sprite PaperSprite=>_paper!=null?_paper:(_paper=Surface("Paper"));
         public static Sprite EdgeSprite=>_edge!=null?_edge:(_edge=Surface("InkEdge"));

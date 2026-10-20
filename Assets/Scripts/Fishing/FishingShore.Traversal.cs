@@ -52,12 +52,13 @@ namespace BoatAttack.Fishing
         {
             if (_climb == null) { Climbing = false; return; }
             if (jump) { Climbing = false; _motion.Reset(); return; }
-            float distance = Vector3.Distance(_climb.Bottom, _climb.Top);
+            float distance = Vector3.Distance(_climb.Bottom, _climb.ClimbEnd);
             bool effort = input.y > .1f;
             _motion.Exert(effort, Mathf.Abs(input.y) < .1f, dt);
             float speed = Stamina > .08f || input.y < 0 ? 1.8f : .45f;
             _climbProgress = Mathf.Clamp01(_climbProgress + input.y * speed * dt / Mathf.Max(.1f, distance));
-            var target = Vector3.Lerp(_climb.Bottom, _climb.Top, _climbProgress) + Vector3.up * .08f;
+            // Finish the vertical rungs beside the landing before stepping onto its solid floor.
+            var target = Vector3.Lerp(_climb.Bottom, _climb.ClimbEnd, _climbProgress) + Vector3.up * .08f;
             Body.Move(target - Actor.position); WalkSpeed = Mathf.Abs(input.y) * speed;
             var forward = Vector3.ProjectOnPlane(_climb.Top - _climb.Bottom, Vector3.up);
             if (forward.sqrMagnitude > .01f) Actor.rotation = Quaternion.LookRotation(forward);

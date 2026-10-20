@@ -144,8 +144,7 @@ namespace BoatAttack.Fishing
         {
             if(!StartMenuOpen || TitleVoyage.Sailing)return;
             if(!CanContinue){SaveMenuMessage="没有本次可恢复的航程。请选择新建游戏或读取存档。";return;}
-            SaveSettings();TitleVoyage.Close(true);StartMenuOpen=false;MenuControls=false;SaveMenuOpen=false;
-            if(Paused)TogglePause();Notice("继续当前航程 · 场景和进度未重新加载。",4);
+            MenuControls=false;SaveMenuOpen=false;TitleVoyage.Sail(true);
         }
         private bool CanSaveCheckpoint() => _initialized && !HasPendingCatch && !WorldActionBusy && !GuideOpening
             && !Prologue.Open && !Home.Sleeping && !Realms.Inside && !Realms.Transitioning
@@ -197,7 +196,7 @@ namespace BoatAttack.Fishing
         }
         private void ApplySavedCareer(FishingCareer career,FishingResumeData resume)
         {
-            CloseHomeChart();Prologue.Suspend();Home.CancelSleep();Letter.Close();Residents.Close();Realms.Abort();
+            HandGames?.Cancel();CloseHomeChart();Prologue.Suspend();Home.CancelSleep();Letter.Close();Residents.Close();Realms.Abort();
             if(InventoryOpen)ToggleInventory();if(JournalOpen)ToggleJournal();
             CancelGuideOpening();ResetToolInput();CoastWorld.CloseMenu();
             if(Ashore)Shore.BoardImmediately();
@@ -206,6 +205,7 @@ namespace BoatAttack.Fishing
             Fleet.Refresh();Islands.Refresh();Shore.RefreshMarkers();FieldWorld.RefreshPickups();
             WorkshopWorld.RefreshFromCareer();WorkshopWorld.EnsureHomeStations();Expedition.RefreshFromCareer();
             CoastWorld.RefreshSavedProgress();
+            Farm?.Refresh();
             RefreshHold();if(_trophy!=null){_trophy.SetActive(false);Destroy(_trophy);_trophy=null;}if(LegendTrophy)BuildTrophy();
             bool positioned=resume!=null && resume.positioned;
             Teleport(positioned?new Vector3(resume.boatX,resume.boatY,resume.boatZ):spawnPosition,

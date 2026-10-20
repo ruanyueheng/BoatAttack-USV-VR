@@ -139,15 +139,19 @@ namespace BoatAttack.EditorTools
             var bones=character.GetComponentsInChildren<Transform>();var torso=bones.First(t=>t.name=="Body");
             var leftAnkle=bones.First(t=>t.name=="Ankle.L");var rightAnkle=bones.First(t=>t.name=="Ankle.R");
             var torsoStanding=torso.position;var leftStanding=leftAnkle.position;var rightStanding=rightAnkle.position;
-            shore.SetCrouch(true);shore.SyncRider();
-            for(int i=0;i<8;i++)yield return null;
+            c.ToggleInventory();shore.SetCrouch(true);
+            float stanceDeadline=Time.unscaledTime+1;
+            while(!character.IsStanceSettled(true,true) && Time.unscaledTime<stanceDeadline)yield return null;
+            c.ToggleInventory();shore.SyncRider();yield return null;
             Check(Mathf.Abs(torso.position.y-torsoStanding.y+FishingLocomotion.StandingHeight-FishingLocomotion.CrouchingHeight)<.015f,"crouch lowers common torso and thigh parent by the actual capsule height difference");
             Check(Vector3.Distance(leftStanding,leftAnkle.position)<.02f && Vector3.Distance(rightStanding,rightAnkle.position)<.02f,"crouch keeps both ankles attached to independent feet");
             var before=torso.position;
             for(int i=0;i<20;i++){shore.SyncRider();yield return null;}
             Check(Vector3.Distance(before,torso.position)<.015f,"repeated cross-frame pose updates do not accumulate crouch offsets");
             Capture(c,"03-character-crouch",shore.Actor.position+new Vector3(2.5f,1.4f,3.1f),shore.Actor.position+Vector3.up*.7f);
-            shore.SetCrouch(false,true);shore.SyncRider();yield return null;
+            c.ToggleInventory();shore.SetCrouch(false,true);stanceDeadline=Time.unscaledTime+1;
+            while(!character.IsStanceSettled(true,false) && Time.unscaledTime<stanceDeadline)yield return null;
+            c.ToggleInventory();shore.SyncRider();yield return null;
             Check(Vector3.Distance(torsoStanding,torso.position)<.015f && Vector3.Distance(leftStanding,leftAnkle.position)<.02f,"standing restores torso and legs after crouch");
             c.ToggleInventory();
             foreach(var item in new[]{FieldItem.Driftwood,FieldItem.Stone,FieldItem.Fiber,FieldItem.Clay,FieldItem.Sand})
@@ -190,7 +194,9 @@ namespace BoatAttack.EditorTools
             c.OpenCrafting();bag.TryAdd(FieldItem.Stone,8);Check(world.Context==CraftStation.Workbench && world.Craft("furnace"),"placed bench unlocks furnace recipe");
             var saved=c.Career.Snapshot();Check(FishingCareer.TryRestore(saved,out var restored) && restored.Workshop.Station(own)!=null,"placed station survives career round trip");
             Check(world.Remove() && bag.Count(FieldItem.Workbench)==1,"empty player-owned bench can be recovered exactly once");c.ToggleInventory();
-            c.ReturnToHarbor();c.TogglePause();c.CatchRig.Apply(.02f);shore.SyncRider();
+            c.ReturnToHarbor();c.CatchRig.Apply(.02f);stanceDeadline=Time.unscaledTime+1;
+            while(!character.IsStanceSettled(false,false) && Time.unscaledTime<stanceDeadline)yield return null;
+            c.TogglePause();shore.SyncRider();
             // 冻结救援传送后的浮力过渡，跨渲染帧检查坐姿而非拍摄瞬时船体翻滚。
             for(int i=0;i<8;i++)yield return null;
             Check(!c.Ashore && shore.Actor.InverseTransformPoint(torso.position).y<.7f,"boat rider uses stable seated pose after shore return");

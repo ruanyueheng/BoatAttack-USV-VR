@@ -1,0 +1,56 @@
+[
+  {
+    "name": "CraftTable",
+    "triangles": 5016,
+    "vertices": 2576,
+    "sha256": "6e6a195cd4af59137fbf1b270ab6cc54f46a31239ebb906ea16e793de6ff7d1a"
+  },
+  {
+    "name": "LinenMat",
+    "triangles": 220,
+    "vertices": 128,
+    "sha256": "999089f9151718a7730df8e32cc88f83ce7cb36626ffd59f5246b629f0fe405d"
+  },
+  {
+    "name": "SieveFrame",
+    "triangles": 4248,
+    "vertices": 2848,
+    "sha256": "8af6a035d17c79aae571dad0f3914cf12d199f0c7b624c55f106feef6743944f"
+  },
+  {
+    "name": "SieveShell",
+    "triangles": 972,
+    "vertices": 584,
+    "sha256": "f26a9df7a4a513ae7ee1db9d4d461d7fa19e5d293275bc9eed0eee1fa7dc2624"
+  },
+  {
+    "name": "SieveSand",
+    "triangles": 1040,
+    "vertices": 609,
+    "sha256": "bbf998f6b9417c6ee03dd6d6564230655213efa1d5db9c9dd2f86c824c4d5b2c"
+  },
+  {
+    "name": "WinderBody",
+    "triangles": 1424,
+    "vertices": 732,
+    "sha256": "79922c021232406c5c6168580f34fd4adaab67fce4ab3b19a496043c4f359860"
+  },
+  {
+    "name": "WinderCrank",
+    "triangles": 2844,
+    "vertices": 1478,
+    "sha256": "969f38dacdbf3c8ebef690f3d0b9372769b1c718ca2a117e42a69dc7d2604d77"
+  },
+  {
+    "name": "WinderCoil",
+    "triangles": 7680,
+    "vertices": 4000,
+    "sha256": "e5edf6ebdd8dae8609af14e214b2e26b4b8f08b73b1f95e32755cfed11ae8830"
+  },
+  {
+    "name": "StarCharm",
+    "triangles": 10,
+    "vertices": 11,
+    "sha256": "a56fcbb92167ffa13595b84f791d085fd1bf0706d64a87de322c133f8d494b33"
+  }
+]

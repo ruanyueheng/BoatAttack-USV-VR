@@ -25,6 +25,7 @@ namespace BoatAttack.Fishing
         private bool _lanternGlowApplied;
         public const float BinocularScale=.52f;
         private Renderer _heldRenderer;
+        private FieldItem _materialItem=FieldItem.Empty;
         private FieldItem _previewItem;
         private float _previewUntil;
         public void ShowPickupPreview(FieldItem item){_previewItem=item;_previewUntil=Time.time+1.4f;}
@@ -60,11 +61,15 @@ namespace BoatAttack.Fishing
             if(_heldRenderer==null)_heldRenderer=_held.GetComponent<Renderer>();
             _heldRenderer.enabled=!(item==FieldItem.Binoculars && _c.View.OpticalView);
             _heldMesh.sharedMesh=ToolMesh(item);PresentGuideParts(item);
-            if(_lanternGlowApplied){_heldRenderer.SetPropertyBlock(null,1);_lanternGlowApplied=false;}
-            if(_plainToolMaterials==null)_plainToolMaterials=new[]{_palette};
-            _heldRenderer.sharedMaterials=FishingUserTools.Materials(item) ?? _plainToolMaterials;
-            _heldRenderer.shadowCastingMode=item==FieldItem.Lantern?UnityEngine.Rendering.ShadowCastingMode.Off:UnityEngine.Rendering.ShadowCastingMode.On;
-            if(item==FieldItem.HuntingRifle && _c.RifleHunting.Rifle!=null)_heldRenderer.sharedMaterials=_c.RifleHunting.Rifle.GetComponentInChildren<Renderer>().sharedMaterials;
+            if(_materialItem!=item)
+            {
+                if(_lanternGlowApplied){_heldRenderer.SetPropertyBlock(null,1);_lanternGlowApplied=false;}
+                if(_plainToolMaterials==null)_plainToolMaterials=new[]{_palette};
+                _heldRenderer.sharedMaterials=FishingUserTools.Materials(item) ?? _plainToolMaterials;
+                _heldRenderer.shadowCastingMode=item==FieldItem.Lantern?UnityEngine.Rendering.ShadowCastingMode.Off:UnityEngine.Rendering.ShadowCastingMode.On;
+                if(item==FieldItem.HuntingRifle && _c.RifleHunting.Rifle!=null)_heldRenderer.sharedMaterials=_c.RifleHunting.Rifle.GetComponentInChildren<Renderer>().sharedMaterials;
+                _materialItem=item;
+            }
             _c.Hands.GetToolFrame(out var shoulderFrame,out var frame);
             var bodyFrame=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0);
             var eye=_c.Shore.Character.EyePosition;
@@ -98,9 +103,9 @@ namespace BoatAttack.Fishing
                     scale=PickScale;rightPalm=PickPalm;curl=.94f;fingers=PickFingers;
                     // Keep the wrist beside the chest, not beside the eye. Palm orientation
                     // follows the real shaft while fingers remain forward instead of rolled inward.
-                    rotation=bodyFrame*Quaternion.Euler(5,-45,0);
+                    rotation=bodyFrame*Quaternion.Euler(XRSettings.isDeviceActive?5:-5,-45,0);
                     rightRotation=PickHandRotation(rotation,bodyFrame);
-                    position=shoulderFrame+bodyFrame*new Vector3(_c.Shore.Character.HandSide(false)*.12f,.015f,.43f)-rotation*(rightPalm*scale);break;
+                    position=shoulderFrame+bodyFrame*new Vector3(_c.Shore.Character.HandSide(false)*.12f,-.065f,.43f)-rotation*(rightPalm*scale);break;
                 case FieldItem.HuntingSpear:
                     scale=1;rightPalm=SpearPalm;rightRotation=Quaternion.LookRotation(Vector3.up,Vector3.right);
                     fingers=FishingFingerPose.Handle;position=eye+frame*new Vector3(.20f,-.32f,.35f);

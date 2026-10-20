@@ -8,9 +8,12 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingCharacter
     {
-        private Mesh _firstPersonMesh,_xrFirstPersonMesh;
+        private Mesh _firstPersonMesh,_xrFirstPersonMesh,_tabletopMesh;
         public Mesh TrackedHandsMesh=>_xrFirstPersonMesh;
+        public Mesh TabletopArmsMesh=>_tabletopMesh;
         public SkinnedMeshRenderer FirstPersonSkin { get; private set; }
+        private bool _tabletopView;
+        public void SetTabletopView(bool active)=>_tabletopView=active;
         public int HiddenNeckTriangles { get; private set; }
         public int HiddenTorsoTriangles { get; private set; }
 
@@ -51,6 +54,17 @@ namespace BoatAttack.Fishing
                 }
                 _firstPersonMesh.SetTriangles(visible,sub,false);
             }
+            _tabletopMesh=Instantiate(_firstPersonMesh);_tabletopMesh.name="Beach body • tabletop arms and hands";
+            for(int sub=0;sub<source.subMeshCount;sub++)
+            {
+                var triangles=_firstPersonMesh.GetTriangles(sub);var visible=new List<int>();
+                for(int i=0;i<triangles.Length;i+=3)
+                {
+                    if(Weight(armBones,weights[triangles[i]])<.1f && Weight(armBones,weights[triangles[i+1]])<.1f && Weight(armBones,weights[triangles[i+2]])<.1f)continue;
+                    visible.Add(triangles[i]);visible.Add(triangles[i+1]);visible.Add(triangles[i+2]);
+                }
+                _tabletopMesh.SetTriangles(visible,sub,false);
+            }
             _xrFirstPersonMesh=Instantiate(_firstPersonMesh);_xrFirstPersonMesh.name="Beach body • tracked hands and lower body";
             var handBones=new bool[bones.Length];var cutArm=new bool[source.vertexCount];
             for(int i=0;i<bones.Length;i++)handBones[i]=bones[i]!=null && (bones[i].IsChildOf(_leftArm.Wrist) || bones[i].IsChildOf(_rightArm.Wrist));
@@ -84,13 +98,13 @@ namespace BoatAttack.Fishing
         private void SetBodyPresentation(bool firstPerson)
         {
             // 同源近眼躯干遮罩也用于 XR；HMD 投影与实际手柄位置保持独立。
-            bool local=firstPerson;bool tracked=XRSettings.isDeviceActive;
-            FirstPersonSkin.sharedMesh=tracked?_xrFirstPersonMesh:_firstPersonMesh;BodySkin.forceRenderingOff=tracked;
-            foreach(var renderer in _renderers)renderer.shadowCastingMode=ShadowCastingMode.On;
-            HeadSkin.shadowCastingMode=firstPerson?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
+            bool local=firstPerson || _tabletopView;bool tracked=XRSettings.isDeviceActive;
+            FirstPersonSkin.sharedMesh=tracked?_xrFirstPersonMesh:_tabletopView?_tabletopMesh:_firstPersonMesh;BodySkin.forceRenderingOff=tracked;
+            foreach(var renderer in _renderers)renderer.shadowCastingMode=local && _tabletopView && renderer!=BodySkin && renderer!=HeadSkin?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
+            HeadSkin.shadowCastingMode=local?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
             BodySkin.shadowCastingMode=local?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
             FirstPersonSkin.enabled=local;FirstPersonSkin.forceRenderingOff=false;
-            WaistCover.enabled=local;WaistCover.forceRenderingOff=false;
+            WaistCover.enabled=local && !_tabletopView;WaistCover.forceRenderingOff=false;
         }
         public void SetOpticalView(bool observing)
         {
@@ -99,11 +113,11 @@ namespace BoatAttack.Fishing
             bool local=observing && FirstPersonSkin.enabled;
             FirstPersonSkin.forceRenderingOff=local;WaistCover.forceRenderingOff=local;
             foreach(var renderer in _renderers)
-                if(renderer!=BodySkin && renderer!=HeadSkin)renderer.shadowCastingMode=local?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
+                if(renderer!=BodySkin && renderer!=HeadSkin)renderer.shadowCastingMode=local || (_tabletopView && FirstPersonSkin.enabled)?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
         }
         private void OnDestroy()
         {
-            if(_firstPersonMesh!=null)Destroy(_firstPersonMesh);if(_xrFirstPersonMesh!=null)Destroy(_xrFirstPersonMesh);
+            if(_firstPersonMesh!=null)Destroy(_firstPersonMesh);if(_xrFirstPersonMesh!=null)Destroy(_xrFirstPersonMesh);if(_tabletopMesh!=null)Destroy(_tabletopMesh);
             if(_waistMesh!=null)Destroy(_waistMesh);
         }
     }

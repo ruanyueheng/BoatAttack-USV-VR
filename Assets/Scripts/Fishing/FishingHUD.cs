@@ -65,13 +65,14 @@ namespace BoatAttack.Fishing
                 GUI.matrix = Matrix4x4.TRS(new Vector3(_offset, 0, 0), Quaternion.identity, new Vector3(_scale, _scale, 1));
                 if (_label == null) _label = new GUIStyle(GUI.skin.label) { font = _font, wordWrap = true, richText = false, padding = new RectOffset() };
                 _fade = 1f;
+                if(c.HandGames!=null && c.HandGames.Active){DrawHandcraft();if(c.Acceptance!=null)DrawAcceptanceToolbar();return;}
+                if(c.Realms!=null && c.Realms.ObservingStars && !c.Paused){DrawStarObservation();if(c.Acceptance!=null)DrawAcceptanceToolbar();return;}
                 if(c.StartMenuOpen) DrawStartMenu();
                 else if(c.HomeChartOpen) DrawHomeChart();
                 else if(c.SaveMenuOpen) DrawSaveSlots();
                 else if(c.GuideOpening)
                 {
-                    Rounded(new Rect(550,_height-78,500,43),Ink,6);
-                    Label(new Rect(562,_height-70,476,29),"翻开自然手册……  /  Esc 收起",20,InkText,true,TextAnchor.MiddleCenter);
+                    WorldLabel(new Rect(562,_height-70,476,29),"翻开自然手册……  /  Esc 收起",20,CreamInk,true,TextAnchor.MiddleCenter);
                 }
                 else if (c.Letter.Open) DrawLetter();
                 else if (c.DialogueOpen) DrawDialogue();
@@ -89,6 +90,12 @@ namespace BoatAttack.Fishing
                     if (c.HarborDeskOpen && c.AtHarbor) DrawHarborDesk();
                     else if (c.ShowDetails) DrawLegendCard(DrawOrderCard(130) + 14);
                     DrawFocusedAction();
+                    if(c.Farm!=null && c.Farm.Nearby && !RegionTitleVisible)
+                    {
+                        float y=c.Acceptance!=null && !c.Acceptance.IsCapturing?160:88;
+                        ReadingVeil(new Rect(485,y-2,630,42));
+                        WorldLabel(new Rect(500,y+6,600,26),c.Farm.Status,17,CreamInk,false,TextAnchor.MiddleCenter,onPaper:true);
+                    }
                     DrawCatchToast();
                     DrawCompactNotice();
                     DrawHotbar();
@@ -215,6 +222,6 @@ namespace BoatAttack.Fishing
             return "鱼在冲刺 · 放线避开拉力";
         }
 
-        private void OnDestroy() { ReleaseTerrainMap(); ReleaseOptics(); if(_titleVeil!=null)Destroy(_titleVeil); }
+        private void OnDestroy() { ReleaseTerrainMap(); ReleaseOptics(); if(_titleVeil!=null)Destroy(_titleVeil);if(_readingVeil!=null)Destroy(_readingVeil); }
     }
 }

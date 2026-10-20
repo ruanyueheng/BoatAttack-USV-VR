@@ -5,7 +5,7 @@ namespace BoatAttack.Fishing
 {
     /// <summary>Decorative actors share the real world, never the player's physics or save position.</summary>
     [DefaultExecutionOrder(500)]
-    public sealed class FishingTitleVoyage : MonoBehaviour
+    public sealed partial class FishingTitleVoyage : MonoBehaviour
     {
         private FishingPrototype _c;
         private Transform _boat;
@@ -23,12 +23,14 @@ namespace BoatAttack.Fishing
             public Transform Source, Visual;
             public MeshRenderer Renderer;
             public bool WasEnabled;
+            public bool Foliage;
             public Vector3 Position, Scale;
             public Quaternion Rotation;
             public float Phase;
         }
         public int DecorativeCount => _decorations.Count + _boatDecorations.Count;
         public bool Sailing { get; private set; }
+        public bool ResumeLook { get; private set; }
         public float Fade=>Sailing?Mathf.SmoothStep(0,1,Mathf.InverseLerp(3.6f,4.5f,_age)):0;
         public Transform Boat=>_boat;
         public void Build(FishingPrototype c){_c=c;}
@@ -60,16 +62,18 @@ namespace BoatAttack.Fishing
             // The home's open south water gives a readable lighthouse silhouette and a clear exit to the right.
             _origin=_c.Home.Origin+new Vector3(13,0,-39);
             _origin.y=.12f;
-            PrepareDecorations();
+            PositionCamera();PrepareEnvironment();PrepareDecorations();
             _lighthouseSweep=_c.Nightscape!=null?_c.Nightscape.LighthouseSweep:null;
             if(_lighthouseSweep!=null)_lighthouseRotation=_lighthouseSweep.rotation;
             _boat.gameObject.SetActive(true);_age=0;_clock=0;Sailing=false;Present(0);
         }
-        public void Sail(){if(_boat==null || Sailing)return;Sailing=true;_age=0;_c.SaveSettings();}
+        public void Sail(bool resumeLook=false){if(_boat==null || Sailing)return;ResumeLook=resumeLook;Sailing=true;_age=0;_c.SaveSettings();}
         public void Close(bool preserveLook = false)
         {
             if (!_open) return;
             _open = false;
+            if(_environment!=null)_environment.gameObject.SetActive(false);
+            Shader.SetGlobalFloat("_FishingVisualTimeOffset",0);
             RestoreDecorations();
             if(_lighthouseSweep!=null)_lighthouseSweep.rotation=_lighthouseRotation;
             if(_boat!=null)_boat.gameObject.SetActive(false);Sailing=false;
@@ -82,12 +86,16 @@ namespace BoatAttack.Fishing
         {
             if (_decorations.Count == 0)
             {
+                var homeFoliage=transform.Find("V035 Home flowers and orchard");
+                if(homeFoliage!=null)foreach(var source in homeFoliage.GetComponentsInChildren<MeshFilter>())
+                {var renderer=source.GetComponent<MeshRenderer>();if(_decorations.Count<24 && source.sharedMesh!=null && renderer!=null && renderer.enabled)AddDecoration(source,renderer,true);}
                 // 仅开菜单时扫描一次；原物件的 Transform/Collider 始终不动，摆动副本只有网格。
                 foreach (var root in gameObject.scene.GetRootGameObjects())
                 {
                     foreach (var source in root.GetComponentsInChildren<MeshFilter>())
                     {
                         if (_decorations.Count >= 24) break;
+                        if(homeFoliage!=null && source.transform.IsChildOf(homeFoliage))continue;
                         if (source.sharedMesh == null || source.transform.IsChildOf(_boat) || source.transform.IsChildOf(_c.Player.transform)) continue;
                         var renderer = source.GetComponent<MeshRenderer>();
                         if (renderer == null || !renderer.enabled || renderer.isPartOfStaticBatch || source.GetComponent<TextMesh>() != null) continue;
@@ -95,17 +103,11 @@ namespace BoatAttack.Fishing
                         var ancestor = source.transform.parent;
                         for (int depth = 0; depth < 3 && ancestor != null; depth++, ancestor = ancestor.parent)
                             name += "/" + ancestor.name.ToLowerInvariant();
-                        bool flora = name.Contains("plant") || name.Contains("flower") || name.Contains("potted") || name.Contains("palm");
+                        bool foliage=name.Contains("islanddetails");
+                        bool flora = foliage || name.Contains("tree") || name.Contains("bush") || name.Contains("plant") || name.Contains("flower") || name.Contains("potted") || name.Contains("palm");
                         bool hanging = name.Contains("flag") || name.Contains("windbell") || name.Contains("hanging");
                         if ((!flora && !hanging) || FishingPrototype.FlatDistance(source.transform.position, _origin) > 95) continue;
-                        var visual = new GameObject("Title breeze · " + source.name, typeof(MeshFilter), typeof(MeshRenderer));
-                        visual.transform.SetParent(transform, false); visual.layer = source.gameObject.layer;
-                        visual.GetComponent<MeshFilter>().sharedMesh = source.sharedMesh;
-                        var copy = visual.GetComponent<MeshRenderer>(); copy.sharedMaterials = renderer.sharedMaterials;
-                        copy.shadowCastingMode = renderer.shadowCastingMode; copy.receiveShadows = renderer.receiveShadows;
-                        _decorations.Add(new Decoration { Source = source.transform, Renderer = renderer, Visual = visual.transform,
-                            Position = source.transform.position, Rotation = source.transform.rotation, Scale = source.transform.lossyScale,
-                            Phase = _decorations.Count * 1.618f });
+                        AddDecoration(source,renderer,foliage);
                     }
                     if (_decorations.Count >= 24) break;
                 }
@@ -120,13 +122,22 @@ namespace BoatAttack.Fishing
                 if (decoration.Visual.gameObject.activeSelf) decoration.Renderer.enabled = false;
             }
         }
+        private void AddDecoration(MeshFilter source,MeshRenderer renderer,bool foliage)
+        {
+            var visual=new GameObject("Title breeze · "+source.name,typeof(MeshFilter),typeof(MeshRenderer));visual.transform.SetParent(transform,false);visual.layer=source.gameObject.layer;
+            visual.GetComponent<MeshFilter>().sharedMesh=source.sharedMesh;var copy=visual.GetComponent<MeshRenderer>();copy.sharedMaterials=renderer.sharedMaterials;
+            if(foliage){var breeze=new MaterialPropertyBlock();breeze.SetFloat("_TitleBreeze",.3f);copy.SetPropertyBlock(breeze);}
+            copy.shadowCastingMode=renderer.shadowCastingMode;copy.receiveShadows=renderer.receiveShadows;
+            _decorations.Add(new Decoration{Source=source.transform,Renderer=renderer,Visual=visual.transform,Position=source.transform.position,
+                Rotation=source.transform.rotation,Scale=source.transform.lossyScale,Phase=_decorations.Count*1.618f,Foliage=foliage});
+        }
         private void AnimateDecorations(float time)
         {
             foreach (var decoration in _decorations)
             {
                 if (decoration.Visual == null || !decoration.Visual.gameObject.activeSelf) continue;
-                decoration.Visual.SetPositionAndRotation(decoration.Position, decoration.Rotation *
-                    Quaternion.Euler(Mathf.Sin(time * .65f + decoration.Phase) * 1.3f, 0, Mathf.Sin(time * .85f + decoration.Phase) * 1.7f));
+                decoration.Visual.SetPositionAndRotation(decoration.Position, decoration.Rotation * (decoration.Foliage?Quaternion.identity:
+                    Quaternion.Euler(Mathf.Sin(time * .65f + decoration.Phase) * 2.1f, 0, Mathf.Sin(time * .85f + decoration.Phase) * 2.7f)));
             }
             foreach (var decoration in _boatDecorations)
             {
@@ -159,7 +170,13 @@ namespace BoatAttack.Fishing
             _boat.rotation=Quaternion.Euler(Mathf.Sin(time*.7f)*1.1f,80,Mathf.Sin(time*.9f)*1.5f);
             _actor.SampleTitlePose(Application.isFocused || _c.Automated?Time.unscaledDeltaTime:0);
             AnimateDecorations(time);
+            AnimateEnvironment(time);
+            Shader.SetGlobalFloat("_FishingVisualTimeOffset",time);
             if(_lighthouseSweep!=null)_lighthouseSweep.rotation=Quaternion.AngleAxis(time*9,Vector3.up)*_lighthouseRotation;
+            PositionCamera();
+        }
+        private void PositionCamera()
+        {
             var camera=_c.viewCamera;var position=_origin+new Vector3(11,4.9f,-13);
             var target=_origin+new Vector3(-5,2.8f,8);
             camera.transform.SetPositionAndRotation(position,Quaternion.LookRotation(target-position));camera.fieldOfView=49;

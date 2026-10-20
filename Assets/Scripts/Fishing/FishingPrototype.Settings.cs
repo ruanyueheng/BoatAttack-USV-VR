@@ -68,7 +68,8 @@ namespace BoatAttack.Fishing
         public void SetAudioBaseVolume(AudioSource source,float baseVolume)
         {
             if(source==null || float.IsNaN(baseVolume) || float.IsInfinity(baseVolume) || !_settingAudio.TryGetValue(source,out var entry))return;
-            entry.BaseVolume=Mathf.Clamp01(baseVolume);ApplyAudioSettings();
+            baseVolume=Mathf.Clamp01(baseVolume);if(entry.BaseVolume==baseVolume)return;
+            entry.BaseVolume=baseVolume;ApplyAudioSettings();
         }
         public void ApplyAudioSettings()
         {

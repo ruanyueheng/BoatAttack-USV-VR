@@ -10,8 +10,8 @@ namespace BoatAttack.Fishing
         {
             string text=Controller.SaveWarning.Length>0?Controller.SaveWarning:Controller.VisibleMessage;
             if(string.IsNullOrEmpty(text))return;
-            var r=new Rect(320,790,958,64);Glass(r);
-            Label(new Rect(r.x+16,r.y+9,r.width-32,r.height-18),text,17,Controller.SaveWarning.Length>0?Danger:Mint);
+            var r=new Rect(320,790,958,64);
+            WorldLabel(new Rect(r.x+16,r.y+9,r.width-32,r.height-18),text,17,Controller.SaveWarning.Length>0?Danger:Mint);
         }
         public static Rect BackpackPanel => new Rect(288,130,1024,646);
         public static Rect HotbarRect(float height)=>new Rect(556,height-70,488,52);

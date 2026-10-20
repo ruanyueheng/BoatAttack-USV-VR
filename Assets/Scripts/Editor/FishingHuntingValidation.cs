@@ -185,8 +185,8 @@ namespace BoatAttack.EditorTools
                 for(int i=0;i<250;i++)fixture.TickHuntedRespawns(1);
                 automatedProperty.SetValue(c,false);
                 typeof(FishingPrototype).GetMethod("OnApplicationFocus",flags).Invoke(c,new object[]{false});
-                var saved=FishingSaveStore.Load(c.SavePath,out var warning);
-                Check(warning=="" && saved.HuntedAnimal(animal.Id).respawnSeconds==50,"focus loss saves the remaining 50 seconds without another transaction");
+                var saved=FishingSlotStore.Read(c.SavePath,c.ActiveSaveSlot,FishingSlotKind.Auto);
+                Check(saved.Valid && FishingCareer.TryRestore(saved.Data.career,out var restored) && restored.HuntedAnimal(animal.Id)?.respawnSeconds==50,"focus loss saves the remaining 50 seconds in the active automatic slot without another transaction");
             }
             finally
             {

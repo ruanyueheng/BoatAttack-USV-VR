@@ -24,12 +24,16 @@ namespace BoatAttack.Fishing
                 case FieldItem.Lantern:
                     p.Ring(32,14,10,3,Wood);p.Rect(16,23,32,27,Light);p.Rect(12,19,40,6,Steel);p.Rect(12,49,40,7,Steel);p.Line(17,24,17,49,4,Wood);p.Line(47,24,47,49,4,Wood);p.Poly(Wood,28,45,32,29,38,45);break;
                 case FieldItem.Shell:
+                case FieldItem.Turnip:
+                    if(item==FieldItem.Turnip){p.Circle(32,37,17,Light);p.Poly(Green,31,24,14,10,30,13,35,4,44,9,36,24);p.Line(31,50,27,59,3,Light);break;}
                     p.Poly(Light,8,27,14,15,25,10,38,10,51,19,57,30,36,53,27,53);for(int i=0;i<5;i++)p.Line(31,48,13+i*9,22-Mathf.Sin(i*.8f)*7,2,Wood);break;
                 case FieldItem.Driftwood:case FieldItem.Stick:
                     p.Line(12,48,49,13,item==FieldItem.Stick?7:14,Wood);p.Line(29,32,51,34,5,Wood);p.Line(14,47,47,16,2,Light);break;
                 case FieldItem.Plank:
                     p.Poly(Wood,7,22,48,9,58,40,16,54);p.Line(15,28,48,17,2,Light);p.Line(18,38,51,27,2,Ink);p.Line(20,47,54,36,2,Light);break;
                 case FieldItem.Fiber:
+                case FieldItem.TurnipSeeds:
+                    if(item==FieldItem.TurnipSeeds){p.Rect(14,10,36,45,Wood);p.Rect(18,15,28,28,Light);p.Circle(31,31,8,Green);p.Circle(25,49,2,Ink);p.Circle(38,48,2,Ink);break;}
                     p.Line(22,53,40,11,3,Light);p.Line(31,52,19,13,3,Green);p.Line(35,52,50,19,3,Green);p.Poly(Green,25,30,12,21,13,36,30,43);p.Poly(Green,34,30,48,9,48,26,32,41);p.Line(24,45,40,45,4,Wood);break;
                 case FieldItem.Rope:
                     p.Ring(31,31,23,7,Wood);p.Ring(31,31,12,5,Light);p.Line(48,43,53,55,5,Wood);break;

@@ -15,8 +15,8 @@ internal static class LoreTests
             check(!trial.Ready && !trial.Use(-1) && !trial.Use(3), "V19: trial starts unsolved and rejects invalid devices " + island);
             if (island == 0) { check(!trial.Use(0) && trial.Progress == 0, "V19: wrong bell resets"); trial.Use(2);trial.Tick(1);trial.Use(0);trial.Tick(1);trial.Use(1); }
             if (island == 1) { trial.Use(0);trial.Use(1);trial.Use(1);trial.Use(2);trial.Use(2);trial.Use(2);check(!trial.Ready,"V032: light needs sustained growth");trial.Tick(5); }
-            if (island == 2) {check(!trial.Use(0),"V032: submerged cargo cannot be pushed");trial.Use(1);trial.Tick(4);trial.Use(0);check(!trial.Ready,"V032: one cargo step does not load the plate");trial.Use(0);trial.Use(1);trial.Tick(4);}
-            if (island == 3) {trial.Use(0);trial.Use(1);trial.Use(1);}
+            if (island == 2) {check(!trial.Use(0),"V035: submerged cargo cannot be pushed");trial.Use(1);trial.Tick(4);trial.Use(0);check(trial.CargoProgress==0,"V035: a tap cannot teleport cargo");for(int i=0;i<72;i++)trial.PushCargo(.1f);trial.Use(1);trial.Tick(4);}
+            if (island == 3) for(int stage=0;stage<3;stage++)for(int frame=0;frame<16;frame++)trial.Observe(FishingShrineTrial.StarTargetYaw(stage),FishingShrineTrial.StarTargetPitch(stage),.1f,true);
             check(trial.Ready, "V19: each distinct puzzle has a reachable solution " + island);
             check(c.CompleteShrine(island) == 90 && c.CompleteShrine(island) == 0, "V19: shrine pays once " + island);
             check(FishingCareer.TryRestore(c.Snapshot(), out var restored) && restored.Lore.Cleared(island), "V19: shrine survives reload " + island); c = restored;
@@ -32,14 +32,25 @@ internal static class LoreTests
         check(FishingCareer.TryRestore(data, out c) && c.CompleteShrine(0) == 0 && !c.Lore.Cleared(0), "V19: wallet cap never consumes unpaid echo");
         var reset = new FishingShrineTrial(0); reset.Use(2); reset.Use(1);
         check(reset.Progress == 0 && reset.State(2) == 0, "V19: failed melody clears visible bell state");
-        var prism = new FishingShrineTrial(3); for (int i = 0; i < 4; i++) prism.Use(0);
-        check(prism.State(0) == 0, "V19: star dial wraps at north");
-        check(prism.State(1)==0,"V032: coupled dial also wraps without overflow");
+        var prism = new FishingShrineTrial(3); for (int i = 0; i < 40; i++) prism.Use(0);
+        check(prism.StarStage==0 && !prism.Ready,"V035: button presses cannot bypass telescope observation");
+        for(int i=0;i<30;i++)prism.Observe(0,10,.1f,true);
+        check(prism.StarStage==0 && prism.StarFocus==0,"V035: focusing on the wrong sky direction never advances");
+        float yaw=FishingShrineTrial.StarTargetYaw(0),pitch=FishingShrineTrial.StarTargetPitch(0);
+        prism.Observe(yaw,pitch,.1f,true);check(prism.StarFocus>0,"V035: the release test first establishes real focus");prism.Observe(yaw,pitch,.1f,false);
+        check(prism.StarFocus==0,"V035: releasing focus breaks an incomplete observation");
+        prism.Observe(float.NaN,pitch,.1f,true);prism.Observe(yaw,pitch,9,true);
+        check(prism.StarFocus==0 && prism.StarStage==0,"V035: invalid coordinates and long frame gaps cannot finish an observation");
         var rhythm=new FishingShrineTrial(0);rhythm.Use(2);check(!rhythm.Use(0) && rhythm.Progress==0,"V032: mashed melody is rejected");
-        rhythm.Use(2);rhythm.Tick(8.1f);check(rhythm.Progress==0,"V032: abandoned melody resets");
+        rhythm.Use(2);rhythm.Tick(8.1f);check(rhythm.Progress==1,"V035: the melody allows real traversal between platforms");
+        rhythm.Tick(22);check(rhythm.Progress==0,"V035: an abandoned traversal melody still resets");
         var growth=new FishingShrineTrial(1);growth.Use(0);growth.Use(1);growth.Use(1);for(int i=0;i<3;i++)growth.Use(2);growth.Tick(2.5f);
         check(Math.Abs(growth.Growth-.5f)<.001f,"V032: seedlings grow with time, not button counts");growth.Use(0);growth.Tick(1.5f);check(growth.Growth==0,"V032: misdirected light loses growth");
-        var hydraulic=new FishingShrineTrial(2);hydraulic.Use(1);hydraulic.Tick(4);hydraulic.Use(0);hydraulic.Use(0);check(!hydraulic.Use(0),"V032: cargo stops on the plate");
+        var hydraulic=new FishingShrineTrial(2);hydraulic.Use(1);hydraulic.Tick(4);
+        check(!hydraulic.PushCargo(float.PositiveInfinity) && !hydraulic.PushCargo(5) && hydraulic.CargoProgress==0,"V035: invalid or unobserved cargo movement is rejected");
+        for(int i=0;i<35;i++)hydraulic.PushCargo(.1f);
+        check(hydraulic.CargoProgress>.49f && hydraulic.CargoProgress<.51f && !hydraulic.Ready,"V035: cargo progress reflects sustained physical pushing time");
+        for(int i=0;i<40;i++)hydraulic.PushCargo(.1f);check(!hydraulic.Use(0),"V035: cargo stops on the plate");
         hydraulic.Use(1);hydraulic.Tick(2);check(!hydraulic.Ready && Math.Abs(hydraulic.WaterLevel-.5f)<.001f,"V032: float bridge needs enough water");
         hydraulic.Tick(float.PositiveInfinity);check(Math.Abs(hydraulic.WaterLevel-.5f)<.001f,"V032: invalid time cannot solve hydraulics");
     }

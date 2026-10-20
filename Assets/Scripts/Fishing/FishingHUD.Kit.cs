@@ -21,6 +21,8 @@ namespace BoatAttack.Fishing
         private static Color ButtonOff => FishingUITheme.Disabled;
         private static Color InkText => FishingUITheme.Ink;
         private Rect _pressedButton;
+        private Texture2D _readingVeil;
+        private GUIStyle _paperStyle;
 
         // Opacity multiplier for everything drawn through this kit (used by fading cards).
         private float _fade = 1f;
@@ -49,19 +51,67 @@ namespace BoatAttack.Fishing
             GUIUtility.RotateAroundPivot(degrees, new Vector2(screen.x, screen.y));
         }
 
-        /// <summary>Raised card: soft drop shadow, warm ivory body, hairline edge and an accent tick.</summary>
+        private void GiltStar(Vector2 centre,float radius,Color color)
+        {
+            Segment(centre-Vector2.up*radius,centre+Vector2.up*radius,color,1.2f);
+            Segment(centre-Vector2.right*radius*.55f,centre+Vector2.right*radius*.55f,color,1.2f);
+            Disc(centre,1.4f,color);
+        }
+        private Texture2D ReadingMask()
+        {
+            if(_readingVeil==null)
+            {
+                _readingVeil=new Texture2D(128,64,TextureFormat.RGBA32,false){name="Neutral feathered reading mask",wrapMode=TextureWrapMode.Clamp,filterMode=FilterMode.Bilinear,hideFlags=HideFlags.HideAndDontSave};
+                var pixels=new Color[128*64];
+                for(int y=0;y<64;y++)for(int x=0;x<128;x++)
+                {
+                    float u=x/127f,v=y/63f;
+                    float alpha=.88f*Mathf.SmoothStep(0,1,Mathf.Min(u,1-u)/.08f)*Mathf.SmoothStep(0,1,Mathf.Min(v,1-v)/.18f);
+                    pixels[y*128+x]=new Color(1,1,1,alpha);
+                }
+                _readingVeil.SetPixels(pixels);_readingVeil.Apply(false,true);
+            }
+            return _readingVeil;
+        }
+        private void ReadingVeil(Rect r,bool ornament=false)
+        {
+            var previous=GUI.color;GUI.color=Faded(FishingUITheme.Paper);GUI.DrawTexture(new Rect(r.x-22,r.y-8,r.width+44,r.height+16),ReadingMask(),ScaleMode.StretchToFill,true);GUI.color=previous;
+            if(ornament)foreach(float x in new[]{r.x+5,r.xMax-5})foreach(float y in new[]{r.y+5,r.yMax-5})
+            {
+                float sx=x<r.center.x?1:-1,sy=y<r.center.y?1:-1;var gilt=AmberInk*new Color(1,1,1,.65f);
+                Segment(new Vector2(x,y+sy*18),new Vector2(x,y+sy*6),gilt);
+                Segment(new Vector2(x,y+sy*6),new Vector2(x+sx*6,y),gilt);
+                Segment(new Vector2(x+sx*6,y),new Vector2(x+sx*24,y),gilt);
+            }
+        }
+        private void GiltRule(float x,float y,float width)
+        {
+            Segment(new Vector2(x,y),new Vector2(x+width*.5f-12,y),AmberInk*new Color(1,1,1,.65f));
+            Segment(new Vector2(x+width*.5f+12,y),new Vector2(x+width,y),AmberInk*new Color(1,1,1,.65f));
+            GiltStar(new Vector2(x+width*.5f,y),5,AmberInk);
+        }
+        /// <summary>Reading/choice surfaces use textured vellum with restrained gilt corner work.</summary>
         private void Card(Rect r, Color accent)
         {
-            Rounded(new Rect(r.x, r.y+3, r.width, r.height), new Color(.20f,.17f,.10f,.14f), 10);
-            Rounded(r, Ink, 10);
-            Outline(r, Gold*new Color(1,1,1,.65f), 10);
-            Outline(new Rect(r.x+4,r.y+4,r.width-8,r.height-8), Hairline*.45f, 8);
-            Fill(r.x+24,r.y,Mathf.Min(84,r.width-48),2,accent);
-            foreach(float x in new[]{r.x+9,r.xMax-9})Disc(new Vector2(x,r.y+9),1.5f,accent*new Color(1,1,1,.5f));
+            Rounded(new Rect(r.x-2,r.y+4,r.width+4,r.height),new Color(.015f,.035f,.055f,.30f),9);
+            if(_paperStyle==null){_paperStyle=new GUIStyle{border=new RectOffset(24,24,24,24)};_paperStyle.normal.background=FishingUITheme.PaperSprite.texture;}
+            var previous=GUI.color;GUI.color=Faded(Color.Lerp(Ink,FishingUITheme.Blend(new Color(.81f,.75f,.61f),new Color(.08f,.14f,.19f)),.25f));
+            if(Event.current.type==EventType.Repaint)_paperStyle.Draw(r,GUIContent.none,false,false,false,false);
+            GUI.color=previous;
+            Outline(r,SeaInk*new Color(1,1,1,.70f),8,3);
+            Outline(new Rect(r.x+3,r.y+3,r.width-6,r.height-6),Hairline,6);
+            foreach(float x in new[]{r.x+13,r.xMax-13})foreach(float y in new[]{r.y+13,r.yMax-13})
+            {
+                float sx=x<r.center.x?1:-1,sy=y<r.center.y?1:-1;
+                Segment(new Vector2(x+sx*5,y),new Vector2(x+sx*28,y),Gold,1.2f);
+                Segment(new Vector2(x,y+sy*5),new Vector2(x,y+sy*22),Gold,1.2f);
+                GiltStar(new Vector2(x,y),3,accent);
+            }
         }
 
         private void Label(Rect r, string text, int size, Color color, bool bold = false, TextAnchor align = TextAnchor.UpperLeft)
         {
+            if(bold && size>=25){GildedTitle(r,text,size,TitleFill,align);return;}
             _label.fontSize = size;
             _label.font=bold && size>=25?FishingUITheme.Heading:_font;
             // The bundled face is Medium; synthetic bold distorts small Chinese counters.
@@ -83,9 +133,11 @@ namespace BoatAttack.Fishing
             bool hover = enabled && r.Contains(Event.current.mousePosition);
             if(Event.current.rawType==EventType.MouseDown && Event.current.button==0 && hover)_pressedButton=r;
             bool pressed=enabled && _pressedButton==r && GUIUtility.hotControl!=0;
-            Color fill = !enabled ? ButtonOff : pressed?FishingUITheme.Selected:primary?FishingUITheme.Selected:hover?ButtonHover:ButtonFill;
-            Rounded(r, fill, 6);
-            Outline(r,!enabled?Hairline:pressed?InkText:primary||hover?Mint:Hairline,6,pressed||primary?2:1);
+            if(primary || hover || pressed)
+            {
+                Rounded(r,(!enabled?ButtonOff:pressed?FishingUITheme.Selected:primary?FishingUITheme.Selected:ButtonHover)*new Color(1,1,1,.65f),4);
+                Fill(r.x+12,r.yMax-2,r.width-24,1,primary || pressed?Gold:Mint);
+            }
             Color ink = !enabled ? Faint : Color.white;
             Label(r, text, size, ink, true, TextAnchor.MiddleCenter);
             return GUI.Button(r, GUIContent.none, GUIStyle.none) && enabled;

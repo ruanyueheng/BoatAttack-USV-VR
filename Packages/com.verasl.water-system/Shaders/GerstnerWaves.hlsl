@@ -1,5 +1,6 @@
 ﻿#ifndef GERSTNER_WAVES_INCLUDED
 #define GERSTNER_WAVES_INCLUDED
+float _FishingVisualTimeOffset;
 
 uniform uint 	_WaveCount; // how many waves, set via the water component
 
@@ -30,7 +31,7 @@ WaveStruct GerstnerWave(half2 pos, float waveCountMulti, half amplitude, half di
 #if defined(_STATIC_SHADER)
 	float time = 0;
 #else
-	float time = _Time.y;
+	float time = _Time.y + _FishingVisualTimeOffset;
 #endif
 
 	////////////////////////////////wave value calculations//////////////////////////

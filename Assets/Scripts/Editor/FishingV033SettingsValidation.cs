@@ -29,7 +29,7 @@ namespace BoatAttack.EditorTools
                 c.View.ResetLook();c.SetSetting("Sensitivity",.25f);c.View.ApplyBoatLookDelta(new Vector2(40,10));c.View.ApplyView(true,true);
                 var rotation=c.viewCamera.transform.rotation;c.View.ResetLook();c.SetSetting("Sensitivity",2.5f);c.View.ApplyBoatLookDelta(new Vector2(40,10));c.View.ApplyView(true,true);
                 Check(Quaternion.Angle(rotation,c.viewCamera.transform.rotation)>8,"Boat camera rotation actually changes with sensitivity");
-                c.OpenStartMenu();c.SetSetting("Music",0);c.ContinueFromMenu();
+                c.OpenStartMenu();c.SetSetting("Music",0);c.ContinueFromMenu();if(c.TitleVoyage.Sailing)c.FinishTitleVoyage();
                 Check(c.MusicVolume==0 && music.volume==0,"Menu-to-game settings do not reset music volume");
                 c.SetSetting("Master",0);Check(AudioListener.volume==0,"Master zero is actual silence");
                 c.RestoreAudioSettings();Check(Mathf.Abs(music.volume-1)<.001f && !music.mute,"Audio restoration returns borrowed source settings");c.ApplyAudioSettings();

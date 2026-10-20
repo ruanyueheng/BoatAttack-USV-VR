@@ -170,6 +170,7 @@ namespace BoatAttack.Fishing
         private void Update()
         {
             if(_c==null || _c.Paused || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen))return;
+            bool progressing=State.HasTimedWork;
             bool done=State.Tick(Time.deltaTime);
             if(Time.time>=_senseAt)
             {
@@ -183,7 +184,7 @@ namespace BoatAttack.Fishing
                     if(sign.gameObject.activeSelf){sign.rotation=Quaternion.LookRotation(sign.position-_c.viewCamera.transform.position);sign.GetComponent<TextMesh>().color=FishingUITheme.Ink;}
                 }
             }
-            if(done || Time.time>=_saveAt){_saveAt=Time.time+10;_c.Save();}
+            if(done || (progressing && Time.time>=_saveAt)){_saveAt=Time.time+10;_c.Save();}
         }
         public bool Interact()
         {

@@ -26,7 +26,7 @@ namespace BoatAttack.EditorTools
             c.Career.Calendar.AdvanceToHour(13);typeof(FishingPrototype).GetMethod("Save",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(c,null);
             Check(File.ReadAllText(manualPath)==manual,"Autosave never overwrites the manual snapshot");
             Check(c.SlotInfo(0,FishingSlotKind.Manual).Data.career.calendar.minute!=c.Career.Calendar.Minute,"Manual checkpoint remains independently readable");
-            c.CloseSaveMenu();c.ContinueFromMenu();yield return null;
+            c.CloseSaveMenu();c.ContinueFromMenu();if(c.TitleVoyage.Sailing)c.FinishTitleVoyage();yield return null;
             Check(!c.StartMenuOpen && !c.Paused && ReferenceEquals(original,c.Career),"Continue does not reload or replace career");
             Check(FishingPrototype.FlatDistance(boat,c.Player.transform.position)<1 && c.NavigationTarget==nav,"Continue preserves playable boat and navigation");
             c.OpenStartMenu();c.OpenSaveMenu("load");c.RequestSlotAction(0,"load");
@@ -42,12 +42,12 @@ namespace BoatAttack.EditorTools
             Check(!ReferenceEquals(original,c.Career) && !c.StartMenuOpen && !c.Paused,"Explicit load restores the disk snapshot and exits title");
             Check(c.Career.Calendar.Minute<13*60,"Load differs from Continue by restoring saved clock");
             c.OpenStartMenu();c.OpenSaveMenu("new");c.RequestSlotAction(0,"new");
-            Check(c.SaveConfirmation.Contains("覆盖"),"Starting in an occupied slot has an overwrite confirmation");c.CancelSaveConfirmation();c.CloseSaveMenu();c.ContinueFromMenu();
+            Check(c.SaveConfirmation.Contains("覆盖"),"Starting in an occupied slot has an overwrite confirmation");c.CancelSaveConfirmation();c.CloseSaveMenu();c.ContinueFromMenu();if(c.TitleVoyage.Sailing)c.FinishTitleVoyage();
             c.CloseSaveMenu();
             var resumable=typeof(FishingPrototype).GetField("_sessionResumable",BindingFlags.Instance|BindingFlags.NonPublic);
-            c.OpenStartMenu();resumable.SetValue(c,false);c.ContinueFromMenu();
+            c.OpenStartMenu();resumable.SetValue(c,false);c.ContinueFromMenu();if(c.TitleVoyage.Sailing)c.FinishTitleVoyage();
             Check(c.StartMenuOpen && c.SaveMenuMessage.Contains("没有"),"No-session Continue gives a helpful prompt without starting a new game");
-            resumable.SetValue(c,true);c.ContinueFromMenu();
+            resumable.SetValue(c,true);c.ContinueFromMenu();if(c.TitleVoyage.Sailing)c.FinishTitleVoyage();
             c.SelectNavigation(c.HomeNavigationIndex);
             var berth=c.Home.Berth+Vector3.up;var rb=c.Player.engine.RB;rb.position=berth;rb.rotation=Quaternion.identity;rb.velocity=rb.angularVelocity=Vector3.zero;c.Player.transform.SetPositionAndRotation(berth,Quaternion.identity);Physics.SyncTransforms();
             for(int i=0;i<12;i++)yield return null;
@@ -56,7 +56,7 @@ namespace BoatAttack.EditorTools
             yield return null;
             c.OpenStartMenu();c.OpenSaveMenu("save");c.RequestSlotAction(1,"save");if(c.SaveConfirmation.Length>0)c.ConfirmSaveAction();
             var shore=c.SlotInfo(1,FishingSlotKind.Manual);Check(shore.Valid && shore.Data.resume.ashore,"Ashore manual snapshot stores supported feet and moored boat");
-            c.CloseSaveMenu();c.ContinueFromMenu();c.ReturnToHarbor();c.OpenStartMenu();c.OpenSaveMenu("load");c.RequestSlotAction(1,"load");c.ConfirmSaveAction();yield return null;
+            c.CloseSaveMenu();c.ContinueFromMenu();if(c.TitleVoyage.Sailing)c.FinishTitleVoyage();c.ReturnToHarbor();c.OpenStartMenu();c.OpenSaveMenu("load");c.RequestSlotAction(1,"load");c.ConfirmSaveAction();yield return null;
             Check(c.Ashore && FishingPrototype.FlatDistance(c.Shore.Position,c.Home.WakePoint)<.2f,"Load restores home scene progress rather than restarting at harbor");
             // Additional settings, real chart rendering and consecutive-frame skeleton assertions.
             var settings=FishingV033SettingsValidation.Checks(c);while(settings.MoveNext())yield return settings.Current;

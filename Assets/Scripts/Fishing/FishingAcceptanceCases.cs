@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace BoatAttack.Fishing
 {
@@ -14,13 +14,13 @@ namespace BoatAttack.Fishing
         ForestIslandLanding, WreckIslandLanding, StarIslandLanding, HomeInterior, HomeWorkbench, HomeBarbecue, HomeGrilledFish, CashierDialogue,
         BootCatch, CanCatch, TreasureCatch, LetterEnvelope, LetterPaper, StartMenu, MenuControls, NatureJournal, LegendJournal, ShoreJournal, GuideOpening, HomeMoonlight,
         MenuGraphics,MenuAudio,Departure,ArchIslet,FireflyIslet,
-        SaveSlots,SaveOverwrite,HomeChart
+        SaveSlots,SaveOverwrite,HomeChart,SandSieve,RopeWinder,StarObservation,HomeGarden,FarmHarvest,HomeGardenNight,CatchNight
     }
 
     /// <summary>Deterministic fixtures built through the production rules, not unchecked save JSON.</summary>
     public static class FishingAcceptanceCases
     {
-        public const int Count = 73;
+        public const int Count = 80;
         private static readonly string[] Titles =
         {
             "自由实玩 / 继续验收进度", "咬钩提示", "高张力收线", "抄网时机", "捕获与后续反馈", "传说跃水",
@@ -33,7 +33,7 @@ namespace BoatAttack.Fishing
             "潮林岛实际登陆", "沉船沙洲实际登陆", "星望遗迹岛实际登陆", "回潮渔屋生活与工坊", "家中工作台与图示配方", "屋旁烧烤与鱼箱选鱼", "炭火烤鱼与领取", "汐禾分支对话",
             "旧鞋幽默钓获卡", "罐头幽默钓获卡", "宝匣惊喜钓获卡", "海风邮戳信封", "牛皮纸手写来信", "实时启航菜单", "按键图示与灵敏度", "插画自然手册", "金帆传说线索", "沿岸调查卡片", "双手翻开自然手册", "家岛月色与环扫灯塔",
             "画面与视野设置","独立音量设置","开船离屏过渡","白帆拱湾","萤火沙洲",
-            "三槽存档与手动自动记录","手动存档覆盖确认","家中航线书桌与独立海图"
+            "三槽存档与手动自动记录","手动存档覆盖确认","家中航线书桌与独立海图","潮汐摇筛 · 左右轻摇寻贝","手摇绕绳 · 三圈制绳","星境望远镜 · 连续调镜与对焦","扩建家岛与回潮菜园","海风萝卜 · 成熟与收获","家岛夜间深色主题与金边书法标题","夜间钓获卡与深色填充"
         };
 
         public static string Title(FishingAcceptanceCase value)
@@ -61,7 +61,7 @@ namespace BoatAttack.Fishing
             return FieldItem.FieldGuide;
         }
         public static bool IsCatchCase(FishingAcceptanceCase value)
-            => value >= FishingAcceptanceCase.Bite && value <= FishingAcceptanceCase.LegendLeap;
+            => (value >= FishingAcceptanceCase.Bite && value <= FishingAcceptanceCase.LegendLeap) || value==FishingAcceptanceCase.CatchNight;
 
         public static FishingCareer CreateCareer(FishingAcceptanceCase value)
         {
@@ -83,6 +83,18 @@ namespace BoatAttack.Fishing
                     value = FishingSpecies.Value(kind, false, grams) };
                 if (!career.Store(fish)) throw new InvalidOperationException("Acceptance cargo was rejected.");
             }
+            if(value==FishingAcceptanceCase.HomeGarden || value==FishingAcceptanceCase.FarmHarvest || value==FishingAcceptanceCase.HomeGardenNight)
+            {
+                career.Farm.ClaimStarter(career.Backpack);
+                for(int i=0;i<FishingFarm.PlotCount;i++){career.Farm.Till(i);career.Farm.Plant(i,career.Backpack);career.Farm.WaterPlot(i);}
+                for(int day=0;day<3;day++)
+                {
+                    career.Calendar.RestUntilMorning();career.Farm.AdvanceDay(career.Calendar.Day);career.Farm.Refill();
+                    if(day<2)for(int i=0;i<(day==0?8:4);i++)career.Farm.WaterPlot(i);
+                }
+                career.Calendar.AdvanceToHour(value==FishingAcceptanceCase.HomeGardenNight?22:10.5f);
+            }
+            if(value==FishingAcceptanceCase.CatchNight)career.Calendar.AdvanceToHour(22);
             return career;
         }
 

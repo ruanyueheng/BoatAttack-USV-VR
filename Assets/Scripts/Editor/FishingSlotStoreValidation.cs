@@ -52,7 +52,7 @@ namespace BoatAttack.EditorTools
                         Check(DateTime.TryParseExact(data.savedUtc, "O", CultureInfo.InvariantCulture,
                             DateTimeStyles.RoundtripKind, out var utc) && utc.Kind == DateTimeKind.Utc, "保存时间为可解析UTC而非Unix时间");
                         resume.boatX = 999;
-                        Check(data.resume.boatX == 1.25f && data.career.version == 13, "快照不共享恢复对象且兼容career v13");
+                        Check(data.resume.boatX == 1.25f && data.career.version == 14, "快照不共享恢复对象且兼容career v14");
                     }
                 for (int slot = 0; slot < FishingSlotStore.Count; slot++)
                     foreach (FishingSlotKind kind in new[] { FishingSlotKind.Manual, FishingSlotKind.Auto })
@@ -97,9 +97,9 @@ namespace BoatAttack.EditorTools
                 seed.format = 2;
                 Invalid(invalid, invalidPath, seed, "未来封装版本拒绝读取");
                 seed.format = 1;
-                seed.career.version = 14;
+                seed.career.version = new FishingSaveData().version+1;
                 Invalid(invalid, invalidPath, seed, "未来career版本拒绝读取");
-                seed.career.version = 13;
+                seed.career.version = new FishingSaveData().version;
                 seed.career.coins = -1;
                 Invalid(invalid, invalidPath, seed, "当前career版本也必须通过TryRestore校验");
                 seed.career = Career(5).Snapshot();

@@ -176,7 +176,7 @@ namespace BoatAttack.Fishing
             Ashore=true;_lastSafe=feet+Vector3.up*.08f;_motion.Reset();
             Actor.SetPositionAndRotation(_lastSafe,Quaternion.LookRotation(Vector3.ProjectOnPlane(feet-Controller.Player.transform.position,Vector3.up).normalized));
             Body.enabled=true;SetCrouch(false);Controller.View.ResetLook();Controller.CloseBoatPanels();
-            Controller.Notice("已登岸 · WASD 行走 / Shift 快走 / 空格跳跃 / Ctrl 蹲下 / 鼠标转头 / Alt 释放鼠标 / E 勘测 / 靠近船边 G 上船",8);
+            Controller.Notice(Controller.DesktopDisplay?"已登岸 · WASD 行走 · E 互动 · 靠近船边 G 上船":"已登岸 · 左摇杆行走 · 右手柄 A 互动 · 靠近船边登船",6);
             UpdateProximity();return true;
         }
         public bool TryBoard()
@@ -333,7 +333,7 @@ namespace BoatAttack.Fishing
             }
             _character.Pose(Ashore,WalkSpeed,Crouched,Grounded,Controller.FirstPerson || XRSettings.isDeviceActive,Controller.Paused,Swimming,Climbing);
         }
-        public string LocationName => Controller.Home!=null && Controller.Home.Inside ? "回潮渔屋" : Controller.Realms!=null && Controller.Realms.Inside ? FishingLore.ShrineName(Controller.Realms.Island) : ShopLanding ? FishingTackleShop.Name : Controller.Islands!=null && Controller.Islands.NearIsland(out int island) ? FishingAdventure.Name(island) : FreeLanding ? "自由海岸" : FishingExploration.SiteName(CurrentSite);
+        public string LocationName => Controller.Home!=null && FishingPrototype.FlatDistance(Position,Controller.Home.Origin)<55 ? Controller.Home.Inside?"回潮渔屋":Controller.Farm!=null && Controller.Farm.Nearby?"回潮菜园":"回潮家岛" : Controller.Realms!=null && Controller.Realms.Inside ? FishingLore.ShrineName(Controller.Realms.Island) : ShopLanding ? FishingTackleShop.Name : Controller.Islands!=null && Controller.Islands.NearIsland(out int island) ? FishingAdventure.Name(island) : FreeLanding ? "自由海岸" : FishingExploration.SiteName(CurrentSite);
         public string ActionTitle => !Ashore ? "G 靠岸下船 · 自动寻找安全岸面 / 码头" : NearbyTask>=0 ? "E "+FishingExploration.TaskName(NearbyTask)
             : CanBoard() ? "G 返回船上" : "靠近船边 G 上船 · 船体距离 "+BoatEdgeDistance().ToString("0.0")+" m";
     }

@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.IO;
+using System.Collections;
 using UnityEngine;
 
 namespace BoatAttack.Fishing
@@ -31,7 +32,7 @@ namespace BoatAttack.Fishing
                 throw new InvalidOperationException("Acceptance fixtures require an explicitly opted-in test profile.");
             // Validate before changing any live state. FreePlay is intentionally never synthesized.
             FishingCareer fixture = selected == FishingAcceptanceCase.FreePlay ? null : FishingAcceptanceCases.CreateCareer(selected);
-            CloseHomeChart();CloseSaveMenu();
+            HandGames?.Cancel();CloseHomeChart();CloseSaveMenu();
             if(StartMenuOpen)TitleVoyage.Close();StartMenuOpen=false;MenuControls=false;CancelGuideOpening();
             Letter?.Close();CancelWorldAction();_workshopReceipt=false;TackleShop?.Close();Residents?.Close();Realms?.Abort();CoastWorld?.CloseMenu();
             if (InventoryOpen) ToggleInventory();
@@ -48,6 +49,7 @@ namespace BoatAttack.Fishing
             Shore.RefreshMarkers();
             FieldWorld.RefreshPickups();
             WorkshopWorld.RefreshFromCareer();
+            Farm?.Refresh();
             Expedition.RefreshFromCareer();
             SaveWarning = string.Empty;
             LastCatch = default;
@@ -64,6 +66,7 @@ namespace BoatAttack.Fishing
             View.ResetLook();
             ResetToolInput();
             _storyConsumedFrame=-1;
+            _homeChartConsumedFrame=-1;
             var climate = Weather.Climate;
             climate.Hold();
             for (int i = 0; i < 64 && climate.Blend < 1f; i++) climate.Tick(.25f, false);
@@ -91,7 +94,7 @@ namespace BoatAttack.Fishing
                 Destroy(_fish);
                 _fish = MakeFish(transform, Session.Kind, Session.Rare);
                 AnimateEquipment();
-                if (selected == FishingAcceptanceCase.Catch && !CatchRig.CaptureAndStoreForAutomation())
+                if ((selected == FishingAcceptanceCase.Catch || selected==FishingAcceptanceCase.CatchNight) && !CatchRig.CaptureAndStoreForAutomation())
                     throw new InvalidOperationException("Acceptance catch did not pass the real scoop/store path.");
                 _previousPhase = Session.Phase;
             }
@@ -106,6 +109,7 @@ namespace BoatAttack.Fishing
                 case FishingAcceptanceCase.ForestSanctuary:
                 case FishingAcceptanceCase.WreckSanctuary:
                 case FishingAcceptanceCase.StarSanctuary:
+                case FishingAcceptanceCase.StarObservation:
                 case FishingAcceptanceCase.LoreJournal:
                 case FishingAcceptanceCase.ShopRations:
                 case FishingAcceptanceCase.RegionArrival:
@@ -138,6 +142,13 @@ namespace BoatAttack.Fishing
                 case FishingAcceptanceCase.HomeInterior:
                 case FishingAcceptanceCase.HomeWorkbench:
                     PrepareAcceptanceHome(selected);break;
+                case FishingAcceptanceCase.HomeGarden:
+                case FishingAcceptanceCase.HomeGardenNight:
+                case FishingAcceptanceCase.FarmHarvest:
+                    PrepareAcceptanceHome(FishingAcceptanceCase.HomeInterior);
+                    var gardenFoot=selected!=FishingAcceptanceCase.FarmHarvest?Home.Origin+new Vector3(12.2f,0,-11):Farm.Target(0).position+new Vector3(-.25f,0,-1.1f);
+                    if(!Shore.Relocate(gardenFoot,Quaternion.identity))throw new InvalidOperationException("Garden fixture footing is blocked.");
+                    View.ResetLook();View.ApplyShoreLookDelta(new Vector2(0,-(selected!=FishingAcceptanceCase.FarmHarvest?12:35)/.12f));Farm.Refresh();break;
                 case FishingAcceptanceCase.HomeBarbecue:
                 case FishingAcceptanceCase.HomeGrilledFish:
                     PrepareAcceptanceHome(FishingAcceptanceCase.HomeInterior);
@@ -166,6 +177,15 @@ namespace BoatAttack.Fishing
                     FishingSlotStore.Write(SavePath,0,FishingSlotKind.Auto,Career,new FishingResumeData(),"acceptance");
                     OpenSaveMenu(selected==FishingAcceptanceCase.SaveSlots?"load":"save");
                     if(selected==FishingAcceptanceCase.SaveOverwrite)RequestSlotAction(0,"save");
+                    break;
+                case FishingAcceptanceCase.SandSieve:
+                case FishingAcceptanceCase.RopeWinder:
+                    PrepareAcceptanceHome(FishingAcceptanceCase.HomeInterior);
+                    int handGame=selected==FishingAcceptanceCase.SandSieve?0:1;
+                    Career.Backpack.TryAdd(FieldItem.Sand,4);Career.Backpack.TryAdd(FieldItem.Fiber,6);
+                    if(!Shore.Relocate(HandGames.Approach(handGame),Quaternion.LookRotation(-HandGames.Station(handGame).forward)))throw new InvalidOperationException("Handcraft fixture has no safe approach.");
+                    if(!FirstPerson)View.Toggle();View.ResetLook();View.ApplyView(true,true);
+                    if(!HandGames.Begin(handGame))throw new InvalidOperationException("Handcraft fixture cannot begin a real round.");
                     break;
                 case FishingAcceptanceCase.HomeChart:
                     PrepareAcceptanceHome(FishingAcceptanceCase.HomeInterior);
@@ -268,11 +288,20 @@ namespace BoatAttack.Fishing
             Weather.ApplyEnvironment();
             if(selected==FishingAcceptanceCase.BinocularObserve || selected==FishingAcceptanceCase.BinocularThirdPerson)UseFieldItem();
         }
+        private IEnumerator PrepareObservationFixture()
+        {
+            while(Realms.Transitioning)yield return null;yield return null;yield return null;
+            if(Acceptance.CurrentCase!=FishingAcceptanceCase.StarObservation)yield break;
+            SelectFieldSlot(8);
+            if(!Shore.Relocate(Realms.Device(0).position+Vector3.back*1.6f,Quaternion.identity) || !RequestWorldInteraction())throw new InvalidOperationException("Observation fixture cannot reach the actual telescope.");
+            Realms.AimTelescope(new Vector2(FishingShrineTrial.StarTargetYaw(0)-Realms.Trial.StarYaw,FishingShrineTrial.StarTargetPitch(0)-Realms.Trial.StarPitch),true,.1f);
+            for(int i=0;i<5;i++)Realms.AimTelescope(Vector2.zero,true,.1f);
+        }
         private void PrepareStoryFixture(FishingAcceptanceCase selected)
         {
             if(selected==FishingAcceptanceCase.LoreJournal){_hud.JournalPage=6;ToggleJournal();return;}
             if(selected==FishingAcceptanceCase.ShopRations){PrepareAcceptanceShore(selected);_hud.ShopCategory=4;return;}
-            int island=selected==FishingAcceptanceCase.ForestSanctuary?1:selected==FishingAcceptanceCase.WreckSanctuary?2:selected==FishingAcceptanceCase.StarSanctuary?3:0;
+            int island=selected==FishingAcceptanceCase.ForestSanctuary?1:selected==FishingAcceptanceCase.WreckSanctuary?2:selected==FishingAcceptanceCase.StarSanctuary || selected==FishingAcceptanceCase.StarObservation?3:0;
             Teleport(FishingIslandWorld.Berth(island),Quaternion.identity);
             if(!Shore.TryDisembark())throw new InvalidOperationException("V19 fixture cannot land on island "+island);
             if(selected==FishingAcceptanceCase.ResidentDialogue)
@@ -282,10 +311,11 @@ namespace BoatAttack.Fishing
                 View.ResetLook();viewCamera.transform.SetPositionAndRotation(Shore.Position+Vector3.up*1.5f,Quaternion.LookRotation(npc.position+Vector3.up*1.4f-Shore.Position-Vector3.up*1.5f));
                 if(!Residents.Talk(0))throw new InvalidOperationException("NPC fixture dialogue rejected");Residents.Choose(0);Residents.Reveal();return;
             }
-            if(selected>=FishingAcceptanceCase.WindSanctuary && selected<=FishingAcceptanceCase.StarSanctuary)
+            if((selected>=FishingAcceptanceCase.WindSanctuary && selected<=FishingAcceptanceCase.StarSanctuary) || selected==FishingAcceptanceCase.StarObservation)
             {
-                if(!Shore.Relocate(Realms.Portal(island).position+Vector3.forward*1.8f,Quaternion.identity) || !Realms.Enter(island))
+                if(!Shore.Relocate(Realms.PortalApproach(island),Quaternion.identity) || !Realms.Enter(island))
                     throw new InvalidOperationException("Sanctuary fixture entry rejected "+island);
+                if(selected==FishingAcceptanceCase.StarObservation)StartCoroutine(PrepareObservationFixture());
                 return;
             }
             if(selected==FishingAcceptanceCase.RegionArrival)
@@ -302,8 +332,23 @@ namespace BoatAttack.Fishing
             }
             FishingClimbRoute route=null;
             foreach(var candidate in FindObjectsOfType<FishingClimbRoute>())if(FlatDistance(candidate.Bottom,FishingIslandWorld.Center(0))<35)route=candidate;
-            if(route==null || !Shore.Relocate(route.Bottom,Quaternion.identity) || !Shore.TryClimb())throw new InvalidOperationException("Climbing fixture route rejected");
-            for(int i=0;i<55;i++)Shore.Move(Vector2.up,false,false,false,.05f);
+            if(route==null)throw new InvalidOperationException("Climbing fixture has no authored route");
+            StartCoroutine(PrepareClimbingFixture(route));
+        }
+        private System.Collections.IEnumerator PrepareClimbingFixture(FishingClimbRoute route)
+        {
+            yield return null;yield return null;
+            if(Acceptance.CurrentCase!=FishingAcceptanceCase.ClimbingView)yield break;
+            var outward=Vector3.ProjectOnPlane(route.ClimbEnd-route.Top,Vector3.up).normalized;
+            if(outward.sqrMagnitude<.1f)outward=Vector3.forward;
+            var approach=route.Bottom+outward*(Shore.Body.radius+.4f);
+            if(!Shore.Ground(approach,out var ladderFoot))throw new InvalidOperationException("Climbing showcase has no ground at "+approach);
+            if(!Shore.Relocate(ladderFoot,Quaternion.identity))throw new InvalidOperationException("Climbing showcase capsule is obstructed at "+ladderFoot);
+            yield return null;
+            if(Acceptance.CurrentCase!=FishingAcceptanceCase.ClimbingView)yield break;
+            if(!Shore.TryClimb())throw new InvalidOperationException("Climbing showcase input is blocked: paused="+Paused+" story="+StoryBlocksGameplay+" shop="+ShopBlocksGameplay+" action="+WorldActionBusy);
+            int steps=Mathf.Max(1,Mathf.CeilToInt(Vector3.Distance(route.Bottom,route.ClimbEnd)/1.8f*.45f/.05f));
+            for(int i=0;i<steps;i++)Shore.Move(Vector2.up,false,false,false,.05f);
             ToggleView();View.ResetLook();
         }
     }

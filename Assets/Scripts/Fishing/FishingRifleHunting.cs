@@ -36,7 +36,7 @@ namespace BoatAttack.Fishing
         private Vector3 Eye=>XRSettings.isDeviceActive?_c.viewCamera.transform.position:_c.Shore.Character.EyePosition;
         private bool Context=>Equipped && !_c.InspectingItem && _c.Ashore && !_c.Paused && !_c.InventoryOpen && !_c.JournalOpen
             && !_c.ShopBlocksGameplay && !_c.StoryBlocksGameplay && !_c.Shore.Swimming && !_c.Shore.Climbing
-            && !_c.WorldActionBlocksGameplay && !_c.HasPendingCatch && !_c.Expedition.Aligning
+            && !_c.WorldActionBlocksGameplay && !_c.ActionSuppressesHeldTool && !_c.HasPendingCatch && !_c.Expedition.Aligning
             && !_c.DockConsole.BlocksGameplay && (_c.XRNotebook==null || !_c.XRNotebook.BlocksGameplay) && _c.Hands.CanPresentTools
             && (!XRSettings.isDeviceActive || (!_c.XRSeat.HeadBlocked && Application.isFocused
                 && _c.Hands.TryControllerPalm(false,out _,out _)));

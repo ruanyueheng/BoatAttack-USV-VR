@@ -26,6 +26,7 @@ namespace BoatAttack.Fishing
         public bool LightsOn { get; private set; }=true;
         public Transform House { get; private set; }
         public Transform Bed { get; private set; }
+        public Vector3 LighthouseLens {get;private set;}
         public Vector3 Origin { get; private set; }
         public Vector3 Entry => Origin+new Vector3(0,.22f,-6.5f);
         public Vector3 WakePoint => Origin+new Vector3(-1.6f,.22f,2.5f);
@@ -54,16 +55,14 @@ namespace BoatAttack.Fishing
             Origin=new Vector3(-180,2.2f,10);
             House=new GameObject("回潮渔屋").transform;House.SetParent(transform,false);House.position=Origin;
             // The authored shell is already in metres; preserve its exact floor and door coordinates.
-            var shell=Resources.Load<GameObject>("FishingV027/Home/HouseShellView");
-            if(shell==null)throw new InvalidOperationException("Missing V027 home art; run FishingV027Assets.Prepare.");
-            UnityEngine.Object.Instantiate(shell,House,false);
-            foreach(string name in new[]{"IslandGround","IslandDetails"})
+            FishingFarmWorld.Model("CottageShell",House,Vector3.zero,false);
+            foreach(string name in new[]{"HomeLand","HomeLandscaping","HomeJetty"})
             {
-                var source=Resources.Load<GameObject>("FishingV027/Home/"+name+"View");
-                if(source==null)throw new InvalidOperationException("Missing V027 island model: "+name);
-                var island=UnityEngine.Object.Instantiate(source,transform,false);island.name="V027 "+name;island.transform.position=Origin;
-                if(name=="IslandGround")foreach(var filter in island.GetComponentsInChildren<MeshFilter>())filter.gameObject.layer=10;
+                var island=FishingFarmWorld.Model(name,transform,Origin,name!="HomeJetty");island.name="V035 Home "+name;
+                if(name=="HomeLand")foreach(var filter in island.GetComponentsInChildren<MeshFilter>())filter.gameObject.layer=10;
+                if(name=="HomeLandscaping")LighthouseLens=FishingRealmWorld.Marker(island,"LighthouseLens").position;
             }
+            DressGarden();
             Solid("Home floor",new Vector3(0,.10f,0),new Vector3(12,.20f,10));
             Solid("Porch floor",new Vector3(0,.10f,-6.5f),new Vector3(13,.20f,3));
             foreach(float side in new[]{-1f,1f})
@@ -116,7 +115,7 @@ namespace BoatAttack.Fishing
                 var rail=FishingArt.Shape("Boardwalk handrail",PrimitiveType.Cube,transform,(start+end)*.5f+walk.transform.right*(side*1.32f)+Vector3.up*.90f,new Vector3(.09f,.10f,delta.magnitude),_walkMaterial,true);rail.transform.rotation=walk.transform.rotation;
                 for(int j=0;j<=10;j++)FishingArt.Shape("Boardwalk baluster",PrimitiveType.Cube,transform,Vector3.Lerp(start,end,j/10f)+walk.transform.right*(side*1.32f)+Vector3.up*.45f,new Vector3(.075f,.90f,.075f),_walkMaterial,true);
             }
-            foreach(var p in new[]{new Vector3(-4.8f,1.7f,2.7f),new Vector3(-4.8f,1.9f,-1),new Vector3(4.3f,1.7f,-3.9f),new Vector3(3.6f,2.1f,4)})
+            foreach(var p in new[]{new Vector3(-4.8f,1.7f,2.7f),new Vector3(-4.8f,1.9f,-1),new Vector3(4.3f,1.7f,-3.9f),new Vector3(3.6f,2.1f,4),new Vector3(0,2.68f,-.5f),new Vector3(0,2.68f,2.5f)})
             {
                 var lamp=new GameObject("Warm home practical").AddComponent<Light>();lamp.transform.SetParent(House,false);lamp.transform.localPosition=p;
                 lamp.type=LightType.Point;lamp.color=new Color(1,.72f,.43f);lamp.range=7;lamp.shadows=LightShadows.None;_lamps.Add(lamp);
@@ -126,6 +125,7 @@ namespace BoatAttack.Fishing
             _fade=go.GetComponent<Canvas>();_fade.sortingOrder=250;_black=go.GetComponent<Image>();_black.color=Color.clear;_black.raycastTarget=false;go.SetActive(false);
             Physics.SyncTransforms();
             _c.WorkshopWorld.EnsureHomeStations();
+            HideProxySurfaces();
             RelocateClearedStations();
             WaterSystem.Water.Instance?.CaptureDepthMap();
         }
@@ -166,7 +166,7 @@ namespace BoatAttack.Fishing
         internal void RelocateClearedStations()
         {
             if(_shoreCopy==null)return;
-            var ground=transform.Find("V027 IslandGround").GetComponentInChildren<MeshCollider>();bool moved=false;
+            var ground=transform.Find("V035 Home HomeLand").GetComponentInChildren<MeshCollider>();bool moved=false;
             foreach(var station in _c.WorkshopWorld.State.Stations)
             {
                 // A rotated 0.7 by 0.55 metre half-footprint fits inside this 0.9 metre radius.
@@ -178,6 +178,7 @@ namespace BoatAttack.Fishing
                 {
                     float x=-24+cell%16*3,z=-15+cell/16*3;
                     if(Mathf.Abs(x)<8.5f && z>-10 && z<7)continue;
+                    if(x>8 && x<33 && z>-13 && z<20)continue;
                     if(!ground.Raycast(new Ray(Origin+new Vector3(x,35,z),Vector3.down),out var hit,50)
                         ||hit.point.y<.5f||hit.normal.y<.9f)continue;
                     placed=_c.WorkshopWorld.RelocateAfterShoreChange(station.id,hit.point);
@@ -246,7 +247,23 @@ namespace BoatAttack.Fishing
             =>Furnish(name,new Vector3(x,y,z),span,yaw,solid,out _);
         private void Furnish(string name,Vector3 p,float span,float yaw,bool solid,out Transform root)
         {
-            root=FishingV019Art.Spawn(name+"View",House,p,span,yaw,"FishingV023/Home");
+            string authored;
+            switch(name)
+            {
+                case "bedDouble":authored="HomeBed";break;
+                case "loungeSofa":authored="HomeSofa";break;
+                case "desk":authored="HomeDesk";break;
+                case "bookcaseOpen":authored="HomeBookcase";break;
+                case "cabinetBedDrawer":case "kitchenCabinetDrawer":authored="HomeCabinet";break;
+                case "kitchenSink":authored="HomeSink";break;
+                case "kitchenStove":authored="HomeStove";break;
+                case "kitchenFridgeSmall":authored="HomeFridge";break;
+                case "tableCoffee":authored="HomeCoffeeTable";break;
+                case "rugRectangle":authored="HomeRug";break;
+                default:authored=null;break;
+            }
+            root=FishingV019Art.Spawn(authored??name+"View",House,p,span,yaw,authored==null?"FishingV023/Home":"FishingV035");
+            if(authored!=null)FishingV035Materials.Apply(root);
             if(!solid)return;
             if(name=="bedDouble")
             {
@@ -291,7 +308,7 @@ namespace BoatAttack.Fishing
             _c.View.ResetLook();
         }
         private void OnDisable()=>CancelSleep();
-        private void UpdateLights(){foreach(var lamp in _lamps)lamp.intensity=LightsOn?Mathf.Lerp(.45f,1.3f,1-_c.Career.Calendar.Daylight):0;}
+        private void UpdateLights(){foreach(var lamp in _lamps)lamp.intensity=LightsOn?Mathf.Lerp(.9f,1.6f,1-_c.Career.Calendar.Daylight):0;}
         private void Update(){if(_c!=null)UpdateLights();}
         private void OnDestroy()
         {

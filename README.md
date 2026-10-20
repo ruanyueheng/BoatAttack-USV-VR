@@ -1,10 +1,10 @@
-# BoatAttack USV VR — v0.33.0 航程存档与动作修复
+# BoatAttack USV VR — v0.35.0 四境与回潮菜园
 
-第33版保留 Unity 2022.3.62f1 / URP 14.0.12、9S 同源 Legacy 骨骼与原有游戏风格。新增三个存档槽（独立手动/自动记录）、本次航程“继续游戏”、家中航线书桌独立海图阅读窗口；修复设置滑条、音乐/环境/音效分类与全局静音，完善花草、悬挂物与灯塔轻量动态和连续帧人物动作。存档规则见[第33版说明](Docs/PLAY_V032.md#第33版更新航程存档与动作修复)，验证入口见[验证说明](Docs/TESTING.md)。保留[第32版内容](Docs/PLAY_V032.md)及原v13文件，只在新槽全空时读取有效旧档，旧文件不覆盖。
+第35版补齐两种手作的双臂、握持、摇贝和落砂表现，并按设备显示启动键；四座秘境岛及内部按不同路线与玩法重建。家屋和扩大的家岛加入精细木构、家具、花园与12块可玩的菜畦，开垦、播种、浇水、跨日生长、收获、售卖和存档组成完整循环，地图同步新岸线。常驻信息减少底框，必要阅读区白天浅色、夜晚深色；书法标题采用沿笔画的镂金轮廓与五种字芯填色，正文保留易读字体。保留鼠标钓鱼、左手检视和三槽手动/自动存档。详见[第35版说明](Docs/PLAY_V035.md)、[验证记录](Docs/VALIDATION_V035.md)和[建模来源](ArtSource/V035/BUILD_NOTES.md)。
 
 基于 Unity Boat Attack，使用 **Unity 2022.3.62f1 / URP 14.0.12**。第21版加入每次不同的遛鱼节奏、传说鱼反扑、10秒抄网窗口、图鉴调查解锁、天气与潮汐鱼种条件、加速过热和二级船舶专精取舍。
 
-**Ctrl + W 加速，Shift 刹车，S 倒航。** 注意热量，过热后巡航冷却。J 查看调查清单与出没条件，低速 G 下船；E 交谈、寻宝或抄鱼。四岛、秘境、游泳、攀登继续可用，使用独立 v13 存档并兼容迁移 v12 进度，原 v12 文件保留。Windows 试玩入口：`Builds/FishingPrototype-v0.33.0/FishingPrototype.exe`；PICO 候选安装包：`Builds/FishingPrototype-v0.33.0-Android/FishingPrototype.apk`。两端构建已生成并校验，电脑便携包为 `Builds/FishingPrototype-v0.33.0-Windows.zip`。实体头显体验仍需人工验收。
+**Ctrl + W 加速，Shift 刹车，S 倒航。** 注意热量，过热后巡航冷却。J 查看调查清单与出没条件，低速 G 下船；E 交谈、寻宝或抄鱼。四岛、秘境、游泳、攀登继续可用，使用 v14 种田进度格式，兼容既有 v13 三槽存档，保留旧档备份。Windows 试玩入口：`Builds/FishingPrototype-v0.35.0/FishingPrototype.exe`；PICO 候选安装包：`Builds/FishingPrototype-v0.35.0-Android/FishingPrototype.apk`。两端构建已生成并校验，电脑便携包为 `Builds/FishingPrototype-v0.35.0-Windows.zip`。实体头显体验仍需人工验收。
 
 - [第21版操作与改进](Docs/PLAY_V021.md)
 - [第21版验证记录](Docs/VALIDATION_V021.md)
