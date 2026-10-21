@@ -25,20 +25,32 @@ namespace BoatAttack.Fishing
             public Vector3 Axis;
             public float Degrees;
             public bool Index;
+            public bool Metacarpal;
             public int Digit;
+            public LocalPose Neutral;
+            public int SkinIndex;
+        }
+        private struct SkinPoint
+        {
+            public Vector3 Vertex;
+            public BoneWeight Weight;
         }
         private sealed class Arm
         {
             public Transform Shoulder,Upper,Lower,Wrist;
             public Vector3 PalmOffset;
             public Quaternion WristToPalm;
+            public Vector3 WristScale;
             public readonly List<OverlayBone> Overlay=new List<OverlayBone>();
             public readonly List<FingerJoint> Fingers=new List<FingerJoint>();
+            public readonly List<SkinPoint>[] Contact=new[]{new List<SkinPoint>(),new List<SkinPoint>(),new List<SkinPoint>(),new List<SkinPoint>(),new List<SkinPoint>()};
         }
         private Arm _leftArm,_rightArm;
         private int _armBaseFrame=-1;
         private bool _armsPaused;
         private Bounds _bodyPresentationBounds;
+        private Transform[] _contactBones;
+        private Matrix4x4[] _contactBindposes,_contactMatrices;
         public bool HandRigReady=>_leftArm!=null && _rightArm!=null;
         public SkinnedMeshRenderer BodySkin { get; private set; }
         public SkinnedMeshRenderer HeadSkin { get; private set; }
@@ -80,6 +92,9 @@ namespace BoatAttack.Fishing
                 if(skin.name=="Beach_Head")HeadSkin=skin;
             }
             if(BodySkin==null || HeadSkin==null)throw new InvalidOperationException("Beach Character needs the original separate body/head skins");
+            // Match the project's two-influence skinning so rendered hands and contact prediction agree.
+            BodySkin.quality=SkinQuality.Bone2;
+            _contactBones=BodySkin.bones;_contactBindposes=BodySkin.sharedMesh.bindposes;_contactMatrices=new Matrix4x4[_contactBones.Length];
             _leftArm=BuildArm(bones,true);_rightArm=BuildArm(bones,false);
             // 导入动画边界不包含程序化抬臂，必须覆盖所有合法手臂姿态，否则第一人称会剔除整个身体。
             _bodyPresentationBounds=new Bounds(BodySkin.transform.InverseTransformPoint(transform.TransformPoint(Vector3.up*.9f)),Vector3.zero);
@@ -101,6 +116,7 @@ namespace BoatAttack.Fishing
             string side=left?".L":".R";
             var arm=new Arm{Shoulder=Required(bones,"Shoulder"+side),Upper=Required(bones,"UpperArm"+side),
                 Lower=Required(bones,"LowerArm"+side),Wrist=Required(bones,"Wrist"+side)};
+            arm.WristScale=arm.Wrist.localScale;
             if(arm.Upper.parent!=arm.Shoulder || arm.Lower.parent!=arm.Upper || arm.Wrist.parent!=arm.Lower)
                 throw new InvalidOperationException("Beach Character upper-limb hierarchy changed");
             foreach(var bone in arm.Shoulder.GetComponentsInChildren<Transform>())arm.Overlay.Add(new OverlayBone(bone));
@@ -131,11 +147,37 @@ namespace BoatAttack.Fishing
                     var axis=Vector3.Cross(direction.normalized,bend).normalized;
                     if(axis.sqrMagnitude<.9f)throw new InvalidOperationException("Beach Character degenerate finger axis: "+bone.name);
                     arm.Fingers.Add(new FingerJoint{Bone=bone,Axis=Quaternion.Inverse(bone.rotation)*axis,Index=digit=="Index",
+                        Metacarpal=!thumb && joint==1,
+                        SkinIndex=Array.IndexOf(_contactBones,bone),
+                        Neutral=new LocalPose(bone),
                         Digit=digit=="Index"?0:digit=="Middle"?1:digit=="Ring"?2:digit=="Pinky"?3:4,
                         Degrees=thumb?(joint==1?22:joint==2?40:48):(joint==1?4:joint==2?75:joint==3?85:55)});
                 }
             }
+            CacheFingerSurfaces(arm);
             return arm;
+        }
+        private void CacheFingerSurfaces(Arm arm)
+        {
+            var vertices=BodySkin.sharedMesh.vertices;var weights=BodySkin.sharedMesh.boneWeights;
+            var unique=new[]{new HashSet<SkinPoint>(),new HashSet<SkinPoint>(),new HashSet<SkinPoint>(),new HashSet<SkinPoint>(),new HashSet<SkinPoint>()};
+            var digits=new int[_contactBones.Length];for(int i=0;i<digits.Length;i++)digits[i]=-1;
+            foreach(var joint in arm.Fingers)if(joint.SkinIndex>=0)digits[joint.SkinIndex]=joint.Digit;
+            for(int i=0;i<vertices.Length;i++)
+            {
+                var original=weights[i];float total=original.weight0+original.weight1;
+                if(total<=0)continue;
+                var w=new BoneWeight{boneIndex0=original.boneIndex0,boneIndex1=original.boneIndex1,
+                    weight0=original.weight0/total,weight1=original.weight1/total};
+                for(int digit=0;digit<5;digit++)
+                {
+                    if((w.weight0>.2f && digits[w.boneIndex0]==digit) || (w.weight1>.2f && digits[w.boneIndex1]==digit))
+                    {
+                        var point=new SkinPoint{Vertex=vertices[i],Weight=w};
+                        if(unique[digit].Add(point))arm.Contact[digit].Add(point);
+                    }
+                }
+            }
         }
         private Vector3 SurfacePalmCentre(Dictionary<string,Transform> bones,string side)
         {
@@ -143,7 +185,7 @@ namespace BoatAttack.Fishing
             var mesh=new Mesh();
             try
             {
-                BodySkin.BakeMesh(mesh);var vertices=mesh.vertices;var weights=BodySkin.sharedMesh.boneWeights;var skinBones=BodySkin.bones;
+                BodySkin.BakeMesh(mesh,true);var vertices=mesh.vertices;var weights=BodySkin.sharedMesh.boneWeights;var skinBones=BodySkin.bones;
                 var sum=Vector3.zero;int groups=0;
                 foreach(var digit in new[]{"Index","Middle","Ring","Pinky"})
                 {
@@ -189,6 +231,7 @@ namespace BoatAttack.Fishing
         {
             foreach(var bone in arm.Overlay)bone.Sample.Apply(bone.Bone);
             if(_armsPaused || _armBaseFrame!=Time.frameCount || target==null || !target.Visible || target.IsLeft!=left)return;
+            arm.Wrist.localScale=arm.WristScale;
             var desiredRotation=target.Palm.rotation*Quaternion.Inverse(arm.WristToPalm);
             // Preserve the sampled rig's actual segment scales; only rotations are solved.
             var wristTarget=WristForPalm(left,target.Palm.position,target.Palm.rotation);
@@ -208,11 +251,88 @@ namespace BoatAttack.Fishing
             arm.Wrist.rotation=desiredRotation;
             // Tracked hands use the hand-only source mesh: controller reach cannot stretch a visible forearm.
             if(tracked)arm.Wrist.position=wristTarget;
-            foreach(var finger in arm.Fingers)
+            if(target.HasGripSurface)
             {
-                float curl=target.Pointing && finger.Index?0:target.Fingers.Curl(finger.Digit);
-                finger.Bone.localRotation*=Quaternion.AngleAxis(finger.Degrees*curl,finger.Axis);
+                for(int digit=0;digit<5;digit++)SetDigit(arm,digit,0);
+                for(int i=0;i<_contactBones.Length;i++)_contactMatrices[i]=_contactBones[i].localToWorldMatrix*_contactBindposes[i];
             }
+            for(int digit=0;digit<5;digit++)
+            {
+                float curl=target.Pointing && digit==0?0:target.Fingers.Curl(digit);
+                if(!target.HasGripSurface){SetDigit(arm,digit,curl);continue;}
+                // Curl the fingertips before knuckle contact can stop the rest of the finger.
+                for(int index=0;index<arm.Fingers.Count;index++)
+                {
+                    var joint=arm.Fingers[digit==4?index:arm.Fingers.Count-1-index];
+                    if(joint.Digit!=digit || joint.Metacarpal)continue;
+                    var axis=joint.Axis;float degrees=joint.Degrees;
+                    if(digit==4)AimThumbGrip(arm,joint,target,curl,out axis,out degrees);
+                    float previous=0;
+                    for(int step=1;step<=12;step++)
+                    {
+                        float next=curl*step/12f;SetContactJoint(arm,joint,next,axis,degrees);
+                        if(DigitTouches(arm,digit,target))
+                        {
+                            for(int refine=0;refine<4;refine++)
+                            {
+                                float middle=(previous+next)*.5f;SetContactJoint(arm,joint,middle,axis,degrees);
+                                if(DigitTouches(arm,digit,target))next=middle;else previous=middle;
+                            }
+                            SetContactJoint(arm,joint,previous,axis,degrees);break;
+                        }
+                        previous=next;
+                    }
+                }
+            }
+        }
+        private static void SetDigit(Arm arm,int digit,float curl)
+        {
+            // Locomotion may animate fingers: a held object always uses the calibrated neutral hand.
+            foreach(var joint in arm.Fingers)if(joint.Digit==digit)
+            {
+                joint.Neutral.Apply(joint.Bone);
+                joint.Bone.localRotation*=Quaternion.AngleAxis(joint.Degrees*curl,joint.Axis);
+            }
+        }
+        private void AimThumbGrip(Arm arm,FingerJoint joint,FishingHandTarget target,float curl,out Vector3 axis,out float degrees)
+        {
+            axis=joint.Axis;degrees=joint.Degrees;
+            var shaft=target.GripEnd-target.GripStart;float length=shaft.sqrMagnitude,nearest=float.MaxValue;
+            var from=Vector3.zero;var to=Vector3.zero;
+            foreach(var point in arm.Contact[4])
+            {
+                var w=point.Weight;
+                if(!(w.weight0>.2f && _contactBones[w.boneIndex0].IsChildOf(joint.Bone))
+                    && !(w.weight1>.2f && _contactBones[w.boneIndex1].IsChildOf(joint.Bone)))continue;
+                var p=_contactMatrices[w.boneIndex0].MultiplyPoint3x4(point.Vertex)*w.weight0+_contactMatrices[w.boneIndex1].MultiplyPoint3x4(point.Vertex)*w.weight1;
+                var closest=target.GripStart+shaft*Mathf.Clamp01(Vector3.Dot(p-target.GripStart,shaft)/length);
+                float distance=(p-closest).sqrMagnitude;if(distance>=nearest)continue;
+                nearest=distance;from=p-joint.Bone.position;to=closest-joint.Bone.position;
+            }
+            // Thumb opposition must reach the actual handle rather than fold back toward the ring knuckle.
+            var bend=Vector3.Cross(from,to);
+            if(bend.sqrMagnitude<1e-10f || curl<=0)return;
+            axis=Quaternion.Inverse(joint.Bone.rotation)*bend.normalized;
+            degrees=Mathf.Min(75f,Vector3.Angle(from,to)/curl);
+        }
+        private void SetContactJoint(Arm arm,FingerJoint changed,float curl,Vector3 axis,float degrees)
+        {
+            changed.Neutral.Apply(changed.Bone);
+            changed.Bone.localRotation*=Quaternion.AngleAxis(degrees*curl,axis);
+            foreach(var joint in arm.Fingers)if(joint.Digit==changed.Digit && joint.SkinIndex>=0)
+                _contactMatrices[joint.SkinIndex]=joint.Bone.localToWorldMatrix*_contactBindposes[joint.SkinIndex];
+        }
+        private bool DigitTouches(Arm arm,int digit,FishingHandTarget target)
+        {
+            var axis=target.GripEnd-target.GripStart;float length=axis.sqrMagnitude,radius=target.GripRadius+.001f;
+            foreach(var point in arm.Contact[digit])
+            {
+                var w=point.Weight;var v=point.Vertex;
+                var p=_contactMatrices[w.boneIndex0].MultiplyPoint3x4(v)*w.weight0+_contactMatrices[w.boneIndex1].MultiplyPoint3x4(v)*w.weight1;
+                var closest=target.GripStart+axis*Mathf.Clamp01(Vector3.Dot(p-target.GripStart,axis)/length);
+                if((p-closest).sqrMagnitude<radius*radius)return true;
+            }
+            return false;
         }
         private void SolveArm(Arm arm,Vector3 target,Vector3 pole)
         {

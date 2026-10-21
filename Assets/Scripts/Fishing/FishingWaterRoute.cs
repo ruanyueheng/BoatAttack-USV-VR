@@ -6,7 +6,7 @@ using UnityEngine.Rendering;
 namespace BoatAttack.Fishing
 {
     /// <summary>A water-only route with hull clearance; the chart image is never used as a depth map.</summary>
-    public sealed class FishingWaterRoute : MonoBehaviour
+    public sealed partial class FishingWaterRoute : MonoBehaviour
     {
         private const float Cell = 4f, Clearance = 1.8f;
         private FishingPrototype _c;
@@ -17,6 +17,7 @@ namespace BoatAttack.Fishing
         private readonly List<Vector3> _route = new List<Vector3>(), _draw = new List<Vector3>();
         private readonly Collider[] _overlaps = new Collider[32];
         private readonly RaycastHit[] _hits = new RaycastHit[32];
+        private readonly Dictionary<Collider,bool> _nonSolid=new Dictionary<Collider,bool>();
         private Vector3 _goal, _origin;
         private int _target = -1, _width, _depth;
         private byte[] _water;
@@ -35,6 +36,7 @@ namespace BoatAttack.Fishing
             _width = Mathf.CeilToInt((bounds.z - bounds.x + 160) / Cell) + 1;
             _depth = Mathf.CeilToInt((bounds.w - bounds.y + 160) / Cell) + 1;
             _water = new byte[_width * _depth];
+            BuildPlanningBuffers();
             _root = new GameObject("V022 water guidance").transform; _root.SetParent(transform, false);
             var shader = Resources.Load<Shader>("FishingWaterGuidance");
             if (shader == null) throw new InvalidOperationException("Missing water guidance shader");
@@ -61,8 +63,13 @@ namespace BoatAttack.Fishing
             line.textureMode = LineTextureMode.Tile; line.receiveShadows = false;
             line.shadowCastingMode = ShadowCastingMode.Off; return line;
         }
-        private bool Ignored(Collider col) => col.transform.IsChildOf(_c.Player.transform)
-            || col == _c.Shore.Body || col.gameObject.layer == 5 || FishingShore.NonSolidSurface(col,false);
+        private bool Ignored(Collider col)
+        {
+            if(col.transform.IsChildOf(_c.Player.transform) || col==_c.Shore.Body || col.gameObject.layer==5)return true;
+            // shortcut: water/NavMesh collision roles are fixed after construction; clear this cache if existing colliders are renamed or reparented at runtime.
+            if(!_nonSolid.TryGetValue(col,out bool ignored)){ignored=FishingShore.NonSolidSurface(col,false);_nonSolid.Add(col,ignored);}
+            return ignored;
+        }
         public bool ClearPoint(Vector3 p)
         {
             p.y = 1.2f;
@@ -102,65 +109,12 @@ namespace BoatAttack.Fishing
             }
             return best;
         }
-        public bool Plan()
-        {
-            _target = _c.NavigationTarget; _goal = _c.NavigationPosition; _goal.y = 0; _route.Clear(); Failure = "";
-            var start = _c.Player.transform.position; start.y = 0;
-            if (ClearSegment(start, _goal)) { _route.Add(start); _route.Add(_goal); return true; }
-            // Moorings have poles beside them. Stop in clear water within boarding reach, never on the jetty.
-            var approaches=new Dictionary<int,Vector3>();
-            int direct=ClearPoint(_goal)?Connect(_goal):-1;
-            if(direct>=0)approaches[direct]=_goal;
-            for (int radius = 2; radius <= 8; radius += 2) for (int i = 0; i < 16; i++)
-            {
-                float a = i * Mathf.PI / 8; var p = _goal + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * radius;
-                if (!ClearPoint(p)) continue; int candidate=Connect(p);if(candidate<0 || approaches.ContainsKey(candidate))continue;
-                approaches[candidate]=p;
-            }
-            if(approaches.Count==0){Failure="航点附近没有可通行的水面";return false;}
-            int first = Connect(start);
-            if (first < 0) { Failure="船体过于靠近岸边，请退回开阔水面"; return false; }
-            int n = _water.Length; var cost = new float[n]; var previous = new int[n]; var closed = new bool[n];
-            for (int i = 0; i < n; i++) { cost[i] = float.MaxValue; previous[i] = -1; }
-            var open = new SortedSet<(float score, int id)>(); cost[first] = 0;
-            open.Add((Vector3.Distance(Point(first), _goal), first));int last=-1;
-            while (open.Count > 0)
-            {
-                var head = open.Min; open.Remove(head); int id = head.id;
-                if (closed[id]) continue; closed[id] = true;
-                if (approaches.TryGetValue(id,out var approach)) {last=id;_goal=approach;break;}
-                int x = id % _width, z = id / _width;
-                for (int dz = -1; dz <= 1; dz++) for (int dx = -1; dx <= 1; dx++)
-                {
-                    int nx = x + dx, nz = z + dz;
-                    if ((dx == 0 && dz == 0) || nx < 0 || nz < 0 || nx >= _width || nz >= _depth) continue;
-                    int next = nz * _width + nx;
-                    float step = dx != 0 && dz != 0 ? Cell * 1.414214f : Cell;
-                    if (closed[next] || cost[id] + step >= cost[next] || !Water(next)) continue;
-                    if (dx != 0 && dz != 0 && (!Water(z * _width + nx) || !Water(nz * _width + x))) continue;
-                    if (!ClearSegment(Point(id), Point(next))) continue;
-                    cost[next] = cost[id] + step; previous[next] = id;
-                    open.Add((cost[next] + Vector3.Distance(Point(next), _goal), next));
-                }
-            }
-            if (last<0) { Failure="当前水道不连通，请退回开阔水面"; return false; }
-            var reverse = new List<Vector3> { _goal };
-            for (int id = last; id >= 0; id = previous[id]) reverse.Add(Point(id));
-            reverse.Add(start); reverse.Reverse();
-            _route.Add(start);
-            for (int i = 0; i < reverse.Count - 1;)
-            {
-                int next = reverse.Count - 1;
-                while (next > i + 1 && !ClearSegment(reverse[i], reverse[next])) next--;
-                _route.Add(reverse[next]); i = next;
-            }
-            return true;
-        }
         private void LateUpdate()
         {
             if (_c == null || _c.Player == null) return;
             bool show = !_c.Ashore && !_c.Anchored && !_c.StoryBlocksGameplay;
-            _root.gameObject.SetActive(show); if (!show) return;
+            _root.gameObject.SetActive(show); if (!show) { CancelPlanning(); return; }
+            if (Planning && _planningTarget != _c.NavigationTarget) CancelPlanning();
             var boat = _c.Player.transform.position; boat.y = 0;
             int segment = 0; float nearest = float.MaxValue; Vector3 projection = boat;
             for (int i = 0; i < _route.Count - 1; i++)
@@ -170,13 +124,13 @@ namespace BoatAttack.Fishing
                 float distance = (p - boat).sqrMagnitude;
                 if (distance >= nearest) continue; nearest = distance; segment = i; projection = p;
             }
-            if (!_c.Paused && (_target != _c.NavigationTarget || (nearest > 100 && Time.time >= _nextPlan)))
+            if (!_c.Paused && !Planning && (_target != _c.NavigationTarget || ((nearest > 100 || _routeTarget != _c.NavigationTarget) && Time.time >= _nextPlan)))RequestPlan();
+            if (!_c.Paused && Planning)
             {
-                bool planned = Plan(); _nextPlan = Time.time + 2;
-                segment = 0; projection = boat;
-                if (!planned) { _root.gameObject.SetActive(false); return; }
+                bool committed=AdvancePlanning();
+                if(committed){segment=0;projection=boat;}
             }
-            if (_route.Count < 2) { _root.gameObject.SetActive(false); return; }
+            if (_route.Count < 2 || _routeTarget != _c.NavigationTarget) { _root.gameObject.SetActive(false); return; }
             _draw.Clear();
             if (!Arrived)
             {
@@ -214,6 +168,7 @@ namespace BoatAttack.Fishing
             _destination.positionCount = 64;
             for (int i = 0; i < 64; i++) { float a = i * Mathf.PI / 32; _destination.SetPosition(i, _goal + new Vector3(Mathf.Cos(a) * 2.8f, .20f, Mathf.Sin(a) * 2.8f)); }
         }
-        private void OnDestroy() { foreach (var material in _materials) if (material != null) Destroy(material); }
+        private void OnDisable()=>CancelPlanning();
+        private void OnDestroy() { CancelPlanning();foreach (var material in _materials) if (material != null) Destroy(material); }
     }
 }

@@ -10,7 +10,7 @@ namespace BoatAttack.Fishing
         private Text _pageTitle,_pageDate,_pageDetail;
         private Image _pageLeaf,_pageLeafEdge;
         private int _pageHover=-1;
-        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤"};
+        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤","储物箱 · 存入","储物箱 · 取出"};
 
         private void BuildNotebookPages()
         {
@@ -28,6 +28,7 @@ namespace BoatAttack.Fishing
             _pageLeafEdge=HomeImage(p,"Left leaf edge",new Rect(42,171,375,555),HomeGold,_homeEdgeSprite);
             _pageDetail=HomeText(p,new Rect(62,191,335,471),"",22,HomeInk);
             HomeText(p,new Rect(62,680,335,34),"指向卡片，查看完整信息",20,HomeMuted);
+            HomeImage(p,"Footer reading strip",new Rect(35,733,1030,43),HomePaper,_homePaperSprite);
             HomeImage(p,"Footer rule",new Rect(42,733,1020,1),HomeGold);
             var hint=HomeText(p,new Rect(44,741,1018,32),"右手指向  ·  扳机选择  ·  B 返回海湾",20,HomeMuted);hint.alignment=TextAnchor.MiddleRight;
             _pageDecor.SetActive(false);
@@ -38,7 +39,10 @@ namespace BoatAttack.Fishing
             _pageDecor.SetActive(true);
             var root=(RectTransform)_canvas.transform;root.sizeDelta=new Vector2(1100,780);root.localScale=Vector3.one*.00105f;
             _homeScaler.dynamicPixelsPerUnit=3;
-            var panel=_canvas.GetComponent<Image>();panel.sprite=_homePaperSprite;panel.type=Image.Type.Sliced;panel.color=HomePaper;
+            var theme=FishingPaperDesign.NotebookTheme(_page);
+            var panel=_canvas.GetComponent<Image>();panel.sprite=FishingPaperDesign.Surface(theme);panel.type=Image.Type.Sliced;panel.color=FishingPaperDesign.PaperTint;
+            _pageTitle.font=theme==FishingPaperTheme.Workshop?FishingUIFont.Font:FishingUITheme.Heading;
+            _pageTitle.fontSize=theme==FishingPaperTheme.Workshop?38:45;
             _pageTitle.text=_page>=0 && _page<PageTitles.Length?PageTitles[_page]:"潮汐手册";
             _pageDate.text=_c.Career.Calendar.DateLabel+"  /  "+_c.Career.Calendar.TimeLabel;
             bool chart=_page==12;

@@ -18,11 +18,15 @@ namespace BoatAttack.Fishing
         public FishingFingerPose Fingers { get; private set; }
         public bool Pointing { get; private set; }
         public float ForearmRoll { get; private set; }
+        public bool HasGripSurface { get; private set; }
+        public Vector3 GripStart { get; private set; }
+        public Vector3 GripEnd { get; private set; }
+        public float GripRadius { get; private set; }
         // Visibility here means target participation, not renderer visibility.
         public bool Visible=>_available && _frame==Time.frameCount && isActiveAndEnabled;
         public void Build(bool left){IsLeft=left;Disable();}
         public void BeginFrame()=>Disable();
-        public void Disable(){_available=false;_frame=-1;Curl=0;Fingers=FishingFingerPose.Uniform(0);Pointing=false;ForearmRoll=0;}
+        public void Disable(){_available=false;_frame=-1;Curl=0;Fingers=FishingFingerPose.Uniform(0);Pointing=false;ForearmRoll=0;HasGripSurface=false;}
         public void SetForearmRoll(float blend){if(Visible && Finite(blend))ForearmRoll=Mathf.Clamp01(blend);}
         public void SetPose(Vector3 position,Quaternion rotation,float curl,bool pointing=false)
         {
@@ -30,6 +34,7 @@ namespace BoatAttack.Fishing
                 ||!Finite(rotation.z)||!Finite(rotation.w)||Quaternion.Dot(rotation,rotation)<.5f || !Finite(curl))
             {Disable();return;}
             transform.SetPositionAndRotation(position,rotation.normalized);
+            HasGripSurface=false;
             Curl=Mathf.Clamp01(curl);Fingers=FishingFingerPose.Uniform(Curl);Pointing=pointing;_frame=Time.frameCount;_available=true;
         }
         /// <summary>Change grip on an already supplied goal; cannot revive expired tracking.</summary>
@@ -48,6 +53,13 @@ namespace BoatAttack.Fishing
         {
             if(grip==null || !grip.gameObject.activeInHierarchy){Disable();return;}
             SetPose(grip.TransformPoint(localPalmPosition),grip.rotation*localPalmRotation,curl,pointing);
+        }
+        /// <summary>The actual handle centreline, separate from the visible palm surface.</summary>
+        public void SetGripSurface(Vector3 start,Vector3 end,float radius)
+        {
+            if(!Visible || !Finite(start.x)||!Finite(start.y)||!Finite(start.z)||!Finite(end.x)||!Finite(end.y)||!Finite(end.z)
+                || !Finite(radius) || radius<=0 || (end-start).sqrMagnitude<1e-8f)return;
+            GripStart=start;GripEnd=end;GripRadius=radius;HasGripSurface=true;
         }
         private static bool Finite(float value)=>!float.IsNaN(value) && !float.IsInfinity(value);
         private void OnDisable()=>Disable();

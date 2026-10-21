@@ -12,7 +12,7 @@ namespace BoatAttack.Fishing
         public const string RootName="V019 Tide sanctuaries";
         public const string GeometryRootName="V035 authored level";
         private FishingPrototype _c;
-        private readonly Transform[] _portals=new Transform[4],_rooms=new Transform[4],_entries=new Transform[4],_devices=new Transform[5];
+        private readonly Transform[] _portals=new Transform[4],_rooms=new Transform[4],_entries=new Transform[4],_exits=new Transform[4],_devices=new Transform[5];
         private readonly Transform[] _windBridges=new Transform[3],_mirrors=new Transform[3];
         private readonly LineRenderer[] _forestLight=new LineRenderer[4];
         private Vector3 _returnFeet,_cargoStart,_cargoEnd,_gangwayHome;
@@ -31,6 +31,7 @@ namespace BoatAttack.Fishing
         public bool PushingCargo=>_pushing;
         public void ResetInteraction(){_pushing=false;CancelObservation();}
         public Transform Portal(int island)=>island>=0 && island<4?_portals[island]:null;
+        public Transform ExitPortal(int island)=>island>=0 && island<4?_exits[island]:null;
         public Vector3 PortalApproach(int island)=>_portals[island].Find("Approach").position;
         public Transform Device(int id)=>id>=0 && id<5?_devices[id]:null;
         public Transform Landmark(string name)=>Inside?Marker(Room,name):null;
@@ -50,6 +51,21 @@ namespace BoatAttack.Fishing
                 _rooms[i]=root.Find("Realm "+i);_entries[i]=Marker(_rooms[i],"Entry");_rooms[i].gameObject.SetActive(false);
                 _portals[i]=c.Islands.WorldRoot.GetChild(i).Find("V019 island character/Portal");
                 if(_portals[i]==null)throw new InvalidOperationException("Missing island entrance "+i);
+                if(i==3)
+                {
+                    var art=c.Islands.WorldRoot.GetChild(i).Find("V035 crafted coastal scenery");
+                    var observatory=art.Find("ObservatoryExterior");
+                    _portals[i].position=observatory.TransformPoint(new Vector3(2.4f,3.6f,11.4f));
+                    var approach=_portals[i].Find("Approach");approach.localPosition=Vector3.forward*1.8f;
+                    var route=art.Find("Island approach");route.GetChild(route.childCount-1).position=approach.position;
+                }
+                var entrance=new GameObject(FishingPortalVisual.RootName).AddComponent<FishingPortalVisual>();entrance.transform.SetParent(_portals[i],false);entrance.Build(c,i,i==0 || i==2 || i==3);
+                _exits[i]=_rooms[i].Find("Device 4");
+                // The final platforms already provide supported floors; keep the optional reward separate from leaving.
+                _exits[i].localPosition=new[]{new Vector3(-3,5,25.5f),new Vector3(-3.1f,0,23),new Vector3(2.5f,1.8f,19),new Vector3(-2.6f,3.6f,12.4f)}[i];
+                _exits[i].localRotation=Quaternion.Euler(0,i==0?90:180,0);
+                foreach(Transform child in _exits[i])child.gameObject.SetActive(false);
+                var exit=new GameObject(FishingPortalVisual.RootName).AddComponent<FishingPortalVisual>();exit.transform.SetParent(_exits[i],false);exit.Build(c,i,i==2);
                 BuildTrialScenery(i);
             }
         }
@@ -80,8 +96,8 @@ namespace BoatAttack.Fishing
             get
             {
                 if(!TryTarget(out int id,out _))return null;
-                if(id>=8)return "E 进入 "+FishingLore.ShrineName(id-8);
-                if(id==4)return "E 返回岛屿";
+                if(id>=8)return "E 穿过星光门 · 进入 "+FishingLore.ShrineName(id-8);
+                if(id==4)return "E 穿过归航门 · 返回岛屿";
                 if(id==3)return "E 读取潮汐回响";
                 if(Island==0)return "走入「"+(id==0?"风":id==1?"潮":"星")+"」共鸣台 · 循声登高";
                 if(Island==1)return "E 转动反光镜 · 将光接向下一面镜 / 种池";
@@ -99,7 +115,7 @@ namespace BoatAttack.Fishing
                 if(!Trial.Ready && !_c.Career.Lore.Cleared(Island)){_c.Notice(FishingLore.TrialHint(Island),8);return false;}
                 int pay=_c.Career.CompleteShrine(Island);
                 if(pay==0 && !_c.Career.Lore.Cleared(Island)){_c.Notice("金币已达上限；回响保留，腾出余额后可再领取。",5);return false;}
-                _c.Save();Refresh();_c.Regions.Show(FishingLore.ShrineName(Island)+" · 回响重现",pay>0?"+90 金币 · 航记已收录":"航记已收录",Island);_c.Notice(FishingLore.Echo(Island),12);return true;
+                _c.Save();Refresh();_exits[Island].GetComponentInChildren<FishingPortalVisual>().Pulse();_c.Regions.Show(FishingLore.ShrineName(Island)+" · 回响重现",pay>0?"+90 金币 · 航记已收录":"航记已收录",Island);_c.Notice(FishingLore.Echo(Island)+" 身旁的星光归航门可直接返回岛屿。",12);return true;
             }
             if(Island==0){_c.Notice("让脚步踩入共鸣台，听风桥回应。",4);return false;}
             if(Island==3)
@@ -131,6 +147,7 @@ namespace BoatAttack.Fishing
         private IEnumerator Travel(int destination)
         {
             CancelObservation();_pushing=false;Transitioning=true;_c.StoryModalChanged();_c.TackleShop.Close();_c.XRNotebook.Close();
+            (destination>=0?_portals[destination]:_exits[Island]).GetComponentInChildren<FishingPortalVisual>().Pulse();_c.Regions.Chime(destination>=0?destination:Island);
             for(float t=0;t<.28f;t+=Time.unscaledDeltaTime){Blackout=Mathf.Clamp01(t/.28f);yield return null;}
             Blackout=1;int old=Island;bool moved;
             if(destination>=0)
@@ -154,7 +171,7 @@ namespace BoatAttack.Fishing
             for(float t=0;t<.42f;t+=Time.unscaledDeltaTime){Blackout=1-Mathf.Clamp01(t/.42f);yield return null;}
             Blackout=0;Transitioning=false;_c.StoryModalChanged();
             if(!moved){_c.Notice("入口落脚点被遮挡，已保留当前位置。",5);yield break;}
-            _c.Regions.Show(Inside?FishingLore.ShrineName(Island):FishingAdventure.Name(old),Inside?FishingLore.TrialObjective(Island):FishingLore.Subtitle(old),Inside?Island:old);
+            _c.Regions.Show(Inside?FishingLore.ShrineName(Island):FishingAdventure.Name(old),Inside?FishingLore.TrialObjective(Island)+" · 归航门位于探索终点":FishingLore.Subtitle(old),Inside?Island:old);
         }
         public void Abort()
         {

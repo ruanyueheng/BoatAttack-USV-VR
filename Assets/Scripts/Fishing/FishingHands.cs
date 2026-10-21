@@ -195,11 +195,12 @@ namespace BoatAttack.Fishing
                     var rotation=_right.Palm.rotation*Quaternion.Inverse(RodPalmRotation);
                     _rod.SetPositionAndRotation(_right.Palm.position-rotation*RodPalm,rotation);
                     _right.SetFromGrip(_rod,RodPalm,RodPalmRotation,.86f);
+                    RodGripSurface();
                 }
                 return;
             }
             // Sleep owns the desktop resting arms; tracked controllers above retain their physical poses.
-            if(_c.Home.Sleeping){StowRod();return;}
+            if(_c.Home.Sleeping || _c.Home.Lounging){StowRod();return;}
             GetToolFrame(out var origin,out var frame);
             bool inspection=_c.CatchRig!=null && _c.CatchRig.LeftHandInspecting && !_c.CatchRig.PlacingInNet;
             bool fishing=_c.Anchored && !_c.Ashore && (!_c.HasPendingCatch || inspection) && !_c.InspectingItem;
@@ -217,10 +218,12 @@ namespace BoatAttack.Fishing
                 bool landing=_c.Session.Phase==CatchPhase.Landing;
                 FitToolPose(_rod,reelPalm,RodPalm,Quaternion.LookRotation(Vector3.right,Vector3.up),RodPalmRotation,!inspection,true);
                 _right.SetFromGrip(_rod,RodPalm,RodPalmRotation,.86f);
+                RodGripSurface();
                 if(!landing && !inspection)
                 {
                     _left.SetFromGrip(_rod,reelPalm,Quaternion.LookRotation(Vector3.right,Vector3.up),.6f);
                     _left.SetFingers(new FishingFingerPose(.55f,.64f,.66f,.62f,.72f));
+                    _left.SetGripSurface(_rod.TransformPoint(reelPalm+new Vector3(-.025f,-.022f,.018f)),_rod.TransformPoint(reelPalm+new Vector3(.025f,-.022f,.018f)),.017f*_rod.lossyScale.x);
                 }
             }
             else
@@ -249,6 +252,7 @@ namespace BoatAttack.Fishing
                 _right.SetFromGrip(_pickup.transform,new Vector3(.02f,-.045f,-.045f),Quaternion.identity,.65f);
             }
         }
+        private void RodGripSurface()=>_right.SetGripSurface(_rod.TransformPoint(new Vector3(0,0,-.10f)),_rod.TransformPoint(new Vector3(0,0,.04f)),.025f*_rod.lossyScale.x);
         private void StowRod()
         {
             bool xr=XRSettings.isDeviceActive;

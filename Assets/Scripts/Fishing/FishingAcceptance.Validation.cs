@@ -26,6 +26,10 @@ namespace BoatAttack.Fishing
             {
                 if (!Check(() => SelectCase(selected))) yield break;
                 while(Controller.Realms.Transitioning)yield return null;
+                float prepareDeadline=Time.realtimeSinceStartup+20;
+                while(Controller.AcceptanceFixturePreparing && Failure==null && Time.realtimeSinceStartup<prepareDeadline)yield return null;
+                if(Failure!=null)yield break;
+                if(!Check(()=>{if(Controller.AcceptanceFixturePreparing)throw new TimeoutException("Acceptance fixture setup exceeded twenty seconds: "+selected);}))yield break;
                 float remaining = Controller.Session.Remaining, tension = Controller.Session.Tension;
                 yield return new WaitForSecondsRealtime(capture ? 1f : .45f);
                 if (!Check(() =>
@@ -60,6 +64,12 @@ namespace BoatAttack.Fishing
                     yield return CaptureFrame();
                     if (Failure != null) yield break;
                 }
+                if(selected==FishingAcceptanceCase.PortalExit)
+                {
+                    if(!Check(()=>{if(!Controller.RequestWorldInteraction())throw new InvalidOperationException("Terminal portal capture cannot return through its real interaction.");}))yield break;
+                    while(Controller.Realms.Transitioning)yield return null;
+                    if(!Check(()=>{if(Controller.Realms.Inside)throw new InvalidOperationException("Terminal portal failed to return the player to the island.");}))yield break;
+                }
             }
             if (!Check(() =>
             {
@@ -83,6 +93,7 @@ namespace BoatAttack.Fishing
         private void ValidateCase()
         {
             var c = Controller;
+            c.ValidateV036AcceptanceFixture(CurrentCase);
             if(CurrentCase==FishingAcceptanceCase.SandSieve || CurrentCase==FishingAcceptanceCase.RopeWinder)
             {
                 if(!c.HandGames.Active || !c.StoryBlocksGameplay || !c.HandGames.Task.HasMaterials(c.Career.Backpack))

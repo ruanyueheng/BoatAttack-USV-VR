@@ -7,8 +7,9 @@ namespace BoatAttack.Fishing
         private void DressGarden()
         {
             var root=new GameObject("V035 Home flowers and orchard").transform;root.SetParent(transform,false);root.position=Origin;
+            int treeId=0;
             foreach(var p in new[]{new Vector3(-11,0,10),new Vector3(-7,0,17),new Vector3(7,0,19),new Vector3(32,0,12),new Vector3(30,0,19)})
-                FishingFarmWorld.Model("OrchardTree",root,p,true);
+                RegisterOrchard(treeId++,FishingFarmWorld.Model("OrchardTree",root,p,true));
             for(int j=0;j<140;j++)
             {
                 float a=j*2.399963f;float r=10+Mathf.Sqrt((j+.5f)/140)*17;var p=new Vector3(4+Mathf.Cos(a)*r,0,2+Mathf.Sin(a)*r*.75f);

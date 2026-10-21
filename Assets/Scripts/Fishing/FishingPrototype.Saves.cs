@@ -179,7 +179,7 @@ namespace BoatAttack.Fishing
         private void TickAutosave()
         {
             if(!_savingReady || !CanContinue || Paused || (!Automated && !Application.isFocused))return;
-            RememberSafeResume();_autoClock+=Time.deltaTime;
+            _autoClock+=Time.deltaTime;
             if(_autoClock>=60){_autoClock=0;Save();}
         }
         private void SaveProgress()
@@ -196,7 +196,7 @@ namespace BoatAttack.Fishing
         }
         private void ApplySavedCareer(FishingCareer career,FishingResumeData resume)
         {
-            HandGames?.Cancel();CloseHomeChart();Prologue.Suspend();Home.CancelSleep();Letter.Close();Residents.Close();Realms.Abort();
+            HandGames?.Cancel();CloseHomeChart();Prologue.Suspend();Home.CancelSleep();Home.StandUp(true);Letter.Close();Residents.Close();Realms.Abort();
             if(InventoryOpen)ToggleInventory();if(JournalOpen)ToggleJournal();
             CancelGuideOpening();ResetToolInput();CoastWorld.CloseMenu();
             if(Ashore)Shore.BoardImmediately();

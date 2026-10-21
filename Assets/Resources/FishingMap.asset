@@ -17,10 +17,10 @@ MonoBehaviour:
   worldXZBounds: {x: -820, y: -694, z: 825.98267, w: 570}
   seaLevel: 0
   sourceScene: Assets/scenes/Fishing/fishing_Island.unity
-  bakedUtc: 2026-10-19T12:28:54.3669595Z
+  bakedUtc: 2026-10-20T18:09:30.1207730Z
   includesInitializedScenery: 1
   terrainCount: 2
-  staticRendererCount: 1815
+  staticRendererCount: 1824
   terrainVertexCount: 526338
   metersPerTexel: {x: 0.8037025, y: 0.8035601}
   captureNotes: "North = +Z; UV origin = SW. One-shot explicit CommandBuffer.DrawMesh,
@@ -1994,15 +1994,34 @@ MonoBehaviour:
   - 'Mesh Fishing Prototype/V035 Home flowers and orchard/OrchardTree/OrchardTree(Clone)
     | GEO-OrchardTree | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-190.93, 4.38, 20.02), Extents: (3.23, 2.23, 3.11)'
+  - 'Mesh Fishing Prototype/V035 home garden/Can stand leg | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-168.05, 2.45, 0.68), Extents:
+    (0.03, 0.25, 0.03)'
+  - 'Mesh Fishing Prototype/V035 home garden/Can stand leg | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-168.05, 2.45, 1.12), Extents:
+    (0.03, 0.25, 0.03)'
+  - 'Mesh Fishing Prototype/V035 home garden/Can stand leg | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-168.55, 2.45, 0.68), Extents:
+    (0.03, 0.25, 0.03)'
+  - 'Mesh Fishing Prototype/V035 home garden/Can stand leg | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-168.55, 2.45, 1.12), Extents:
+    (0.03, 0.25, 0.03)'
   - 'Mesh Fishing Prototype/V035 home garden/GardenFixtures/GardenFixtures(Clone)
-    | GEO-GardenFixtures | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
-    (-160.00, 3.99, 12.78), Extents: (11.55, 1.84, 12.12)'
+    | Garden fixtures without fixed well bucket | staticBatch=False firstSubmesh=0
+    opaqueDraws=2 rendererBounds=Center: (-160.00, 1.31, 12.78), Extents: (11.55,
+    4.53, 12.12)'
   - 'Mesh Fishing Prototype/V035 home garden/GardenHoe/GardenHoe(Clone) | GEO-GardenHoe
-    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-166.27,
-    2.76, 3.92), Extents: (0.15, 0.32, 0.14)'
-  - 'Mesh Fishing Prototype/V035 home garden/GardenWateringCan/GardenWateringCan(Clone)
-    | GEO-GardenWateringCan | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-166.13, 2.63, 3.94), Extents: (0.33, 0.14, 0.33)'
+    | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-166.13,
+    2.67, 3.80), Extents: (0.13, 0.32, 0.15)'
+  - 'Mesh Fishing Prototype/V035 home garden/V036 persistent watering can | GEO-StarlightWateringCan
+    | staticBatch=False firstSubmesh=0 opaqueDraws=4 rendererBounds=Center: (-168.14,
+    2.87, 0.89), Extents: (0.27, 0.14, 0.28)'
+  - 'Mesh Fishing Prototype/V035 home garden/V036 working well bucket/Authored cedar
+    bucket | Detached original well bucket | staticBatch=False firstSubmesh=0 opaqueDraws=2
+    rendererBounds=Center: (-169.80, 1.38, 2.00), Extents: (0.33, 0.33, 0.34)'
+  - 'Mesh Fishing Prototype/V035 home garden/Watering can stand | Cube | staticBatch=False
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-168.30, 2.69, 0.90), Extents:
+    (0.34, 0.04, 0.31)'
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 1/FarmPlot(Clone) | GEO-FarmPlot
     | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-166.00,
     2.40, 5.00), Extents: (1.15, 0.14, 1.15)"
@@ -2264,6 +2283,9 @@ MonoBehaviour:
   - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/CottageShell/CottageShell(Clone)
     | GEO-CottageShell | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-180.00, 4.92, 8.84), Extents: (6.80, 4.82, 6.94)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/Home keepsake storage chest/chest(Clone)
+    | GEO-chest | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-175.20, 3.13, 7.90), Extents: (0.69, 0.73, 0.71)"
   - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/HomeBed/HomeBed(Clone) | GEO-HomeBed
     | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-183.30,
     3.20, 12.70), Extents: (1.25, 0.80, 1.50)"
@@ -2276,6 +2298,9 @@ MonoBehaviour:
   - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/HomeCabinet/HomeCabinet(Clone)
     | GEO-HomeCabinet | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-178.00, 2.88, 14.20), Extents: (0.78, 0.48, 0.43)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/HomeCabinet/HomeCabinet(Clone)
+    | GEO-HomeCabinet | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-183.20, 2.88, 5.45), Extents: (0.78, 0.48, 0.43)"
   - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/HomeCabinet/HomeCabinet(Clone)
     | GEO-HomeCabinet | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-185.00, 2.76, 12.70), Extents: (0.58, 0.36, 0.32)"
@@ -2296,7 +2321,7 @@ MonoBehaviour:
     3.05, 14.20), Extents: (0.78, 0.65, 0.42)"
   - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/HomeSofa/HomeSofa(Clone) | GEO-HomeSofa
     | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-183.20,
-    3.11, 8.20), Extents: (1.55, 0.71, 0.66)"
+    2.87, 8.20), Extents: (1.07, 0.47, 0.57)"
   - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/HomeStove/HomeStove(Clone) |
     GEO-HomeStove | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-175.00, 2.91, 14.20), Extents: (0.78, 0.51, 0.44)"
@@ -2306,6 +2331,9 @@ MonoBehaviour:
   - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/IvyDrape/IvyDrape(Clone) | GEO-IvyDrape
     | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center: (-185.90,
     4.19, 4.72), Extents: (0.42, 1.12, 0.10)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/Tide film screen | Exact source
+    CRT picture surface | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-183.04, 3.77, 5.78), Extents: (0.34, 0.29, 0.00)"
   - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/booksView/booksView(Clone) |
     GEO-books | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-176.80, 3.42, 6.10), Extents: (0.32, 0.22, 0.20)"
@@ -2324,9 +2352,6 @@ MonoBehaviour:
   - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/lampRoundTableView/lampRoundTableView(Clone)
     | GEO-lampRoundTable | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-185.00, 3.57, 12.70), Extents: (0.15, 0.30, 0.17)"
-  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/loungeChairView/loungeChairView(Clone)
-    | GEO-loungeChair | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-185.10, 3.08, 6.70), Extents: (0.72, 0.68, 0.82)"
   - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/pottedPlantView/pottedPlantView(Clone)
     | GEO-pottedPlant | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-174.95, 3.20, 6.40), Extents: (0.26, 0.80, 0.30)"
@@ -2336,6 +2361,9 @@ MonoBehaviour:
   - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/radioView/radioView(Clone) |
     GEO-radio | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-183.00, 3.14, 6.80), Extents: (0.17, 0.12, 0.05)"
+  - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/televisionVintage/televisionVintage(Clone)
+    | televisionVintage | staticBatch=False firstSubmesh=0 opaqueDraws=4 rendererBounds=Center:
+    (-183.20, 3.77, 5.45), Extents: (0.59, 0.39, 0.39)"
   - "Mesh Fishing Prototype/\u56DE\u6F6E\u6E14\u5C4B/\u5DE5\u4F5C\u53F0 #4 | GEO-Workbench(Clone)
     | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-178.05,
     3.04, 10.65), Extents: (0.65, 0.62, 0.42)"
@@ -3333,10 +3361,10 @@ MonoBehaviour:
     rendererBounds=Center: (118.24, 7.53, -66.63), Extents: (6.59, 12.61, 4.65)'
   - 'Mesh Island Level/Environment Objects/Props_Floating/KayakRoot (2)/Geo_Props_Kayak
     (4) | Geo_Props_Kayak | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-83.76, 0.17, -41.83), Extents: (0.76, 0.32, 2.08)'
+    (-83.77, 0.10, -41.82), Extents: (0.76, 0.30, 2.08)'
   - 'Mesh Island Level/Environment Objects/Props_Floating/KayakRoot/Geo_Props_Kayak
     (4) | Geo_Props_Kayak | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-84.71, 0.17, -44.56), Extents: (0.82, 0.32, 2.09)'
+    (-84.71, 0.10, -44.56), Extents: (0.83, 0.30, 2.09)'
   - 'Mesh Island Level/Environment Objects/SmallIsland/Rocks/Rock_Large_01 (2)/Rock_Large_01_LOD0
     | Combined Mesh (root: scene) 7 | staticBatch=True firstSubmesh=60 opaqueDraws=1
     rendererBounds=Center: (10.07, 3.07, 70.93), Extents: (6.78, 12.84, 4.70)'

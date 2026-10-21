@@ -52,7 +52,7 @@ namespace BoatAttack.EditorTools
                         Check(DateTime.TryParseExact(data.savedUtc, "O", CultureInfo.InvariantCulture,
                             DateTimeStyles.RoundtripKind, out var utc) && utc.Kind == DateTimeKind.Utc, "保存时间为可解析UTC而非Unix时间");
                         resume.boatX = 999;
-                        Check(data.resume.boatX == 1.25f && data.career.version == 14, "快照不共享恢复对象且兼容career v14");
+                        Check(data.resume.boatX == 1.25f && data.career.version == 15, "快照不共享恢复对象且兼容career v15");
                     }
                 for (int slot = 0; slot < FishingSlotStore.Count; slot++)
                     foreach (FishingSlotKind kind in new[] { FishingSlotKind.Manual, FishingSlotKind.Auto })

@@ -85,6 +85,7 @@ namespace BoatAttack.Fishing
             FirstPersonSkin=go.AddComponent<SkinnedMeshRenderer>();
             FirstPersonSkin.sharedMesh=_firstPersonMesh;FirstPersonSkin.sharedMaterials=BodySkin.sharedMaterials;
             FirstPersonSkin.bones=bones;FirstPersonSkin.rootBone=BodySkin.rootBone;
+            FirstPersonSkin.quality=BodySkin.quality;
             FirstPersonSkin.localBounds=_bodyPresentationBounds;FirstPersonSkin.updateWhenOffscreen=true;
             FirstPersonSkin.allowOcclusionWhenDynamic=false;FirstPersonSkin.receiveShadows=BodySkin.receiveShadows;
             FirstPersonSkin.shadowCastingMode=ShadowCastingMode.Off;FirstPersonSkin.enabled=false;

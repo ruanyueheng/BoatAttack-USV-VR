@@ -14,6 +14,8 @@ namespace BoatAttack.Fishing
         public static string Failure { get; private set; }
         public FishingAcceptanceCase CurrentCase { get; private set; }
         public bool FreezeScenario { get; private set; }
+        public bool FreezeFarmAnimation=>FreezeScenario && Controller!=null && !Controller.AcceptanceFixturePreparing
+            && (CurrentCase==FishingAcceptanceCase.WellRefill || CurrentCase==FishingAcceptanceCase.WateringPour);
         public string Status { get; private set; } = string.Empty;
         public bool KeepCatchCardVisible => FreezeScenario && (CurrentCase == FishingAcceptanceCase.Catch || CurrentCase==FishingAcceptanceCase.CatchNight || FishingAcceptanceCases.IsFindCase(CurrentCase))
             && Controller.Session.Phase == CatchPhase.Caught;
@@ -99,7 +101,7 @@ namespace BoatAttack.Fishing
         {
             if (CurrentCase == FishingAcceptanceCase.FreePlay) return;
             FreezeScenario = !FreezeScenario;
-            Status = FreezeScenario ? "阶段已定格 · 仅冻结捕捞计时，不代表手感验收" : "阶段已解除定格 · 使用真实按键继续当前场景";
+            Status = FreezeScenario ? "阶段已定格 · 捕捞或浇灌动画定格，不代表手感验收" : "阶段已解除定格 · 使用真实按键继续当前场景";
         }
 
         private void Finish()

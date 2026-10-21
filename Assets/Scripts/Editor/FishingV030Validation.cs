@@ -27,7 +27,7 @@ namespace BoatAttack.EditorTools
                 Check(c.Letter.Open && c.Letter.Envelope.Find("Coastal postage and cancellation").GetComponent<Image>().sprite!=null,"Envelope carries original coastal postage and a cancellation mark");
                 FishingV016Validation.Capture(c,output,"envelope");
                 c.Letter.Reveal();yield return null;
-                Check(c.Letter.Ready && c.Letter.Paper.GetComponent<Image>().sprite.texture.name=="KraftPaper","Extracted letter uses fibre-textured kraft paper");
+                Check(c.Letter.Ready && c.Letter.Paper.GetComponent<Image>().sprite==FishingPaperDesign.Vellum,"Extracted letter uses the shared fibre-textured ivory vellum");
                 foreach(var label in c.Letter.Paper.GetComponentsInChildren<Text>())
                 {
                     Check(label.font!=null && label.preferredHeight<=label.rectTransform.rect.height+2,"Letter text fits without truncation: "+label.name);

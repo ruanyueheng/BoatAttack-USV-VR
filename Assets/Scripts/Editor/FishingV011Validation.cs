@@ -121,6 +121,46 @@ namespace BoatAttack.EditorTools
         {
             Check(c.Automated && c.HasIsolatedProfile && c.SavePath.StartsWith(Application.temporaryCachePath),"仅操作临时隔离存档");
             int firstFrame=Time.frameCount;while(Time.frameCount==firstFrame)yield return null;
+            if(suite=="V037-HANDS")
+            {
+                var checks=FishingV037HandsValidation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V037-PORTAL")
+            {
+                var checks=FishingV037PortalValidation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V037-WEATHER")
+            {
+                var checks=FishingV037WeatherValidation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V037-UI")
+            {
+                var checks=FishingV037UIValidation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V036")
+            {
+                var checks=FishingV036Validation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V036-UI")
+            {
+                var checks=FishingV036UIValidation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V036-STORAGE")
+            {
+                var checks=FishingV036StorageValidation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V036-PORTAL")
+            {
+                var checks=FishingV036PortalValidation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V036-ORCHARD")
+            {
+                var checks=FishingV036OrchardValidation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V036-PERFORMANCE")
+            {
+                var checks=FishingV036PerformanceValidation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
             if(suite=="V035-LEVELS")
             {
                 var checks=FishingV035Levels.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
@@ -128,6 +168,10 @@ namespace BoatAttack.EditorTools
             if(suite=="V035-FARM")
             {
                 var checks=FishingV035FarmValidation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V036-FARM")
+            {
+                var checks=FishingV036FarmValidation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
             }
             if(suite=="V035")
             {
@@ -624,7 +668,7 @@ namespace BoatAttack.EditorTools
             Check(c.RequestCatchResolution(true),"取消后可用新编号重新入箱");c.TickWorldAction(1,true,false);
             Check(!c.HasPendingCatch && c.Career.Count==1 && !c.RequestCatchResolution(true),"鱼获事务只结算一次");
             var reloaded=FishingSaveStore.Load(c.SavePath,out var warning);
-            Check(warning=="" && reloaded.Snapshot().version == 14 && reloaded.Count==1 && reloaded.Workshop.Initialized,"新动作保存鱼获与工坊数据");
+            Check(warning=="" && reloaded.Snapshot().version == 15 && reloaded.Count==1 && reloaded.Workshop.Initialized,"新动作保存鱼获与工坊数据");
             c.CancelWorldAction();yield return null;
             var releasedFish=new CatchRecord{id="v011-release-"+Guid.NewGuid().ToString("N"),kind=FishKind.Coral,grams=1000,value=FishingSpecies.Value(FishKind.Coral,false,1000)};
             Check(c.Career.BeginPending(releasedFish,0,c.Player.transform.position.x,c.Player.transform.position.z),"普通鱼放生夹具");c.CatchRig.ResetFixture();

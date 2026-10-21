@@ -20,8 +20,9 @@ namespace BoatAttack.Fishing
         private GameObject _oldCliff;
         private static readonly Rect ShoreClearArea=new Rect(-166,-28,42,50);
         private Rect _changedShoreArea;
-        private readonly Transform[] _interactables=new Transform[4];
-        private readonly Vector3[] _interactionPoints=new Vector3[4];
+        private readonly Transform[] _interactables=new Transform[12];
+        private readonly Vector3[] _interactionPoints=new Vector3[12];
+        private readonly RaycastHit[] _interactionHits=new RaycastHit[64];
         private readonly System.Collections.Generic.List<Light> _lamps=new System.Collections.Generic.List<Light>();
         public bool LightsOn { get; private set; }=true;
         public Transform House { get; private set; }
@@ -75,7 +76,7 @@ namespace BoatAttack.Fishing
             Furnish("bedDouble",new Vector3(-3.3f,.20f,2.7f),3.0f,0,true,out var bed);Bed=bed;
             Place("cabinetBedDrawer",-5.0f,2.7f,1.15f);Place("lampRoundTable",-5.0f,2.7f,.60f,0,1.07f,false);
             Place("bookcaseOpen",-5.20f,4.2f,2.2f,90);Place("books",-4.6f,4.2f,.6f,0,.20f,false);
-            Place("loungeSofa",-3.2f,-1.8f,3.1f,180);Place("loungeChair",-5.1f,-3.3f,1.45f,100);
+            Furnish("loungeSofa",new Vector3(-3.2f,.20f,-1.8f),2.05f,180,true,out _sofa);
             Place("rugRectangle",-3.0f,-3.25f,3.4f,0,.203f,false);Place("tableCoffee",-3.0f,-3.2f,1.5f);
             Furnish("radio",new Vector3(-3,.82f,-3.2f),.34f,0,false,out var radio);
             Furnish("lampRoundFloor",new Vector3(-5.2f,.20f,-.5f),1.75f,0,true,out var lightSwitch);
@@ -94,7 +95,9 @@ namespace BoatAttack.Fishing
             RegisterInteraction(1,radio,new Vector3(-3,1.0f,-3.2f));
             RegisterInteraction(2,chartDesk,new Vector3(3.65f,1.15f,-3.9f));
             RegisterInteraction(3,lightSwitch,new Vector3(-5.2f,1.3f,-.5f));
-            FishingV019Art.Sign("天气收音机",House,new Vector3(-3,1.42f,-3.2f),.012f,Color.white);
+            BuildLeisure();
+            BuildStorage();
+            FishingV019Art.Sign("天气收音机",House,new Vector3(-3,1.12f,-3.32f),.008f,Color.white).transform.localRotation=Quaternion.Euler(0,180,0);
             FishingV019Art.Sign("航线书桌 · 查看海图",House,new Vector3(3.65f,1.65f,-3.9f),.012f,Color.white);
             FishingV019Art.Sign("室内灯 · 开关",House,new Vector3(-5.2f,2.05f,-.5f),.012f,Color.white);
             foreach(var kind in new[]{CraftStation.Workbench,CraftStation.Furnace,CraftStation.Forge})
@@ -193,14 +196,19 @@ namespace BoatAttack.Fishing
         public Vector3 InteractionPoint(int id)=>_interactionPoints[id];
         public bool ReachInteraction(int id)
         {
+            if(id>=7 && id<12)return ReachOrchard(id-7);
             var root=InteractionRoot(id);
             if(_c==null || root==null || !root.gameObject.activeInHierarchy || !_c.Ashore || _c.Shore.Swimming || _c.Shore.Climbing)return false;
             var point=_interactionPoints[id];
             if(FishingPrototype.FlatDistance(_c.Shore.Position,point)>2.2f || Mathf.Abs(_c.Shore.Position.y-Origin.y-.20f)>.6f)return false;
             var from=_c.Shore.Position+Vector3.up*_c.Shore.EyeHeight;var delta=point-from;
-            foreach(var hit in Physics.RaycastAll(from,delta.normalized,delta.magnitude,~(1<<4),QueryTriggerInteraction.Ignore))
+            int hits=Physics.RaycastNonAlloc(from,delta.normalized,_interactionHits,delta.magnitude,~(1<<4),QueryTriggerInteraction.Ignore);
+            if(hits==_interactionHits.Length)return false;
+            for(int i=0;i<hits;i++)
+            {var hit=_interactionHits[i];
                 if(!FishingShore.NonSolidSurface(hit.collider) && hit.collider!=_c.Shore.Body && !hit.transform.IsChildOf(root)
                     && !hit.transform.IsChildOf(_c.Player.transform))return false;
+            }
             return true;
         }
         public bool TryTarget(out int id,out Transform root)
@@ -208,13 +216,16 @@ namespace BoatAttack.Fishing
             id=-1;root=null;float nearest=float.MaxValue;
             for(int i=0;i<_interactables.Length;i++)if(ReachInteraction(i))
             {
-                float distance=FishingPrototype.FlatDistance(_c.Shore.Position,_interactionPoints[i]);
+                var direction=_interactionPoints[i]-_c.viewCamera.transform.position;
+                float alignment=Vector3.Dot(_c.viewCamera.transform.forward,direction.normalized);
+                float distance=FishingPrototype.FlatDistance(_c.Shore.Position,_interactionPoints[i])+(1-alignment)*2;
                 if(distance<nearest){nearest=distance;id=i;root=_interactables[i];}
             }
             return id>=0;
         }
         public string InteractionTitle(int id)
         {
+            if(id>=7 && id<12)return OrchardTitle(id-7);
             string key=XRSettings.isDeviceActive?"A ":"E ";
             switch(id)
             {
@@ -222,6 +233,9 @@ namespace BoatAttack.Fishing
                 case 1:return key+"收听今明两天天气";
                 case 2:return key+"在航线书桌查看海图";
                 case 3:return key+(LightsOn?"关闭":"打开")+"室内灯";
+                case 4:return key+"坐在沙发上休息";
+                case 5:return key+(TelevisionOn?"关闭":"打开")+"潮汐放映机";
+                case 6:return key+"打开家园储物箱 · 存入 / 取出";
                 default:return null;
             }
         }
@@ -238,7 +252,10 @@ namespace BoatAttack.Fishing
                     return _c.OpenHomeChart();
                 case 3:
                     LightsOn=!LightsOn;UpdateLights();_c.Notice(LightsOn?"渔屋灯光已打开":"渔屋灯光已关闭",3);return true;
-                default:return false;
+                case 4:return Sit();
+                case 5:ToggleTelevision();return true;
+                case 6:return OpenStorage();
+                default:return id>=7 && id<12 && InteractOrchard(id-7);
             }
         }
         private void Solid(string name,Vector3 p,Vector3 size)
@@ -307,11 +324,13 @@ namespace BoatAttack.Fishing
             if(!Sleeping)return;Sleeping=false;_fade.gameObject.SetActive(false);_c.Shore.SyncRider();_c.StoryModalChanged();
             _c.View.ResetLook();
         }
-        private void OnDisable()=>CancelSleep();
-        private void UpdateLights(){foreach(var lamp in _lamps)lamp.intensity=LightsOn?Mathf.Lerp(.9f,1.6f,1-_c.Career.Calendar.Daylight):0;}
-        private void Update(){if(_c!=null)UpdateLights();}
+        private void OnDisable(){CancelSleep();StandUp(true);ResetOrchardMotion();}
+        private void UpdateLights(){bool near=(_c.viewCamera.transform.position-Origin).sqrMagnitude<90*90;foreach(var lamp in _lamps){lamp.enabled=LightsOn && near;lamp.intensity=LightsOn?(lamp.type==LightType.Spot?Mathf.Lerp(2.2f,7.5f,1-_c.Career.Calendar.Daylight):Mathf.Lerp(.9f,1.9f,1-_c.Career.Calendar.Daylight)):0;}}
+        private void Update(){if(_c!=null){UpdateLights();UpdateLeisure();UpdateOrchard();}}
         private void OnDestroy()
         {
+            DisposeLeisure();
+            DisposeOrchard();
             if(_walkMaterial!=null)Destroy(_walkMaterial);
             if(_shoreTerrain!=null && _shoreTerrain.terrainData==_shoreCopy)
             {_shoreTerrain.terrainData=_shoreOriginal;var collider=_shoreTerrain.GetComponent<TerrainCollider>();if(collider!=null)collider.terrainData=_shoreOriginal;}

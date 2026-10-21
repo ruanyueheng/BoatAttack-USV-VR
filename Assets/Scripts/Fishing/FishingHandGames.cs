@@ -31,12 +31,15 @@ namespace BoatAttack.Fishing
         private FishingHandTask _task;
         private FishingCareer _career;
         private Vector2 _mouse,_origin,_motion;
-        private Vector3 _toolHome,_cameraPosition;
-        private Quaternion _frame,_cameraRotation;
+        private Vector3 _toolHome,_cameraPosition,_nativeCenter;
+        private Quaternion _frame,_cameraRotation,_nativeMotionFrame;
         private bool _ready,_calibrated,_exitHeld,_desktopLabels;
         private int _index,_lastPercent=-1;
         private float _started;
         private float _motionSpeed;
+        private float _hapticAt;
+        public static Vector2 SieveMotionPoint(Vector3 trackedPosition,Vector3 calibratedCenter,Quaternion calibratedFrame)
+        {var relative=Quaternion.Inverse(calibratedFrame)*(trackedPosition-calibratedCenter);return new Vector2(relative.x,relative.y);}
         public bool Active=>_task!=null;
         public FishingHandTask Task=>_task;
         public Transform Station(int index)=>_stations[index];
@@ -212,12 +215,14 @@ namespace BoatAttack.Fishing
             if(xr)
             {
                 device=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);held=Grip(device);device.TryGetFeatureValue(CommonUsages.secondaryButton,out exit);
-                tracked=Application.isFocused && !_c.XRSeat.HeadBlocked && _c.Hands.TryControllerPalm(false,out _,out _);
+                var head=InputDevices.GetDeviceAtXRNode(XRNode.Head);
+                bool nativePositionTracked=device.TryGetFeatureValue(CommonUsages.devicePosition,out var nativePosition);
+                bool native=head.TryGetFeatureValue(CommonUsages.deviceRotation,out var nativeHeadRotation) && nativePositionTracked;
+                tracked=Application.isFocused && !_c.XRSeat.HeadBlocked && native && !_c.XRNotebook.BlocksGameplay && _c.Hands.TryControllerPalm(false,out _,out _);
                 if(tracked)
                 {
                     _c.Hands.TryControllerPalm(false,out var palm,out _);
                     tracked=Vector3.Distance(palm,HandlePoint)<.30f && Vector3.Distance(palm,_c.viewCamera.transform.position)>.32f;
-                    var relative=Quaternion.Inverse(_frame)*(palm-_c.viewCamera.transform.position);point=new Vector2(relative.x,relative.y);
                     if(_index==1)
                     {
                         var left=InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);bool leftHeld=Grip(left);
@@ -225,12 +230,18 @@ namespace BoatAttack.Fishing
                             && Vector3.Distance(lp,_leftGrip.position)<.25f;
                         if(tracked)
                         {
-                            relative=palm-_crank.position;
-                            point=new Vector2(Vector3.Dot(relative,_tools[1].right),Vector3.Dot(relative,_tools[1].up));
+                            if(!_calibrated)
+                            {
+                                var worldToTracking=nativeHeadRotation*Quaternion.Inverse(_c.viewCamera.transform.rotation);
+                                _nativeMotionFrame=worldToTracking*_tools[1].rotation;_nativeCenter=nativePosition-worldToTracking*(palm-_crank.position);_calibrated=true;
+                            }
+                            point=SieveMotionPoint(nativePosition,_nativeCenter,_nativeMotionFrame);
                         }
                     }
                     if(_index==0)
                     {
+                        if(!_calibrated)_nativeMotionFrame=Quaternion.Euler(0,nativeHeadRotation.eulerAngles.y,0);
+                        point=SieveMotionPoint(nativePosition,Vector3.zero,_nativeMotionFrame);
                         if(!_calibrated){_origin=point-new Vector2(.1f,0);_calibrated=true;}point-=_origin;
                     }
                 }
@@ -248,7 +259,8 @@ namespace BoatAttack.Fishing
             {
                 _motionSpeed=Mathf.Clamp01((point-_motion).magnitude/Mathf.Max(.001f,Time.unscaledDeltaTime)*2);
                 _motion=point;bool step=_task.Sample(point.x,point.y,Time.unscaledDeltaTime);
-                if(step && device.isValid && device.TryGetHapticCapabilities(out var cap) && cap.supportsImpulse)device.SendHapticImpulse(0,.22f,.035f);
+                if(step && Time.unscaledTime>=_hapticAt && device.isValid && device.TryGetHapticCapabilities(out var cap) && cap.supportsImpulse)
+                {device.SendHapticImpulse(0,Mathf.Clamp(.12f+_motionSpeed*.12f,.12f,.24f),.035f);_hapticAt=Time.unscaledTime+.16f;}
             }
             int percent=Mathf.RoundToInt(_task.Progress*100);
             if(percent!=_lastPercent || !tracked)
@@ -291,14 +303,36 @@ namespace BoatAttack.Fishing
                 _crank.localRotation=Quaternion.AngleAxis(_crankStart+_crankSign*Mathf.Atan2(_motion.y,_motion.x)*Mathf.Rad2Deg,Vector3.forward);_coil.localScale=Vector3.one*Mathf.Lerp(.76f,1.08f,_task.Progress);
                 _feedCoil.localScale=Vector3.one*Mathf.Lerp(.65f,.38f,_task.Progress);PresentThread();
             }
-            if(XRSettings.isDeviceActive)return;
+            if(XRSettings.isDeviceActive)
+            {
+                GripSurface(_c.Hands.Left,_leftGrip,_index==0?_tools[0]:_tools[1],_index==0?Vector3.forward:Vector3.right);
+                GripSurface(_c.Hands.Right,_rightGrip,_index==0?_tools[0]:_crank,Vector3.forward);
+                return;
+            }
             // 开始时可能仍处于坐起或蹲起过渡，镜头必须继续跟随同源眼位。
             _cameraPosition=_c.Shore.Character.EyePosition;
             var target=_stations[_index].TransformPoint(new Vector3(0,1.08f,0));
             _c.viewCamera.transform.SetPositionAndRotation(_cameraPosition,Quaternion.Slerp(_cameraRotation,Quaternion.LookRotation(target-_cameraPosition),Mathf.SmoothStep(0,1,(Time.unscaledTime-_started)/.25f)));
-            var facing=Quaternion.LookRotation(_c.Shore.Actor.forward,Vector3.up);
-            _c.Hands.Left.SetPose(_leftGrip.position,facing,.5f);_c.Hands.Right.SetPose(HandlePoint,facing,.55f);
+            PresentGrip(true,_leftGrip,_index==0?_tools[0]:_tools[1],_index==0?Vector3.forward:Vector3.right);
+            PresentGrip(false,_rightGrip,_index==0?_tools[0]:_crank,Vector3.forward);
             _c.Hands.Left.SetForearmRoll(.65f);_c.Hands.Right.SetForearmRoll(.65f);
+        }
+        private void PresentGrip(bool left,Transform grip,Transform tool,Vector3 localAxis)
+        {
+            var axis=tool.TransformDirection(localAxis).normalized;
+            var inward=Vector3.Cross(axis,Vector3.up).normalized;
+            if(Vector3.Dot(inward,tool.position-grip.position)<0)inward=-inward;
+            if(_index==1)inward=_c.Shore.Actor.forward;
+            else inward=(inward+_c.Shore.Actor.forward).normalized;
+            var rotation=Quaternion.LookRotation(inward,Vector3.up);var target=left?_c.Hands.Left:_c.Hands.Right;
+            target.SetPose(grip.position+rotation*new Vector3(0,.029f,-.055f),rotation,.8f);
+            target.SetFingers(new FishingFingerPose(.70f,.78f,.82f,.88f,.65f));GripSurface(target,grip,tool,localAxis);
+        }
+        private static void GripSurface(FishingHandTarget target,Transform grip,Transform tool,Vector3 localAxis)
+        {
+            if(!target.Visible)return;
+            var axis=tool.TransformDirection(localAxis).normalized*.035f;
+            target.SetGripSurface(grip.position-axis,grip.position+axis,.009f);
         }
         private void PresentSand(float dt)
         {

@@ -1,0 +1,1164 @@
+{
+  "Diffuse": {
+    "8k": {
+      "jpg": {
+        "size": 18464812,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_diff_8k.jpg",
+        "md5": "6d1b92659bf3056d657086c4bbae3927"
+      },
+      "png": {
+        "size": 270205743,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/8k/brass_diya_lantern/brass_diya_lantern_diff_8k.png",
+        "md5": "375122d73195cd23c276d598b5b04731"
+      },
+      "exr": {
+        "size": 36019895,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_diff_8k.exr",
+        "md5": "b988432c30f6699ad64f165a147f42c9"
+      }
+    },
+    "4k": {
+      "jpg": {
+        "size": 5447269,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_diff_4k.jpg",
+        "md5": "06da64f06f525602c568d7dfabad3dd8"
+      },
+      "png": {
+        "size": 66393260,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/brass_diya_lantern/brass_diya_lantern_diff_4k.png",
+        "md5": "e373814e08bcc6b19db19e7e172bb919"
+      },
+      "exr": {
+        "size": 10432396,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_diff_4k.exr",
+        "md5": "7a49f2e128dc60c1742e5a6f5f182809"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 1699090,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_diff_2k.jpg",
+        "md5": "fdacb3d6b4f88b4ee684e2a73c20cfdc"
+      },
+      "png": {
+        "size": 17620759,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/brass_diya_lantern/brass_diya_lantern_diff_2k.png",
+        "md5": "7b6282f86bce63443119fa3c174f1c50"
+      },
+      "exr": {
+        "size": 3274551,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_diff_2k.exr",
+        "md5": "da0f4a6b5b006377e849c4db5aa65381"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 536573,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_diff_1k.jpg",
+        "md5": "322aec4839a32604193352a4a55616c6"
+      },
+      "png": {
+        "size": 4677730,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/brass_diya_lantern/brass_diya_lantern_diff_1k.png",
+        "md5": "6af93ff6e6fff7bf981f06bdd897ff99"
+      },
+      "exr": {
+        "size": 1064434,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_diff_1k.exr",
+        "md5": "900961ebf02cac71b74805b55d8e42d2"
+      }
+    }
+  },
+  "emissive": {
+    "8k": {
+      "jpg": {
+        "size": 1067366,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_emissive_8k.jpg",
+        "md5": "efc87c847416eb4348936970b6d71942"
+      },
+      "png": {
+        "size": 1764493,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/8k/brass_diya_lantern/brass_diya_lantern_emissive_8k.png",
+        "md5": "e53f6fcd2be1fd388cd3ceb0cd2dcf3a"
+      },
+      "exr": {
+        "size": 93183,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_emissive_8k.exr",
+        "md5": "cebd53b8f323aefb100fa3ac8b90785c"
+      }
+    },
+    "4k": {
+      "jpg": {
+        "size": 271253,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_emissive_4k.jpg",
+        "md5": "f41c8d048d51b27abab8847354ec681b"
+      },
+      "png": {
+        "size": 100601,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/brass_diya_lantern/brass_diya_lantern_emissive_4k.png",
+        "md5": "ee0503a452450d670cb4a35f4321a3f3"
+      },
+      "exr": {
+        "size": 43504,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_emissive_4k.exr",
+        "md5": "5abe436bdf3c6d5e8b31cd688194552a"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 70406,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_emissive_2k.jpg",
+        "md5": "0fb2f18ebd28dcdd7d282dfa1d616ce0"
+      },
+      "png": {
+        "size": 26008,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/brass_diya_lantern/brass_diya_lantern_emissive_2k.png",
+        "md5": "9f20ad8b43f46d3ea47422435f2cbf14"
+      },
+      "exr": {
+        "size": 21983,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_emissive_2k.exr",
+        "md5": "52b3b7f380e81ad7adac75689c7d8cb3"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 19160,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_emissive_1k.jpg",
+        "md5": "1f23ea80db0ab5c3c23f7aae37320c22"
+      },
+      "png": {
+        "size": 7071,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/brass_diya_lantern/brass_diya_lantern_emissive_1k.png",
+        "md5": "2fa63a3af769d8273e98b82a1360bd28"
+      },
+      "exr": {
+        "size": 11858,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_emissive_1k.exr",
+        "md5": "a392ab138756db3a8eb167c9b7b33f63"
+      }
+    }
+  },
+  "nor_dx": {
+    "8k": {
+      "jpg": {
+        "size": 11944141,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_nor_dx_8k.jpg",
+        "md5": "ac8f34eea389dea0c5cb093d42380ae9"
+      },
+      "png": {
+        "size": 190858487,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/8k/brass_diya_lantern/brass_diya_lantern_nor_dx_8k.png",
+        "md5": "2965e76c364226605e9fd5a756b24951"
+      },
+      "exr": {
+        "size": 21272915,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_nor_dx_8k.exr",
+        "md5": "20ee2d2f5739b9f1829cf0c5ea196841"
+      }
+    },
+    "4k": {
+      "jpg": {
+        "size": 2977782,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_nor_dx_4k.jpg",
+        "md5": "440f84ccd3d599244645294489f00c7d"
+      },
+      "png": {
+        "size": 52143493,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/brass_diya_lantern/brass_diya_lantern_nor_dx_4k.png",
+        "md5": "ad87103446947102a5ca430c829ac38c"
+      },
+      "exr": {
+        "size": 5612157,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_nor_dx_4k.exr",
+        "md5": "33cbc548bc1b30454acc65368a01c234"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 840532,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_nor_dx_2k.jpg",
+        "md5": "3f52c21768831c626536d53ee62f4a4b"
+      },
+      "png": {
+        "size": 13173942,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/brass_diya_lantern/brass_diya_lantern_nor_dx_2k.png",
+        "md5": "2702ce5c38cffca49a47233a43dd7c06"
+      },
+      "exr": {
+        "size": 1655855,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_nor_dx_2k.exr",
+        "md5": "437ba768dbc1db3c543bcd1fdd127da6"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 264388,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_nor_dx_1k.jpg",
+        "md5": "17ceed1b81b9180d8f0933ba225aee13"
+      },
+      "png": {
+        "size": 3402086,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/brass_diya_lantern/brass_diya_lantern_nor_dx_1k.png",
+        "md5": "e5c3bd2373400ecd2ea5b79c9a927b10"
+      },
+      "exr": {
+        "size": 522730,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_nor_dx_1k.exr",
+        "md5": "d5e1acde1809f77b6be80991fd4f5959"
+      }
+    }
+  },
+  "blend": {
+    "8k": {
+      "blend": {
+        "include": {
+          "textures/brass_diya_lantern_opacity_8k.png": {
+            "size": 14638841,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/8k/brass_diya_lantern/brass_diya_lantern_opacity_8k.png",
+            "md5": "7946bceb6ffff230037f6a04a144e12e"
+          },
+          "textures/brass_diya_lantern_metal_8k.exr": {
+            "size": 1252395,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_metal_8k.exr",
+            "md5": "6c282b2c026f13b2b3d1958eaa5d19b1"
+          },
+          "textures/brass_diya_lantern_diff_8k.jpg": {
+            "size": 18464812,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_diff_8k.jpg",
+            "md5": "6d1b92659bf3056d657086c4bbae3927"
+          },
+          "textures/brass_diya_lantern_rough_8k.exr": {
+            "size": 36935389,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_rough_8k.exr",
+            "md5": "0659d3dfdb2d15966e2f7e21d6f4c4b0"
+          },
+          "textures/brass_diya_lantern_nor_gl_8k.exr": {
+            "size": 21523531,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_nor_gl_8k.exr",
+            "md5": "5bc0363975bdbec5e4f1e24199e62a90"
+          }
+        },
+        "size": 462358,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/blend/8k/brass_diya_lantern/brass_diya_lantern_8k.blend",
+        "md5": "a890d13f7ca4ee4c6163ed74932004aa"
+      }
+    },
+    "4k": {
+      "blend": {
+        "include": {
+          "textures/brass_diya_lantern_diff_4k.jpg": {
+            "size": 5447269,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_diff_4k.jpg",
+            "md5": "06da64f06f525602c568d7dfabad3dd8"
+          },
+          "textures/brass_diya_lantern_metal_4k.exr": {
+            "size": 723902,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_metal_4k.exr",
+            "md5": "55d033fb6835f573f29aed156f16436f"
+          },
+          "textures/brass_diya_lantern_opacity_4k.png": {
+            "size": 3378459,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/brass_diya_lantern/brass_diya_lantern_opacity_4k.png",
+            "md5": "f1e5f450b3d2b09c3dc3885fc4a69e7a"
+          },
+          "textures/brass_diya_lantern_nor_gl_4k.exr": {
+            "size": 5619772,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_nor_gl_4k.exr",
+            "md5": "5546ba49351d8ee8cab39eaea20e39be"
+          },
+          "textures/brass_diya_lantern_rough_4k.exr": {
+            "size": 10034555,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_rough_4k.exr",
+            "md5": "bd2374dbb994bda28588dc00df69defb"
+          }
+        },
+        "size": 462397,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/blend/4k/brass_diya_lantern/brass_diya_lantern_4k.blend",
+        "md5": "1c2d87694fa4836bd366e8d0cf5d235b"
+      }
+    },
+    "2k": {
+      "blend": {
+        "include": {
+          "textures/brass_diya_lantern_metal_2k.exr": {
+            "size": 359307,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_metal_2k.exr",
+            "md5": "5537331cff0b215e63148defe2cd65d6"
+          },
+          "textures/brass_diya_lantern_diff_2k.jpg": {
+            "size": 1699090,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_diff_2k.jpg",
+            "md5": "fdacb3d6b4f88b4ee684e2a73c20cfdc"
+          },
+          "textures/brass_diya_lantern_opacity_2k.png": {
+            "size": 949325,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/brass_diya_lantern/brass_diya_lantern_opacity_2k.png",
+            "md5": "1fb0cc46b126bec396da953d9556485a"
+          },
+          "textures/brass_diya_lantern_nor_gl_2k.exr": {
+            "size": 1655864,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_nor_gl_2k.exr",
+            "md5": "7829f462c4d8eeca1aa26b68aecb4507"
+          },
+          "textures/brass_diya_lantern_rough_2k.exr": {
+            "size": 2780371,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_rough_2k.exr",
+            "md5": "507ad2631c06b5d8e68fd165da77479b"
+          }
+        },
+        "size": 462366,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/blend/2k/brass_diya_lantern/brass_diya_lantern_2k.blend",
+        "md5": "9ee7e14b27a556c241129e7f664d2780"
+      }
+    },
+    "1k": {
+      "blend": {
+        "include": {
+          "textures/brass_diya_lantern_nor_gl_1k.exr": {
+            "size": 522996,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_nor_gl_1k.exr",
+            "md5": "86ed6f1565dbf380f7c1ddff2ad68474"
+          },
+          "textures/brass_diya_lantern_opacity_1k.png": {
+            "size": 286310,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/brass_diya_lantern/brass_diya_lantern_opacity_1k.png",
+            "md5": "8368bac757207a1084b675f7b29ed528"
+          },
+          "textures/brass_diya_lantern_metal_1k.exr": {
+            "size": 174525,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_metal_1k.exr",
+            "md5": "99e05d28b4a69a7080be777bdb3d223f"
+          },
+          "textures/brass_diya_lantern_rough_1k.exr": {
+            "size": 784018,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_rough_1k.exr",
+            "md5": "0fbbd8d2ae138d0060e53f18fe67c26a"
+          },
+          "textures/brass_diya_lantern_diff_1k.jpg": {
+            "size": 536573,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_diff_1k.jpg",
+            "md5": "322aec4839a32604193352a4a55616c6"
+          }
+        },
+        "size": 462441,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/blend/1k/brass_diya_lantern/brass_diya_lantern_1k.blend",
+        "md5": "3a1df3104259d9e30c299872fad6f4f2"
+      }
+    }
+  },
+  "gltf": {
+    "8k": {
+      "gltf": {
+        "include": {
+          "brass_diya_lantern.bin": {
+            "size": 455708,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/brass_diya_lantern/brass_diya_lantern.bin",
+            "md5": "1e09f3575cab311415e85fd76256a067"
+          },
+          "textures/brass_diya_lantern_nor_gl_8k.jpg": {
+            "size": 11568055,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_nor_gl_8k.jpg",
+            "md5": "772bf088c17bb0e3d58b13d90b552a93"
+          },
+          "textures/brass_diya_lantern_diff_8k.jpg": {
+            "size": 18464812,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_diff_8k.jpg",
+            "md5": "6d1b92659bf3056d657086c4bbae3927"
+          },
+          "textures/brass_diya_lantern_arm_8k.jpg": {
+            "size": 31607046,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_arm_8k.jpg",
+            "md5": "68b377a05941732c49afbd928c56e9b2"
+          }
+        },
+        "size": 10202,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/brass_diya_lantern/brass_diya_lantern_8k.gltf",
+        "md5": "adcb9007e81ef99a6522d6ece44762d4"
+      }
+    },
+    "4k": {
+      "gltf": {
+        "include": {
+          "textures/brass_diya_lantern_diff_4k.jpg": {
+            "size": 5447269,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_diff_4k.jpg",
+            "md5": "06da64f06f525602c568d7dfabad3dd8"
+          },
+          "textures/brass_diya_lantern_arm_4k.jpg": {
+            "size": 8763265,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_arm_4k.jpg",
+            "md5": "86992d25cbc28d493ef93a4eff63c828"
+          },
+          "textures/brass_diya_lantern_nor_gl_4k.jpg": {
+            "size": 2958052,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_nor_gl_4k.jpg",
+            "md5": "9ed032308148d2cbf8eab723c8c5cbc2"
+          },
+          "brass_diya_lantern.bin": {
+            "size": 455708,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/brass_diya_lantern/brass_diya_lantern.bin",
+            "md5": "1e09f3575cab311415e85fd76256a067"
+          }
+        },
+        "size": 10202,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/brass_diya_lantern/brass_diya_lantern_4k.gltf",
+        "md5": "0b1453c78424e8c58cfe0e0b5a824c36"
+      }
+    },
+    "2k": {
+      "gltf": {
+        "include": {
+          "textures/brass_diya_lantern_arm_2k.jpg": {
+            "size": 2472763,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_arm_2k.jpg",
+            "md5": "3b45cce96958da5eae83d010877075af"
+          },
+          "textures/brass_diya_lantern_diff_2k.jpg": {
+            "size": 1699090,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_diff_2k.jpg",
+            "md5": "fdacb3d6b4f88b4ee684e2a73c20cfdc"
+          },
+          "brass_diya_lantern.bin": {
+            "size": 455708,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/brass_diya_lantern/brass_diya_lantern.bin",
+            "md5": "1e09f3575cab311415e85fd76256a067"
+          },
+          "textures/brass_diya_lantern_nor_gl_2k.jpg": {
+            "size": 837724,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_nor_gl_2k.jpg",
+            "md5": "1f64c4a1fd5b9e763c28ff3a4cb44ab9"
+          }
+        },
+        "size": 10202,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/brass_diya_lantern/brass_diya_lantern_2k.gltf",
+        "md5": "2a288769636bc0833516381e44e1629a"
+      }
+    },
+    "1k": {
+      "gltf": {
+        "include": {
+          "textures/brass_diya_lantern_nor_gl_1k.jpg": {
+            "size": 263044,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_nor_gl_1k.jpg",
+            "md5": "532e464289bf6788d2f943c3e47c73ab"
+          },
+          "textures/brass_diya_lantern_arm_1k.jpg": {
+            "size": 704276,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_arm_1k.jpg",
+            "md5": "25c3e0ffce574e9748754354b5e4eed0"
+          },
+          "brass_diya_lantern.bin": {
+            "size": 455708,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/brass_diya_lantern/brass_diya_lantern.bin",
+            "md5": "1e09f3575cab311415e85fd76256a067"
+          },
+          "textures/brass_diya_lantern_diff_1k.jpg": {
+            "size": 536573,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_diff_1k.jpg",
+            "md5": "322aec4839a32604193352a4a55616c6"
+          }
+        },
+        "size": 10202,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/brass_diya_lantern/brass_diya_lantern_1k.gltf",
+        "md5": "b63559d7be74c31db17a87f81f5b0f41"
+      }
+    }
+  },
+  "usd": {
+    "8k": {
+      "usd": {
+        "include": {
+          "textures/brass_diya_lantern_opacity_8k.png": {
+            "size": 14638841,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/8k/brass_diya_lantern/brass_diya_lantern_opacity_8k.png",
+            "md5": "7946bceb6ffff230037f6a04a144e12e"
+          },
+          "textures/brass_diya_lantern_metal_8k.exr": {
+            "size": 1252395,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_metal_8k.exr",
+            "md5": "6c282b2c026f13b2b3d1958eaa5d19b1"
+          },
+          "textures/brass_diya_lantern_diff_8k.jpg": {
+            "size": 18464812,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_diff_8k.jpg",
+            "md5": "6d1b92659bf3056d657086c4bbae3927"
+          },
+          "textures/brass_diya_lantern_rough_8k.exr": {
+            "size": 36935389,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_rough_8k.exr",
+            "md5": "0659d3dfdb2d15966e2f7e21d6f4c4b0"
+          },
+          "textures/brass_diya_lantern_nor_gl_8k.exr": {
+            "size": 21523531,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_nor_gl_8k.exr",
+            "md5": "5bc0363975bdbec5e4f1e24199e62a90"
+          }
+        },
+        "size": 890649,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/8k/brass_diya_lantern/brass_diya_lantern_8k.usdc",
+        "md5": "6fdaf387157682014320cb3ac389c00d"
+      }
+    },
+    "4k": {
+      "usd": {
+        "include": {
+          "textures/brass_diya_lantern_diff_4k.jpg": {
+            "size": 5447269,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_diff_4k.jpg",
+            "md5": "06da64f06f525602c568d7dfabad3dd8"
+          },
+          "textures/brass_diya_lantern_metal_4k.exr": {
+            "size": 723902,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_metal_4k.exr",
+            "md5": "55d033fb6835f573f29aed156f16436f"
+          },
+          "textures/brass_diya_lantern_opacity_4k.png": {
+            "size": 3378459,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/brass_diya_lantern/brass_diya_lantern_opacity_4k.png",
+            "md5": "f1e5f450b3d2b09c3dc3885fc4a69e7a"
+          },
+          "textures/brass_diya_lantern_nor_gl_4k.exr": {
+            "size": 5619772,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_nor_gl_4k.exr",
+            "md5": "5546ba49351d8ee8cab39eaea20e39be"
+          },
+          "textures/brass_diya_lantern_rough_4k.exr": {
+            "size": 10034555,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_rough_4k.exr",
+            "md5": "bd2374dbb994bda28588dc00df69defb"
+          }
+        },
+        "size": 890649,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/4k/brass_diya_lantern/brass_diya_lantern_4k.usdc",
+        "md5": "1216d82cc7d989ed9f79d7f64f562c57"
+      }
+    },
+    "2k": {
+      "usd": {
+        "include": {
+          "textures/brass_diya_lantern_metal_2k.exr": {
+            "size": 359307,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_metal_2k.exr",
+            "md5": "5537331cff0b215e63148defe2cd65d6"
+          },
+          "textures/brass_diya_lantern_diff_2k.jpg": {
+            "size": 1699090,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_diff_2k.jpg",
+            "md5": "fdacb3d6b4f88b4ee684e2a73c20cfdc"
+          },
+          "textures/brass_diya_lantern_opacity_2k.png": {
+            "size": 949325,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/brass_diya_lantern/brass_diya_lantern_opacity_2k.png",
+            "md5": "1fb0cc46b126bec396da953d9556485a"
+          },
+          "textures/brass_diya_lantern_nor_gl_2k.exr": {
+            "size": 1655864,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_nor_gl_2k.exr",
+            "md5": "7829f462c4d8eeca1aa26b68aecb4507"
+          },
+          "textures/brass_diya_lantern_rough_2k.exr": {
+            "size": 2780371,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_rough_2k.exr",
+            "md5": "507ad2631c06b5d8e68fd165da77479b"
+          }
+        },
+        "size": 890649,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/2k/brass_diya_lantern/brass_diya_lantern_2k.usdc",
+        "md5": "45f196c9fe1e0604bbbcc693d2450bd9"
+      }
+    },
+    "1k": {
+      "usd": {
+        "include": {
+          "textures/brass_diya_lantern_nor_gl_1k.exr": {
+            "size": 522996,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_nor_gl_1k.exr",
+            "md5": "86ed6f1565dbf380f7c1ddff2ad68474"
+          },
+          "textures/brass_diya_lantern_opacity_1k.png": {
+            "size": 286310,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/brass_diya_lantern/brass_diya_lantern_opacity_1k.png",
+            "md5": "8368bac757207a1084b675f7b29ed528"
+          },
+          "textures/brass_diya_lantern_metal_1k.exr": {
+            "size": 174525,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_metal_1k.exr",
+            "md5": "99e05d28b4a69a7080be777bdb3d223f"
+          },
+          "textures/brass_diya_lantern_rough_1k.exr": {
+            "size": 784018,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_rough_1k.exr",
+            "md5": "0fbbd8d2ae138d0060e53f18fe67c26a"
+          },
+          "textures/brass_diya_lantern_diff_1k.jpg": {
+            "size": 536573,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_diff_1k.jpg",
+            "md5": "322aec4839a32604193352a4a55616c6"
+          }
+        },
+        "size": 890648,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/usd/1k/brass_diya_lantern/brass_diya_lantern_1k.usdc",
+        "md5": "620bac016c6a9281684f6ce42f4e80c7"
+      }
+    }
+  },
+  "Metal": {
+    "8k": {
+      "jpg": {
+        "size": 2440370,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_metal_8k.jpg",
+        "md5": "58f4e7a686769eb76508c1c010b92c42"
+      },
+      "png": {
+        "size": 1907596,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/8k/brass_diya_lantern/brass_diya_lantern_metal_8k.png",
+        "md5": "c3d853f8ee63b665f77fb431540821ec"
+      },
+      "exr": {
+        "size": 1252395,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_metal_8k.exr",
+        "md5": "6c282b2c026f13b2b3d1958eaa5d19b1"
+      }
+    },
+    "4k": {
+      "jpg": {
+        "size": 908364,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_metal_4k.jpg",
+        "md5": "be018971bf3fa681642ad025e555d9b1"
+      },
+      "png": {
+        "size": 191674,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/brass_diya_lantern/brass_diya_lantern_metal_4k.png",
+        "md5": "7b21a16c2d620cb94e6a5d915939967a"
+      },
+      "exr": {
+        "size": 723902,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_metal_4k.exr",
+        "md5": "55d033fb6835f573f29aed156f16436f"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 373159,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_metal_2k.jpg",
+        "md5": "a8c01515d5e1364368a7c16b0e97336e"
+      },
+      "png": {
+        "size": 93237,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/brass_diya_lantern/brass_diya_lantern_metal_2k.png",
+        "md5": "b66f4674dfc0155167a32144d7fa743b"
+      },
+      "exr": {
+        "size": 359307,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_metal_2k.exr",
+        "md5": "5537331cff0b215e63148defe2cd65d6"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 160135,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_metal_1k.jpg",
+        "md5": "3b5f5bbbb9a85934e409dce1927b522b"
+      },
+      "png": {
+        "size": 48453,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/brass_diya_lantern/brass_diya_lantern_metal_1k.png",
+        "md5": "471fee54afd69070c58aac376e1e88df"
+      },
+      "exr": {
+        "size": 174525,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_metal_1k.exr",
+        "md5": "99e05d28b4a69a7080be777bdb3d223f"
+      }
+    }
+  },
+  "AO": {
+    "8k": {
+      "jpg": {
+        "size": 6852258,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_ao_8k.jpg",
+        "md5": "bf16e3e47982419b183aafc96ee24499"
+      },
+      "png": {
+        "size": 176575218,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/8k/brass_diya_lantern/brass_diya_lantern_ao_8k.png",
+        "md5": "ec1fd7c4e30a917f6a0cae197cad18df"
+      },
+      "exr": {
+        "size": 8467758,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_ao_8k.exr",
+        "md5": "35f021a6db1144bebae125db68f75b3f"
+      }
+    },
+    "4k": {
+      "jpg": {
+        "size": 2229979,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_ao_4k.jpg",
+        "md5": "82a48b8210597c5350d766a0d01a2138"
+      },
+      "png": {
+        "size": 44796722,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/brass_diya_lantern/brass_diya_lantern_ao_4k.png",
+        "md5": "68adeeb3913cdd0fa72277667138edc0"
+      },
+      "exr": {
+        "size": 2700422,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_ao_4k.exr",
+        "md5": "4568b61f8610054ba285caa2d747af35"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 763387,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_ao_2k.jpg",
+        "md5": "0d9a58d3b9b573a3a9f427c4713d6a06"
+      },
+      "png": {
+        "size": 11916872,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/brass_diya_lantern/brass_diya_lantern_ao_2k.png",
+        "md5": "e816ecb197c93d88723bae9a5f61da22"
+      },
+      "exr": {
+        "size": 928558,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_ao_2k.exr",
+        "md5": "8dab21ffb39408c590d313eca23d334b"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 263187,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_ao_1k.jpg",
+        "md5": "29eb56479601083c3839dcc16d73e156"
+      },
+      "png": {
+        "size": 3119503,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/brass_diya_lantern/brass_diya_lantern_ao_1k.png",
+        "md5": "a5e53f5fcab49584117f8db31c2f6b40"
+      },
+      "exr": {
+        "size": 326825,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_ao_1k.exr",
+        "md5": "9e040926a35acdf0e6c2f459b166e424"
+      }
+    }
+  },
+  "Rough": {
+    "8k": {
+      "jpg": {
+        "size": 27073664,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_rough_8k.jpg",
+        "md5": "77e98a8670aa51cd067d27c16112eda5"
+      },
+      "png": {
+        "size": 139308318,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/8k/brass_diya_lantern/brass_diya_lantern_rough_8k.png",
+        "md5": "01ed22d4c8e66ea1c16317cb8b2512f2"
+      },
+      "exr": {
+        "size": 36935389,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_rough_8k.exr",
+        "md5": "0659d3dfdb2d15966e2f7e21d6f4c4b0"
+      }
+    },
+    "4k": {
+      "jpg": {
+        "size": 7304619,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_rough_4k.jpg",
+        "md5": "78eda43693729d9c231c1cf253c10794"
+      },
+      "png": {
+        "size": 32863864,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/brass_diya_lantern/brass_diya_lantern_rough_4k.png",
+        "md5": "3a6ede2875d0bbb9551beea2cdaabf56"
+      },
+      "exr": {
+        "size": 10034555,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_rough_4k.exr",
+        "md5": "bd2374dbb994bda28588dc00df69defb"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 1993541,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_rough_2k.jpg",
+        "md5": "21feade36b50ad8e78122e35f0e74fce"
+      },
+      "png": {
+        "size": 8380574,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/brass_diya_lantern/brass_diya_lantern_rough_2k.png",
+        "md5": "d999aeebae6af05490601f0beb174c0a"
+      },
+      "exr": {
+        "size": 2780371,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_rough_2k.exr",
+        "md5": "507ad2631c06b5d8e68fd165da77479b"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 545777,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_rough_1k.jpg",
+        "md5": "5e2eb607bb82a09c6a0641c6b2101148"
+      },
+      "png": {
+        "size": 2138246,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/brass_diya_lantern/brass_diya_lantern_rough_1k.png",
+        "md5": "6f929df914ec4c84c2c17f4c63fa686f"
+      },
+      "exr": {
+        "size": 784018,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_rough_1k.exr",
+        "md5": "0fbbd8d2ae138d0060e53f18fe67c26a"
+      }
+    }
+  },
+  "nor_gl": {
+    "8k": {
+      "jpg": {
+        "size": 11568055,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_nor_gl_8k.jpg",
+        "md5": "772bf088c17bb0e3d58b13d90b552a93"
+      },
+      "png": {
+        "size": 215401486,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/8k/brass_diya_lantern/brass_diya_lantern_nor_gl_8k.png",
+        "md5": "69786a724af34def8799a21cbc15ce44"
+      },
+      "exr": {
+        "size": 21523531,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_nor_gl_8k.exr",
+        "md5": "5bc0363975bdbec5e4f1e24199e62a90"
+      }
+    },
+    "4k": {
+      "jpg": {
+        "size": 2958052,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_nor_gl_4k.jpg",
+        "md5": "9ed032308148d2cbf8eab723c8c5cbc2"
+      },
+      "png": {
+        "size": 52143981,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/brass_diya_lantern/brass_diya_lantern_nor_gl_4k.png",
+        "md5": "653e08e2c750eecedce5bc14ca9ecf59"
+      },
+      "exr": {
+        "size": 5619772,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_nor_gl_4k.exr",
+        "md5": "5546ba49351d8ee8cab39eaea20e39be"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 837724,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_nor_gl_2k.jpg",
+        "md5": "1f64c4a1fd5b9e763c28ff3a4cb44ab9"
+      },
+      "png": {
+        "size": 13172724,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/brass_diya_lantern/brass_diya_lantern_nor_gl_2k.png",
+        "md5": "a2bfac4fddca9bfb7b09d58f7f9c3854"
+      },
+      "exr": {
+        "size": 1655864,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_nor_gl_2k.exr",
+        "md5": "7829f462c4d8eeca1aa26b68aecb4507"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 263044,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_nor_gl_1k.jpg",
+        "md5": "532e464289bf6788d2f943c3e47c73ab"
+      },
+      "png": {
+        "size": 3402186,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/brass_diya_lantern/brass_diya_lantern_nor_gl_1k.png",
+        "md5": "2e93f669c88a972d55022c20cc663adf"
+      },
+      "exr": {
+        "size": 522996,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_nor_gl_1k.exr",
+        "md5": "86ed6f1565dbf380f7c1ddff2ad68474"
+      }
+    }
+  },
+  "opacity": {
+    "8k": {
+      "jpg": {
+        "size": 3626628,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_opacity_8k.jpg",
+        "md5": "5cceaa1515fb16dcb140131d34f825a4"
+      },
+      "png": {
+        "size": 14638841,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/8k/brass_diya_lantern/brass_diya_lantern_opacity_8k.png",
+        "md5": "7946bceb6ffff230037f6a04a144e12e"
+      },
+      "exr": {
+        "size": 2810992,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_opacity_8k.exr",
+        "md5": "d4705628da8b3465a96eeddb3d905de1"
+      }
+    },
+    "4k": {
+      "jpg": {
+        "size": 1300744,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_opacity_4k.jpg",
+        "md5": "bb7fe1a196add005968dde48da5de268"
+      },
+      "png": {
+        "size": 3378459,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/brass_diya_lantern/brass_diya_lantern_opacity_4k.png",
+        "md5": "f1e5f450b3d2b09c3dc3885fc4a69e7a"
+      },
+      "exr": {
+        "size": 1298605,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_opacity_4k.exr",
+        "md5": "a668e1f19173be86044ffb77dd7163e0"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 501945,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_opacity_2k.jpg",
+        "md5": "4761a6c79ae72d0a64299751c8985ff6"
+      },
+      "png": {
+        "size": 949325,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/brass_diya_lantern/brass_diya_lantern_opacity_2k.png",
+        "md5": "1fb0cc46b126bec396da953d9556485a"
+      },
+      "exr": {
+        "size": 555376,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_opacity_2k.exr",
+        "md5": "59a1e890505d0dc2f360a0ceeca2b754"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 202145,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_opacity_1k.jpg",
+        "md5": "e9d22e4d5e689a4f7707f5f1626b114b"
+      },
+      "png": {
+        "size": 286310,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/brass_diya_lantern/brass_diya_lantern_opacity_1k.png",
+        "md5": "8368bac757207a1084b675f7b29ed528"
+      },
+      "exr": {
+        "size": 241297,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_opacity_1k.exr",
+        "md5": "fbbdf49b10372178441cecbdaa8b067c"
+      }
+    }
+  },
+  "arm": {
+    "8k": {
+      "jpg": {
+        "size": 31607046,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_arm_8k.jpg",
+        "md5": "68b377a05941732c49afbd928c56e9b2"
+      },
+      "png": {
+        "size": 177703362,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/8k/brass_diya_lantern/brass_diya_lantern_arm_8k.png",
+        "md5": "d0e87c814b4ce64d507d69cf00aee74d"
+      },
+      "exr": {
+        "size": 85775410,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_arm_8k.exr",
+        "md5": "5f65b1cece4d2d8dc06d05966bc1f74f"
+      }
+    },
+    "4k": {
+      "jpg": {
+        "size": 8763265,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_arm_4k.jpg",
+        "md5": "86992d25cbc28d493ef93a4eff63c828"
+      },
+      "png": {
+        "size": 46883515,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/brass_diya_lantern/brass_diya_lantern_arm_4k.png",
+        "md5": "2a903ac8234c348b3402c06031784bb8"
+      },
+      "exr": {
+        "size": 23450516,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_arm_4k.exr",
+        "md5": "ee8afefc66aba76969a0caa8e9359352"
+      }
+    },
+    "2k": {
+      "jpg": {
+        "size": 2472763,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_arm_2k.jpg",
+        "md5": "3b45cce96958da5eae83d010877075af"
+      },
+      "png": {
+        "size": 12224737,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/brass_diya_lantern/brass_diya_lantern_arm_2k.png",
+        "md5": "959118edaff370a00295d442677a5b77"
+      },
+      "exr": {
+        "size": 6542270,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_arm_2k.exr",
+        "md5": "8f152e6c3c2a3b9134fe29b8729972a6"
+      }
+    },
+    "1k": {
+      "jpg": {
+        "size": 704276,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_arm_1k.jpg",
+        "md5": "25c3e0ffce574e9748754354b5e4eed0"
+      },
+      "png": {
+        "size": 3180437,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/brass_diya_lantern/brass_diya_lantern_arm_1k.png",
+        "md5": "871dc2632fade412cd275ffec83c42ea"
+      },
+      "exr": {
+        "size": 1846127,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_arm_1k.exr",
+        "md5": "ed1c15c8e710623f6b00d156bb4e88fb"
+      }
+    }
+  },
+  "fbx": {
+    "8k": {
+      "fbx": {
+        "include": {
+          "textures/brass_diya_lantern_opacity_8k.png": {
+            "size": 14638841,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/8k/brass_diya_lantern/brass_diya_lantern_opacity_8k.png",
+            "md5": "7946bceb6ffff230037f6a04a144e12e"
+          },
+          "textures/brass_diya_lantern_metal_8k.exr": {
+            "size": 1252395,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_metal_8k.exr",
+            "md5": "6c282b2c026f13b2b3d1958eaa5d19b1"
+          },
+          "textures/brass_diya_lantern_diff_8k.jpg": {
+            "size": 18464812,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/8k/brass_diya_lantern/brass_diya_lantern_diff_8k.jpg",
+            "md5": "6d1b92659bf3056d657086c4bbae3927"
+          },
+          "textures/brass_diya_lantern_rough_8k.exr": {
+            "size": 36935389,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_rough_8k.exr",
+            "md5": "0659d3dfdb2d15966e2f7e21d6f4c4b0"
+          },
+          "textures/brass_diya_lantern_nor_gl_8k.exr": {
+            "size": 21523531,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/8k/brass_diya_lantern/brass_diya_lantern_nor_gl_8k.exr",
+            "md5": "5bc0363975bdbec5e4f1e24199e62a90"
+          }
+        },
+        "size": 405596,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/8k/brass_diya_lantern/brass_diya_lantern_8k.fbx",
+        "md5": "06438b3b8b8ef0a8a9bcd9a44eaf1851"
+      }
+    },
+    "4k": {
+      "fbx": {
+        "include": {
+          "textures/brass_diya_lantern_diff_4k.jpg": {
+            "size": 5447269,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/brass_diya_lantern/brass_diya_lantern_diff_4k.jpg",
+            "md5": "06da64f06f525602c568d7dfabad3dd8"
+          },
+          "textures/brass_diya_lantern_metal_4k.exr": {
+            "size": 723902,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_metal_4k.exr",
+            "md5": "55d033fb6835f573f29aed156f16436f"
+          },
+          "textures/brass_diya_lantern_opacity_4k.png": {
+            "size": 3378459,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/brass_diya_lantern/brass_diya_lantern_opacity_4k.png",
+            "md5": "f1e5f450b3d2b09c3dc3885fc4a69e7a"
+          },
+          "textures/brass_diya_lantern_nor_gl_4k.exr": {
+            "size": 5619772,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_nor_gl_4k.exr",
+            "md5": "5546ba49351d8ee8cab39eaea20e39be"
+          },
+          "textures/brass_diya_lantern_rough_4k.exr": {
+            "size": 10034555,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/4k/brass_diya_lantern/brass_diya_lantern_rough_4k.exr",
+            "md5": "bd2374dbb994bda28588dc00df69defb"
+          }
+        },
+        "size": 405596,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/4k/brass_diya_lantern/brass_diya_lantern_4k.fbx",
+        "md5": "dc83d562defef90ae0866b428df5f332"
+      }
+    },
+    "2k": {
+      "fbx": {
+        "include": {
+          "textures/brass_diya_lantern_metal_2k.exr": {
+            "size": 359307,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_metal_2k.exr",
+            "md5": "5537331cff0b215e63148defe2cd65d6"
+          },
+          "textures/brass_diya_lantern_diff_2k.jpg": {
+            "size": 1699090,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/brass_diya_lantern/brass_diya_lantern_diff_2k.jpg",
+            "md5": "fdacb3d6b4f88b4ee684e2a73c20cfdc"
+          },
+          "textures/brass_diya_lantern_opacity_2k.png": {
+            "size": 949325,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/brass_diya_lantern/brass_diya_lantern_opacity_2k.png",
+            "md5": "1fb0cc46b126bec396da953d9556485a"
+          },
+          "textures/brass_diya_lantern_nor_gl_2k.exr": {
+            "size": 1655864,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_nor_gl_2k.exr",
+            "md5": "7829f462c4d8eeca1aa26b68aecb4507"
+          },
+          "textures/brass_diya_lantern_rough_2k.exr": {
+            "size": 2780371,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/brass_diya_lantern/brass_diya_lantern_rough_2k.exr",
+            "md5": "507ad2631c06b5d8e68fd165da77479b"
+          }
+        },
+        "size": 405596,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/2k/brass_diya_lantern/brass_diya_lantern_2k.fbx",
+        "md5": "301afba8b3747ca8d8abb016be77ef30"
+      }
+    },
+    "1k": {
+      "fbx": {
+        "include": {
+          "textures/brass_diya_lantern_nor_gl_1k.exr": {
+            "size": 522996,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_nor_gl_1k.exr",
+            "md5": "86ed6f1565dbf380f7c1ddff2ad68474"
+          },
+          "textures/brass_diya_lantern_opacity_1k.png": {
+            "size": 286310,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/brass_diya_lantern/brass_diya_lantern_opacity_1k.png",
+            "md5": "8368bac757207a1084b675f7b29ed528"
+          },
+          "textures/brass_diya_lantern_metal_1k.exr": {
+            "size": 174525,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_metal_1k.exr",
+            "md5": "99e05d28b4a69a7080be777bdb3d223f"
+          },
+          "textures/brass_diya_lantern_rough_1k.exr": {
+            "size": 784018,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/brass_diya_lantern/brass_diya_lantern_rough_1k.exr",
+            "md5": "0fbbd8d2ae138d0060e53f18fe67c26a"
+          },
+          "textures/brass_diya_lantern_diff_1k.jpg": {
+            "size": 536573,
+            "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_diya_lantern/brass_diya_lantern_diff_1k.jpg",
+            "md5": "322aec4839a32604193352a4a55616c6"
+          }
+        },
+        "size": 405596,
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/1k/brass_diya_lantern/brass_diya_lantern_1k.fbx",
+        "md5": "0a209feef57c5fe9bdd55e6e6ea6037a"
+      }
+    }
+  }
+}
