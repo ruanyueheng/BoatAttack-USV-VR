@@ -105,7 +105,14 @@ namespace BoatAttack.Fishing
                 default:_c.Notice("今日已浇水 · 休息至明晨查看生长",4);return false;
             }
             _c.Notice(message,5);
-            if(ok){_c.Save();Refresh();_c.Effects?.Burst(Target(id).position+Vector3.up*.2f,expected==FarmWork.Water?new Color(.45f,.8f,1):new Color(.85f,.73f,.42f),false);}
+            if(ok)
+            {
+                _c.Save();Refresh();
+                string cue=expected==FarmWork.Till?"FarmTill":expected==FarmWork.Plant?"FarmPlant"
+                    :expected==FarmWork.Water?"FarmWater":expected==FarmWork.Harvest?"FarmHarvest":null;
+                if(cue!=null)_c.ActionAudio?.Detail(cue,Target(id).position+Vector3.up*.2f);
+                _c.Effects?.Burst(Target(id).position+Vector3.up*.2f,expected==FarmWork.Water?new Color(.45f,.8f,1):new Color(.85f,.73f,.42f),false);
+            }
             return ok;
         }
         public void Refresh()

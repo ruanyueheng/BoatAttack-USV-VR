@@ -96,7 +96,12 @@ namespace BoatAttack.Fishing
                     _c.Hands.Left.SetPose(shoulder+Vector3.ClampMagnitude(palm-shoulder,character.ArmReach(true)-.035f),frame*palmRotation,.5f*(1-u));
                 }
                 else _c.Hands.RestHand(true);
-                if(u>=1){Location=Place.Net;_placingLeft=false;_c.Notice("活鱼已放入抄网。E 再次检视，F 入鱼箱，X 放生。",5);}
+                if(u>=1)
+                {
+                    Location=Place.Net;_placingLeft=false;
+                    _c.ActionAudio?.Detail("NetFishPlace",netPoint);
+                    _c.Notice("活鱼已放入抄网。E 再次检视，F 入鱼箱，X 放生。",5);
+                }
                 return;
             }
             var bounds=fish.GetComponentInChildren<MeshFilter>().sharedMesh.bounds;

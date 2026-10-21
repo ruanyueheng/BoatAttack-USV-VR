@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BoatAttack.Fishing
@@ -20,6 +21,9 @@ namespace BoatAttack.Fishing
         private readonly AudioClip[][] _footClips = new AudioClip[4][];
         private readonly int[] _lastFoot = { -1, -1, -1, -1 };
         private AudioClip[] _stonePickup, _woodPickup, _softPickup, _stoneHit, _fishFlop;
+        private readonly Dictionary<string, AudioClip[]> _detailClips = new Dictionary<string, AudioClip[]>(StringComparer.Ordinal);
+        private readonly Dictionary<string, int> _detailCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+        private readonly Dictionary<string, int> _lastDetail = new Dictionary<string, int>(StringComparer.Ordinal);
         private Vector3 _lastFeet;
         private bool _sampled;
         private string _rightFishId;
@@ -85,6 +89,30 @@ namespace BoatAttack.Fishing
         {
             if (Play(_items, Pick(Mineral(item) ? _stoneHit : Timber(item) ? _woodPickup : _softPickup), at)) HarvestSoundsPlayed++;
         }
+        public int DetailCount(string cue)
+            => cue != null && _detailCounts.TryGetValue(cue, out int count) ? count : 0;
+        /// <summary>One successful action cue. Missing imported variants stay silent; no synthesized substitute or game transaction.</summary>
+        public bool Detail(string cue, Vector3 at)
+        {
+            if (!Audible || !DetailCue(cue) || !Finite(at.x) || !Finite(at.y) || !Finite(at.z)) return false;
+            if (!_detailClips.TryGetValue(cue, out var clips) || clips.Length < 2)
+            {
+                var first = Clip(cue + "1"); var second = Clip(cue + "2");
+                if (first == null && second == null) return false;
+                clips = first != null && second != null ? new[] { first, second }
+                    : new[] { first != null ? first : second };
+                _detailClips[cue] = clips;
+            }
+            int choice = _lastDetail.TryGetValue(cue, out int last) && clips.Length > 1
+                ? (last + 1) % clips.Length : _random.Next(clips.Length);
+            if (!Play(_items, clips[choice], at, .7f)) return false;
+            _lastDetail[cue] = choice;
+            _detailCounts[cue] = DetailCount(cue) + 1;
+            return true;
+        }
+        private static bool DetailCue(string cue) => cue == "RodCast" || cue == "FloatSplash" || cue == "NetFishPlace"
+            || cue == "FarmTill" || cue == "FarmPlant" || cue == "FarmWater" || cue == "FarmHarvest" || cue == "ShopPurchase";
+        private static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
         private void LateUpdate()
         {
             if (_c == null || _c.Career == null || _c.Shore == null) return;
