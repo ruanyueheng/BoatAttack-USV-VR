@@ -1,0 +1,292 @@
+{
+  "version": 1,
+  "sources": {
+    "impact": {
+      "file": "kenney_impact-sounds.zip",
+      "creator": "Kenney",
+      "license": "CC0-1.0",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "sha256": "029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8"
+    },
+    "rpg": {
+      "file": "kenney_rpg-audio.zip",
+      "creator": "Kenney",
+      "license": "CC0-1.0",
+      "url": "https://kenney.nl/assets/rpg-audio",
+      "sha256": "6dbeaf8544da958d8f2adcb4a4a4b76c1ade34a05f8ab9edccd327da7375f38b"
+    },
+    "steps": {
+      "file": "Fantozzi-footsteps.7z",
+      "creator": "Fantozzi / selection by qubodup",
+      "license": "CC0-1.0",
+      "url": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+      "sha256": "415d360e0911c1c1c5355ee94023b772e6f4044f59b9b580610e7dbffd1840fd"
+    },
+    "guns": {
+      "file": "Tabasco-gunshots.zip",
+      "creator": "Vincent Sevedge (Tabasco)",
+      "license": "CC-BY-3.0 (archive notice retained; web listing also offers CC0)",
+      "url": "https://opengameart.org/content/gunshot-sounds",
+      "sha256": "5b3960083a94e18ee47bc84376615a476debc884b18f25b93ea4b6ab3f278e4f"
+    }
+  },
+  "clips": [
+    {
+      "name": "StepSand1",
+      "file": "Assets/Resources/FishingAudio/SFX/StepSand1.ogg",
+      "source": "steps",
+      "member": "Fantozzi-footsteps/ogg/Fantozzi-SandL1.ogg",
+      "sha256": "fe6ec00cbe8790be0f37540cb8db8d245ca062337b121003685b6a96700cd0ae"
+    },
+    {
+      "name": "StepStone1",
+      "file": "Assets/Resources/FishingAudio/SFX/StepStone1.ogg",
+      "source": "steps",
+      "member": "Fantozzi-footsteps/ogg/Fantozzi-StoneL1.ogg",
+      "sha256": "2d85768f04a85b6068f3548b33d6e0b0424c5e62b0941042d593affd3a9555d4"
+    },
+    {
+      "name": "StepGrass1",
+      "file": "Assets/Resources/FishingAudio/SFX/StepGrass1.ogg",
+      "source": "impact",
+      "member": "Audio/footstep_grass_000.ogg",
+      "sha256": "9d49497777405d78d7cf7f2888e28277f3a23192300cfd1d79d54876b20f479f"
+    },
+    {
+      "name": "StepWood1",
+      "file": "Assets/Resources/FishingAudio/SFX/StepWood1.ogg",
+      "source": "impact",
+      "member": "Audio/footstep_wood_000.ogg",
+      "sha256": "5f1c252942a220d658121bd9417448cd19649ded9fff2ff15f6e50899373ce8e"
+    },
+    {
+      "name": "StepSand2",
+      "file": "Assets/Resources/FishingAudio/SFX/StepSand2.ogg",
+      "source": "steps",
+      "member": "Fantozzi-footsteps/ogg/Fantozzi-SandR1.ogg",
+      "sha256": "439ffe4d6fdf38194caf87e103897354756d69607bd4e48cef923e1ade68ee70"
+    },
+    {
+      "name": "StepStone2",
+      "file": "Assets/Resources/FishingAudio/SFX/StepStone2.ogg",
+      "source": "steps",
+      "member": "Fantozzi-footsteps/ogg/Fantozzi-StoneR1.ogg",
+      "sha256": "d6949efd0255d50efe4853cc077b18e3ee96b155707ccf4199fd530aaac82d58"
+    },
+    {
+      "name": "StepGrass2",
+      "file": "Assets/Resources/FishingAudio/SFX/StepGrass2.ogg",
+      "source": "impact",
+      "member": "Audio/footstep_grass_001.ogg",
+      "sha256": "fb28781bd22b2eefdc14077f1adf5c94d7fe9c3a130194633b55f3e0d39d9f04"
+    },
+    {
+      "name": "StepWood2",
+      "file": "Assets/Resources/FishingAudio/SFX/StepWood2.ogg",
+      "source": "impact",
+      "member": "Audio/footstep_wood_001.ogg",
+      "sha256": "e4f68e1c9fd55b4dc8ca89ed2bbab6f200171bc54bdc18aa96b80d8e7336f462"
+    },
+    {
+      "name": "StepSand3",
+      "file": "Assets/Resources/FishingAudio/SFX/StepSand3.ogg",
+      "source": "steps",
+      "member": "Fantozzi-footsteps/ogg/Fantozzi-SandL2.ogg",
+      "sha256": "68ba66063efa32b3a83979194582b1420f808cd217ccb5839c382d0e08522e18"
+    },
+    {
+      "name": "StepStone3",
+      "file": "Assets/Resources/FishingAudio/SFX/StepStone3.ogg",
+      "source": "steps",
+      "member": "Fantozzi-footsteps/ogg/Fantozzi-StoneL2.ogg",
+      "sha256": "1cdd36f02590d2b968b1dd311334e71db8514d7c276e62ad474d01c26b37d4de"
+    },
+    {
+      "name": "StepGrass3",
+      "file": "Assets/Resources/FishingAudio/SFX/StepGrass3.ogg",
+      "source": "impact",
+      "member": "Audio/footstep_grass_002.ogg",
+      "sha256": "73a520139f5be716a403bfe9c80e0e94d1e61d8e9de04a354b336392164b53dc"
+    },
+    {
+      "name": "StepWood3",
+      "file": "Assets/Resources/FishingAudio/SFX/StepWood3.ogg",
+      "source": "impact",
+      "member": "Audio/footstep_wood_002.ogg",
+      "sha256": "9ff095b05cee5eec40b081defe3f0eef7232bb16d4865ce03b9f6dbab875cfdd"
+    },
+    {
+      "name": "StepSand4",
+      "file": "Assets/Resources/FishingAudio/SFX/StepSand4.ogg",
+      "source": "steps",
+      "member": "Fantozzi-footsteps/ogg/Fantozzi-SandR2.ogg",
+      "sha256": "5eec48117da8fa433963ba06a93f67705f0bbd86ac3f473ab7b3bd120bf55fce"
+    },
+    {
+      "name": "StepStone4",
+      "file": "Assets/Resources/FishingAudio/SFX/StepStone4.ogg",
+      "source": "steps",
+      "member": "Fantozzi-footsteps/ogg/Fantozzi-StoneR2.ogg",
+      "sha256": "075c27afbf29b7771cb01a7bf51530b835e82c56698ca5551318fa0c6b7adb9f"
+    },
+    {
+      "name": "StepGrass4",
+      "file": "Assets/Resources/FishingAudio/SFX/StepGrass4.ogg",
+      "source": "impact",
+      "member": "Audio/footstep_grass_003.ogg",
+      "sha256": "0546e1d8ab2def714425701a18bd34c5ee2794b12e858e5b595aabcf38a34137"
+    },
+    {
+      "name": "StepWood4",
+      "file": "Assets/Resources/FishingAudio/SFX/StepWood4.ogg",
+      "source": "impact",
+      "member": "Audio/footstep_wood_003.ogg",
+      "sha256": "2a68a083daa9eda08fed0ea5da5280dfbe0de226196c576be02f95259dd139d9"
+    },
+    {
+      "name": "StonePickup1",
+      "file": "Assets/Resources/FishingAudio/SFX/StonePickup1.ogg",
+      "source": "impact",
+      "member": "Audio/impactGeneric_light_000.ogg",
+      "sha256": "f0e982611e97512fee5f777986b67e8b435434b601f94992ec044f7e89fb5acb"
+    },
+    {
+      "name": "StoneHit1",
+      "file": "Assets/Resources/FishingAudio/SFX/StoneHit1.ogg",
+      "source": "impact",
+      "member": "Audio/impactMining_000.ogg",
+      "sha256": "36b4ea107222d073c67ca64dde26944975609202d5090b2f2021213c1a7e35cd"
+    },
+    {
+      "name": "WoodPickup1",
+      "file": "Assets/Resources/FishingAudio/SFX/WoodPickup1.ogg",
+      "source": "impact",
+      "member": "Audio/impactWood_light_000.ogg",
+      "sha256": "eb45e35b4bed784d3f120de4afec4b0d6ac09d9e143cce8cfcb7d739e1b1f3c3"
+    },
+    {
+      "name": "SoftPickup1",
+      "file": "Assets/Resources/FishingAudio/SFX/SoftPickup1.ogg",
+      "source": "rpg",
+      "member": "Audio/cloth1.ogg",
+      "sha256": "ddb93a3671233f95da0e0b10367f082f7eb42fa6caaddcf776410aa8833c747d"
+    },
+    {
+      "name": "FishFlop1",
+      "file": "Assets/Resources/FishingAudio/SFX/FishFlop1.wav",
+      "source": "original",
+      "design": "Original soft wet tail/body pats and fin rustle, designed for a held live fish",
+      "seconds": 0.42,
+      "peak": 0.82,
+      "rms": 0.07763930349365566,
+      "sha256": "2b4d4a0347d6c441f6aff777aebab60cca394b98efb00cc8fadde17394663a54"
+    },
+    {
+      "name": "StonePickup2",
+      "file": "Assets/Resources/FishingAudio/SFX/StonePickup2.ogg",
+      "source": "impact",
+      "member": "Audio/impactGeneric_light_001.ogg",
+      "sha256": "c3cd1c073d186ae8fa35788ba94de581f1826e7427a7bb26490b2695fac18efa"
+    },
+    {
+      "name": "StoneHit2",
+      "file": "Assets/Resources/FishingAudio/SFX/StoneHit2.ogg",
+      "source": "impact",
+      "member": "Audio/impactMining_001.ogg",
+      "sha256": "61235a18de3f3d92118235398222dbf51d448f1be70b1c8bc962b10b86f2d9c6"
+    },
+    {
+      "name": "WoodPickup2",
+      "file": "Assets/Resources/FishingAudio/SFX/WoodPickup2.ogg",
+      "source": "impact",
+      "member": "Audio/impactWood_light_001.ogg",
+      "sha256": "4b76bf3ccc8e60d19188f3165b778a7817786faa6887c55d9049bcbeef3b425f"
+    },
+    {
+      "name": "SoftPickup2",
+      "file": "Assets/Resources/FishingAudio/SFX/SoftPickup2.ogg",
+      "source": "rpg",
+      "member": "Audio/cloth2.ogg",
+      "sha256": "8a7451193c38bc05483aec25dd193e163a15d44cf7fff04ac7912573231b0201"
+    },
+    {
+      "name": "FishFlop2",
+      "file": "Assets/Resources/FishingAudio/SFX/FishFlop2.wav",
+      "source": "original",
+      "design": "Original soft wet tail/body pats and fin rustle, designed for a held live fish",
+      "seconds": 0.42,
+      "peak": 0.82,
+      "rms": 0.06881835599954285,
+      "sha256": "4dfa516f484436bb275c794cba8e24777fb3a8ccdbb8f4c25d5ff29fae7f898b"
+    },
+    {
+      "name": "StonePickup3",
+      "file": "Assets/Resources/FishingAudio/SFX/StonePickup3.ogg",
+      "source": "impact",
+      "member": "Audio/impactGeneric_light_002.ogg",
+      "sha256": "d0bf60905b59ff630ffe01eb0edeeacd2504eaa8fb6523aeef7d2458b78264d3"
+    },
+    {
+      "name": "StoneHit3",
+      "file": "Assets/Resources/FishingAudio/SFX/StoneHit3.ogg",
+      "source": "impact",
+      "member": "Audio/impactMining_002.ogg",
+      "sha256": "059558ec751115ca6b1441e00f0adc837c1a3eeb0a066b109e0fd879fc5d0b0c"
+    },
+    {
+      "name": "WoodPickup3",
+      "file": "Assets/Resources/FishingAudio/SFX/WoodPickup3.ogg",
+      "source": "impact",
+      "member": "Audio/impactWood_light_002.ogg",
+      "sha256": "b183cf7a5bd783817e0e4b82af34ac6658fa1927049089dadc8b15c2ecc771dc"
+    },
+    {
+      "name": "SoftPickup3",
+      "file": "Assets/Resources/FishingAudio/SFX/SoftPickup3.ogg",
+      "source": "rpg",
+      "member": "Audio/cloth3.ogg",
+      "sha256": "a48632d17a4f1416541d261a32a31612e01267144c407fa3ecab3ff410f0085b"
+    },
+    {
+      "name": "FishFlop3",
+      "file": "Assets/Resources/FishingAudio/SFX/FishFlop3.wav",
+      "source": "original",
+      "design": "Original soft wet tail/body pats and fin rustle, designed for a held live fish",
+      "seconds": 0.42,
+      "peak": 0.82,
+      "rms": 0.07728158285039018,
+      "sha256": "efc0c1ce3ddd4b7a6578c10937cd57fe504c70c4ad190fafbc3b859255c11681"
+    },
+    {
+      "name": "ReelInLoop",
+      "file": "Assets/Resources/FishingAudio/SFX/ReelInLoop.wav",
+      "source": "original",
+      "design": "Original periodic ratchet teeth, fine line friction; no game audio extraction",
+      "seconds": 1.0,
+      "peak": 0.82,
+      "rms": 0.061078657545369563,
+      "sha256": "ff0ed1fee9d8a914b359c95386ff4f99c16a61bce63b3f3e8335da897c3a6148"
+    },
+    {
+      "name": "ReelOutLoop",
+      "file": "Assets/Resources/FishingAudio/SFX/ReelOutLoop.wav",
+      "source": "original",
+      "design": "Original periodic ratchet teeth, fine line friction; no game audio extraction",
+      "seconds": 1.0,
+      "peak": 0.82,
+      "rms": 0.09073567012659467,
+      "sha256": "2d4cb6d5a9253aa56b20e3584262987820e1851aec1a038f902c1f2f46c5976a"
+    },
+    {
+      "name": "RifleShot",
+      "file": "Assets/Resources/FishingAudio/SFX/RifleShot.wav",
+      "source": "guns",
+      "design": "Tabasco SKS single shot, selected transient, mono, high-pass, background-tail attenuation",
+      "seconds": 0.8,
+      "peak": 0.82,
+      "rms": 0.11425785327810145,
+      "sha256": "30bdd1093a7926942f69dc94d25d18829e2558502d76aba1872f64fa1d5d1355"
+    }
+  ],
+  "originalDesign": "Reel loops and held-fish pats are original generated Foley, not recordings from another game."
+}

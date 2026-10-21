@@ -22,7 +22,7 @@ namespace BoatAttack.Fishing
         private LineRenderer _trace;
         private Material _traceMaterial;
         private AudioSource _audio;
-        private AudioClip _shot;
+        private AudioClip _shot,_ownedShotFallback;
         private float _nextShot,_flashUntil;
         private readonly Collider[] _overlaps=new Collider[32];
         private readonly RaycastHit[] _sweepHits=new RaycastHit[64];
@@ -52,10 +52,14 @@ namespace BoatAttack.Fishing
             }
             _audio=gameObject.AddComponent<AudioSource>();_audio.playOnAwake=false;_audio.spatialBlend=0;_audio.volume=.23f;
             _c.RegisterAudioSource(_audio,FishingAudioCategory.Effects,.23f);
-            _shot=AudioClip.Create("Hunting report",7056,1,44100,false);
-            var samples=new float[7056];var random=new System.Random(71);
-            for(int i=0;i<samples.Length;i++){float t=i/44100f;samples[i]=(float)((random.NextDouble()*2-1)*Math.Exp(-t*45)+.3*Math.Sin(t*1050)*Math.Exp(-t*25));}
-            _shot.SetData(samples,0);
+            _shot=Resources.Load<AudioClip>("FishingAudio/SFX/RifleShot");
+            if(_shot==null)
+            {
+                _ownedShotFallback=AudioClip.Create("Hunting report",7056,1,44100,false);
+                var samples=new float[7056];var random=new System.Random(71);
+                for(int i=0;i<samples.Length;i++){float t=i/44100f;samples[i]=(float)((random.NextDouble()*2-1)*Math.Exp(-t*45)+.3*Math.Sin(t*1050)*Math.Exp(-t*25));}
+                _ownedShotFallback.SetData(samples,0);_shot=_ownedShotFallback;
+            }
             _trace=new GameObject("Hunting shot trace").AddComponent<LineRenderer>();_trace.transform.SetParent(transform,false);
             _traceMaterial=new Material(_c.PaletteShader);_traceMaterial.SetFloat("_Unlit",1);_traceMaterial.SetColor("_BaseColor",new Color(1,.78f,.32f));
             _trace.sharedMaterial=_traceMaterial;_trace.positionCount=2;_trace.startWidth=.012f;_trace.endWidth=.003f;_trace.enabled=false;
@@ -273,6 +277,6 @@ namespace BoatAttack.Fishing
             if(!_c.Career.CollectHuntedAnimal(id)){_c.Notice(XRSettings.isDeviceActive?"背包空间不足，猎物保留在地上；B 打开背包整理后再收取。":"背包空间不足，猎物保留在地上；I 整理背包后再收取。",4);return false;}
             _c.Save();RefreshAnimals();_c.Notice("已收取 "+FishingAnimalLoot.Description(animal.Kind),4);return true;
         }
-        private void OnDestroy(){if(_shot!=null)Destroy(_shot);if(_traceMaterial!=null)Destroy(_traceMaterial);}
+        private void OnDestroy(){if(_ownedShotFallback!=null)Destroy(_ownedShotFallback);if(_traceMaterial!=null)Destroy(_traceMaterial);}
     }
 }

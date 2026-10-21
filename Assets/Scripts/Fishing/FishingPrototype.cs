@@ -216,6 +216,7 @@ namespace BoatAttack.Fishing
                 :"潮汐回响：N选择岛屿，低速G下船，E与居民交谈 / 进入潮纹秘境。J查看世界航记；店员可介绍商品，离岸可游泳。"):warning,10f);
             _initialized=true;
             InitializeSettings();
+            ActionAudio=gameObject.AddComponent<FishingActionAudio>();ActionAudio.Build(this);
             InitializeSaveSlots(legacy);
             InitializeStartMenu();
             if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }

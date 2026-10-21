@@ -17,6 +17,7 @@ namespace BoatAttack.Fishing
         public bool LeftHandInspecting=>_c!=null && _c.HasPendingCatch && Location==Place.LeftHand;
         public bool PlacingInNet=>LeftHandInspecting && _placingLeft;
         public bool LeftInspectionSettled=>LeftHandInspecting && !_placingLeft && _leftLiftTime>=.65f;
+        public float InspectionMotionTime=>_leftLiftTime;
         private void HoldInspectionNet()
         {
             var character=_c.Shore.Character;var frame=Quaternion.Euler(0,character.transform.eulerAngles.y,0);

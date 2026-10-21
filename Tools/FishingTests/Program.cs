@@ -14,6 +14,7 @@ internal static class Program
     {
         try
         {
+            AudioTimingTests.Run(Check);
             FarmTests.Run(Check);
             HandTaskTests.Run(Check);
             FightControlTests.Run(Check);

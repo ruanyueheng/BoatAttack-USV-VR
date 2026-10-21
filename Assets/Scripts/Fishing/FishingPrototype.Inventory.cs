@@ -97,6 +97,7 @@ namespace BoatAttack.Fishing
         {
             if(Paused || !Ashore)return false;
             if(!Career.Backpack.TryCollect(id,item,count)){Notice(UnityEngine.XR.XRSettings.isDeviceActive?"背包已满或物品已领取；B 查看背包后再试。":"背包已满或物品已领取；I 整理背包后再试。",4);return false;}
+            ActionAudio?.Pickup(item,ExplorerPosition+Vector3.up*.6f);
             Save();Notice("已拾取 "+FishingBackpack.Name(item)+" ×"+count+(UnityEngine.XR.XRSettings.isDeviceActive?" · B 打开背包":" · I 打开背包"),4);return true;
         }
         public bool RecordLandAnimal(LandAnimalKind kind)
