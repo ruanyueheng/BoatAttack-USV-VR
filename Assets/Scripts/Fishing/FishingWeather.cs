@@ -11,6 +11,8 @@ namespace BoatAttack.Fishing
         public FishingPrototype Controller;
         public BayClimate Climate { get; } = new BayClimate();
         public bool ReducedEffects { get; private set; }
+        public float StormAmount { get; private set; }
+        public float CloudAmount { get; private set; }
         public int RainQuadBudget => ReducedEffects || UnityEngine.XR.XRSettings.isDeviceActive ? 32 : 96;
         private Light _sun;
         public Light DeckLight { get; private set; }
@@ -24,7 +26,10 @@ namespace BoatAttack.Fishing
         private Quaternion _sunRotation;
         private readonly List<Behaviour> _suspended = new List<Behaviour>();
         private readonly List<Object> _owned = new List<Object>();
-        private AudioSource _audio;
+        private AudioSource _audio,_thunder;
+        private float _cloudTime,_stormWait=8,_flashAge=1,_thunderDelay=-1,_lightning,_sunBaseIntensity;
+        private int _strike;
+        private Vector3 _lightningDirection=new Vector3(0,.28f,1).normalized;
         private Mesh _rainMesh;
         private GameObject _rain;
         private readonly Vector3[] _rainVertices = new Vector3[96 * 4];
@@ -37,8 +42,8 @@ namespace BoatAttack.Fishing
         private readonly List<(Renderer renderer,int index,LightProbeUsage probes)> _bakedRenderers=new List<(Renderer,int,LightProbeUsage)>();
         private readonly List<(Terrain terrain,int index)> _bakedTerrains=new List<(Terrain,int)>();
         public float Daylight => Controller != null && Controller.Career != null ? Controller.Career.Calendar.Daylight : 1;
-        private void OnApplicationFocus(bool focus) { _focused = focus; if (!focus && Controller?.Career != null) Controller.Save(); }
-        private void OnApplicationPause(bool pause) { _focused = !pause; if (pause && Controller?.Career != null) Controller.Save(); }
+        private void OnApplicationFocus(bool focus) { _focused=focus;if(!focus)ResetStorm();if(!focus && Controller?.Career!=null)Controller.Save(); }
+        private void OnApplicationPause(bool pause) { _focused=!pause;if(pause)ResetStorm();if(pause && Controller?.Career!=null)Controller.Save(); }
         private void OnApplicationQuit() { if (Controller?.Career != null) Controller.Save(); }
 
         private struct Look
@@ -52,7 +57,7 @@ namespace BoatAttack.Fishing
             switch (weather)
             {
                 case BayWeather.Cloudy: return new Look(new Color(.87f,.92f,1),new Color(.72f,.80f,.9f),new Color(.57f,.67f,.73f),.73f,410,0,38);
-                case BayWeather.Rain: return new Look(new Color(.76f,.85f,.96f),new Color(.49f,.6f,.72f),new Color(.44f,.57f,.63f),.58f,290,1,36);
+                case BayWeather.Rain: return new Look(new Color(.64f,.72f,.85f),new Color(.30f,.37f,.46f),new Color(.22f,.28f,.34f),.31f,230,1,36);
                 case BayWeather.Mist: return new Look(new Color(.98f,.91f,.79f),new Color(.86f,.88f,.82f),new Color(.66f,.76f,.75f),.74f,185,0,28);
                 case BayWeather.Sunset: return new Look(new Color(1,.68f,.39f),new Color(1,.65f,.52f),new Color(.74f,.59f,.53f),.8f,480,0,18);
                 default: return new Look(Color.white,Color.white,new Color(.68f,.81f,.83f),1,650,0,48);
@@ -105,10 +110,20 @@ namespace BoatAttack.Fishing
             for(int i=0;i<samples.Length;i++){low=Mathf.Lerp(low,(float)rng.NextDouble()*2-1,.065f);samples[i]=low*Mathf.Sin(Mathf.PI*i/(samples.Length-1));}
             var clip=AudioClip.Create("Original soft coastal wind",samples.Length,1,22050,false);clip.SetData(samples,0);_owned.Add(clip);_audio.clip=clip;
             Controller.RegisterAudioSource(_audio,FishingAudioCategory.Ambient,.07f);_audio.Play();
+            _thunder=gameObject.AddComponent<AudioSource>();_thunder.playOnAwake=false;_thunder.spatialBlend=0;
+            var rumble=new float[22050*4];float deep=0,body=0;
+            for(int i=0;i<rumble.Length;i++)
+            {
+                float noise=(float)rng.NextDouble()*2-1;deep=Mathf.Lerp(deep,noise,.025f);body=Mathf.Lerp(body,noise,.11f);
+                float seconds=i/22050f;float envelope=(1-Mathf.Exp(-seconds*18))*Mathf.Exp(-seconds*1.25f)*(1-seconds/4);
+                rumble[i]=Mathf.Clamp((deep*2.6f+body*.35f)*envelope,-.85f,.85f);
+            }
+            var thunder=AudioClip.Create("Original distant sea thunder",rumble.Length,1,22050,false);thunder.SetData(rumble,0);_owned.Add(thunder);_thunder.clip=thunder;
+            Controller.RegisterAudioSource(_thunder,FishingAudioCategory.Effects,.42f);
         }
         public void ToggleReducedEffects()
         {
-            ReducedEffects=!ReducedEffects;
+            ReducedEffects=!ReducedEffects;if(ReducedEffects)ResetStorm();
             if(Controller!=null && !Controller.HasIsolatedProfile){PlayerPrefs.SetInt("Fishing.V032.ReducedEffects",ReducedEffects?1:0);PlayerPrefs.Save();}
         }
         public void CyclePreview()
@@ -121,13 +136,15 @@ namespace BoatAttack.Fishing
             bool frozen=Controller.Paused || Controller.StoryBlocksGameplay || (Controller.XRNotebook!=null && Controller.XRNotebook.IsOpen) || (!_focused && !Controller.Automated);
             Controller.Career.Calendar.Tick(Time.deltaTime, frozen || Controller.Automated);
             Climate.Tick(Time.deltaTime,frozen,Controller.Automated?(BayWeather?)null:Controller.Career.Calendar.Weather);
+            if(!frozen)_cloudTime+=Time.deltaTime;
             ApplyEnvironment();
+            bool covered=(Controller.Realms!=null && Controller.Realms.Inside) || (Controller.TackleShop!=null && Controller.TackleShop.Inside);
+            TickStorm(Time.deltaTime,frozen || covered);
             if(_audio!=null)Controller.SetAudioBaseVolume(_audio,.07f+_rainAmount*.13f);
             if(_rain!=null)
             {
-                bool covered=(Controller.Realms!=null && Controller.Realms.Inside) || (Controller.TackleShop!=null && Controller.TackleShop.Inside);
                 _rain.SetActive(_rainAmount>.03f && !covered);
-                if(!Controller.Paused){_rainTimer+=Time.deltaTime; if(_rainTimer>=.05f){_rainTimer=0;UpdateRain();}}
+                if(!frozen){_rainTimer+=Time.deltaTime; if(_rainTimer>=.05f){_rainTimer=0;UpdateRain();}}
             }
         }
         public void ApplyEnvironment()
@@ -144,22 +161,27 @@ namespace BoatAttack.Fishing
                 intensity=shrine==3?.70f:.72f;
                 sky=shrine==3?new Color(.17f,.22f,.45f):shrine==1?new Color(.62f,.84f,.70f):new Color(.91f,.81f,.67f);
             }
-            if(DeckLight!=null){DeckLight.intensity=3f*(1-daylight);DeckLight.enabled=daylight<.95f;}
+            StormAmount=shrine>=0?0:Mathf.Lerp(a.rain,b.rain,t);
+            CloudAmount=Mathf.Lerp(CloudCover(Climate.Previous),CloudCover(Climate.Current),t);
+            if(Controller.StartMenuOpen || shrine>=0)CloudAmount=.18f;
+            if(DeckLight!=null){DeckLight.intensity=3f*(1-daylight)+StormAmount*.75f;DeckLight.enabled=daylight<.95f || StormAmount>.3f;}
             float twilight=4*daylight*(1-daylight);
             var nightSky=new Color(.07f,.12f,.24f);
             sky=Color.Lerp(nightSky,sky,daylight);
             sun=Color.Lerp(new Color(.38f,.52f,.84f),Color.Lerp(sun,new Color(1,.52f,.27f),twilight*.65f),daylight);
             if(shrine>=0)sun=shrine==3?new Color(.48f,.63f,1):shrine==1?new Color(.81f,.94f,.74f):new Color(1,.88f,.69f);
+            float home=Controller.Home!=null && shrine<0 && !Controller.StartMenuOpen?Mathf.SmoothStep(0,1,Mathf.InverseLerp(90,45,Vector3.Distance(Controller.viewCamera.transform.position,Controller.Home.Origin))):0;
             if(_sun!=null)
             {
-                _sun.color=_sunColor*sun;_sun.intensity=_sunIntensity*intensity*Mathf.Lerp(.025f,1,daylight);
+                _sun.color=_sunColor*sun;_sunBaseIntensity=_sunIntensity*intensity*Mathf.Lerp(Mathf.Lerp(.025f,.11f,home),1,daylight);_sun.intensity=_sunBaseIntensity;
                 float hour=Controller.StartMenuOpen?17.2f:Controller.Career.Calendar.Hour;
                 float elevation=shrine>=0?42:daylight>.01f?Mathf.Lerp(8,65,Mathf.Sin(Mathf.Clamp01((hour-6)/12)*Mathf.PI)):32;
                 _sun.transform.rotation=Quaternion.Euler(elevation,_sunRotation.eulerAngles.y+(hour-12)*7,0);
             }
             if(_sky!=null)
             {
-                _sky.SetFloat("_Daylight",daylight);_sky.SetFloat("_CoastTime",Time.unscaledTime);
+                _sky.SetFloat("_Daylight",daylight);_sky.SetFloat("_CoastTime",_cloudTime);
+                _sky.SetFloat("_Storm",StormAmount);_sky.SetFloat("_CloudCover",CloudAmount);
                 if(_sun!=null)_sky.SetVector("_SunDirection",-_sun.transform.forward);
                 // This island uses _SkyTint, not the cubemap shader's _Tint. Its original
                 // exposure=4 blows out the horizon, so only this runtime clone is capped.
@@ -170,12 +192,50 @@ namespace BoatAttack.Fishing
             RenderSettings.fogColor=Color.Lerp(new Color(.018f,.031f,.064f),Color.Lerp(a.fog,b.fog,t),daylight);RenderSettings.fogStartDistance=35;
             RenderSettings.fogEndDistance=Mathf.Lerp(a.distance,b.distance,t);
             RenderSettings.ambientMode=AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor=Color.Lerp(new Color(.028f,.043f,.075f),_ambient*Color.Lerp(Color.white,sky,.35f),daylight);
-            RenderSettings.ambientEquatorColor=Color.Lerp(new Color(.015f,.023f,.040f),new Color(.32f,.38f,.39f),daylight);
-            RenderSettings.ambientGroundColor=Color.Lerp(new Color(.008f,.012f,.019f),new Color(.15f,.18f,.18f),daylight);
+            RenderSettings.ambientSkyColor=Color.Lerp(Color.Lerp(new Color(.028f,.043f,.075f),new Color(.065f,.085f,.13f),home),_ambient*Color.Lerp(Color.white,sky,.35f),daylight);
+            RenderSettings.ambientEquatorColor=Color.Lerp(Color.Lerp(new Color(.015f,.023f,.040f),new Color(.035f,.05f,.075f),home),new Color(.32f,.38f,.39f),daylight);
+            RenderSettings.ambientGroundColor=Color.Lerp(Color.Lerp(new Color(.008f,.012f,.019f),new Color(.018f,.026f,.035f),home),new Color(.15f,.18f,.18f),daylight);
+            RenderSettings.ambientSkyColor*=Mathf.Lerp(1,.52f,StormAmount);
+            RenderSettings.ambientEquatorColor*=Mathf.Lerp(1,.48f,StormAmount);RenderSettings.ambientGroundColor*=Mathf.Lerp(1,.58f,StormAmount);
             RenderSettings.ambientIntensity=_ambientIntensity*Mathf.Lerp(.82f,1,intensity);
-            RenderSettings.reflectionIntensity=_reflection*Mathf.Lerp(.08f,1,daylight);
-            _rainAmount=shrine>=0?0:Mathf.Lerp(a.rain,b.rain,t);
+            RenderSettings.reflectionIntensity=_reflection*Mathf.Lerp(.08f,1,daylight)*Mathf.Lerp(1,.34f,StormAmount);
+            _rainAmount=StormAmount;
+            if(StormAmount<.7f || Climate.Current!=BayWeather.Rain || ReducedEffects || Controller.StartMenuOpen)ResetStorm();
+            ApplyFlash();
+        }
+        private static float CloudCover(BayWeather weather)
+        {
+            switch(weather){case BayWeather.Rain:return 1;case BayWeather.Cloudy:return .82f;case BayWeather.Mist:return .68f;default:return .18f;}
+        }
+        private void TickStorm(float seconds,bool frozen)
+        {
+            if(frozen || !_focused || ReducedEffects || StormAmount<.7f || Climate.Current!=BayWeather.Rain || Controller.StartMenuOpen){ResetStorm();return;}
+            seconds=Mathf.Clamp(seconds,0,.25f);
+            if(_thunderDelay>=0)
+            {
+                _thunderDelay-=seconds;
+                if(_thunderDelay<=0){_thunderDelay=-1;if(_thunder!=null && !Controller.QuietMode)_thunder.Play();}
+            }
+            _flashAge+=seconds;_stormWait-=seconds;
+            if(_stormWait<=0)
+            {
+                _strike++;_flashAge=0;_stormWait=13+(_strike*7%11);_thunderDelay=.9f+(_strike%3)*.35f;
+                float bearing=(_strike*137.508f+31)*Mathf.Deg2Rad;
+                _lightningDirection=new Vector3(Mathf.Sin(bearing),.25f+(_strike%3)*.04f,Mathf.Cos(bearing)).normalized;
+            }
+            // A single soft attack/decay avoids repeated full-screen strobing.
+            _lightning=_flashAge<.38f?Mathf.Min(1,_flashAge/.035f)*Mathf.Exp(-_flashAge*9)*.65f:0;
+            ApplyFlash();
+        }
+        private void ApplyFlash()
+        {
+            if(_sky!=null){_sky.SetFloat("_Lightning",_lightning);_sky.SetVector("_LightningDirection",_lightningDirection);}
+            if(_sun!=null)_sun.intensity=_sunBaseIntensity+_lightning*StormAmount*.32f;
+        }
+        private void ResetStorm()
+        {
+            _stormWait=8;_flashAge=1;_thunderDelay=-1;_lightning=0;
+            if(_thunder!=null)_thunder.Stop();ApplyFlash();
         }
         public void RefreshForCapture()
         {
@@ -201,7 +261,7 @@ namespace BoatAttack.Fishing
             for(int i=0;i<96;i++)
             {
                 float angle=i*2.399963f;float radius=4.5f+(i%11)*.65f;
-                float y=7-Mathf.Repeat(Time.time*4.8f+i*.79f,7);
+                float y=7-Mathf.Repeat(_cloudTime*4.8f+i*.79f,7);
                 var p=new Vector3(Mathf.Cos(angle)*radius,y,Mathf.Sin(angle)*radius);
                 var width=Vector3.Cross(Controller.viewCamera.transform.forward,Vector3.down).normalized*.011f;
                 float length=i<count?.18f*_rainAmount:0;
@@ -213,6 +273,7 @@ namespace BoatAttack.Fishing
         }
         private void OnDisable()
         {
+            ResetStorm();
             if(!_captured)return;_captured=false;
             foreach(var entry in _bakedRenderers)if(entry.renderer!=null){entry.renderer.lightmapIndex=entry.index;entry.renderer.lightProbeUsage=entry.probes;}
             foreach(var entry in _bakedTerrains)if(entry.terrain!=null)entry.terrain.lightmapIndex=entry.index;

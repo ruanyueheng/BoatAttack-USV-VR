@@ -1,0 +1,80 @@
+[PICKAXE] CHECK: 仅操作临时隔离存档
+[PICKAXE] IMPORT: triangles=3116 bounds=Center: (-0.01, 0.13, 0.00), Extents: (0.16, 0.29, 0.03)
+[PICKAXE] CHECK: real supplied compact head/wood mesh, no display background
+[PICKAXE] CHECK: supplied wood/metal source atlas and normals use URP material
+[PICKAXE] UV: count=2194 first=(0.59, 0.42) last=(0.40, 0.27)
+[PICKAXE] WOOD SAMPLES: 36
+[PICKAXE] CHECK: imported wooden shaft UV samples preserve the actual brown wood atlas
+[PICKAXE] CHECK: real grip and contact lie within supplied mesh bounds
+[PICKAXE] CHECK: production shore landing for pick pose
+[PICKAXE] CHECK: pick stance uses dry clear footing
+[PICKAXE] CHECK: fixture owns supplied pick StonePickaxe
+[PICKAXE] CHECK: supplied pick is held StonePickaxe crouch=False pitch=-30
+[PICKAXE] CHECK: held model and material are the supplied asset
+[PICKAXE] POSE: StonePickaxe crouch=False pitch=-30 wristBend=36.01632 elbow=81.55053 palm=(0.81, -0.61, 0.23)
+[PICKAXE] CHECK: wrist/hinged elbow retain neutral resting range without sharp wrist bend
+[PICKAXE] CHECK: source arm lengths preserved and palm reaches the calibrated wooden grip
+[PICKAXE] CHECK: supplied pick is held StonePickaxe crouch=False pitch=0
+[PICKAXE] CHECK: held model and material are the supplied asset
+[PICKAXE] POSE: StonePickaxe crouch=False pitch=0 wristBend=36.0169 elbow=81.54991 palm=(0.69, 0.13, 0.37)
+[PICKAXE] CHECK: wrist/hinged elbow retain neutral resting range without sharp wrist bend
+[PICKAXE] CHECK: supplied pick grip remains in the lower visible screen area when looking level
+[PICKAXE] CHECK: source arm lengths preserved and palm reaches the calibrated wooden grip
+[PICKAXE] CHECK: supplied pick is held StonePickaxe crouch=False pitch=30
+[PICKAXE] CHECK: held model and material are the supplied asset
+[PICKAXE] POSE: StonePickaxe crouch=False pitch=30 wristBend=36.01584 elbow=81.55093 palm=(0.67, 0.55, 0.41)
+[PICKAXE] CHECK: wrist/hinged elbow retain neutral resting range without sharp wrist bend
+[PICKAXE] CHECK: source arm lengths preserved and palm reaches the calibrated wooden grip
+[PICKAXE] CHECK: supplied pick is held StonePickaxe crouch=True pitch=-30
+[PICKAXE] CHECK: held model and material are the supplied asset
+[PICKAXE] POSE: StonePickaxe crouch=True pitch=-30 wristBend=36.01765 elbow=81.54918 palm=(0.81, -0.59, 0.23)
+[PICKAXE] CHECK: wrist/hinged elbow retain neutral resting range without sharp wrist bend
+[PICKAXE] CHECK: source arm lengths preserved and palm reaches the calibrated wooden grip
+[PICKAXE] CHECK: supplied pick is held StonePickaxe crouch=True pitch=0
+[PICKAXE] CHECK: held model and material are the supplied asset
+[PICKAXE] POSE: StonePickaxe crouch=True pitch=0 wristBend=36.01771 elbow=81.54926 palm=(0.69, 0.14, 0.37)
+[PICKAXE] CHECK: wrist/hinged elbow retain neutral resting range without sharp wrist bend
+[PICKAXE] CHECK: supplied pick grip remains in the lower visible screen area when looking level
+[PICKAXE] CHECK: source arm lengths preserved and palm reaches the calibrated wooden grip
+[PICKAXE] CHECK: supplied pick is held StonePickaxe crouch=True pitch=30
+[PICKAXE] CHECK: held model and material are the supplied asset
+[PICKAXE] POSE: StonePickaxe crouch=True pitch=30 wristBend=36.01663 elbow=81.55037 palm=(0.67, 0.55, 0.41)
+[PICKAXE] CHECK: wrist/hinged elbow retain neutral resting range without sharp wrist bend
+[PICKAXE] CHECK: source arm lengths preserved and palm reaches the calibrated wooden grip
+[PICKAXE] CHECK: third person uses same source pick and real arm rig
+[PICKAXE] CHECK: fixture owns supplied pick IronPickaxe
+[PICKAXE] CHECK: equip actual pick item IronPickaxe
+[PICKAXE] CHECK: supplied pick is held IronPickaxe crouch=False pitch=-30
+[PICKAXE] CHECK: held model and material are the supplied asset
+[PICKAXE] POSE: IronPickaxe crouch=False pitch=-30 wristBend=36.01813 elbow=81.54871 palm=(0.81, -0.58, 0.23)
+[PICKAXE] CHECK: wrist/hinged elbow retain neutral resting range without sharp wrist bend
+[PICKAXE] CHECK: source arm lengths preserved and palm reaches the calibrated wooden grip
+[PICKAXE] CHECK: supplied pick is held IronPickaxe crouch=False pitch=0
+[PICKAXE] CHECK: held model and material are the supplied asset
+[PICKAXE] POSE: IronPickaxe crouch=False pitch=0 wristBend=36.01715 elbow=81.55025 palm=(0.69, 0.14, 0.37)
+[PICKAXE] CHECK: wrist/hinged elbow retain neutral resting range without sharp wrist bend
+[PICKAXE] CHECK: supplied pick grip remains in the lower visible screen area when looking level
+[PICKAXE] CHECK: source arm lengths preserved and palm reaches the calibrated wooden grip
+[PICKAXE] CHECK: supplied pick is held IronPickaxe crouch=False pitch=30
+[PICKAXE] CHECK: held model and material are the supplied asset
+[PICKAXE] POSE: IronPickaxe crouch=False pitch=30 wristBend=36.01692 elbow=81.55041 palm=(0.67, 0.56, 0.41)
+[PICKAXE] CHECK: wrist/hinged elbow retain neutral resting range without sharp wrist bend
+[PICKAXE] CHECK: source arm lengths preserved and palm reaches the calibrated wooden grip
+[PICKAXE] CHECK: supplied pick is held IronPickaxe crouch=True pitch=-30
+[PICKAXE] CHECK: held model and material are the supplied asset
+[PICKAXE] POSE: IronPickaxe crouch=True pitch=-30 wristBend=36.01732 elbow=81.5495 palm=(0.81, -0.60, 0.23)
+[PICKAXE] CHECK: wrist/hinged elbow retain neutral resting range without sharp wrist bend
+[PICKAXE] CHECK: source arm lengths preserved and palm reaches the calibrated wooden grip
+[PICKAXE] CHECK: supplied pick is held IronPickaxe crouch=True pitch=0
+[PICKAXE] CHECK: held model and material are the supplied asset
+[PICKAXE] POSE: IronPickaxe crouch=True pitch=0 wristBend=36.01816 elbow=81.54988 palm=(0.69, 0.14, 0.37)
+[PICKAXE] CHECK: wrist/hinged elbow retain neutral resting range without sharp wrist bend
+[PICKAXE] CHECK: supplied pick grip remains in the lower visible screen area when looking level
+[PICKAXE] CHECK: source arm lengths preserved and palm reaches the calibrated wooden grip
+[PICKAXE] CHECK: supplied pick is held IronPickaxe crouch=True pitch=30
+[PICKAXE] CHECK: held model and material are the supplied asset
+[PICKAXE] POSE: IronPickaxe crouch=True pitch=30 wristBend=36.01712 elbow=81.54995 palm=(0.67, 0.56, 0.41)
+[PICKAXE] CHECK: wrist/hinged elbow retain neutral resting range without sharp wrist bend
+[PICKAXE] CHECK: source arm lengths preserved and palm reaches the calibrated wooden grip
+[PICKAXE] CHECK: third person uses same source pick and real arm rig
+[PICKAXE] PASS: v0.37.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。

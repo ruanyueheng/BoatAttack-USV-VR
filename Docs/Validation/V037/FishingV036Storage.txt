@@ -1,0 +1,26 @@
+[V036-STORAGE] CHECK: 仅操作临时隔离存档
+[V036-STORAGE] CHECK: Stack merge fixture
+[V036-STORAGE] CHECK: Deposit merges then uses the next empty slot without losing items
+[V036-STORAGE] CHECK: Withdraw uses the same conserved transaction
+[V036-STORAGE] CHECK: Invalid transfers leave ownership unchanged
+[V036-STORAGE] CHECK: Full chest fixture
+[V036-STORAGE] CHECK: A full destination keeps the complete source stack
+[V036-STORAGE] CHECK: Full backpack fixture
+[V036-STORAGE] CHECK: A full backpack cannot delete a chest withdrawal
+[V036-STORAGE] CHECK: Depositing a tool frees room to withdraw the stored stack
+[V036-STORAGE] CHECK: A full bag leaves fruit harvest uncommitted
+[V036-STORAGE] CHECK: Ground pickup commits one fruit receipt per tree per day
+[V036-STORAGE] CHECK: Real JSON save preserves both sides of storage
+[V036-STORAGE] CHECK: Reloading cannot duplicate a harvested fruit
+[V036-STORAGE] CHECK: A new calendar day renews the tree
+[V036-STORAGE] CHECK: Storage snapshots do not alias live stacks
+[V036-STORAGE] CHECK: Future fruit receipts are rejected
+[V036-STORAGE] CHECK: Over-limit chest stacks are rejected
+[V036-STORAGE] CHECK: V14 saves upgrade with an empty chest and fresh orchard
+[V036-STORAGE] CHECK: A real chest model is registered as a home interaction
+[V036-STORAGE] CHECK: Storage stance clears furniture and workshop stations
+[V036-STORAGE] CHECK: Storage UI fixture owns fruit
+[V036-STORAGE] CHECK: Production E interaction opens the bidirectional storage panel
+[V036-STORAGE] CHECK: Production panel deposits the selected backpack stack
+[V036-STORAGE] CHECK: Production panel withdraws the selected chest stack
+[V036-STORAGE] PASS: v0.37.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。

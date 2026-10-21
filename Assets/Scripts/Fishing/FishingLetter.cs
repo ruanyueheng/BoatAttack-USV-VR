@@ -9,6 +9,7 @@ namespace BoatAttack.Fishing
     public sealed class FishingLetter : MonoBehaviour
     {
         public const float OpenSeconds = 3.8f;
+        private const float PaperScale = .0014f;
         private FishingPrototype _c;
         private Transform _root, _envelope, _flap, _seal, _paper;
         private CanvasGroup _paperFade;
@@ -29,29 +30,37 @@ namespace BoatAttack.Fishing
         {
             _c = c; _root = new GameObject("V022 floating letter").transform; _root.SetParent(transform, false);
             _envelope = new GameObject("Linen envelope").transform; _envelope.SetParent(_root, false);
-            var paper = new Color(.88f, .79f, .60f); var fold = new Color(.73f, .62f, .43f);
+            var paper = new Color(.98f, .94f, .83f); var fold = new Color(.87f, .81f, .65f);
             Quad("Envelope back", _envelope, new[] { new Vector3(-.34f,-.18f,.012f),new Vector3(.34f,-.18f,.012f),new Vector3(.34f,.18f,.012f),new Vector3(-.34f,.18f,.012f) }, paper);
             Quad("Folded pocket", _envelope, new[] { new Vector3(-.34f,.18f,-.006f),new Vector3(0,-.04f,-.02f),new Vector3(.34f,.18f,-.006f),new Vector3(.34f,-.18f,-.02f),new Vector3(-.34f,-.18f,-.02f) }, fold);
             _flap = new GameObject("Hinged envelope flap").transform; _flap.SetParent(_envelope, false); _flap.localPosition = new Vector3(0,.18f,-.024f);
             Quad("Triangular flap", _flap, new[] { new Vector3(-.34f,0,0),new Vector3(0,-.23f,0),new Vector3(.34f,0,0) }, paper);
-            var wax = new Material(c.PaletteShader); wax.SetFloat("_Unlit",1); wax.SetColor("_BaseColor",new Color(.48f,.14f,.10f)); _owned.Add(wax);
+            var wax = new Material(c.PaletteShader); wax.SetFloat("_Unlit",1); wax.SetColor("_BaseColor",new Color(.37f,.44f,.20f)); _owned.Add(wax);
             _seal = FishingArt.Shape("Wax seal",PrimitiveType.Sphere,_envelope,new Vector3(0,-.055f,-.04f),new Vector3(.069f,.069f,.014f),wax).transform;
+            var waxCanvas=new GameObject("Embossed star and tide wax",typeof(RectTransform),typeof(Canvas));waxCanvas.transform.SetParent(_seal,false);
+            waxCanvas.GetComponent<Canvas>().renderMode=RenderMode.WorldSpace;waxCanvas.transform.localPosition=new Vector3(0,0,-.55f);waxCanvas.transform.localScale=Vector3.one/256;
+            waxCanvas.GetComponent<RectTransform>().sizeDelta=new Vector2(256,256);
+            FishingPaperDesign.Image(waxCanvas.transform,"Tidal wax stamp",new Rect(0,0,256,256),new Vector2(256,256),FishingPaperDesign.Seal,Color.white);
             var stamp=new GameObject("Coastal postage and cancellation",typeof(RectTransform),typeof(Canvas),typeof(Image));
             stamp.transform.SetParent(_envelope,false);stamp.transform.localPosition=new Vector3(.16f,.015f,-.033f);stamp.transform.localScale=Vector3.one*.00048f;
             stamp.GetComponent<RectTransform>().sizeDelta=new Vector2(640,320);
             stamp.GetComponent<Canvas>().renderMode=RenderMode.WorldSpace;
             var postage=stamp.GetComponent<Image>();postage.sprite=Stationery("CoastalPostmark");postage.raycastTarget=false;
             var canvas = new GameObject("Letter paper", typeof(RectTransform), typeof(Canvas), typeof(CanvasGroup));
-            _paper = canvas.transform; _paper.SetParent(_root,false); _paper.localScale = Vector3.one * .00105f;
-            var rect = canvas.GetComponent<RectTransform>(); rect.sizeDelta = new Vector2(560,640);
+            canvas.layer=5;
+            _paper = canvas.transform; _paper.SetParent(_root,false); _paper.localScale = Vector3.one * PaperScale;
+            var rect = canvas.GetComponent<RectTransform>(); rect.sizeDelta = new Vector2(760,600);
             canvas.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace; canvas.GetComponent<Canvas>().worldCamera = c.viewCamera;
             _paperFade = canvas.GetComponent<CanvasGroup>();
-            var image = canvas.AddComponent<Image>(); image.sprite=Stationery("KraftPaper");image.color=Color.white; image.raycastTarget = false;
-            _heading = Label("Title",new Vector2(34,-54),new Vector2(492,76),32,TextAnchor.UpperLeft);
-            Label("Letterhead",new Vector2(34,-22),new Vector2(492,24),14,TextAnchor.UpperLeft).text = "回 潮 海  /  航 海 来 信";
-            _body = Label("Letter body",new Vector2(34,-160),new Vector2(492,310),24,TextAnchor.UpperLeft);
-            _sender = Label("Signature",new Vector2(34,-495),new Vector2(492,64),19,TextAnchor.UpperRight);
-            _hint = Label("Reading hint",new Vector2(34,-590),new Vector2(492,32),15,TextAnchor.MiddleCenter);
+            var image = canvas.AddComponent<Image>(); image.sprite=FishingPaperDesign.Vellum;image.type=Image.Type.Sliced;image.color=Color.white; image.raycastTarget = false;image.material=FishingUITheme.WorldMaterial;
+            FishingPaperDesign.Frame(_paper,rect.sizeDelta,94,true);
+            FishingPaperDesign.Image(_paper,"Sea grass letter crest",new Rect(342,21,76,61),rect.sizeDelta,FishingPaperDesign.Crest,Color.white);
+            FishingPaperDesign.Image(_paper,"Title hairline",new Rect(103,153,554,1),rect.sizeDelta,null,new Color(.63f,.51f,.29f,.4f));
+            _heading = Label("Title",new Vector2(80,-87),new Vector2(600,59),36,TextAnchor.MiddleCenter);
+            Label("Letterhead",new Vector2(68,-35),new Vector2(235,26),15,TextAnchor.UpperLeft).text = "回 潮 海  /  航 海 来 信";
+            _body = Label("Letter body",new Vector2(76,-183),new Vector2(608,288),26,TextAnchor.UpperLeft);
+            _sender = Label("Signature",new Vector2(76,-486),new Vector2(608,40),22,TextAnchor.UpperRight);
+            _hint = Label("Reading hint",new Vector2(76,-546),new Vector2(608,30),16,TextAnchor.MiddleCenter);
             _root.gameObject.SetActive(false);
         }
         private Sprite Stationery(string name)
@@ -62,11 +71,11 @@ namespace BoatAttack.Fishing
         }
         private Text Label(string name, Vector2 position, Vector2 size, int font, TextAnchor alignment)
         {
-            var go = new GameObject(name, typeof(RectTransform), typeof(Text)); go.transform.SetParent(_paper,false);
+            var go = new GameObject(name, typeof(RectTransform), typeof(Text));go.layer=5; go.transform.SetParent(_paper,false);
             var rect = go.GetComponent<RectTransform>(); rect.anchorMin = rect.anchorMax = new Vector2(0,1); rect.pivot = new Vector2(0,1);
             rect.anchoredPosition = position; rect.sizeDelta = size;
             var text = go.GetComponent<Text>(); text.font = FishingUITheme.Heading ?? FishingUIFont.Font; text.fontSize = font;text.lineSpacing=1.15f;
-            text.color = new Color(.20f,.13f,.075f); text.alignment = alignment; text.raycastTarget = false;
+            text.color = new Color(.23f,.29f,.20f); text.alignment = alignment; text.raycastTarget = false;text.material=FishingUITheme.WorldMaterial;
             text.horizontalOverflow = HorizontalWrapMode.Wrap; text.verticalOverflow = VerticalWrapMode.Truncate; return text;
         }
         private void Quad(string name, Transform parent, Vector3[] vertices, Color color)
@@ -95,7 +104,10 @@ namespace BoatAttack.Fishing
             _sourceRenderers=source!=null?source.GetComponentsInChildren<Renderer>():null;
             if(_sourceRenderers!=null){_sourceEnabled=new bool[_sourceRenderers.Length];for(int i=0;i<_sourceRenderers.Length;i++){_sourceEnabled[i]=_sourceRenderers[i].enabled;_sourceRenderers[i].enabled=false;}}
             var eye=_c.viewCamera.transform;
-            _root.SetPositionAndRotation(eye.position+eye.forward*1.2f-eye.up*.10f,eye.rotation);
+            float viewHeight=2*1.2f*Mathf.Tan(_c.viewCamera.fieldOfView*Mathf.Deg2Rad*.5f);
+            float scale=XRSettings.isDeviceActive?1:Mathf.Min(viewHeight*.66f/.84f,viewHeight*_c.viewCamera.aspect*.85f/1.24f);
+            _root.localScale=Vector3.one*scale;
+            _root.SetPositionAndRotation(eye.position+eye.forward*1.2f-eye.up*.02f,eye.rotation);
             Open=true;Age=0;_advance.Reset();_close.Reset();_root.gameObject.SetActive(true);Pose();
         }
         public void Reveal() { if(!Open)return;Age=OpenSeconds;Pose(); }
@@ -124,13 +136,13 @@ namespace BoatAttack.Fishing
             float seal=Mathf.SmoothStep(0,1,Mathf.Clamp01((Age-.75f)/.55f));
             float flap=Mathf.SmoothStep(0,1,Mathf.Clamp01((Age-1.2f)/1.1f));
             float extract=Mathf.SmoothStep(0,1,Mathf.Clamp01((Age-2.3f)/1.5f));
-            _envelope.localPosition=new Vector3(0,Mathf.Lerp(-.22f,0,rise)-extract*.32f,0);
-            _envelope.localRotation=Quaternion.Euler(12*(1-rise),0,-5*(1-rise));
+            _envelope.localPosition=new Vector3(-extract*.26f,Mathf.Lerp(-.22f,0,rise)-extract*.29f,0);
+            _envelope.localRotation=Quaternion.Euler(12*(1-rise),0,-5*(1-rise)-14*extract);
             _seal.localPosition=new Vector3(seal*.12f,-.055f-seal*.10f,-.04f-seal*.09f);
-            _seal.localScale=new Vector3(.069f,.069f,.014f)*(1-seal);
+            _seal.localScale=new Vector3(.069f,.069f,.014f)*(1-seal*.15f);
             _flap.localRotation=Quaternion.Euler(-165*flap,0,0);
-            _paper.localPosition=new Vector3(0,Mathf.Lerp(-.10f,.11f,extract),-.06f);
-            _paper.localScale=new Vector3(.00105f,.00105f*Mathf.Lerp(.12f,1,extract),.00105f);
+            _paper.localPosition=new Vector3(.08f*extract,Mathf.Lerp(-.10f,.02f,extract),-.06f);
+            _paper.localScale=new Vector3(PaperScale,PaperScale*Mathf.Lerp(.12f,1,extract),PaperScale);
             _paperFade.alpha=Mathf.Clamp01(extract*2);
             _hint.text=XRSettings.isDeviceActive?"A 收起来信  /  B 关闭":"E / Esc 收起来信 · J 日志可重读";
         }

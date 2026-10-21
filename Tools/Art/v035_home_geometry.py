@@ -35,9 +35,22 @@ def home_land():
         return False
     for j in range(148):
         for i in range(188):
-            x,z=-42+i*.5,-34+j*.5;ps=[(xx,land_height(xx,zz),zz) for xx,zz in [(x,z),(x+.5,z),(x+.5,z+.5),(x,z+.5)]]
+            x,z=-42+i*.5,-34+j*.5
+            # A real opening replaces these tiles; grass must never close the well below its rim.
+            if 9 <= x < 11.5 and -9.5 <= z < -6.5:continue
+            ps=[(xx,land_height(xx,zz),zz) for xx,zz in [(x,z),(x+.5,z),(x+.5,z+.5),(x,z+.5)]]
             y=land_height(x+.25,z+.25);tile=1 if y< -2.1 else 12 if y<-.3 or near_path(x+.25,z+.25) else 7
             mesh(ps,[(0,3,2,1)],tile,True)
+    # Match the rectangular grid boundary exactly while leaving a round 1.42 m shaft mouth.
+    angles=[k*math.tau/96 for k in range(96)]
+    angles += [math.atan2(z+8,x-10.2)%math.tau for x,z in [(9,-9.5),(11.5,-9.5),(11.5,-6.5),(9,-6.5)]]
+    angles=sorted(set(angles));inner=[];outer=[]
+    for a in angles:
+        dx,dz=math.cos(a),math.sin(a)
+        t=min((11.5-10.2)/dx if dx>1e-8 else (9-10.2)/dx if dx< -1e-8 else 1e9,
+              (-6.5+8)/dz if dz>1e-8 else (-9.5+8)/dz if dz< -1e-8 else 1e9)
+        inner.append((10.2+dx*.71,0,-8+dz*.71));outer.append((10.2+dx*t,0,-8+dz*t))
+    n=len(angles);mesh(inner+outer,[(j,(j+1)%n,(j+1)%n+n,j+n) for j in range(n)],7,True)
 
 def roof(cx,front,back,half=6.7,eave=3.45,ridge=6.65):
     def y(t):return eave+(ridge-eave)*(1-t)**1.22+.10*math.sin(t*math.pi*2)
@@ -190,6 +203,15 @@ def home_details():
     path([(-7,0,-9),(-11,0,-7),(-18,0,0),(-19,0,8.8)],2)
 
 def well():
+    # Inward-facing masonry continues 5.4 metres below the ground; no cap or grass under the opening.
+    for row in range(20):
+        for j in range(18):
+            a=(j+row*.5)*math.tau/18;b=a+math.tau/18-.012;vs=[]
+            for y in [-5.4+row*.27,-5.4+(row+1)*.27-.010]:
+                for r,t in [(.71,a),(.90,a),(.90,b),(.71,b)]:vs.append((math.cos(t)*r,y,math.sin(t)*r))
+            mesh(vs,[(0,3,2,1),(4,5,6,7),(0,1,5,4),(1,2,6,5),(2,3,7,6),(3,0,4,7)],0)
+    n=72;wall=[(math.cos(k*math.tau/n)*.76,y,math.sin(k*math.tau/n)*.76) for y in [-5.42,.03] for k in range(n)]
+    mesh(wall,[(k,(k+1)%n,(k+1)%n+n,k+n) for k in range(n)]+[tuple(reversed(range(n)))],0)
     for row in range(4):
         for j in range(18):
             a=(j+row*.5)*math.tau/18;b=a+math.tau/18-.016;vs=[]

@@ -71,7 +71,7 @@ namespace BoatAttack.Fishing
                 var button=go.AddComponent<FishingNotebookButton>();button.Owner=this;button.Index=i;
             }
             BuildNotebookHome();
-            FishingUITheme.Bind(panel,0);FishingUITheme.Bind(_status,2);
+            FishingUITheme.Bind(_status,2);
             var mapShader=Resources.Load<Shader>("FishingTerrainMap");
             if(mapShader!=null && mapShader.isSupported)
             {
@@ -89,6 +89,7 @@ namespace BoatAttack.Fishing
         }
         private void LateUpdate()
         {
+            if(IsOpen)_canvas.GetComponent<Image>().color=FishingPaperDesign.PaperTint;
             if(_mapPalette!=null){FishingUITheme.StyleMap(_mapPalette);_map.material=_mapPalette;}
             if(_c==null || _feedback==null)return;
             if(IsOpen && !_c.Automated)_canvas.transform.localScale=Vector3.one*.00105f*Mathf.Lerp(.985f,1,Mathf.SmoothStep(0,1,(Time.unscaledTime-_pageOpenedAt)/.12f));
@@ -320,6 +321,7 @@ namespace BoatAttack.Fishing
                 Set(7,"返回设置",()=>Open(14));Set(8,"返回海湾",Close);
             }
             else if(_page==17)RefreshBarbecuePage();
+            else if(_page==18 || _page==19)RefreshHomeStorage();
             else
             {
                 _status.text="二级载重 / 动力 / 操控专精三选一\n其他两项可升至一级；旧升级保留\n金币 "+_c.Career.Coins;

@@ -250,27 +250,34 @@ namespace UnityEngine.Rendering.Universal
             UpdateReflectionCamera(camera); // create reflected camera
             PlanarReflectionTexture(camera); // create and assign RenderTexture
 
-            var data = new PlanarReflectionSettingData(); // save quality settings and lower them for the planar reflections
+            var data = new PlanarReflectionSettingData(true);
             data.Set(); // set quality settings
             
             Shader.EnableKeyword("_PLANAR_REFLECTION_CAMERA");
 
-            BeginPlanarReflections?.Invoke(context, _reflectionCamera); // callback Action for PlanarReflection
-            UniversalRenderPipeline.RenderSingleCamera(context, _reflectionCamera); // render planar reflections
-
-            data.Restore(); // restore the quality settings
-            Shader.SetGlobalTexture(_planarReflectionTextureId, _reflectionTexture); // Assign texture to water shader
-            Shader.DisableKeyword("_PLANAR_REFLECTION_CAMERA");
+            try
+            {
+                BeginPlanarReflections?.Invoke(context, _reflectionCamera);
+                UniversalRenderPipeline.RenderSingleCamera(context, _reflectionCamera);
+                Shader.SetGlobalTexture(_planarReflectionTextureId, _reflectionTexture);
+            }
+            finally
+            {
+                data.Restore();
+                Shader.DisableKeyword("_PLANAR_REFLECTION_CAMERA");
+            }
         }
 
-        class PlanarReflectionSettingData
+        struct PlanarReflectionSettingData
         {
             private readonly bool _fog;
             private readonly int _maxLod;
             private readonly float _lodBias;
 
-            public PlanarReflectionSettingData()
+            private readonly bool _inverted;
+            public PlanarReflectionSettingData(bool capture)
             {
+                _inverted=GL.invertCulling;
                 _fog = RenderSettings.fog;
                 _maxLod = QualitySettings.maximumLODLevel;
                 _lodBias = QualitySettings.lodBias;
@@ -286,7 +293,7 @@ namespace UnityEngine.Rendering.Universal
 
             public void Restore()
             {
-                GL.invertCulling = false;
+                GL.invertCulling = _inverted;
                 RenderSettings.fog = _fog;
                 QualitySettings.maximumLODLevel = _maxLod;
                 QualitySettings.lodBias = _lodBias;

@@ -87,6 +87,7 @@ namespace BoatAttack.Fishing
             _homeWallet=HomeText(pocket.transform,new Rect(55,4,294,38),"",25,HomeInk);
             _homeCapacity=HomeText(pocket.transform,new Rect(48,43,301,32),"",21,HomeMuted);
             _homeMessage=HomeText(p,new Rect(444,609,610,48),"",20,HomeMuted);
+            HomeImage(p,"Footer reading strip",new Rect(35,733,1030,43),HomePaper,_homePaperSprite);
             _homeEquipment=HomeText(p,new Rect(44,741,457,32),"",20,HomeMuted);
             var hint=HomeText(p,new Rect(513,741,547,32),"右手指向  ·  扳机选择  ·  B 收起",20,HomeMuted);hint.alignment=TextAnchor.MiddleRight;
             HomeImage(p,"Footer rule",new Rect(42,733,1020,1),new Color32(210,167,110,170));
@@ -117,8 +118,8 @@ namespace BoatAttack.Fishing
                 rt.sizeDelta=home?new Vector2(1100,780):new Vector2(580,660);
                 rt.localScale=Vector3.one*(home?.00105f:.0016f);
                 _homeScaler.dynamicPixelsPerUnit=home?3:1;
-                var panel=_canvas.GetComponent<Image>();panel.sprite=home?_homePaperSprite:null;
-                panel.type=home?Image.Type.Sliced:Image.Type.Simple;panel.color=home?HomePaper:new Color(.025f,.048f,.082f,.97f);
+                var panel=_canvas.GetComponent<Image>();panel.sprite=home?FishingPaperDesign.Surface(FishingPaperTheme.Celestial):null;
+                panel.type=home?Image.Type.Sliced:Image.Type.Simple;panel.color=home?FishingPaperDesign.PaperTint:new Color(.025f,.048f,.082f,.97f);
                 foreach(var graphic in _canvas.GetComponentsInChildren<Graphic>(true))graphic.material=graphic==_map && _mapPalette!=null?_mapPalette:home?_homeMaterial:null;
                 for(int i=0;i<9;i++)
                 {
@@ -139,7 +140,7 @@ namespace BoatAttack.Fishing
             var day=_c.Career.Calendar;var bag=_c.Career.Backpack;
             _homeDate.text=day.DateLabel+"  /  "+day.TimeLabel;
             _homeWeather.text=BayClimate.Name(_c.Weather.Climate.Current)+"  ·  "+day.TideName;
-            _canvas.GetComponent<Image>().color=HomePaper;
+            _canvas.GetComponent<Image>().color=FishingPaperDesign.PaperTint;
             _homeWallet.text="金币    "+_c.Career.Coins;
             _homeCapacity.text="鱼箱 "+_c.Career.Count+"/"+_c.Career.Capacity+" · 行囊 "+bag.UsedSlots+"/36";
             _homeEquipment.text="当前装备  ·  "+FishingBackpack.Name(bag.Equipped);

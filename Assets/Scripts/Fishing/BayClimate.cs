@@ -36,7 +36,7 @@ namespace BoatAttack.Fishing
         public static float Duration(BayWeather weather) => weather == BayWeather.Rain ? 95 : weather == BayWeather.Mist ? 110 : 150;
         public static string Name(BayWeather weather)
         {
-            switch (weather) { case BayWeather.Cloudy: return "海风多云"; case BayWeather.Rain: return "轻雨潮汐"; case BayWeather.Mist: return "薄雾海湾"; case BayWeather.Sunset: return "金色夕照"; default: return "晴朗海湾"; }
+            switch (weather) { case BayWeather.Cloudy: return "海风多云"; case BayWeather.Rain: return "雷雨潮汐"; case BayWeather.Mist: return "薄雾海湾"; case BayWeather.Sunset: return "金色夕照"; default: return "晴朗海湾"; }
         }
         public static FishKind Favored(BayWeather weather) => weather == BayWeather.Rain || weather == BayWeather.Cloudy ? FishKind.Dart : weather == BayWeather.Mist ? FishKind.Puffer : FishKind.Coral;
         public static float BiteScale(BayWeather weather, FishKind fish) => fish == Favored(weather) ? 0.75f : 1f;

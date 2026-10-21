@@ -15,7 +15,7 @@ namespace BoatAttack.Fishing
         private int _storyConsumedFrame = -1;
         public bool DialogueOpen => Residents != null && Residents.Open;
         public bool StoryBlocksGameplay => HomeChartBlocksGameplay || (HandGames!=null && HandGames.Active) || DialogueOpen || (CoastWorld != null && CoastWorld.MenuOpen) || (Letter != null && Letter.Open) || (Prologue != null && Prologue.Open)
-            || (Home != null && Home.Sleeping) || (Realms != null && (Realms.Transitioning || Realms.ObservingStars)) || _storyConsumedFrame == Time.frameCount;
+            || (Home != null && (Home.Sleeping || Home.Lounging)) || (Realms != null && (Realms.Transitioning || Realms.ObservingStars)) || _storyConsumedFrame == Time.frameCount;
         internal void StoryModalChanged()
         {
             _storyConsumedFrame = Time.frameCount; CancelWorldAction(); LowerFieldTools();
@@ -39,6 +39,7 @@ namespace BoatAttack.Fishing
                 if(!focused || Paused){Home.CancelSleep();return true;}
                 Home.Tick(Time.unscaledDeltaTime);return true;
             }
+            if(Home.Lounging){Home.TickLeisureInput(keyboard,focused,xr);return true;}
             if (Realms.Transitioning) return true;
             if (Letter.Open)
             {

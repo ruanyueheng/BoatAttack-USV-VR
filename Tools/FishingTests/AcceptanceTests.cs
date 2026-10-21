@@ -29,6 +29,15 @@ internal static class AcceptanceTests
         check(Rejects(() => FishingAcceptanceOptions.Parse(new[] { "-fishing-acceptance", "-fishing-acceptance-output", "relative" })), "Acceptance output must be explicit and rooted");
         check(Rejects(() => FishingAcceptanceOptions.Parse(new[] { "-fishing-acceptance", "-fishing-acceptance-smoke", "-fishing-acceptance-capture" })), "Acceptance smoke and screenshot runs are mutually exclusive");
         check(FishingAcceptanceCases.Count == Enum.GetValues(typeof(FishingAcceptanceCase)).Length, "Acceptance catalog covers every case");
+        check((int)FishingAcceptanceCase.CatchNight==79 && (int)FishingAcceptanceCase.HomeStorage==80 && (int)FishingAcceptanceCase.PortalExit==87 && FishingAcceptanceCases.Count==88,"Acceptance: V036 fixtures append without changing existing scenario ordinals");
+        check(!FishingAcceptanceCases.IsV036Case(FishingAcceptanceCase.CatchNight) && FishingAcceptanceCases.IsV036Case(FishingAcceptanceCase.HomeStorage) && FishingAcceptanceCases.IsV036Case(FishingAcceptanceCase.PortalExit) && !FishingAcceptanceCases.IsV036Case((FishingAcceptanceCase)88),"Acceptance: V036 asynchronous setup is bounded to the eight new fixtures");
+        var storage=FishingAcceptanceCases.CreateCareer(FishingAcceptanceCase.HomeStorage);
+        check(storage.Backpack.Count(FieldItem.IslandFruit)==3 && storage.Backpack.Count(FieldItem.Shell)==24 && storage.HomeStorage.Count(FieldItem.Stone)==18 && storage.HomeStorage.Count(FieldItem.Rope)==6,"Acceptance: bidirectional storage capture owns independent real inventory contents");
+        foreach(var value in new[]{FishingAcceptanceCase.WateringCarry,FishingAcceptanceCase.WellRefill,FishingAcceptanceCase.WateringPour})
+        {
+            var water=FishingAcceptanceCases.CreateCareer(value);
+            check(water.Farm.Plot(0).planted && water.Farm.Plot(0).wateredDay<0 && water.Farm.Water==11 && water.Farm.Plot(1).wateredDay==water.Calendar.Day,"Acceptance: watering capture supplies planted dry soil and a partially used saved can: "+value);
+        }
         check(FishingAcceptanceCases.CreateCareer(FishingAcceptanceCase.HomeGarden).Calendar.Hour==10.5f && FishingAcceptanceCases.CreateCareer(FishingAcceptanceCase.HomeGardenNight).Calendar.Hour==22, "Garden day and night captures use the same real location at distinct calendar hours");
         check(FishingAcceptanceCases.IsCatchCase(FishingAcceptanceCase.CatchNight) && FishingAcceptanceCases.CreateCareer(FishingAcceptanceCase.CatchNight).Calendar.Night,"Night catch card uses a real catch fixture at night");
         var last=(FishingAcceptanceCase)(FishingAcceptanceCases.Count-1);

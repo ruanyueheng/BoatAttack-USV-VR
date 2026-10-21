@@ -111,7 +111,6 @@ namespace BoatAttack.Fishing
 
         private void Label(Rect r, string text, int size, Color color, bool bold = false, TextAnchor align = TextAnchor.UpperLeft)
         {
-            if(bold && size>=25){GildedTitle(r,text,size,TitleFill,align);return;}
             _label.fontSize = size;
             _label.font=bold && size>=25?FishingUITheme.Heading:_font;
             // The bundled face is Medium; synthetic bold distorts small Chinese counters.

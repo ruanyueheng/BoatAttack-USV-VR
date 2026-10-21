@@ -1,0 +1,281 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.XR;
+
+namespace BoatAttack.Fishing
+{
+    public sealed partial class FishingFarmWorld
+    {
+        private readonly FishingActionClock _canClock=new FishingActionClock();
+        private readonly List<Mesh> _canMeshes=new List<Mesh>();
+        private FishingCareer _canProfile;
+        private Transform _bucket;
+        private LineRenderer _wellRope,_waterStream;
+        private ParticleSystem _waterDrops;
+        private Material _streamMaterial,_dropMaterial;
+        private FarmWork _canWork;
+        private int _canTarget=-1,_canSlot;
+        private FieldItem _canTool;
+        private Vector3 _canStartActor,_startCanPosition,_startRightPalm,_canLean;
+        private Quaternion _startCanRotation;
+        private bool _canCommit,_canTracked,_restoreCanStance,_ownsCanLean;
+        private float _nextDrop;
+        public static readonly Vector3 CanHandle=new Vector3(-.025f,.120f,.12f);
+        public static readonly Vector3 CanPalm=CanHandle+new Vector3(0,.035f,-.045f);
+        public static readonly Quaternion CanPalmRotation=Quaternion.identity;
+        public bool CarryingCan {get;private set;}
+        public bool Busy=>_canClock.Active || _canClock.ContactPending;
+        public Transform WateringCan=>_can;
+        public Transform WellBucket=>_bucket;
+        public bool WaterStreamVisible=>_waterStream!=null && _waterStream.enabled;
+        public float WorkProgress=>_canClock.Progress;
+        public float CanGripError=>_c==null || _can==null?float.MaxValue:Vector3.Distance(_c.Shore.Character.PalmPosition(false),_can.TransformPoint(CanPalm));
+        public string ActionHint=>( _canWork==FarmWork.Refill?"摇井绳 → 提起水桶 → 灌入水壶":_canWork==FarmWork.Water?"缓缓倾壶浇灌":_canWork==FarmWork.TakeCan?"拿起井边水壶":"将水壶放回木架")+" · "+Mathf.RoundToInt(WorkProgress*100)+"% · Esc 取消";
+
+        private void BuildWateringCan(Transform fixtures)
+        {
+            var dock=new GameObject("井边水壶木架 · 拿起 / 放回").transform;dock.SetParent(Root,false);dock.localPosition=new Vector3(11.7f,.76f,-9.1f);_targets[15]=dock;
+            FishingArt.Shape("Watering can stand",PrimitiveType.Cube,Root,new Vector3(11.7f,.49f,-9.1f),new Vector3(.68f,.08f,.62f),_c.wood,true);
+            foreach(float x in new[]{-.25f,.25f})foreach(float z in new[]{-.22f,.22f})FishingArt.Shape("Can stand leg",PrimitiveType.Cube,Root,new Vector3(11.7f+x,.245f,-9.1f+z),new Vector3(.06f,.49f,.06f),_c.wood,true);
+            _can=Instantiate(Resources.Load<GameObject>("FishingV036/StarlightWateringCanView"),Root,false).transform;_can.name="V036 persistent watering can";
+            _canProfile=_c.Career;DockCan();
+            _bucket=new GameObject("V036 working well bucket").transform;_bucket.SetParent(Root,false);_bucket.localPosition=new Vector3(10.2f,.29f,-8);
+            ExtractWellBucket(fixtures);
+            BuildWellWater();
+            _wellRope=FishingArt.Line("Working well rope",Root,_c.wood,.022f);_wellRope.positionCount=2;
+            _streamMaterial=new Material(Resources.Load<Shader>("FishingSpray")){name="Garden flowing water"};_streamMaterial.SetFloat("_Round",0);
+            _dropMaterial=new Material(_streamMaterial){name="Garden water droplets"};_dropMaterial.SetFloat("_Round",1);
+            _waterStream=FishingArt.Line("Can spout / well bucket water stream",Root,_streamMaterial,.025f);_waterStream.positionCount=12;_waterStream.enabled=false;
+            _waterStream.startColor=new Color(.60f,.88f,1,.8f);_waterStream.endColor=new Color(.82f,.96f,1,.45f);
+            var drops=new GameObject("Garden droplets and soil splashes");drops.transform.SetParent(Root,false);_waterDrops=drops.AddComponent<ParticleSystem>();_waterDrops.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main=_waterDrops.main;main.maxParticles=72;main.startSpeed=0;main.startLifetime=.45f;main.startSize=.025f;main.gravityModifier=.8f;main.simulationSpace=ParticleSystemSimulationSpace.World;
+            var emission=_waterDrops.emission;emission.enabled=false;var shape=_waterDrops.shape;shape.enabled=false;
+            var fade=_waterDrops.colorOverLifetime;fade.enabled=true;var gradient=new Gradient();gradient.SetKeys(new[]{new GradientColorKey(new Color(.65f,.9f,1),0),new GradientColorKey(Color.white,1)},new[]{new GradientAlphaKey(.8f,0),new GradientAlphaKey(0,1)});fade.color=gradient;
+            var renderer=drops.GetComponent<ParticleSystemRenderer>();renderer.sharedMaterial=_dropMaterial;renderer.shadowCastingMode=ShadowCastingMode.Off;renderer.receiveShadows=false;
+            ResetBucket();
+            FishingV019Art.Sign("井边水壶\n拿起 → 水井打水 → 提去浇灌 → 放回",Root,new Vector3(11.7f,1.26f,-9.1f),.012f,new Color(.94f,.86f,.61f));
+        }
+
+        private void ExtractWellBucket(Transform fixtures)
+        {
+            // The V035 well was baked into one mesh; detach its authored bucket instead of leaving a duplicate inside the well.
+            foreach(var filter in fixtures.GetComponentsInChildren<MeshFilter>())
+            {
+                var source=filter.sharedMesh;var vertices=source.vertices;var normals=source.normals;var colors=source.colors;var uv=source.uv;
+                var points=new Vector3[vertices.Length];var bucket=new bool[vertices.Length];var rope=new bool[vertices.Length];
+                for(int i=0;i<vertices.Length;i++)
+                {
+                    var p=points[i]=Root.InverseTransformPoint(filter.transform.TransformPoint(vertices[i]));
+                    bucket[i]=Mathf.Abs(p.x-10.2f)<.36f && Mathf.Abs(p.z+8)<.36f && p.y>.26f && p.y<1.01f;
+                    rope[i]=Mathf.Abs(p.x-10.2f)<.04f && Mathf.Abs(p.z+8)<.04f && p.y>.35f && p.y<1.67f;
+                }
+                var body=Instantiate(source);body.name="Garden fixtures without fixed well bucket";_canMeshes.Add(body);
+                var positions=new List<Vector3>();var ns=new List<Vector3>();var cs=new List<Color>();var us=new List<Vector2>();var remap=new Dictionary<int,int>();var subsets=new List<int>[source.subMeshCount];
+                for(int sub=0;sub<source.subMeshCount;sub++)
+                {
+                    var kept=new List<int>();subsets[sub]=new List<int>();var triangles=source.GetTriangles(sub);
+                    for(int i=0;i<triangles.Length;i+=3)
+                    {
+                        int a=triangles[i],b=triangles[i+1],c=triangles[i+2];
+                        bool moving=bucket[a] && bucket[b] && bucket[c];bool fixedRope=rope[a] && rope[b] && rope[c];
+                        if(!moving && !fixedRope){kept.Add(a);kept.Add(b);kept.Add(c);continue;}
+                        if(!moving)continue;
+                        for(int j=0;j<3;j++)
+                        {
+                            int old=triangles[i+j];if(!remap.TryGetValue(old,out int next))
+                            {
+                                next=positions.Count;remap.Add(old,next);positions.Add(points[old]-_bucket.localPosition);
+                                ns.Add(normals.Length==vertices.Length?Root.InverseTransformDirection(filter.transform.TransformDirection(normals[old])):Vector3.up);
+                                cs.Add(colors.Length==vertices.Length?colors[old]:Color.white);us.Add(uv.Length==vertices.Length?uv[old]:Vector2.zero);
+                            }
+                            subsets[sub].Add(next);
+                        }
+                    }
+                    body.SetTriangles(kept,sub,false);
+                }
+                filter.sharedMesh=body;
+                if(positions.Count==0)continue;
+                var mesh=new Mesh{name="Detached original well bucket"};mesh.SetVertices(positions);mesh.SetNormals(ns);mesh.SetColors(cs);mesh.SetUVs(0,us);mesh.subMeshCount=subsets.Length;
+                for(int sub=0;sub<subsets.Length;sub++)mesh.SetTriangles(subsets[sub],sub,false);mesh.RecalculateBounds();_canMeshes.Add(mesh);
+                var part=new GameObject("Authored cedar bucket",typeof(MeshFilter),typeof(MeshRenderer));part.transform.SetParent(_bucket,false);part.GetComponent<MeshFilter>().sharedMesh=mesh;part.GetComponent<MeshRenderer>().sharedMaterials=filter.GetComponent<Renderer>().sharedMaterials;
+            }
+            if(_bucket.childCount==0)throw new InvalidOperationException("The authored garden well bucket could not be detached for animation.");
+        }
+
+        private bool CanUseWateringCan=>_c.Ashore && !_c.Shore.Swimming && !_c.Shore.Climbing && !_c.Paused && !_c.InventoryOpen && !_c.JournalOpen && !_c.ShopBlocksGameplay && !_c.StoryBlocksGameplay && !_c.HasPendingCatch
+            && _c.Hands.CanPresentTools && !_c.XRSeat.HeadBlocked && (_c.XRNotebook==null || !_c.XRNotebook.BlocksGameplay);
+        private bool BeginCanWork(int id,FarmWork work)
+        {
+            if(!CanUseWateringCan || Busy || Target(id)==null || FishingPrototype.FlatDistance(_c.Shore.Position,Target(id).position)>2.25f)return false;
+            if(work!=FarmWork.TakeCan && !CarryingCan){_c.Notice("水壶就在水井右侧木架上 · 先靠近拿起。",4);return false;}
+            if(work==FarmWork.Water && _c.Career.Farm.Water<=0){_c.Notice("水壶空了 · 提着水壶到水井打水。",4);return false;}
+            bool tracked=XRSettings.isDeviceActive;bool handling=work==FarmWork.TakeCan || work==FarmWork.ReturnCan;
+            if(tracked)
+            {
+                if(!_c.Hands.TryControllerPalm(false,out var palm,out _))return false;
+                var handle=work==FarmWork.TakeCan?_can.TransformPoint(CanPalm):_targets[15].position+Root.rotation*Quaternion.Euler(0,-50,0)*CanPalm;
+                if(handling && Vector3.Distance(palm,handle)>.3f){_c.Notice("将右手靠近井边水壶的提手，再按 A 拿起或放回。",4);return false;}
+            }
+            else if(handling && FishingPrototype.FlatDistance(_c.Shore.Position,Target(id).position)>1.1f){_c.Notice("再走近井边木架一些，伸手拿起或放回水壶。",4);return false;}
+            _canLean=Vector3.zero;
+            if(!tracked && handling)
+            {
+                var dockRotation=Root.rotation*Quaternion.Euler(0,-50,0);
+                if(!_c.CanReachFarmHandle(_targets[15].position+dockRotation*CanPalm,dockRotation*CanPalmRotation,out _canLean))
+                {_c.Notice("再靠近木架一些，让手掌能稳稳握住水壶提手。",4);return false;}
+            }
+            float duration=work==FarmWork.Refill?3.8f:work==FarmWork.Water?2.2f:.9f;
+            if(!_canClock.TryBegin(FishingActionKind.UseTool,"farm:"+id,duration,duration))return false;
+            _canWork=work;_canTarget=id;_canProfile=_c.Career;_canStartActor=_c.Shore.Position;_canSlot=_c.Career.Backpack.Selected;_canTool=_c.Career.Backpack.Equipped;_canTracked=XRSettings.isDeviceActive;
+            _startCanPosition=_can.position;_startCanRotation=_can.rotation;_startRightPalm=_c.Shore.Character.PalmPosition(false);_nextDrop=0;
+            _restoreCanStance=!tracked && handling && !_c.Shore.Crouched;if(_restoreCanStance)_c.Shore.SetCrouch(true);
+            _ownsCanLean=!tracked && handling;
+            _c.Shore.ResetMoveInput();return true;
+        }
+        private void TickCanWork()
+        {
+            if(_canProfile!=_c.Career || (CarryingCan && (!_c.Ashore || _c.Shore.Swimming || _c.Shore.Climbing || _c.Home.Sleeping || _c.Home.Lounging)))
+            {CancelWork();CarryingCan=false;_canProfile=_c.Career;DockCan();}
+            if(!Busy)return;
+            if(!CanUseWateringCan || _canTracked!=XRSettings.isDeviceActive || _c.Career.Backpack.Selected!=_canSlot || _c.Career.Backpack.Equipped!=_canTool
+                || Vector3.Distance(_canStartActor,_c.Shore.Position)>.4f || Work(_canTarget)!=_canWork || (_canTracked && !_c.Hands.TryControllerPalm(false,out _,out _)))
+            {CancelWork();return;}
+            if(_ownsCanLean && !_c.Shore.Character.IsStanceSettled(true,true))return;
+            if(_c.Acceptance!=null && _c.Acceptance.FreezeFarmAnimation)return;
+            _canClock.Tick(Time.deltaTime);
+            if(_ownsCanLean)_c.Shore.Character.InteractionLean=_canLean*Ease(0,.20f,WorkProgress);
+            if(!_canClock.ContactPending || !_canClock.TryConsumeContact(_canClock.ActionId))return;
+            bool ok;_canCommit=true;
+            try
+            {
+                if(_canWork==FarmWork.TakeCan){CarryingCan=true;ok=true;_c.Notice("已拿起水壶 · 在水井打水，再提到菜畦浇灌。",5);}
+                else if(_canWork==FarmWork.ReturnCan){CarryingCan=false;ok=true;DockCan();_c.Notice("水壶已放回井边木架 · 剩余井水会保留。",4);}
+                else ok=CommitAt(_canTarget,_canWork);
+            }
+            finally{_canCommit=false;}
+            _c.ReportFarmContact(_canClock.ActionId,ok);_canClock.Cancel();ResetBucket();_waterStream.enabled=false;RestoreCanStance();
+        }
+        public void CancelWork()
+        {
+            _canClock.Cancel();_canCommit=false;
+            RestoreCanStance();
+            if(_waterStream!=null)_waterStream.enabled=false;
+            if(_waterDrops!=null)_waterDrops.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);
+            ResetBucket();if(!CarryingCan && _can!=null)DockCan();
+        }
+        private void RestoreCanStance()
+        {
+            if(_ownsCanLean){_ownsCanLean=false;if(_c!=null && _c.Shore!=null && _c.Shore.Character!=null)_c.Shore.Character.InteractionLean=Vector3.zero;}
+            if(_restoreCanStance){_restoreCanStance=false;_c?.Shore?.SetCrouch(false);}
+        }
+        private void DockCan()=>_can.SetPositionAndRotation(_targets[15].position,Root.rotation*Quaternion.Euler(0,-50,0));
+        private void ResetBucket()
+        {
+            if(_bucket==null || _wellRope==null)return;
+            _wellRope.positionCount=2;
+            _bucket.localPosition=new Vector3(10.2f,WellWaterLevel-.80f,-8);_bucket.localRotation=Quaternion.identity;PresentRope();
+        }
+        private void PresentRope(){_wellRope.SetPosition(0,_targets[12].position+Vector3.up*1.65f);_wellRope.SetPosition(_wellRope.positionCount-1,_bucket.TransformPoint(Vector3.up*.65f));}
+        private static float Ease(float from,float to,float p)=>Mathf.SmoothStep(0,1,Mathf.InverseLerp(from,to,p));
+        public void ApplyPresentation()
+        {
+            if(_c==null || _can==null)return;
+            PresentSoilTool();
+            UpdateCanWater();
+            if(!CarryingCan && !Busy){DockCan();return;}
+            if(!_c.Hands.CanPresentTools)return;
+            bool tracked=XRSettings.isDeviceActive;float p=WorkProgress;
+            _c.Hands.GetToolFrame(out var origin,out _);var frame=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0);
+            var rotation=frame*Quaternion.Euler(0,-45,0);var palm=origin+frame*new Vector3(_c.Shore.Character.HandSide(false)*.14f,-.14f,.42f);
+            if(!tracked && Busy && _canWork==FarmWork.Refill)
+            {
+                float lower=Ease(.04f,.25f,p)*(1-Ease(.80f,1,p));
+                palm=Vector3.Lerp(palm,new Vector3(palm.x,_targets[12].position.y+.82f,palm.z)-frame*Vector3.forward*.20f,lower);
+            }
+            if(Busy && _canWork==FarmWork.Water)
+            {
+                float tilt=Ease(.08f,.28f,p)*(1-Ease(.76f,1,p));rotation*=Quaternion.Euler(0,0,-50*tilt);
+                palm+=frame*new Vector3(Mathf.Sin(p*Mathf.PI*3)*.035f,0,.055f)*tilt;
+            }
+            if(tracked)
+            {
+                if(!_c.Hands.TryControllerPalm(false,out palm,out var palmRotation))return;
+                rotation=palmRotation*Quaternion.Inverse(CanPalmRotation);
+            }
+            var position=palm-rotation*CanPalm;
+            if(Busy && _canWork==FarmWork.TakeCan){float take=Ease(.24f,1,p);position=Vector3.Lerp(_startCanPosition,position,take);rotation=Quaternion.Slerp(_startCanRotation,rotation,take);}
+            if(Busy && _canWork==FarmWork.ReturnCan){float put=Ease(.05f,.82f,p);position=Vector3.Lerp(position,_targets[15].position,put);rotation=Quaternion.Slerp(rotation,Root.rotation*Quaternion.Euler(0,-50,0),put);}
+            _can.SetPositionAndRotation(position,rotation);
+            bool otherAction=_c.WorldActionBusy && !Busy;
+            if(!tracked && !otherAction && !(Busy && (_canWork==FarmWork.TakeCan || _canWork==FarmWork.ReturnCan)))_c.Hands.FitToolPose(_can,Vector3.zero,CanPalm,Quaternion.identity,CanPalmRotation,false,true);
+            if(!otherAction)
+            {
+                if(!tracked && Busy && _canWork==FarmWork.TakeCan && p<.24f)
+                    _c.Hands.Right.SetPose(Vector3.Lerp(_startRightPalm,_can.TransformPoint(CanPalm),Ease(0,.24f,p)),Quaternion.Slerp(frame,_can.rotation*CanPalmRotation,Ease(0,.24f,p)),Mathf.Lerp(.15f,.75f,Ease(0,.24f,p)));
+                else
+                {
+                    _c.Hands.SetToolTarget(false,_can,CanPalm,CanPalmRotation,.88f,fingers:new FishingFingerPose(.80f,.85f,.88f,.92f,.76f));
+                    _c.Hands.Right.SetGripSurface(_can.TransformPoint(CanHandle+Vector3.left*.065f),_can.TransformPoint(CanHandle+Vector3.right*.085f),.010f);
+                }
+                _c.Hands.Right.SetForearmRoll(.65f);
+                if(!tracked)_c.Hands.RestHand(true);
+            }
+            _waterStream.enabled=false;
+            if(!Busy || _c.Paused)return;
+            if(_canWork==FarmWork.Refill)PresentRefill(p,tracked,frame);
+            if(_canWork==FarmWork.Water && p>.25f && p<.79f)
+            {
+                var landing=_targets[_canTarget].position+new Vector3(Mathf.Sin(p*11)*.30f,.13f,Mathf.Cos(p*11)*.22f);
+                PresentStream(_can.TransformPoint(new Vector3(.33f,-.015f,.25f)),landing,true);
+            }
+        }
+        private void PresentRefill(float p,bool tracked,Quaternion frame)
+        {
+            var low=_targets[12].position+Vector3.up*(WellWaterLevel-.80f);var rest=low;var raised=_targets[12].position+Vector3.up*1.05f;
+            var position=p<.18f?Vector3.Lerp(rest,low,Ease(0,.18f,p)):p<.25f?low:p<.48f?Vector3.Lerp(low,raised,Ease(.25f,.48f,p)):Vector3.Lerp(raised,rest,Ease(.78f,1,p));
+            float pour=Ease(.49f,.58f,p)*(1-Ease(.71f,.80f,p));var mouth=_can.TransformPoint(new Vector3(0,.005f,.12f));
+            var direction=Vector3.ProjectOnPlane(mouth-position,Vector3.up);var heading=direction.sqrMagnitude>.001f?Quaternion.LookRotation(direction):Quaternion.identity;
+            var lip=new Vector3(0,.32f,.26f);var rotation=heading*Quaternion.Euler(42*pour,0,0);
+            // Anchor the pour by its rim so the tilted bucket and tall handle stay away from the player's face.
+            position=Vector3.Lerp(position,mouth+Vector3.up*.22f-heading*Vector3.forward*.35f-rotation*lip,pour);
+            _bucket.SetPositionAndRotation(position,rotation);PresentRope();
+            if(p>.17f && p<.27f && Time.time>=_nextDrop)
+            {
+                _nextDrop=Time.time+.1f;
+                _waterDrops.Emit(new ParticleSystem.EmitParams{position=WellWater.position+Vector3.right*.24f,startLifetime=.35f,startSize=.022f,velocity=new Vector3(.1f,.55f,0),startColor=new Color(.65f,.9f,1,.8f)},3);
+            }
+            if(!tracked)
+            {
+                var shoulder=_c.Shore.Character.ShoulderPosition(true);var desired=_targets[12].position+frame*new Vector3(-.15f,1.10f,-.65f)+Vector3.up*(Mathf.Sin(p*32)*.065f);
+                var reachable=shoulder+Vector3.ClampMagnitude(desired-shoulder,_c.Shore.Character.ArmReach(true)-.04f);
+                var handRotation=frame*Quaternion.LookRotation(Vector3.right,Vector3.back);
+                var ropeContact=reachable+handRotation*new Vector3(0,-.025f,.055f);
+                _c.Hands.Left.SetPose(reachable,handRotation,.85f);
+                _c.Hands.Left.SetFingers(new FishingFingerPose(.76f,.83f,.87f,.91f,.75f));
+                _c.Hands.Left.SetGripSurface(ropeContact-Vector3.up*.07f,ropeContact+Vector3.up*.07f,.011f);
+                _c.Hands.Left.SetForearmRoll(.6f);
+                // The flexible hauling rope passes through the grasp instead of leaving the hand closing on air.
+                _wellRope.positionCount=3;_wellRope.SetPosition(1,ropeContact);PresentRope();
+            }
+            if(p>.56f && p<.73f)PresentStream(_bucket.TransformPoint(lip),mouth,false);
+        }
+        private void PresentStream(Vector3 from,Vector3 to,bool soil)
+        {
+            _waterStream.enabled=true;
+            for(int i=0;i<12;i++){float u=i/11f;_waterStream.SetPosition(i,Vector3.Lerp(from,to,u)+Vector3.up*(Mathf.Sin(u*Mathf.PI)*.035f));}
+            if(Time.time<_nextDrop)return;_nextDrop=Time.time+(_c.Weather.ReducedEffects?.10f:.045f);
+            var velocity=(to-from)/.42f+Vector3.up*.5f;
+            _waterDrops.Emit(new ParticleSystem.EmitParams{position=from,startLifetime=.42f,startSize=.025f,velocity=velocity,startColor=new Color(.65f,.9f,1,.9f)},_c.Weather.ReducedEffects?1:3);
+            if(soil)_waterDrops.Emit(new ParticleSystem.EmitParams{position=to,startLifetime=.22f,startSize=.035f,velocity=new Vector3(Mathf.Sin(Time.time*31)*.28f,.45f,Mathf.Cos(Time.time*23)*.28f),startColor=new Color(.76f,.92f,1,.8f)},2);
+        }
+        private void DestroyCanPresentation()
+        {
+            foreach(var mesh in _canMeshes)if(mesh!=null)Destroy(mesh);
+            if(_streamMaterial!=null)Destroy(_streamMaterial);if(_dropMaterial!=null)Destroy(_dropMaterial);
+            if(_wellWaterMaterial!=null)Destroy(_wellWaterMaterial);
+        }
+        private void OnDisable()=>CancelWork();
+    }
+}

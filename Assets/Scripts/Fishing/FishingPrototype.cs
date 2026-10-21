@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.35.0";
+        public const string Version = "0.37.0";
         public FishingHandGames HandGames { get; private set; }
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
@@ -422,7 +422,7 @@ namespace BoatAttack.Fishing
         {
             if(!_initialized)return;
             XRSeat.Apply();Shore.SyncRider();Home.PresentSleepPose();Shore.ApplyTraversalPose();View.ApplyView();Hands.Apply();FieldWorld.ApplyHeldTool();XRNotebook.SampleTool();ApplyWorldActionPose();CatchRig.Apply(deltaTime);
-            RifleHunting.Present();HandGames.Present();Realms.PresentObservation();
+            RifleHunting.Present();HandGames.Present();Realms.PresentObservation();Farm.ApplyPresentation();Home.ApplyOrchardPresentation();
             // 全部工具和掌心目标落位后才解同源骨架；随后只读取竿尖画线，不再次采样。
             Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right,UnityEngine.XR.XRSettings.isDeviceActive);
             if(Acceptance!=null && Acceptance.FreezeScenario && (Acceptance.CurrentCase==FishingAcceptanceCase.ArchIslet || Acceptance.CurrentCase==FishingAcceptanceCase.FireflyIslet))
@@ -669,6 +669,7 @@ namespace BoatAttack.Fishing
         }
         public void ReturnToHarbor()
         {
+            WaterRoute?.CancelPlanning();
             Prologue?.Suspend();Home?.CancelSleep();
             Letter?.Close();Residents?.Close();Realms?.Abort();
             CancelWorldAction();
@@ -685,7 +686,7 @@ namespace BoatAttack.Fishing
             if(!Automated)throw new InvalidOperationException("Automation-only helper.");
             for(int i=0;i<3 && Bait!=bait;i++)CycleBait();
         }
-        private void Teleport(Vector3 p,Quaternion q){var rb=Player.engine.RB;rb.velocity=rb.angularVelocity=Vector3.zero;Player.transform.SetPositionAndRotation(p,q);rb.position=p;rb.rotation=q;Physics.SyncTransforms();}
+        private void Teleport(Vector3 p,Quaternion q){WaterRoute?.CancelPlanning();var rb=Player.engine.RB;rb.velocity=rb.angularVelocity=Vector3.zero;Player.transform.SetPositionAndRotation(p,q);rb.position=p;rb.rotation=q;Physics.SyncTransforms();}
         private void UpdateNearestSpot()
         {
             if(Anchored)return;SpotDistance=float.MaxValue;
