@@ -48,7 +48,7 @@ namespace BoatAttack.EditorTools
             var climate = c.Weather.Climate;
             var climateState = new Dictionary<FieldInfo, object>();
             foreach (var field in typeof(BayClimate).GetFields(Fields)) climateState.Add(field, field.GetValue(climate));
-            AudioSource wind = null; float windBase = 0;
+            AudioSource wind = null, thunder = null; float windBase = 0;
             string playerPath = Path.Combine(Application.persistentDataPath, "boatattack-fishing-v13.json");
             byte[] player = Read(playerPath), backup = Read(playerPath + ".bak");
             string evidence = Path.GetFullPath(Path.Combine("Logs", "AudioMix", Guid.NewGuid().ToString("N")));
@@ -62,10 +62,12 @@ namespace BoatAttack.EditorTools
                 c.SetSetting("Master", .4f); c.SetSetting("Music", .7f); c.SetSetting("Ambient", .45f); c.SetSetting("Effects", .6f);
                 for (int frame = 0; frame < 3; frame++) yield return null;
                 wind = Field(c.Weather, "_audio") as AudioSource;
-                Check(wind != null && Entry(c, wind) != null && c.ActionAudio != null && c.RegionalMusic != null && c.RegionalMusic.Ready,
-                    "The real weather, action and regional-music sources are initialized and registered");
+                thunder = Field(c.Weather, "_thunder") as AudioSource;
+                Check(wind != null && Entry(c, wind) != null && thunder != null && Entry(c, thunder) != null
+                    && c.ActionAudio != null && c.RegionalMusic != null && c.RegionalMusic.Ready,
+                    "The real wind, thunder, action and regional-music sources are initialized and registered");
                 windBase = Base(c, wind);
-                ValidateEnvironmentSources(c, wind);
+                ValidateEnvironmentSources(c, wind, thunder);
                 double deadline = EditorApplication.timeSinceStartup + 16;
                 while ((!RegionalAudible(c) || c.RegionalMusic.Transitioning) && EditorApplication.timeSinceStartup < deadline) yield return null;
                 Check(RegionalAudible(c), "An actual regional music voice is playing before the channel isolation checks");
@@ -83,11 +85,13 @@ namespace BoatAttack.EditorTools
                 c.ActionAudio.ItemSource.Stop();
 
                 c.SetSetting("Music", .7f); c.SetSetting("Effects", 0); c.ApplyAudioSettings();
-                Check(CategorySilent(c, FishingAudioCategory.Effects) && RegionalAudible(c) && wind.volume > 0,
-                    "Effects zero silences action feedback without muting BGM or environment gain");
+                Check(CategorySilent(c, FishingAudioCategory.Effects) && RegionalAudible(c) && wind.volume > 0 && thunder.volume > 0,
+                    "Effects zero silences action feedback without muting BGM, wind or the actual thunder source's environment gain");
                 c.SetSetting("Effects", .6f); c.SetSetting("Ambient", 0); c.ApplyAudioSettings();
                 Check(CategorySilent(c, FishingAudioCategory.Ambient) && c.ActionAudio.ItemSource.volume > 0 && RegionalAudible(c),
-                    "Ambient zero mutes the actual engine, water, coast and wind sources independently of effects and BGM");
+                    "Ambient zero mutes the actual engine, water, coast, wind and thunder sources independently of effects and BGM");
+                Check(thunder.volume == 0 && !thunder.mute && Near(Base(c, thunder), .12f),
+                    "The real thunder source is silent through Ambient zero, not through an unrelated mute flag or disabled storm mechanism");
                 AssertRegisteredMix(c);
                 c.SetSetting("Ambient", .45f); c.ToggleQuiet();
                 bool allMuted = true;
@@ -98,7 +102,7 @@ namespace BoatAttack.EditorTools
                 Check(Near(c.MusicVolume, .7f) && Near(c.AmbientVolume, .45f) && Near(c.EffectsVolume, .6f),
                     "Unmuting preserves all three independently selected volume levels");
 
-                foreach (var frame in ValidateWindTransition(c, wind)) yield return frame;
+                foreach (var frame in ValidateWindTransition(c, wind, thunder)) yield return frame;
                 ValidateNotebookAudio(c);
 
                 c.SetSetting("Master", .47f); c.SetSetting("Music", .37f); c.SetSetting("Ambient", .23f); c.SetSetting("Effects", .61f);
@@ -171,7 +175,7 @@ namespace BoatAttack.EditorTools
             }
         }
 
-        private static void ValidateEnvironmentSources(FishingPrototype c, AudioSource wind)
+        private static void ValidateEnvironmentSources(FishingPrototype c, AudioSource wind, AudioSource thunder)
         {
             int engines = 0, water = 0, coast = 0;
             var seen = new HashSet<AudioSource>();
@@ -193,6 +197,9 @@ namespace BoatAttack.EditorTools
             Check(engines > 0 && water > 0, "Real boat engine and hull-water sources are classified as reduced Ambient loops");
             Check((FishingAudioCategory)Field(Entry(c, wind), "Category") == FishingAudioCategory.Ambient,
                 "The real dynamic weather source shares the Ambient route with the engine and coast");
+            Check((FishingAudioCategory)Field(Entry(c, thunder), "Category") == FishingAudioCategory.Ambient
+                && thunder.clip != null && thunder.clip.name == "Original distant sea thunder" && Near(Base(c, thunder), .12f),
+                "The upstream storm's actual thunder clip uses the independent Ambient route at a gentle 0.12 base gain");
             Debug.Log("[AUDIO-MIX] SOURCE INVENTORY: engine=" + engines + ", water=" + water + ", authored coast loops=" + coast);
             if (coast == 0) Debug.Log("[AUDIO-MIX] SCOPE: No named authored coast loop is instantiated in this scene; engine/water/wind checks still execute.");
         }
@@ -205,7 +212,7 @@ namespace BoatAttack.EditorTools
             Check(Near(Base(c, source), expected) && Base(c, source) <= maximum + .0001f,
                 "Environment gain follows its quieter authored-volume scale and cap: " + source.name + " base=" + Base(c, source));
         }
-        private static IEnumerable ValidateWindTransition(FishingPrototype c, AudioSource wind)
+        private static IEnumerable ValidateWindTransition(FishingPrototype c, AudioSource wind, AudioSource thunder)
         {
             var climate = c.Weather.Climate;
             while (climate.Blend < 1) climate.Tick(.25f, false);
@@ -232,6 +239,8 @@ namespace BoatAttack.EditorTools
                     "Dynamic rain gain stays bounded and follows only Ambient during its actual component update: " + sample);
                 if (sample >= 6 && sample < 9) Check(wind.volume == 0 && CategorySilent(c, FishingAudioCategory.Ambient),
                     "Rain intensity changes cannot bypass the muted environment route: " + sample);
+                if (sample >= 6 && sample < 9) Check(thunder.volume == 0,
+                    "The real thunder source also stays silent while the actual rain blend changes under Ambient zero: " + sample);
                 previous = current;
             }
             Check(maximum > baseline + .04f && maximum <= .0752f, "Fully blended rain reaches its quieter gain cap without overshooting it");
@@ -245,6 +254,12 @@ namespace BoatAttack.EditorTools
             {
                 c.SetSetting("Master", .5f); c.SetSetting("Music", .6f); c.SetSetting("Ambient", .4f); c.SetSetting("Effects", .7f);
                 page.SetValue(notebook, 18); refresh.Invoke(notebook, null);
+                Check(((Text)Field(notebook, "_status")).text.Contains("家园储物箱") && ((Text)Field(notebook, "_status")).text.Contains("存入"),
+                    "XR page 18 remains the upstream storage-deposit page rather than being replaced by audio controls");
+                page.SetValue(notebook, 19); refresh.Invoke(notebook, null);
+                Check(((Text)Field(notebook, "_status")).text.Contains("家园储物箱") && ((Text)Field(notebook, "_status")).text.Contains("取出"),
+                    "XR page 19 remains the upstream storage-withdraw page");
+                page.SetValue(notebook, 20); refresh.Invoke(notebook, null);
                 var labels = (Text[])Field(notebook, "_labels"); var actions = (Action[])Field(notebook, "_actions");
                 Check(labels[2].text.Contains("BGM") && labels[4].text.Contains("环境") && labels[6].text.Contains("音效"),
                     "The actual built XR audio page exposes separate music, environment and effects controls");

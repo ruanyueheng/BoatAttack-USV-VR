@@ -23,7 +23,6 @@ namespace BoatAttack.Fishing
         }
         private void WorldLabel(Rect r,string text,int size,Color ink,bool heading=false,TextAnchor align=TextAnchor.UpperLeft,bool onPaper=false)
         {
-            if(heading && size>=18){GildedTitle(r,text,size,ink==Danger?Danger:TitleFill,align);return;}
             if(onPaper)
             {
                 ink=ink==Danger?Danger:ink==Mint?FishingUITheme.Blend(new Color(.16f,.34f,.24f),new Color(.65f,.86f,.72f))
@@ -34,7 +33,7 @@ namespace BoatAttack.Fishing
                 ink=ink==Gold?AmberInk:ink==Mint?new Color(.70f,.94f,.83f):ink==Color.white || ink==Muted || ink==Faint?CreamInk:ink;
                 DisplayText(new Rect(r.x+1,r.y+1,r.width,r.height),text,size,new Color(.015f,.035f,.045f,.95f),false,align);
             }
-            DisplayText(r,text,size,ink,false,align);
+            DisplayText(r,text,size,ink,heading && size>=30 && !(Controller.MenuControls || Controller.Paused),align);
         }
         private void WorldLabel(float x,float y,float width,float height,string text,int size,Color ink,bool heading=false,bool onPaper=false)
             =>WorldLabel(new Rect(x,y,width,height),text,size,ink,heading,TextAnchor.UpperLeft,onPaper);
@@ -46,8 +45,16 @@ namespace BoatAttack.Fishing
         private bool SeaButton(Rect r,string text,bool primary=false,bool enabled=true,int size=20)
         {
             bool hover=enabled && r.Contains(Event.current.mousePosition);
-            if(primary || hover)Fill(r.x,r.yMax-3,r.width,1,AmberInk);
-            WorldLabel(new Rect(r.x+4,r.y,r.width-8,r.height),text,size,!enabled?new Color(.52f,.58f,.59f):primary || hover?AmberInk:CreamInk,enabled && size>=24,TextAnchor.MiddleLeft,onPaper:Controller.StartMenuOpen || Controller.Paused);
+            bool paper=(Controller.StartMenuOpen || Controller.Paused) && !Controller.JournalOpen && !Controller.SaveMenuOpen;
+            if(primary || hover)
+            {
+                Rounded(r,paper?FishingUITheme.Selected*new Color(1,1,1,.60f):new Color(.34f,.47f,.43f,.30f),3);
+                Fill(r.x+12,r.yMax-3,r.width-24,1,paper?Gold:AmberInk);
+                GiltStar(new Vector2(r.x+12,r.center.y),3,paper?Gold:AmberInk);
+            }
+            float previousFade=_fade;if(!enabled)_fade*=.45f;
+            WorldLabel(new Rect(r.x+24,r.y,r.width-30,r.height),text,size,!enabled?new Color(.52f,.58f,.59f):primary || hover?AmberInk:CreamInk,enabled && size>=24,TextAnchor.MiddleLeft,onPaper:paper);
+            _fade=previousFade;
             return GUI.Button(r,GUIContent.none,GUIStyle.none) && enabled;
         }
         private void DrawStartMenu()
@@ -59,18 +66,19 @@ namespace BoatAttack.Fishing
                 var pixels=new Color[128];for(int i=0;i<pixels.Length;i++)pixels[i]=new Color(1,1,1,.94f*(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.70f,1,i/127f))));
                 _titleVeil.SetPixels(pixels);_titleVeil.Apply(false,true);
             }
-            var veilColor=GUI.color;GUI.color=Faded(FishingUITheme.Paper);GUI.DrawTexture(new Rect(full.x,0,680,_height),_titleVeil,ScaleMode.StretchToFill,true);GUI.color=veilColor;
+            var veilColor=GUI.color;GUI.color=Faded(FishingUITheme.Blend(new Color(1,.94f,.81f),new Color(.24f,.20f,.27f)));GUI.DrawTexture(new Rect(full.x,0,980-full.x,_height),_titleVeil,ScaleMode.StretchToFill,true);GUI.color=veilColor;
             float top=(_height-740)*.5f;
             if(c.TitleVoyage.Sailing)
             {
                 Fill(full.x,0,full.width,_height,new Color(.015f,.03f,.045f,c.TitleVoyage.Fade));
-                WorldLabel(new Rect(100,_height-120,900,40),"风已起，向着下一座灯塔。",24,CreamInk,true,onPaper:true);return;
+                WorldLabel(new Rect(100,_height-120,900,40),"风已起，向着下一座灯塔。",24,CreamInk,true);return;
             }
             if(c.SaveMenuOpen){DrawSaveSlots();return;}
             if(c.MenuControls){DrawMenuControls(new Rect(380,top+30,1100,690));return;}
+            StarlightTrail(new Vector2(510,top+64),new Vector2(740,top+116),new Color(.71f,.50f,.22f,.58f));
             WorldLabel(new Rect(116,top+84,540,30),"T I D E B O U N D   /   回 潮 海",17,AmberInk,onPaper:true);
-            WorldLabel(new Rect(108,top+130,660,116),"潮汐回响",82,CreamInk,true,onPaper:true);
-            Fill(120,top+258,62,2,AmberInk);
+            GildedTitle(new Rect(108,top+130,660,116),"潮汐回响",82,TitleFill);
+            QuietRule(120,top+258,572);
             WorldLabel(new Rect(120,top+284,530,60),"循着灯火，驶向海风寄来的远方。",24,CreamInk,true,onPaper:true);
             if(SeaButton(new Rect(120,top+376,310,52),"继续游戏    →",true,c.CanContinue,28))c.ContinueFromMenu();
             WorldLabel(new Rect(120,top+428,500,18),c.CanContinue?"恢复本次航程，不读档、不重新开局":"暂无本次航程 · 请新建或读取存档",13,CreamInk,onPaper:true);
@@ -79,9 +87,9 @@ namespace BoatAttack.Fishing
             if(SeaButton(new Rect(452,top+508,278,48),"手动保存",false,c.CanContinue,23))c.OpenSaveMenu("save");
             if(SeaButton(new Rect(120,top+570,278,48),"设置 / 声音混音",false,true,26)){SettingsTab=2;c.MenuControls=true;}
             if(SeaButton(new Rect(120,top+632,278,48),"退出游戏",false,true,26))Application.Quit();
-            if(c.SaveMenuMessage.Length>0 || c.SaveWarning.Length>0)WorldLabel(new Rect(452,top+570,660,80),c.SaveWarning.Length>0?c.SaveWarning:c.SaveMenuMessage,17,AmberInk,onPaper:true);
+            if(c.SaveMenuMessage.Length>0 || c.SaveWarning.Length>0)WorldLabel(new Rect(452,top+570,266,101),c.SaveWarning.Length>0?c.SaveWarning:c.SaveMenuMessage,15,AmberInk,onPaper:true);
             KeyCap(new Rect(120,_height-56,62,30),"Enter");WorldLabel(new Rect(196,_height-54,800,30),"继续 / 新建  ·  F11 显示模式  ·  自动与手动存档独立",15,CreamInk,onPaper:true);
-            WorldLabel(new Rect(1190,_height-56,290,25),"第 35 版  /  v"+FishingPrototype.Version,14,AmberInk,false,TextAnchor.UpperRight,onPaper:true);
+            WorldLabel(new Rect(1190,_height-56,290,25),"第 37 版  /  v"+FishingPrototype.Version,14,AmberInk,false,TextAnchor.UpperRight);
         }
         private void KeyCap(Rect r,string key)
         {
@@ -98,10 +106,11 @@ namespace BoatAttack.Fishing
         {
             WorldLabel(new Rect(x,y,220,35),text,23,CreamInk,onPaper:true);
             var track=new Rect(x+248,y+13,440,24);
-            Fill(track.x,track.y+3,track.width,1,new Color(.9f,.83f,.68f,.45f));
+            Rounded(new Rect(track.x,track.y+1,track.width,6),FishingUITheme.Disabled,3);
             float next=InteractiveSettingValue(track,key,value,min,max);
-            float amount=Mathf.InverseLerp(min,max,next);Fill(track.x,track.y+3,track.width*amount,2,AmberInk);
-            Disc(new Vector2(track.x+track.width*amount,track.y+4),7,AmberInk);
+            float amount=Mathf.InverseLerp(min,max,next);Rounded(new Rect(track.x,track.y+1,track.width*amount,6),FishingUITheme.Sage,3);
+            Disc(new Vector2(track.x+track.width*amount,track.y+4),9,Gold);
+            Disc(new Vector2(track.x+track.width*amount,track.y+4),5,FishingUITheme.Light);
             string number=key=="FOV"?next.ToString("0")+"°":key=="Sensitivity"?next.ToString("0.00")+"×":(next*100).ToString("0")+"%";
             WorldLabel(new Rect(x+720,y,110,34),number,18,AmberInk,onPaper:true);
             if(Mathf.Abs(next-value)>.0001f)Controller.SetSetting(key,next);
@@ -110,12 +119,14 @@ namespace BoatAttack.Fishing
         private void DrawMenuControls(Rect r)
         {
             var c=Controller;
-            Fill(-_offset/_scale,0,Screen.width/_scale,_height,FishingUITheme.Paper*new Color(1,1,1,.96f));
-            WorldLabel(new Rect(116,r.y+26,250,60),"潮汐回响",40,CreamInk,true,onPaper:true);
-            WorldLabel(new Rect(120,r.y+140,220,40),"设 置",30,AmberInk,true,onPaper:true);
-            Fill(r.x,r.y+36,r.width,1,new Color(.83f,.68f,.43f,.6f));
+            DreamSettingsPaper(new Rect(-_offset/_scale,0,Screen.width/_scale,_height));
+            WorldLabel(new Rect(132,r.y+88,220,60),"潮汐回响",37,CreamInk,true,onPaper:true);
+            WorldLabel(new Rect(136,r.y+158,205,40),"设 置",30,AmberInk,true,onPaper:true);
+            WorldLabel(new Rect(131,r.y+255,202,100),"把风声调轻一些，\n把远方看得清一些。",19,CreamInk,false,TextAnchor.UpperCenter,onPaper:true);
+            Fill(348,r.y+50,1,r.height-120,Hairline);
+            QuietRule(r.x,r.y+36,r.width-36);
             string[] tabs={"操作","画面","声音混音"};
-            for(int i=0;i<3;i++)if(SeaButton(new Rect(r.x+i*170,r.y+58,130,50),tabs[i],SettingsTab==i,true,26))SettingsTab=i;
+            for(int i=0;i<3;i++)if(SeaButton(new Rect(r.x+i*170,r.y+58,150,50),tabs[i],SettingsTab==i,true,26))SettingsTab=i;
             float x=r.x,y=r.y+152;
             if(SettingsTab==0)
             {

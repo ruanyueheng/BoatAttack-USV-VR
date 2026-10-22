@@ -12,6 +12,7 @@ namespace BoatAttack.Fishing
         {
             if(Career==null || ShopBlocksGameplay || StoryBlocksGameplay || HasPendingCatch || WorldActionBusy
                 || (Paused && !InventoryOpen) || (!CanChangeBait && Anchored) || Shore.Swimming || Shore.Climbing)return false;
+            if(Farm!=null && Farm.CarryingCan){Notice("先将水壶放回井边木架，再腾出双手检视装备。",4);return false;}
             var stack=Career.Backpack.At(slot);if(stack.count<=0)return false;
             if(InventoryOpen)ToggleInventory();
             bool newInspection=!InspectingItem || InspectedItem!=stack.item;

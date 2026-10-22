@@ -223,7 +223,9 @@ namespace BoatAttack.Fishing
     public sealed class FishingSaveData
     {
         public List<HuntedAnimalData> huntedAnimals=new List<HuntedAnimalData>();
-        public int version = 14;
+        public int version = 15;
+        public List<FieldStack> homeStorage;
+        public int[] homeFruitDays;
         public FarmData farm = new FishingFarm().Snapshot();
         public FishingBarbecueData barbecue = new FishingBarbecueData();
         public bool prologueSeen;
@@ -478,6 +480,7 @@ namespace BoatAttack.Fishing
                 engineLevel = EngineLevel, rudderLevel = RudderLevel, cabinLevel = CabinLevel, adventure = Adventure.Snapshot(),
                 hasPendingCatch = HasPendingCatch, pendingCatch = _pending?.Copy(), releasedCatches = ReleasedCatches, orderMarked = OrderMarked,
                 workshop = Workshop.Snapshot(), backpack = Backpack.Snapshot(), selectedSlot = Backpack.Selected, collectedPickupMask = Backpack.CollectedMask, landAnimalMask = Backpack.AnimalMask,
+                homeStorage=HomeStorage.Snapshot(),homeFruitDays=(int[])_homeFruitDays.Clone(),
                 expeditionFacts = Expedition.Facts,
                 shoreTaskMask = ShoreTaskMask, shoreRewardMask = ShoreRewardMask,
                 coins = Coins, rodLevel = LineLevel, reelLevel = ReelLevel, holdLevel = HoldLevel,
@@ -493,7 +496,7 @@ namespace BoatAttack.Fishing
         public static bool TryRestore(FishingSaveData data, out FishingCareer career)
         {
             career = null;
-            if (data == null || data.version < 1 || data.version > 14 || (data.version < 12 && data.prologueSeen)) return false;
+            if (data == null || data.version < 1 || data.version > 15 || (data.version < 12 && data.prologueSeen)) return false;
             if(data.version<14 && !FishingFarm.Pristine(data.farm))return false;
             if (data.version < 11 && data.lore != null && (data.lore.residents != 0 || data.lore.shrines != 0 || data.lore.finale)) return false;
             if (data.engineLevel < 0 || data.engineLevel > MaxLevel || data.rudderLevel < 0 || data.rudderLevel > MaxLevel
@@ -608,6 +611,7 @@ namespace BoatAttack.Fishing
             }
             else result.Farm=new FishingFarm(result.Calendar.Day);
             if(!result.RestoreBarbecue(data.barbecue,data.version))return false;
+            if(!result.RestoreHomeStorage(data))return false;
             result.PrologueSeen = data.prologueSeen;
 
             career = result;

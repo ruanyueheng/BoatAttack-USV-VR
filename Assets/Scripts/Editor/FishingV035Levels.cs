@@ -41,6 +41,7 @@ namespace BoatAttack.EditorTools
             Check(c.RequestWorldInteraction() && c.Realms.Transitioning,"Production entry starts the fade "+id);before=c.Shore.Position;c.Shore.Move(Vector2.up,false,false,false,.05f);Check(c.Shore.Position==before,"Fade blocks walking "+id);
             while(c.Realms.Transitioning)yield return null;yield return null;yield return null;
             var room=c.Realms.Room;Check(c.Realms.Island==id && room.Find(FishingRealmWorld.GeometryRootName)!=null && c.Shore.Ground(c.Shore.Position,out _),"Supported authored interior entry "+id);
+            FishingV036PortalValidation.CheckEntry(c,id);
             Check(room.Find("Echo gate")==null && room.Find("Floor")==null,"Old shared rectangular room and gate removed "+id);
             c.Weather.ApplyEnvironment();c.PresentCharacterFrame();var aim=id==0?new Vector3(-2,3,5):id==1?new Vector3(-5,3,2):id==2?new Vector3(0,.5f,3):new Vector3(0,4,10);
             c.viewCamera.transform.rotation=Quaternion.LookRotation(room.TransformPoint(aim)-c.viewCamera.transform.position);FishingV016Validation.Capture(c,evidence,"sanctuary-player-"+id);CaptureViews(c,id,evidence);
@@ -49,7 +50,8 @@ namespace BoatAttack.EditorTools
             Check(c.RequestWorldInteraction() && c.Career.Lore.Cleared(id) && c.Career.Coins==coins+90,"First echo reward uses production interaction "+id);yield return null;
             Check(c.RequestWorldInteraction() && c.Career.Coins==coins+90,"Echo reward is never duplicated "+id);
             var back=ReturnRoute(c,id);while(back.MoveNext())yield return back.Current;
-            Check(c.Realms.Exit(),"Return interaction at the actual entry "+id);while(c.Realms.Transitioning)yield return null;yield return null;yield return null;
+            FishingV036PortalValidation.CheckTerminal(c,id);
+            Check(c.Realms.Exit(),"Return interaction at the exploration endpoint "+id);while(c.Realms.Transitioning)yield return null;yield return null;yield return null;
             Check(!c.Realms.Inside && Vector3.Distance(c.Shore.Position,c.Realms.PortalApproach(id))<.5f,"Restores island feet after leaving "+id);
             c.Weather.ApplyEnvironment();Check(Mathf.Abs(RenderSettings.skybox.GetFloat("_Daylight")-c.Weather.Daylight)<.001f,"Exterior lighting restored "+id);
         }
@@ -149,19 +151,20 @@ namespace BoatAttack.EditorTools
             }
             c.PresentCharacterFrame();c.viewCamera.transform.rotation=Quaternion.LookRotation(r.Device(3).position+Vector3.up*(id==0?2.8f:1)-c.viewCamera.transform.position);FishingV016Validation.Capture(c,evidence,"sanctuary-complete-"+id);
             Check(r.TryTarget(out int target,out _) && target==3,"The final focal object is reachable "+id);
+            var terminal=ReturnRoute(c,id);while(terminal.MoveNext())yield return terminal.Current;
+            FishingV036PortalValidation.CheckTerminal(c,id);
+            c.PresentCharacterFrame();c.viewCamera.transform.rotation=Quaternion.LookRotation(r.Device(4).position+Vector3.up*1.3f-c.viewCamera.transform.position);FishingV016Validation.Capture(c,evidence,"sanctuary-terminal-portal-"+id);
+            if(id==0)foreach(var p in new[]{new Vector3(-3.3f,5,25.1f),new Vector3(-3.3f,5,21.4f)}){walk=Walk(c,r.Room.TransformPoint(p));while(walk.MoveNext())yield return null;}
+            if(id==1){walk=Walk(c,r.Room.TransformPoint(new Vector3(-3.1f,0,19.3f)));while(walk.MoveNext())yield return null;}
+            walk=Walk(c,r.Device(3).position+Vector3.back*1.4f);while(walk.MoveNext())yield return null;
+            Check(r.TryTarget(out target,out _) && target==3,"Optional echo stays accessible after inspecting the exit "+id);
         }
         private static IEnumerator ReturnRoute(FishingPrototype c,int id)
         {
             var r=c.Realms;IEnumerator walk;
-            if(id==0)for(int i=10;i>=0;i--){walk=Walk(c,r.Landmark("Route"+i).position);while(walk.MoveNext())yield return null;}
-            if(id==1)for(int i=6;i>=0;i--){walk=Walk(c,r.Landmark("Route"+i).position);while(walk.MoveNext())yield return null;}
-            if(id==2)foreach(var p in new[]{new Vector3(0,1.8f,7),new Vector3(4.2f,1.8f,7),new Vector3(4.2f,1.8f,-15),new Vector3(0,1.8f,-16)}){walk=Walk(c,r.Room.TransformPoint(new Vector3(-p.x,p.y,p.z)));while(walk.MoveNext())yield return null;}
-            if(id==3)
-            {
-                foreach(var p in new[]{new Vector3(2,3.6f,12),new Vector3(3.5f,3.6f,10)}){walk=Walk(c,r.Room.TransformPoint(new Vector3(-p.x,p.y,p.z)));while(walk.MoveNext())yield return null;}
-                for(int i=14;i>=0;i--){walk=Walk(c,r.Landmark("Route"+i).position);while(walk.MoveNext())yield return null;}
-            }
-            walk=Walk(c,r.Device(4).position+Vector3.forward*1.4f);while(walk.MoveNext())yield return null;
+            if(id==0)foreach(var p in new[]{new Vector3(-3.3f,5,21.4f),new Vector3(-3.3f,5,25.1f)}){walk=Walk(c,r.Room.TransformPoint(p));while(walk.MoveNext())yield return null;}
+            if(id==1){walk=Walk(c,r.Room.TransformPoint(new Vector3(-3.1f,0,19.3f)));while(walk.MoveNext())yield return null;}
+            walk=Walk(c,r.Device(4).position+r.Device(4).forward*1.4f);while(walk.MoveNext())yield return null;
         }
         private static void CaptureViews(FishingPrototype c,int id,string directory)
         {

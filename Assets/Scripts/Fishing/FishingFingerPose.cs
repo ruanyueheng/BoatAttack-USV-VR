@@ -11,7 +11,7 @@ namespace BoatAttack.Fishing
         {Fingers=new Vector4(index,middle,ring,pinky);Thumb=thumb;}
         public static FishingFingerPose Uniform(float curl)=>new FishingFingerPose(curl,curl,curl,curl,curl);
         public float Curl(int digit)=>digit==4?Thumb:Fingers[digit];
-        public static readonly FishingFingerPose Handle=new FishingFingerPose(.45f,.49f,.49f,.47f,.72f);
+        public static readonly FishingFingerPose Handle=new FishingFingerPose(.80f,.85f,.90f,.95f,.75f);
         public static readonly FishingFingerPose Barrel=new FishingFingerPose(.32f,.38f,.44f,.5f,.58f);
         public static readonly FishingFingerPose Book=new FishingFingerPose(.12f,.22f,.28f,.34f,.38f);
         public static readonly FishingFingerPose Lantern=new FishingFingerPose(.74f,.86f,.94f,1f,.72f);

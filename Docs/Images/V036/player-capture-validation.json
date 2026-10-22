@@ -1,0 +1,14 @@
+[
+  {
+    "cases": 88,
+    "resolution": "1600x900",
+    "manifest": "Logs/desktop-acceptance-d90e0e2143384df1b6448ac3b94ea495/capture-20261020-185117-9744aaa3/manifest.json",
+    "version": "0.36.0"
+  },
+  {
+    "cases": 88,
+    "resolution": "1280x1024",
+    "manifest": "Logs/desktop-acceptance-effea02e09e9425fbf7c031e0e6428a5/capture-20261020-185317-b0018999/manifest.json",
+    "version": "0.36.0"
+  }
+]

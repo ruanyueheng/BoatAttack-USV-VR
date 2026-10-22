@@ -26,10 +26,10 @@ namespace BoatAttack.Fishing
             var region=Controller.Regions;if(!RegionTitleVisible)return;
             float previous=_fade;_fade=region.Alpha;
             float y=Mathf.Max(174,_height*.16f)+(1-Mathf.SmoothStep(0,1,Mathf.Clamp01(region.Age/1.1f)))*8;
-            ReadingVeil(new Rect(542,y-20,516,154),true);
+            ReadingVeil(new Rect(542,y-20,516,174),true);
             WorldLabel(new Rect(600,y-12,400,62),region.Title,40,CreamInk,true,TextAnchor.MiddleCenter,onPaper:true);
             GiltRule(700,y+46,200);
-            WorldLabel(new Rect(580,y+60,440,60),region.Subtitle.Replace("，","\n").TrimEnd('。'),16,CreamInk,false,TextAnchor.UpperCenter,onPaper:true);
+            WorldLabel(new Rect(580,y+60,440,80),region.Subtitle.Replace("，","\n").TrimEnd('。'),16,CreamInk,false,TextAnchor.UpperCenter,onPaper:true);
             _fade=previous;
         }
         private void DrawDialogue()
@@ -81,7 +81,7 @@ namespace BoatAttack.Fishing
             {
                 var device=c.Realms.Device(i);if(device==null)continue;var p=Point(device.position);
                 Disc(p,i==3?7:5,i==4?Sky:i==3?Gold:Mint);
-                WorldLabel(new Rect(p.x-22,p.y-28,44,20),i==4?"入口":i==3?"回响":(i+1).ToString(),12,CreamInk,false,TextAnchor.MiddleCenter);
+                WorldLabel(new Rect(p.x-22,p.y-28,44,20),i==4?"出口":i==3?"回响":(i+1).ToString(),12,CreamInk,false,TextAnchor.MiddleCenter);
             }
             Disc(Point(c.Shore.Position),4,Color.white);
             WorldLabel(r.x+14,r.yMax-29,r.width-28,26,"白点：当前位置 · 青点：机关",12,CreamInk);

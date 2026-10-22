@@ -87,7 +87,10 @@ namespace BoatAttack.Fishing
         private void LateUpdate(){if(_c==null || _c.Career==null)return;Apply(_c.Paused || _c.StoryBlocksGameplay?0:Time.deltaTime);}
         public void Apply(float seconds)
         {
-            float weather=_c.Weather.Climate.Current==BayWeather.Mist?.13f:_c.Weather.Climate.Current==BayWeather.Rain?.3f:1;
+            var climate=_c.Weather.Climate;
+            float before=climate.Previous==BayWeather.Mist?.13f:climate.Previous==BayWeather.Cloudy?.42f:1;
+            float after=climate.Current==BayWeather.Mist?.13f:climate.Current==BayWeather.Cloudy?.42f:1;
+            float weather=Mathf.Lerp(before,after,Mathf.SmoothStep(0,1,climate.Blend))*(1-_c.Weather.StormAmount);
             Visibility=(1-_c.Career.Calendar.Daylight)*weather;
             _sky.position=_c.viewCamera.transform.position;
             _stars.SetFloat("_Visibility",Visibility);_moon.SetFloat("_Visibility",Visibility);

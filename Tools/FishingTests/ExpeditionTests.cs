@@ -21,7 +21,8 @@ internal static class ExpeditionTests
         {
             // Independent enumeration: arbitrary first three facts, then repair/catch/delivery in order.
             bool expected = mask <= 7 || mask == 15 || mask == 31 || mask == 63;
-            bool accepted = FishingCareer.TryRestore(new FishingSaveData { backpack = new FishingBackpack().Snapshot(),  expeditionFacts = mask }, out var state);
+            var data=new FishingCareer().Snapshot();data.expeditionFacts=mask;
+            bool accepted = FishingCareer.TryRestore(data, out var state);
             check(accepted == expected, "Expedition save combination " + mask);
             if (!accepted) continue;
             validCount++;
@@ -43,7 +44,8 @@ internal static class ExpeditionTests
         var legacy = old.Snapshot(); legacy.version = 4; legacy.backpack=null; legacy.selectedSlot=legacy.collectedPickupMask=legacy.landAnimalMask=0;
         check(FishingCareer.TryRestore(legacy, out restored) && restored.Coins == 160 && restored.ShoreTaskMask == 255
             && restored.Expedition.Facts == 0 && restored.ClaimShoreRewards() == 0, "Expedition preserves completed v4 shore rewards");
-        check(!FishingCareer.TryRestore(new FishingSaveData { version = 11 }, out _), "Expedition rejects future v11 save");
+        var future=c.Snapshot();future.version=16;
+        check(!FishingCareer.TryRestore(future, out _), "Expedition rejects future save format");
         for (int ground = 0; ground < 3; ground++)
         {
             check(FishingGrounds.Available(ground, new FishingExpedition()), "Original ground remains open " + ground);

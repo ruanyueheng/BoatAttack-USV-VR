@@ -438,11 +438,54 @@ namespace BoatAttack.EditorTools
             Check(!FarmCommit(c, id, FarmWork.Plant) && a.DetailCount("FarmPlant") == plant + 1,
                 "A duplicate planting cannot play another cue or consume another seed");
             int charges = farm.Water;
-            Check(FarmCommit(c, id, FarmWork.Water) && farm.Water == charges - 1
-                && a.DetailCount("FarmWater") == water + 1,
-                "A real watering commit consumes one charge and emits one generated water cue");
+            Check(!FarmCommit(c, id, FarmWork.Water) && !c.Farm.InteractAt(id) && farm.Water == charges
+                && a.DetailCount("FarmWater") == water,
+                "The current farm rejects watering without its real carried can and keeps the water cue silent");
+            Check(bag.Count(FieldItem.StonePickaxe)>0 || bag.TryAdd(FieldItem.StonePickaxe,1),
+                "The isolated can fixture owns a real pickaxe for the shared Z inspection route");
+            int pickSlot=-1;
+            for(int i=0;i<FishingBackpack.SlotCount;i++)if(bag.At(i).item==FieldItem.StonePickaxe){pickSlot=i;break;}
+            Check(pickSlot>=0 && pickSlot<FishingBackpack.HotbarCount,"The can fixture's real pickaxe is in a reachable hotbar slot");
+            c.SelectFieldSlot(pickSlot);yield return null;
+            var canApproach=ApproachAudioFarm(c,15);while(canApproach.MoveNext())yield return canApproach.Current;
+            Check(c.RequestWorldInteraction() && c.Farm.Busy && !c.Farm.CarryingCan,
+                "The real E route begins reaching for the persistent watering can before taking ownership");
+            var canFinish=FinishAudioFarm(c);while(canFinish.MoveNext())yield return canFinish.Current;
+            Check(c.Farm.CarryingCan && farm.Water==charges && a.DetailCount("FarmWater")==water,
+                "Completed handle contact picks up the same can without consuming water or playing a watering cue");
+            int pickInspection=a.DetailCount("PickaxeInspect");
+            Check(!c.InspectFieldItem(pickSlot) && !c.InspectingItem && c.Farm.CarryingCan
+                && a.DetailCount("PickaxeInspect")==pickInspection,
+                "The shared Z inspection entry rejects a tool while the real can owns the hand, without queueing sound");
+            canApproach=ApproachAudioFarm(c,id);while(canApproach.MoveNext())yield return canApproach.Current;
+            Check(!FarmCommit(c,id,FarmWork.Water) && farm.Water==charges && a.DetailCount("FarmWater")==water,
+                "Even a held can cannot bypass the real final-contact commit permission");
+            Check(c.RequestWorldInteraction() && c.Farm.Busy && !c.RequestWorldInteraction()
+                && farm.Water==charges && a.DetailCount("FarmWater")==water,
+                "Starting the actual watering animation, or repeating its input, plays no premature watering cue");
+            int canFrames=0;
+            while(c.Farm.Busy && c.Farm.WorkProgress<.45f && canFrames++<600)yield return null;
+            Check(c.Farm.Busy && c.Farm.WaterStreamVisible && farm.Water==charges && a.DetailCount("FarmWater")==water,
+                "The actual tilted can pours visible water before the crop transaction and success cue");
+            canFinish=FinishAudioFarm(c);while(canFinish.MoveNext())yield return canFinish.Current;
+            Check(farm.Water == charges - 1 && farm.Plot(id).wateredDay==farm.Day && a.DetailCount("FarmWater") == water + 1,
+                "Only completed real can contact consumes one charge, waters the crop and emits one generated water cue");
             Check(!FarmCommit(c, id, FarmWork.Water) && a.DetailCount("FarmWater") == water + 1,
                 "An already watered plot rejects the same-day repeat without another water cue");
+            canApproach=ApproachAudioFarm(c,15);while(canApproach.MoveNext())yield return canApproach.Current;
+            Check(c.RequestWorldInteraction() && c.Farm.Busy && c.Farm.CarryingCan,
+                "The can returns through its real stand-contact animation");
+            canFinish=FinishAudioFarm(c);while(canFinish.MoveNext())yield return canFinish.Current;
+            Check(!c.Farm.CarryingCan && farm.Water==charges-1 && a.DetailCount("FarmWater")==water+1,
+                "Returning the can preserves saved water and cannot repeat its watering success sound");
+            for(int frame=0;frame<8;frame++){c.PresentCharacterFrame();yield return null;}
+            Check(c.InspectFieldItem(pickSlot),"After returning the actual can, the same Z inspection entry accepts the pickaxe");
+            for(int frame=0;frame<20 && a.DetailCount("PickaxeInspect")==pickInspection;frame++)
+            {c.PresentCharacterFrame();yield return null;}
+            Check(c.FieldWorld.PresentedItem==FieldItem.StonePickaxe && a.DetailCount("PickaxeInspect")==pickInspection+1,
+                "A real visible pickaxe inspection plays once after the watering can releases the hand");
+            c.EndItemInspection();yield return null;
+            canApproach=ApproachAudioFarm(c,id);while(canApproach.MoveNext())yield return canApproach.Current;
             Check(!FarmCommit(c, id, FarmWork.Harvest) && a.DetailCount("FarmHarvest") == harvest,
                 "An immature crop cannot emit a successful harvest cue");
             int day = c.Career.Calendar.Day;
@@ -463,6 +506,34 @@ namespace BoatAttack.EditorTools
             Check(!FarmCommit(c, id, FarmWork.Harvest) && a.DetailCount("FarmHarvest") == harvest + 1,
                 "Repeating an already harvested crop remains silent");
             yield return null;
+        }
+
+        private static IEnumerator ApproachAudioFarm(FishingPrototype c,int id)
+        {
+            var position=c.Farm.Target(id).position+(id==15?Vector3.left*.65f:Vector3.back*1.1f);
+            position.y=c.Home.Origin.y;if(id<12)position.x-=.25f;
+            Check(c.Shore.Relocate(position,Quaternion.identity),"The actor reaches actual farm audio target "+id);
+            c.View.ResetLook();
+            if(id==15)
+            {
+                float scale=.12f*c.MouseSensitivity;
+                c.View.ApplyShoreLookDelta(new Vector2(90/scale,-55/scale*(c.InvertLook?-1:1)));
+            }
+            for(int frame=0;frame<30;frame++)
+            {
+                c.Shore.Move(Vector2.zero,false,false,false,Time.deltaTime);yield return null;
+                if(frame>=3 && c.Shore.Grounded)break;
+            }
+            Check(c.Shore.Grounded,"The actor settles on the real farm floor at target "+id);
+            FishingV036FarmValidation.Aim(c,c.Farm.Aim(id));yield return null;
+            Check(c.Farm.TryTarget(out int actual,out _) && actual==id,"Production targeting resolves farm audio target "+id);
+        }
+
+        private static IEnumerator FinishAudioFarm(FishingPrototype c)
+        {
+            int frames=0;while(c.Farm.Busy && frames++<600)yield return null;
+            Check(frames<600,"The real watering-can action reaches its final contact and releases movement");
+            yield return null;yield return null;
         }
 
         private static IEnumerator ValidateShopDetails(FishingPrototype c)
@@ -522,7 +593,8 @@ namespace BoatAttack.EditorTools
             c.EndItemInspection(); c.Hands.ResetInteraction(); c.FieldWorld.ClearToolPresentation();
             if (!c.FirstPerson) c.ToggleView();
             c.View.ResetLook(); c.PresentCharacterFrame(); yield return null;
-            Check(c.Career.Backpack.TryAdd(FieldItem.StonePickaxe, 1) && c.Career.Backpack.TryAdd(FieldItem.IronPickaxe, 1),
+            Check((c.Career.Backpack.Count(FieldItem.StonePickaxe)>0 || c.Career.Backpack.TryAdd(FieldItem.StonePickaxe, 1))
+                && (c.Career.Backpack.Count(FieldItem.IronPickaxe)>0 || c.Career.Backpack.TryAdd(FieldItem.IronPickaxe, 1)),
                 "The isolated inspection fixture owns real stone and iron picks beside its purchased rifle");
             foreach (var item in new[] { FieldItem.StonePickaxe, FieldItem.IronPickaxe, FieldItem.HuntingRifle })
             {

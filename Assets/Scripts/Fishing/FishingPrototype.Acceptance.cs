@@ -32,6 +32,7 @@ namespace BoatAttack.Fishing
                 throw new InvalidOperationException("Acceptance fixtures require an explicitly opted-in test profile.");
             // Validate before changing any live state. FreePlay is intentionally never synthesized.
             FishingCareer fixture = selected == FishingAcceptanceCase.FreePlay ? null : FishingAcceptanceCases.CreateCareer(selected);
+            CancelV036AcceptanceFixture();Home?.CancelSleep();Home?.StandUp(true);
             HandGames?.Cancel();CloseHomeChart();CloseSaveMenu();
             if(StartMenuOpen)TitleVoyage.Close();StartMenuOpen=false;MenuControls=false;CancelGuideOpening();
             Letter?.Close();CancelWorldAction();_workshopReceipt=false;TackleShop?.Close();Residents?.Close();Realms?.Abort();CoastWorld?.CloseMenu();
@@ -100,6 +101,15 @@ namespace BoatAttack.Fishing
             }
             switch (selected)
             {
+                case FishingAcceptanceCase.HomeStorage:
+                case FishingAcceptanceCase.SofaTelevision:
+                case FishingAcceptanceCase.WateringCarry:
+                case FishingAcceptanceCase.WellRefill:
+                case FishingAcceptanceCase.WateringPour:
+                case FishingAcceptanceCase.OrchardFruit:
+                case FishingAcceptanceCase.PortalEntrance:
+                case FishingAcceptanceCase.PortalExit:
+                    BeginV036AcceptanceFixture(selected);break;
                 case FishingAcceptanceCase.BootCatch:case FishingAcceptanceCase.CanCatch:case FishingAcceptanceCase.TreasureCatch:
                     PrepareAcceptanceFind(selected);break;
                 case FishingAcceptanceCase.LetterEnvelope:case FishingAcceptanceCase.LetterPaper:

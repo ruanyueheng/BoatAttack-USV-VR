@@ -41,6 +41,7 @@ namespace BoatAttack.EditorTools
                 Check(c.Shore.TryDisembark(), "由渔屋真实泊位下船");
                 Check(c.Shore.Relocate(c.Home.Origin + new Vector3(3.65f, .20f, -2.4f), Quaternion.identity), "可站在航线书桌交互范围");
                 c.View.ResetLook(); yield return null;
+                FishingV036FarmValidation.Aim(c,c.Home.InteractionPoint(2));yield return null;
                 Check(c.Home.ReachInteraction(2), "书桌航海图由实际家具命中");
                 bool expanded = c.ChartExpanded;
                 int smallRange = c.ChartRangeMeters;

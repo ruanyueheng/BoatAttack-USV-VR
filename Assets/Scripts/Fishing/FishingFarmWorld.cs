@@ -3,12 +3,12 @@ using UnityEngine;
 
 namespace BoatAttack.Fishing
 {
-    public enum FarmWork { Wait,Till,Plant,Water,Harvest,Refill,Seeds,Sell }
+    public enum FarmWork { Wait,Till,Plant,Water,Harvest,Refill,Seeds,Sell,TakeCan,ReturnCan }
     [DefaultExecutionOrder(260)]
-    public sealed class FishingFarmWorld : MonoBehaviour
+    public sealed partial class FishingFarmWorld : MonoBehaviour
     {
         private FishingPrototype _c;
-        private readonly Transform[] _targets=new Transform[15];
+        private readonly Transform[] _targets=new Transform[16];
         private readonly Transform[,] _crops=new Transform[FishingFarm.PlotCount,3];
         private readonly GameObject[] _soil=new GameObject[FishingFarm.PlotCount];
         private readonly Renderer[][] _soilSurfaces=new Renderer[FishingFarm.PlotCount][];
@@ -18,14 +18,14 @@ namespace BoatAttack.Fishing
         private FarmWork _actionWork;
         public Transform Root {get;private set;}
         public bool Nearby=>_c!=null && _c.Ashore && FishingPrototype.FlatDistance(_c.Shore.Position,Root.position+new Vector3(19,0,0))<22;
-        public string Status=>"回潮菜园 · 水壶 "+_c.Career.Farm.Water+" / "+FishingFarm.WaterCapacity+" · 种子 "+_c.Career.Backpack.Count(FieldItem.TurnipSeeds)+" · 萝卜 "+_c.Career.Backpack.Count(FieldItem.Turnip);
+        public string Status=>"回潮菜园 · 水壶"+(CarryingCan?"在手中 ":"在井边 ")+_c.Career.Farm.Water+" / "+FishingFarm.WaterCapacity+" · 种子 "+_c.Career.Backpack.Count(FieldItem.TurnipSeeds)+" · 萝卜 "+_c.Career.Backpack.Count(FieldItem.Turnip);
         public Transform Target(int id)=>id>=0 && id<_targets.Length?_targets[id]:null;
-        public Vector3 Aim(int id)=>Target(id).position+Vector3.up*(id<12?.38f:id==12?1.0f:.9f);
+        public Vector3 Aim(int id)=>Target(id).position+Vector3.up*(id<12?.38f:id==12?1.0f:id==15?0:.9f);
         public static Vector3 PlotOffset(int id)=>new Vector3(14+id%4*3.6f,.06f,-5+id/4*5);
         public void Build(FishingPrototype c)
         {
             _c=c;Root=new GameObject("V035 home garden").transform;Root.SetParent(transform,false);Root.position=c.Home.Origin;
-            Model("GardenFixtures",Root,Vector3.zero,true);
+            var fixtures=Model("GardenFixtures",Root,Vector3.zero,true);
             var basis=Resources.Load<Material>("FishingV035/Coastal");
             _dry=new Material(basis){name="Garden dry earth"};_dry.SetColor("_BaseColor",new Color(.37f,.25f,.15f));
             _wet=new Material(basis){name="Garden watered earth"};_wet.SetColor("_BaseColor",new Color(.20f,.13f,.08f));
@@ -39,8 +39,9 @@ namespace BoatAttack.Fishing
             {
                 var t=new GameObject(pair.Item1==12?"海风水井":pair.Item1==13?"种子工作台":"收获木箱").transform;t.SetParent(Root,false);t.localPosition=pair.Item2;_targets[pair.Item1]=t;
             }
-            FishingV019Art.Sign("回潮菜园\n翻土 → 播种 → 每日浇水 → 三夜成熟\n收获返还种子 · 缺水只暂停生长",Root,new Vector3(9,1.7f,-11.3f),.021f,new Color(.98f,.91f,.72f));
-            _hoe=Model("GardenHoe",Root,Vector3.zero,false);_can=Model("GardenWateringCan",Root,Vector3.zero,false);_hoe.gameObject.SetActive(false);_can.gameObject.SetActive(false);
+            FishingV019Art.Sign("回潮菜园\n翻土播种 → 井边拿壶打水 → 提壶浇灌\n每天浇水 · 三夜成熟 · 空壶放回井边",Root,new Vector3(9,1.7f,-11.3f),.021f,new Color(.98f,.91f,.72f));
+            _hoe=Model("GardenHoe",Root,Vector3.zero,false);_hoe.gameObject.SetActive(false);
+            BuildWateringCan(fixtures);
             Refresh();
         }
         internal static Transform Model(string name,Transform parent,Vector3 p,bool solid)
@@ -60,7 +61,7 @@ namespace BoatAttack.Fishing
             for(int i=0;i<_targets.Length;i++)
             {
                 var p=_targets[i].position;float d=FishingPrototype.FlatDistance(_c.Shore.Position,p);
-                if(d>=nearest || Mathf.Abs(p.y-_c.Shore.Position.y)>.6f)continue;
+                if(d>=nearest || Mathf.Abs(p.y-_c.Shore.Position.y)>(i==15?1f:.6f))continue;
                 var direction=Aim(i)-_c.viewCamera.transform.position;
                 if(Vector3.Dot(_c.viewCamera.transform.forward,direction.normalized)<.1f)continue;
                 if(Physics.Linecast(_c.viewCamera.transform.position,Aim(i),out var hit,~(1<<2),QueryTriggerInteraction.Ignore)
@@ -71,22 +72,26 @@ namespace BoatAttack.Fishing
         }
         public FarmWork Work(int id)
         {
-            if(id==12)return FarmWork.Refill;if(id==13)return FarmWork.Seeds;if(id==14)return FarmWork.Sell;
+            if(id==12)return FarmWork.Refill;if(id==13)return FarmWork.Seeds;if(id==14)return FarmWork.Sell;if(id==15)return CarryingCan?FarmWork.ReturnCan:FarmWork.TakeCan;
             var p=_c.Career.Farm.Plot(id);return p==null?FarmWork.Wait:!p.tilled?FarmWork.Till:!p.planted?FarmWork.Plant:_c.Career.Farm.Ready(id)?FarmWork.Harvest:p.wateredDay!=_c.Career.Farm.Day?FarmWork.Water:FarmWork.Wait;
         }
         public string Hint(int id)
         {
             string key=_c.DesktopDisplay?"E ":"右手柄 A ";var work=Work(id);
-            if(id==12)return key+"从水井装满水壶";
+            if(id==12)return key+(CarryingCan?"摇井绳打水 · 灌满手中的水壶":"先拿起井边木架上的水壶");
+            if(id==15)return key+(CarryingCan?"把水壶放回井边木架":"拿起井边水壶 · "+_c.Career.Farm.Water+" / "+FishingFarm.WaterCapacity);
             if(id==13)return key+(_c.Career.Farm.StarterClaimed?"购买萝卜种子 ×6 · 12 海币":"领取首次种子 ×12");
             if(id==14)return key+"出售背包里的萝卜 · 每颗 18 海币";
-            string action=work==FarmWork.Till?"翻土":work==FarmWork.Plant?"播种海风萝卜":work==FarmWork.Water?"浇水":work==FarmWork.Harvest?"收获萝卜与种子":"今日已浇水 · 生长 "+_c.Career.Farm.Plot(id).growth+" / 3 夜";
+            string action=work==FarmWork.Till?"翻土":work==FarmWork.Plant?"播种海风萝卜":work==FarmWork.Water?(CarryingCan?"倾壶浇水":"先去井边拿起水壶"):work==FarmWork.Harvest?"收获萝卜与种子":"今日已浇水 · 生长 "+_c.Career.Farm.Plot(id).growth+" / 3 夜";
             return key+"菜畦 "+(id+1)+" · "+action;
         }
         public bool InteractAt(int id)
         {
             if(_c.Paused || _c.WorldActionBlocksGameplay || _c.StoryBlocksGameplay || _c.ShopBlocksGameplay || _c.InventoryOpen || _c.JournalOpen)return false;
-            return CommitAt(id,Work(id));
+            var work=Work(id);
+            if(work==FarmWork.Water || work==FarmWork.Refill || work==FarmWork.TakeCan || work==FarmWork.ReturnCan)return BeginCanWork(id,work);
+            if(CarryingCan && id<12){_c.Notice("先把水壶放回井边木架，再腾出双手照料作物。",4);return false;}
+            return CommitAt(id,work);
         }
         internal void PresentAction(int id,FarmWork work){_actionPlot=id;_actionWork=work;}
         internal bool CommitAt(int id,FarmWork expected)
@@ -97,9 +102,9 @@ namespace BoatAttack.Fishing
             {
                 case FarmWork.Till:ok=farm.Till(id);message="土已翻好 · 再按一次播种";break;
                 case FarmWork.Plant:ok=farm.Plant(id,_c.Career.Backpack);message=ok?"种子已种下 · 记得每天浇水":"需要海风萝卜种子 · 到种子工作台领取或购买";break;
-                case FarmWork.Water:ok=farm.WaterPlot(id);message=ok?"浇水完成 · 睡过一夜后成长":"水壶空了 · 到菜园水井补水";break;
+                case FarmWork.Water:ok=CarryingCan && _canCommit && farm.WaterPlot(id);message=ok?"浇水完成 · 睡过一夜后成长":!CarryingCan?"先拿起井边木架上的水壶":"水壶空了 · 到菜园水井补水";break;
                 case FarmWork.Harvest:ok=farm.Harvest(id,_c.Career.Backpack);message=ok?"收获海风萝卜 ×1、种子 ×1":"背包需容纳萝卜和种子 · 作物会留在地里";break;
-                case FarmWork.Refill:ok=farm.Refill();message=ok?"水壶已装满":"水壶已经是满的";break;
+                case FarmWork.Refill:ok=CarryingCan && _canCommit;if(ok)farm.Refill();message=ok?"井水已灌满水壶 · 提到菜畦边浇水":"先拿起井边木架上的水壶";break;
                 case FarmWork.Seeds:ok=farm.StarterClaimed?_c.Career.BuyFarmSeeds():farm.ClaimStarter(_c.Career.Backpack);message=ok?"种子已放入背包":"背包空间或海币不足 · 首次种子可免费领取";break;
                 case FarmWork.Sell:int value=_c.Career.SellTurnips();ok=value>0;message=ok?"售出萝卜 · +"+value+" 海币":"没有可出售的萝卜，或海币已达上限";break;
                 default:_c.Notice("今日已浇水 · 休息至明晨查看生长",4);return false;
@@ -125,18 +130,23 @@ namespace BoatAttack.Fishing
                 for(int s=0;s<3;s++)_crops[i,s].gameObject.SetActive(p.planted && s==Mathf.Clamp(p.growth-1,0,2));
             }
         }
-        private void Update(){if(_c!=null && _c.Career.Farm.AdvanceDay(_c.Career.Calendar.Day))Refresh();}
-        private void LateUpdate()
+        private void Update(){if(_c!=null){TickCanWork();if(_c.Career.Farm.AdvanceDay(_c.Career.Calendar.Day))Refresh();}}
+        private void PresentSoilTool()
         {
             if(_c==null)return;
-            bool active=_c.WorldActionBusy && _c.Actions.TargetId=="farm:"+_actionPlot && !_c.Paused && _c.Hands.Right.Visible;
-            _hoe.gameObject.SetActive(active && _actionWork==FarmWork.Till);_can.gameObject.SetActive(active && _actionWork==FarmWork.Water);
-            if(active)
+            bool active=!Busy && _c.WorldActionBusy && _c.Actions.TargetId=="farm:"+_actionPlot && !_c.Paused && _c.Hands.Right.Visible;
+            _hoe.gameObject.SetActive(active && _actionWork==FarmWork.Till);
+            if(active && _actionWork==FarmWork.Till)
             {
-                var palm=_c.Hands.Right.Palm;var rotation=palm.rotation*Quaternion.Euler(0,0,_actionWork==FarmWork.Water?-24:0);
-                (_actionWork==FarmWork.Till?_hoe:_can).SetPositionAndRotation(palm.position,rotation);
+                var palm=_c.Hands.Right.Palm.position;
+                var rotation=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0)*Quaternion.Euler(35,0,-12);
+                var grip=new Vector3(.036f,0,0);var handRotation=Quaternion.LookRotation(Vector3.forward,Vector3.right);
+                _hoe.SetPositionAndRotation(palm-rotation*grip,rotation);
+                _c.Hands.SetToolTarget(false,_hoe,grip,handRotation,.8f,fingers:new FishingFingerPose(.7f,.8f,.82f,.85f,.7f));
+                _c.Hands.Right.SetGripSurface(_hoe.TransformPoint(Vector3.down*.12f),_hoe.TransformPoint(Vector3.up*.14f),.018f);
+                _c.Hands.Right.SetForearmRoll(.65f);
             }
         }
-        private void OnDestroy(){if(_dry!=null)Destroy(_dry);if(_wet!=null)Destroy(_wet);}
+        private void OnDestroy(){if(_dry!=null)Destroy(_dry);if(_wet!=null)Destroy(_wet);DestroyCanPresentation();}
     }
 }

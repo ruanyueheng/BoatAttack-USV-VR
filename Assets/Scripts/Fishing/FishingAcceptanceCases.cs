@@ -14,13 +14,14 @@ namespace BoatAttack.Fishing
         ForestIslandLanding, WreckIslandLanding, StarIslandLanding, HomeInterior, HomeWorkbench, HomeBarbecue, HomeGrilledFish, CashierDialogue,
         BootCatch, CanCatch, TreasureCatch, LetterEnvelope, LetterPaper, StartMenu, MenuControls, NatureJournal, LegendJournal, ShoreJournal, GuideOpening, HomeMoonlight,
         MenuGraphics,MenuAudio,Departure,ArchIslet,FireflyIslet,
-        SaveSlots,SaveOverwrite,HomeChart,SandSieve,RopeWinder,StarObservation,HomeGarden,FarmHarvest,HomeGardenNight,CatchNight
+        SaveSlots,SaveOverwrite,HomeChart,SandSieve,RopeWinder,StarObservation,HomeGarden,FarmHarvest,HomeGardenNight,CatchNight,
+        HomeStorage,SofaTelevision,WateringCarry,WellRefill,WateringPour,OrchardFruit,PortalEntrance,PortalExit
     }
 
     /// <summary>Deterministic fixtures built through the production rules, not unchecked save JSON.</summary>
     public static class FishingAcceptanceCases
     {
-        public const int Count = 80;
+        public const int Count = 88;
         private static readonly string[] Titles =
         {
             "自由实玩 / 继续验收进度", "咬钩提示", "高张力收线", "抄网时机", "捕获与后续反馈", "传说跃水",
@@ -33,7 +34,8 @@ namespace BoatAttack.Fishing
             "潮林岛实际登陆", "沉船沙洲实际登陆", "星望遗迹岛实际登陆", "回潮渔屋生活与工坊", "家中工作台与图示配方", "屋旁烧烤与鱼箱选鱼", "炭火烤鱼与领取", "汐禾分支对话",
             "旧鞋幽默钓获卡", "罐头幽默钓获卡", "宝匣惊喜钓获卡", "海风邮戳信封", "牛皮纸手写来信", "实时启航菜单", "按键图示与灵敏度", "插画自然手册", "金帆传说线索", "沿岸调查卡片", "双手翻开自然手册", "家岛月色与环扫灯塔",
             "画面与视野设置","独立音量设置","开船离屏过渡","白帆拱湾","萤火沙洲",
-            "三槽存档与手动自动记录","手动存档覆盖确认","家中航线书桌与独立海图","潮汐摇筛 · 左右轻摇寻贝","手摇绕绳 · 三圈制绳","星境望远镜 · 连续调镜与对焦","扩建家岛与回潮菜园","海风萝卜 · 成熟与收获","家岛夜间深色主题与金边书法标题","夜间钓获卡与深色填充"
+            "三槽存档与手动自动记录","手动存档覆盖确认","家中航线书桌与独立海图","潮汐摇筛 · 左右轻摇寻贝","手摇绕绳 · 三圈制绳","星境望远镜 · 连续调镜与对焦","扩建家岛与回潮菜园","海风萝卜 · 成熟与收获","家岛夜间深色主题与金边书法标题","夜间钓获卡与深色填充",
+            "家园箱子 · 双向存入取出","沙发休息与潮汐放映","井边拿壶后的实际携带","提桶灌满手中水壶","田边倾壶与土面水花","果树落果 · 留在地上待拾取","岛屿入口星光门","秘境终点归航门"
         };
 
         public static string Title(FishingAcceptanceCase value)
@@ -51,6 +53,7 @@ namespace BoatAttack.Fishing
         public static bool IsShoreCase(FishingAcceptanceCase value)=>value>=FishingAcceptanceCase.ShoreFirstPerson && value<=FishingAcceptanceCase.HuntingSpear && value!=FishingAcceptanceCase.Calendar;
         public static bool IsFindCase(FishingAcceptanceCase value)=>value>=FishingAcceptanceCase.BootCatch && value<=FishingAcceptanceCase.TreasureCatch;
         public static bool IsShopCase(FishingAcceptanceCase value)=>value==FishingAcceptanceCase.ShopCounter || value==FishingAcceptanceCase.ShopAttendant || value==FishingAcceptanceCase.ShopSupplies || value==FishingAcceptanceCase.ShopRations || value==FishingAcceptanceCase.CashierDialogue;
+        public static bool IsV036Case(FishingAcceptanceCase value)=>value>=FishingAcceptanceCase.HomeStorage && value<=FishingAcceptanceCase.PortalExit;
         public static FieldItem ViewItem(FishingAcceptanceCase value)
         {
             if(value==FishingAcceptanceCase.StonePickaxe || value==FishingAcceptanceCase.LookDownStanding || value==FishingAcceptanceCase.LookDownCrouched)return FieldItem.StonePickaxe;
@@ -69,8 +72,9 @@ namespace BoatAttack.Fishing
             if (value == FishingAcceptanceCase.FreePlay)
                 throw new ArgumentException("Free play must load its own saved progress, never a fixture.");
             bool max = value == FishingAcceptanceCase.MaxUpgrades || value == FishingAcceptanceCase.LegendLeap;
-            var data = new FishingSaveData { calendar=new CalendarData{day=value==FishingAcceptanceCase.Calendar?34:0,minute=value==FishingAcceptanceCase.NightCoast || value==FishingAcceptanceCase.LanternCoast || value==FishingAcceptanceCase.NightBoat?1380:480}, backpack = new FishingBackpack().Snapshot(),  coins = 200, ordersCompleted = 2, rodLevel = max ? 2 : 1,
-                reelLevel = max ? 2 : 1, holdLevel = value == FishingAcceptanceCase.MaxUpgrades ? 2 : 0 };
+            var data = new FishingCareer().Snapshot();
+            data.calendar=new CalendarData{day=value==FishingAcceptanceCase.Calendar?34:0,minute=value==FishingAcceptanceCase.NightCoast || value==FishingAcceptanceCase.LanternCoast || value==FishingAcceptanceCase.NightBoat?1380:480};
+            data.coins=200;data.ordersCompleted=2;data.rodLevel=data.reelLevel=max?2:1;data.holdLevel=value==FishingAcceptanceCase.MaxUpgrades?2:0;
             if (!FishingCareer.TryRestore(data, out var career)) throw new InvalidOperationException("Invalid acceptance seed.");
             if(value==FishingAcceptanceCase.LuxuryBoat){data.engineLevel=data.rudderLevel=data.cabinLevel=2;if(!FishingCareer.TryRestore(data,out career))throw new InvalidOperationException("Invalid fleet fixture.");}
             if(value==FishingAcceptanceCase.IslandJournal)career.DiscoverIsland(0);
@@ -95,6 +99,17 @@ namespace BoatAttack.Fishing
                 career.Calendar.AdvanceToHour(value==FishingAcceptanceCase.HomeGardenNight?22:10.5f);
             }
             if(value==FishingAcceptanceCase.CatchNight)career.Calendar.AdvanceToHour(22);
+            if(value==FishingAcceptanceCase.HomeStorage)
+            {
+                if(!career.Backpack.TryAdd(FieldItem.IslandFruit,3) || !career.Backpack.TryAdd(FieldItem.Shell,24) || !career.HomeStorage.TryAdd(FieldItem.Stone,18) || !career.HomeStorage.TryAdd(FieldItem.Rope,6))
+                    throw new InvalidOperationException("Storage fixture cannot supply both real inventories.");
+            }
+            if(value>=FishingAcceptanceCase.WateringCarry && value<=FishingAcceptanceCase.WateringPour)
+            {
+                if(!career.Farm.ClaimStarter(career.Backpack) || !career.Farm.Till(0) || !career.Farm.Plant(0,career.Backpack)
+                    || !career.Farm.Till(1) || !career.Farm.Plant(1,career.Backpack) || !career.Farm.WaterPlot(1))
+                    throw new InvalidOperationException("Watering fixture cannot create planted soil through production rules.");
+            }
             return career;
         }
 

@@ -5,7 +5,7 @@ namespace BoatAttack.Fishing
     {
         private int _moveFrom=-1,_discardSlot=-1,_discardCount;
         private FieldItem _discardItem;
-        public void ClearFieldSelection(){_moveFrom=-1;_discardSlot=-1;}
+        public void ClearFieldSelection(){_moveFrom=-1;_discardSlot=-1;_homeStorageOpen=false;}
         private void DrawInventoryNotice()
         {
             string text=Controller.SaveWarning.Length>0?Controller.SaveWarning:Controller.VisibleMessage;
@@ -40,6 +40,7 @@ namespace BoatAttack.Fishing
         }
         private void DrawInventory()
         {
+            if(_homeStorageOpen){DrawHomeStorage();return;}
             Fill(-_offset/_scale,0,Screen.width/_scale,_height,new Color(.01f,.025f,.03f,.78f));
             var panel=BackpackPanel;Card(panel,Mint);
             Label(320,156,340,45,_craftPage?"海岸工坊":"随身行囊",32,Color.white,true);

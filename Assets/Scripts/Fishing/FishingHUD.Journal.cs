@@ -33,7 +33,9 @@ namespace BoatAttack.Fishing
             if(!_journalDrawn){_journalDrawn=true;_journalShownAt=Time.unscaledTime;}
             float previousFade=_fade;_fade=Mathf.SmoothStep(0,1,Mathf.Clamp01((Time.unscaledTime-_journalShownAt)/.28f));
             Dim();Rounded(r,Ink,12);Outline(r,Hairline,12);
+            ThemedPaper(new Rect(r.x+254,r.y,r.width-254,r.height),_journalPage==0 || _journalPage==2?FishingPaperTheme.Herbarium:_journalPage==4?FishingPaperTheme.Workshop:FishingPaperTheme.Celestial);
             Rounded(new Rect(r.x,r.y,254,r.height),SeaInk,12);
+            PaperImage(new Rect(r.x+96,r.y+604,62,50),FishingPaperDesign.Crest,Color.white);
             DisplayText(new Rect(r.x+27,r.y+29,205,26),"T I D E B O U N D",13,AmberInk);
             DisplayText(new Rect(r.x+26,r.y+64,220,54),c.ReadingFieldGuide?"自然手册":"航海手札",33,CreamInk,true);
             Fill(r.x+28,r.y+126,192,1,new Color(.86f,.72f,.48f,.4f));
@@ -57,7 +59,7 @@ namespace BoatAttack.Fishing
             Label(x+2,r.y+84,820,26,ChapterNotes[_journalPage]+"    /    回潮海自然档案",16,Muted);
             Label(new Rect(r.xMax-185,r.y+43,146,28),"0"+(_journalPage+1)+"  /  07",16,Muted,false,TextAnchor.UpperRight);
             if(Button(new Rect(r.xMax-250,r.y+79,210,31),_journalOrderOpen?"返回手札":"查看当前委托",true,false,14))_journalOrderOpen=!_journalOrderOpen;
-            Fill(x,r.y+124,r.width-326,1,Hairline);
+            QuietRule(x,r.y+124,r.width-326);
             var page=new Rect(x,r.y+145,r.width-326,544);
             if(_journalOrderOpen)DrawJournalOrder(page);
             else switch(_journalPage)
@@ -104,8 +106,9 @@ namespace BoatAttack.Fishing
             if(Button(new Rect(r.x,r.y+480,115,36),"← 上一页",_catalogPage>0,false,14))CatalogPage--;
             Label(new Rect(r.x+125,r.y+487,338,24),(_catalogPage+1)+" / "+pages+"    ·    标本目录",14,Muted,false,TextAnchor.MiddleCenter);
             if(Button(new Rect(r.x+473,r.y+480,103,36),"下一页 →",_catalogPage<pages-1,false,14))CatalogPage++;
-            var detail=new Rect(r.x+610,r.y,520,527);Rounded(detail,InkRaised,8);
+            var detail=new Rect(r.x+610,r.y,520,527);Rounded(detail,FishingUITheme.Light,4);Outline(detail,Hairline,4);
             ChapterImage(new Rect(detail.x,detail.y,520,130),0);
+            PaperImage(new Rect(detail.xMax-67,detail.y-2,36,72),FishingPaperDesign.Bookmark,Color.white);
             var kind=(FishKind)_selectedFish;var species=FishingSpecies.Of(kind);bool knownFish=KnownFish(_selectedFish),secret=species.Legendary&&!knownFish;
             Rounded(new Rect(detail.x+57,detail.y+87,406,182),Ink,8);Outline(new Rect(detail.x+57,detail.y+87,406,182),Hairline,8);
             if(secret)Label(new Rect(detail.x+75,detail.y+112,370,128),"？",70,Gold,true,TextAnchor.MiddleCenter);
@@ -113,7 +116,7 @@ namespace BoatAttack.Fishing
             Label(new Rect(detail.x+28,detail.y+285,464,48),secret?"传说仍在海风里":species.Name,32,InkText,true,TextAnchor.UpperCenter);
             Label(new Rect(detail.x+34,detail.y+338,452,56),secret?"收集传说线索，寻找海面上的金色帆影。":species.Habitat,17,Muted,false,TextAnchor.UpperCenter);
             Label(new Rect(detail.x+30,detail.y+389,460,21),secret?"传说条件见线索章":FishingText.Weight(species.MinGrams)+" – "+FishingText.Weight(species.MaxGrams),13,Muted,false,TextAnchor.MiddleCenter);
-            Fill(detail.x+30,detail.y+416,460,1,Hairline);
+            QuietRule(detail.x+30,detail.y+416,460);
             Label(detail.x+30,detail.y+428,230,25,"最大纪录",14,Muted);
             Label(detail.x+30,detail.y+458,250,36,career.BestGrams(kind)>0?FishingText.Weight(career.BestGrams(kind)):"等待第一次相遇",24,Gold,true);
             Label(detail.x+300,detail.y+428,194,26,knownFish?"已收录":"尚未收录",16,knownFish?Mint:Muted,true);

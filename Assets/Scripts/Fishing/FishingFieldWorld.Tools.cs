@@ -13,11 +13,11 @@ namespace BoatAttack.Fishing
         private static readonly FishingFingerPose PickFingers=new FishingFingerPose(.65f,.44f,.44f,.42f,1f);
         public static readonly Vector3 BinocularLeftPalm=new Vector3(-.365f,0,-.055f);
         public static readonly Vector3 BinocularRightPalm=new Vector3(.365f,0,-.055f);
-        public const float PickScale=.85f;
+        public const float PickScale=.68f;
         public const float LanternScale=.75f;
         public static readonly Vector3 LanternPalm=new Vector3(.018f,.391f,-.017f);
         public static readonly Quaternion LanternHandRotation=Quaternion.Euler(-60,0,0);
-        public static readonly FishingFingerPose LanternFingers=FishingFingerPose.Uniform(.8f);
+        public static readonly FishingFingerPose LanternFingers=FishingFingerPose.Lantern;
         public static readonly Vector3 LanternHangPoint=new Vector3(0,.394f,0);
         public static readonly Vector3 LanternLightPoint=new Vector3(0,.14f,0);
         private Material[] _plainToolMaterials;
@@ -105,7 +105,7 @@ namespace BoatAttack.Fishing
                     // follows the real shaft while fingers remain forward instead of rolled inward.
                     rotation=bodyFrame*Quaternion.Euler(XRSettings.isDeviceActive?5:-5,-45,0);
                     rightRotation=PickHandRotation(rotation,bodyFrame);
-                    position=shoulderFrame+bodyFrame*new Vector3(_c.Shore.Character.HandSide(false)*.12f,-.065f,.43f)-rotation*(rightPalm*scale);break;
+                    position=shoulderFrame+bodyFrame*new Vector3(_c.Shore.Character.HandSide(false)*.12f,XRSettings.isDeviceActive?-.065f:-.035f,.53f)-rotation*(rightPalm*scale);break;
                 case FieldItem.HuntingSpear:
                     scale=1;rightPalm=SpearPalm;rightRotation=Quaternion.LookRotation(Vector3.up,Vector3.right);
                     fingers=FishingFingerPose.Handle;position=eye+frame*new Vector3(.20f,-.32f,.35f);
@@ -172,6 +172,8 @@ namespace BoatAttack.Fishing
             if(twoHands)_c.Hands.SetToolTarget(true,_held,leftPalm,leftRotation,curl,fingers:item==FieldItem.FieldGuide && _c.GuideOpening?FishingFingerPose.Book:fingers);
             else if(!tracked)_c.Hands.RestHand(true);
             _c.Hands.SetToolTarget(false,_held,rightPalm,rightRotation,curl,fingers:fingers);
+            if(pick)_c.Hands.Right.SetGripSurface(_held.TransformPoint(new Vector3(0,-.10f,0)),_held.TransformPoint(new Vector3(0,.15f,0)),.018f*scale);
+            else if(item==FieldItem.HuntingSpear)_c.Hands.Right.SetGripSurface(_held.TransformPoint(new Vector3(0,0,-.14f)),_held.TransformPoint(new Vector3(0,0,.14f)),.025f*scale);
             if(pick || item==FieldItem.Lantern)_c.Hands.Right.SetForearmRoll(.65f);
             _lamp.enabled=item==FieldItem.Lantern && _c.LanternOn;
             _lamp.transform.position=_held.TransformPoint(LanternLightPoint);

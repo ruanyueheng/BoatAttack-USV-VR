@@ -73,11 +73,12 @@ namespace BoatAttack.EditorTools
                 c.Shore.Body.enabled=false;c.Shore.Actor.position=home.Origin+new Vector3(6.8f,.28f,.65f);c.Shore.Body.enabled=true;Physics.SyncTransforms();
                 Check(!world.ReachStation(forge.id) && !world.OpenStation(forge.id),"Actual exterior house wall blocks station reach");
 
-                var spots=new[]{home.WakePoint,home.Origin+new Vector3(-1.55f,.20f,-3.5f),home.Origin+new Vector3(3.65f,.20f,-2.4f),home.Origin+new Vector3(-4.35f,.20f,.65f)};
+                var spots=new[]{home.WakePoint,home.LoungeStance,home.Origin+new Vector3(3.65f,.20f,-2.4f),home.Origin+new Vector3(-4.35f,.20f,.65f)};
                 for(int item=1;item<4;item++)
                 {
                     Check(c.Shore.Relocate(spots[item],Quaternion.identity),"Furniture interaction apron has clearance "+item);yield return null;
-                    Check(home.TryTarget(out int id,out _) && id==item && home.ReachInteraction(item),"Nearest furniture selection identifies "+item);
+                    FishingV036FarmValidation.Aim(c,home.InteractionPoint(item));yield return null;
+                    bool found=home.TryTarget(out int id,out _);Check(found && id==item && home.ReachInteraction(item),"Nearest furniture selection identifies "+item+" selected="+id+" reachable="+home.ReachInteraction(item)+" camera="+c.viewCamera.transform.position+" facing="+c.viewCamera.transform.forward);
                     bool before=home.LightsOn;
                     if(item==2 && c.ChartExpanded)c.ToggleChart();
                     Check(c.RequestWorldInteraction(),"Desktop E dispatches home interaction "+item);

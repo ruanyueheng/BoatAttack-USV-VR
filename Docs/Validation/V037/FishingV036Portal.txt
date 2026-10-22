@@ -1,0 +1,82 @@
+[V036-PORTAL] CHECK: 仅操作临时隔离存档
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: V019 island character / Portal
+[V036-PORTAL] CHECK: Portal uses three batched surfaces
+[V036-PORTAL] CHECK: Light curtain never blocks walking or simulates particles
+[V036-PORTAL] CHECK: Portal has its translucent animated curtain
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: Realm 0 / Device 4
+[V036-PORTAL] CHECK: Portal uses three batched surfaces
+[V036-PORTAL] CHECK: Light curtain never blocks walking or simulates particles
+[V036-PORTAL] CHECK: Portal has its translucent animated curtain
+[V036-PORTAL] CHECK: Exit remains at the terminal platform 0
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: V019 island character / Portal
+[V036-PORTAL] CHECK: Portal uses three batched surfaces
+[V036-PORTAL] CHECK: Light curtain never blocks walking or simulates particles
+[V036-PORTAL] CHECK: Portal has its translucent animated curtain
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: Realm 1 / Device 4
+[V036-PORTAL] CHECK: Portal uses three batched surfaces
+[V036-PORTAL] CHECK: Light curtain never blocks walking or simulates particles
+[V036-PORTAL] CHECK: Portal has its translucent animated curtain
+[V036-PORTAL] CHECK: Exit remains at the terminal platform 1
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: V019 island character / Portal
+[V036-PORTAL] CHECK: Portal uses three batched surfaces
+[V036-PORTAL] CHECK: Light curtain never blocks walking or simulates particles
+[V036-PORTAL] CHECK: Portal has its translucent animated curtain
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: Realm 2 / Device 4
+[V036-PORTAL] CHECK: Portal uses three batched surfaces
+[V036-PORTAL] CHECK: Light curtain never blocks walking or simulates particles
+[V036-PORTAL] CHECK: Portal has its translucent animated curtain
+[V036-PORTAL] CHECK: Exit remains at the terminal platform 2
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: V019 island character / Portal
+[V036-PORTAL] CHECK: Portal uses three batched surfaces
+[V036-PORTAL] CHECK: Light curtain never blocks walking or simulates particles
+[V036-PORTAL] CHECK: Portal has its translucent animated curtain
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: Realm 3 / Device 4
+[V036-PORTAL] CHECK: Portal uses three batched surfaces
+[V036-PORTAL] CHECK: Light curtain never blocks walking or simulates particles
+[V036-PORTAL] CHECK: Portal has its translucent animated curtain
+[V036-PORTAL] CHECK: Exit remains at the terminal platform 3
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: Realm 0 / Device 4
+[V036-PORTAL] CHECK: Portal uses three batched surfaces
+[V036-PORTAL] CHECK: Light curtain never blocks walking or simulates particles
+[V036-PORTAL] CHECK: Portal has its translucent animated curtain
+[V036-PORTAL] CHECK: No return portal at the sanctuary entrance 0
+[V036-PORTAL] CHECK: Entry cannot accidentally trigger a return 0
+[V036-PORTAL] CHECK: Terminal portal stands on the authored floor 0
+[V036-PORTAL] CHECK: Terminal portal can be used independently of claiming the echo 0
+[V036-PORTAL] CHECK: Terminal prompt clearly says where it leads 0
+[V036-PORTAL] CHECK: Terminal portal can be used independently of claiming the echo 0
+[V036-PORTAL] CHECK: Terminal prompt clearly says where it leads 0
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: Realm 1 / Device 4
+[V036-PORTAL] CHECK: Portal uses three batched surfaces
+[V036-PORTAL] CHECK: Light curtain never blocks walking or simulates particles
+[V036-PORTAL] CHECK: Portal has its translucent animated curtain
+[V036-PORTAL] CHECK: No return portal at the sanctuary entrance 1
+[V036-PORTAL] CHECK: Entry cannot accidentally trigger a return 1
+[V036-PORTAL] CHECK: Terminal portal stands on the authored floor 1
+[V036-PORTAL] CHECK: Terminal portal can be used independently of claiming the echo 1
+[V036-PORTAL] CHECK: Terminal prompt clearly says where it leads 1
+[V036-PORTAL] CHECK: Terminal portal can be used independently of claiming the echo 1
+[V036-PORTAL] CHECK: Terminal prompt clearly says where it leads 1
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: Realm 2 / Device 4
+[V036-PORTAL] CHECK: Portal uses three batched surfaces
+[V036-PORTAL] CHECK: Light curtain never blocks walking or simulates particles
+[V036-PORTAL] CHECK: Portal has its translucent animated curtain
+[V036-PORTAL] CHECK: No return portal at the sanctuary entrance 2
+[V036-PORTAL] CHECK: Entry cannot accidentally trigger a return 2
+[V036-PORTAL] CHECK: Terminal portal stands on the authored floor 2
+[V036-PORTAL] CHECK: Terminal portal can be used independently of claiming the echo 2
+[V036-PORTAL] CHECK: Terminal prompt clearly says where it leads 2
+[V036-PORTAL] CHECK: Terminal portal can be used independently of claiming the echo 2
+[V036-PORTAL] CHECK: Terminal prompt clearly says where it leads 2
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: Realm 3 / Device 4
+[V036-PORTAL] CHECK: Portal uses three batched surfaces
+[V036-PORTAL] CHECK: Light curtain never blocks walking or simulates particles
+[V036-PORTAL] CHECK: Portal has its translucent animated curtain
+[V036-PORTAL] CHECK: No return portal at the sanctuary entrance 3
+[V036-PORTAL] CHECK: Entry cannot accidentally trigger a return 3
+[V036-PORTAL] CHECK: Terminal portal stands on the authored floor 3
+[V036-PORTAL] CHECK: Terminal portal can be used independently of claiming the echo 3
+[V036-PORTAL] CHECK: Terminal prompt clearly says where it leads 3
+[V036-PORTAL] CHECK: Terminal portal can be used independently of claiming the echo 3
+[V036-PORTAL] CHECK: Terminal prompt clearly says where it leads 3
+[V036-PORTAL] PASS: v0.37.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。

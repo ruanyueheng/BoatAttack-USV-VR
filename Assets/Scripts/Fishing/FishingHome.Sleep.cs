@@ -36,6 +36,7 @@ namespace BoatAttack.Fishing
         // The collision capsule stays on the clear bedside floor; only the original skinned rig climbs onto the mattress.
         public void PresentSleepPose()
         {
+            if(Lounging){PresentLeisurePose();return;}
             if(!Sleeping || _c==null)return;
             float enter=Mathf.SmoothStep(0,1,Mathf.InverseLerp(0,.85f,_age));
             float sit=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.85f,1.6f,_age));
@@ -74,6 +75,6 @@ namespace BoatAttack.Fishing
                 return Vector3.Lerp(_cameraStart,_bedFeet+_lyingRotation*Vector3.up*1.40f+Vector3.up*.22f,lower*(1-raise));
             }
         }
-        public Vector3 SleepEyeOffset=>Sleeping?ComfortableSleepEye-_cameraStart:Vector3.zero;
+        public Vector3 SleepEyeOffset=>Sleeping?ComfortableSleepEye-_cameraStart:Lounging?LoungeEyeOffset:Vector3.zero;
     }
 }

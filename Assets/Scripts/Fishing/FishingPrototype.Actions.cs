@@ -21,7 +21,7 @@ namespace BoatAttack.Fishing
         public FishingActionClock Actions { get; } = new FishingActionClock();
         private ActionRequest _action;
         private int _actionContactFrame=-1,_actionConsumedFrame=-1;
-        public bool WorldActionBusy=>_action!=null;
+        public bool WorldActionBusy=>_action!=null || (Farm!=null && Farm.Busy);
         public bool UsesFishingSeat=>Anchored || HasPendingCatch || (_action!=null && _action.Fish);
         public const float FishingSeatYaw=66f;
         public bool WorldActionBlocksGameplay=>WorldActionBusy || _actionConsumedFrame==Time.frameCount;
@@ -32,7 +32,7 @@ namespace BoatAttack.Fishing
         public Vector3 ActionStartPalm=>_action==null?Vector3.zero:_action.StartPalm;
         public Quaternion ActionToolRotation=>_action==null?Quaternion.identity:_action.ToolRotation;
         public bool ActionUsesHeldTool=>_action!=null && Actions.Kind==FishingActionKind.Harvest && IsPick(_action.Tool);
-        public bool ActionSuppressesHeldTool=>(_action!=null && !ActionUsesHeldTool) || (Realms!=null && (Realms.PushingCargo || Realms.ObservingStars));
+        public bool ActionSuppressesHeldTool=>(_action!=null && !ActionUsesHeldTool) || (Farm!=null && (Farm.CarryingCan || Farm.Busy)) || (Realms!=null && (Realms.PushingCargo || Realms.ObservingStars));
         public bool ActionMovesFish=>_action!=null && _action.Fish && HasPendingCatch;
         public float ActionContactBlend
         {
@@ -217,7 +217,7 @@ namespace BoatAttack.Fishing
         {
             get
             {
-                if(WorldActionBusy)return "动作进行中 · "+Mathf.RoundToInt(Actions.Progress*100)+"% · Esc 取消";
+                if(WorldActionBusy)return Farm!=null && Farm.Busy?Farm.ActionHint:"动作进行中 · "+Mathf.RoundToInt(Actions.Progress*100)+"% · Esc 取消";
                 if(Shore.Swimming)return "游泳 · 朝低岸移动并按空格上岸 · 靠近船边G上船";
                 if(Shore.Climbing)return Shore.ClimbHint;
                 if(Realms!=null && Realms.NearbyHint!=null)return Realms.NearbyHint;
@@ -260,15 +260,7 @@ namespace BoatAttack.Fishing
             var target=ResolveWorldTarget(true);
             if(target.Kind==WorldTargetKind.None){Notice("靠近可互动对象后按 E；低处物品可蹲下触及。",3);return false;}
             if(target.Kind==WorldTargetKind.Home)return Home.InteractAt(target.Id);
-            if(target.Kind==WorldTargetKind.Farm)
-            {
-                if(_xrActive || target.Id>=12)return Farm.InteractAt(target.Id);
-                int plot=target.Id;var work=Farm.Work(plot);
-                if(work==FarmWork.Wait || (work==FarmWork.Plant && Career.Backpack.Count(FieldItem.TurnipSeeds)==0) || (work==FarmWork.Water && Career.Farm.Water==0))return Farm.InteractAt(plot);
-                var contact=FarmContact(target.Root);
-                bool started=BeginWorldAction(FishingActionKind.Pickup,"farm:"+plot,target.Root,contact,Shore.Actor.rotation,()=>Farm.CommitAt(plot,work));
-                if(started)Farm.PresentAction(plot,work);return started;
-            }
+            if(target.Kind==WorldTargetKind.Farm)return RequestFarmInteraction(target.Id,target.Root);
             if(target.Kind==WorldTargetKind.Station)return WorkshopWorld.OpenStation(target.Id);
             if(target.Kind==WorldTargetKind.Barbecue){CoastWorld.OpenMenu();return true;}
             if(target.Kind==WorldTargetKind.HandGame)return HandGames.Begin(target.Id);
@@ -362,8 +354,9 @@ namespace BoatAttack.Fishing
                 store?Quaternion.Euler(0,Player.transform.eulerAngles.y,0):frame,()=>HasPendingCatch && Career.PendingCatch.fish.id==id && ResolveCatch(store),true);
             if(began)CatchRig.PrepareHandAction();return began;
         }
-        private bool BeginWorldAction(FishingActionKind kind,string targetId,Transform root,Vector3 contact,Quaternion rotation,Func<bool> commit,bool fish=false)
+        internal bool BeginWorldAction(FishingActionKind kind,string targetId,Transform root,Vector3 contact,Quaternion rotation,Func<bool> commit,bool fish=false)
         {
+            if(Farm!=null && Farm.CarryingCan){Notice("先将水壶放回井边木架，再腾出双手使用其他工具。",4);return false;}
             var check=EvaluateActionStart(kind,root,contact,rotation,fish);
             if(!check.CanBegin){Notice(check.Reason,4);return false;}
             var shoulder=check.BaseShoulder;var lean=check.Lean;
@@ -437,7 +430,8 @@ namespace BoatAttack.Fishing
         }
         public void CancelWorldAction()
         {
-            if(_action!=null)_actionConsumedFrame=Time.frameCount;
+            if(WorldActionBusy)_actionConsumedFrame=Time.frameCount;
+            Farm?.CancelWork();
             _action=null;Actions.Cancel();
             if(Shore!=null && Shore.Character!=null)Shore.Character.InteractionLean=Vector3.zero;
             WorkshopWorld?.SetPlacementPreview(Vector3.zero,0,false);
