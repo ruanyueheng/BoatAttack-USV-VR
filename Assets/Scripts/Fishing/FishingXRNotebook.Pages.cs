@@ -10,7 +10,7 @@ namespace BoatAttack.Fishing
         private Text _pageTitle,_pageDate,_pageDetail;
         private Image _pageLeaf,_pageLeafEdge;
         private int _pageHover=-1;
-        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤"};
+        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤","声音混音"};
 
         private void BuildNotebookPages()
         {

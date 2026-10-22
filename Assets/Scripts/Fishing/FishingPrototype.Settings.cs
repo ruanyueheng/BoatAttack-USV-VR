@@ -11,6 +11,7 @@ namespace BoatAttack.Fishing
     public sealed partial class FishingPrototype
     {
         private const string SettingsKey="Fishing.V032.";
+        internal const float WindMixBase=.025f,WindRainMixBoost=.05f;
         public float MasterVolume { get; private set; }=1;
         public float MusicVolume { get; private set; }=1;
         public float AmbientVolume { get; private set; }=1;
@@ -101,12 +102,17 @@ namespace BoatAttack.Fishing
             CoastPresentation=gameObject.AddComponent<FishingCoastalPresentation>();CoastPresentation.Build(this);
             if(_feedback!=null)_feedback.mute=false;
             RegisterAudioSource(_feedback,FishingAudioCategory.Effects,.45f);
-            // 只借用本钓鱼场景；其他加载场景和 DontDestroyOnLoad 音源不能被归类或改写。
+            // Preserve the authored levels for restoration; apply the quieter mix only inside this fishing scene.
             foreach(var engine in FindObjectsOfType<Engine>(true))
             {
-                RegisterAudioSource(engine.engineSound,FishingAudioCategory.Effects,engine.engineSound!=null?engine.engineSound.volume:0);
-                RegisterAudioSource(engine.waterSound,FishingAudioCategory.Ambient,engine.waterSound!=null?engine.waterSound.volume:0);
+                RegisterEnvironmentLoop(engine.engineSound,.20f,.08f);
+                RegisterEnvironmentLoop(engine.waterSound,.18f,.055f);
             }
+            // The original island's spatial waves/jetty loops also belong to Ambient, not an uncontrolled second mix.
+            foreach(var source in FindObjectsOfType<AudioSource>(true))
+                if(source.gameObject.scene==gameObject.scene && !_settingAudio.ContainsKey(source) && source.loop && source.clip!=null
+                    && (source.clip.name=="ShoreWaves" || source.clip.name=="ShoreRocks" || source.clip.name=="Jetty" || source.clip.name=="FlowingWater"))
+                    RegisterEnvironmentLoop(source,.20f,.055f);
             if(!HasIsolatedProfile && Weather.ReducedEffects!=(PlayerPrefs.GetInt(SettingsKey+"ReducedEffects",0)==1))Weather.ToggleReducedEffects();
             foreach(string key in new[]{"Master","Music","Ambient","Effects","Sensitivity","FOV","Invert","Quality"})
             {
@@ -121,6 +127,12 @@ namespace BoatAttack.Fishing
                     SetFullscreen(PlayerPrefs.GetInt(SettingsKey+"Fullscreen",0)==1);
             }
             TitleVoyage=gameObject.AddComponent<FishingTitleVoyage>();TitleVoyage.Build(this);
+        }
+        private void RegisterEnvironmentLoop(AudioSource source,float scale,float maximum)
+        {
+            if(source==null || source.gameObject.scene!=gameObject.scene)return;
+            float authored=_settingAudio.TryGetValue(source,out var entry)?entry.OriginalVolume:source.volume;
+            RegisterAudioSource(source,FishingAudioCategory.Ambient,Mathf.Min(maximum,Mathf.Max(0,authored)*scale));
         }
         private void ApplyGraphicsQuality()
         {

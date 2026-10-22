@@ -78,6 +78,8 @@ namespace BoatAttack.EditorTools
                 ValidateHarvest(c);
                 var shopDetails = ValidateShopDetails(c);
                 while (shopDetails.MoveNext()) yield return shopDetails.Current;
+                var inspections = ValidateToolInspections(c);
+                while (inspections.MoveNext()) yield return inspections.Current;
 
                 c.ReturnToHarbor(); yield return null;
                 c.MoveToSpotForAutomation(0); c.Interact();
@@ -149,6 +151,16 @@ namespace BoatAttack.EditorTools
                 Check(c.ActionAudio.DetailCount("NetFishPlace") == netPlacements,
                     "Safety-parking a fish on pause does not pretend a placement animation completed");
                 c.TogglePause(); yield return null;
+                c.CatchRig.PrepareHandAction();
+                Check(c.CatchRig.Location == FishingCatchRig.Place.Hand, "The same durable fish can enter the existing right-hand inspection pose");
+                int rightFlaps = c.ActionAudio.FishFlapsPlayed;
+                for (int frame = 0; frame < 240 && c.ActionAudio.FishFlapsPlayed - rightFlaps < 2; frame++) yield return null;
+                Check(c.ActionAudio.FishFlapsPlayed == rightFlaps + 2,
+                    "Right-hand inspection uses the same generated fish bank on separated actual motion peaks");
+                c.CatchRig.ToggleInspect();
+                for (int frame = 0; frame < 5; frame++) yield return null;
+                Check(c.CatchRig.Location == FishingCatchRig.Place.Tray && c.ActionAudio.FishFlapsPlayed == rightFlaps + 2
+                    && !c.ActionAudio.FishSource.isPlaying, "Putting down the right-held fish stops struggle audio without granting a reward");
                 // Pause safely parks the fish in its net. Explicitly pick up the same receipt again.
                 Check(c.CatchRig.ToggleLeftInspection(), "The same pending live fish can be inspected after pause recovery");
                 for (int i = 0; i < 100 && !c.CatchRig.LeftInspectionSettled; i++) yield return null;
@@ -177,6 +189,7 @@ namespace BoatAttack.EditorTools
             }
             finally
             {
+                c.EndItemInspection();
                 if (c.InventoryOpen) c.ToggleInventory();
                 if (c.Paused) c.TogglePause();
                 c.ReturnToHarbor(); c.RestoreShopTestProfile(original);
@@ -201,8 +214,18 @@ namespace BoatAttack.EditorTools
             foreach (string clip in new[] { "ReelInLoop", "ReelOutLoop", "RifleShot" }) { ValidateClip(clip); count++; }
             Check(count == 34 && FishingActionAudio.Clip("ReelInLoop") != FishingActionAudio.Clip("ReelOutLoop"),
                 "All 34 action clips exist and reel-in/reel-out are distinct resources");
-            Check(Private<AudioClip>(c.RifleHunting, "_shot") == FishingActionAudio.Clip("RifleShot"),
-                "The actual rifle uses the imported shot rather than its procedural fallback");
+            var rifleShots = Private<AudioClip[]>(c.RifleHunting, "_shots");
+            Check(rifleShots.Length == 2 && rifleShots[0] == FishingActionAudio.Clip("RifleShot1")
+                && rifleShots[1] == FishingActionAudio.Clip("RifleShot2")
+                && Private<AudioClip>(c.RifleHunting, "_shot") == rifleShots[0],
+                "The actual rifle prefers both generated shot variants instead of its legacy fallback");
+            var fishBank = Private<AudioClip[]>(c.ActionAudio, "_fishFlop");
+            Check(fishBank.Length == 2 && fishBank[0] == FishingActionAudio.Clip("FishInspect1")
+                && fishBank[1] == FishingActionAudio.Clip("FishInspect2"),
+                "Both live-fish inspection hands share the generated struggle bank with no synthetic clips mixed in");
+            Check(fishBank[0].length / .95f < FishingFishFlapClock.Period
+                && fishBank[1].length / .95f < FishingFishFlapClock.Period,
+                "Even at the slowest playback pitch each fish burst ends before the next animation peak");
             int generated = 0;
             foreach (string cue in new[] { "RodCast", "FloatSplash", "NetFishPlace", "FarmTill", "FarmPlant", "FarmWater", "FarmHarvest", "ShopPurchase" })
             {
@@ -212,6 +235,13 @@ namespace BoatAttack.EditorTools
                     "Two distinct generated WAV variants are imported for " + cue);
             }
             Check(generated == 16, "All sixteen generated detail clips coexist with the original thirty-four action clips");
+            int inspectionClips = 0;
+            foreach (string cue in new[] { "PickaxeInspect", "RifleInspect", "FishInspect", "RifleShot" })
+            {
+                var first = ValidateClip(cue + "1"); var second = ValidateClip(cue + "2"); inspectionClips += 2;
+                Check(first != second, "The inspection/fire bank contains two distinct imported variants: " + cue);
+            }
+            Check(inspectionClips == 8, "All eight generated pickaxe/rifle/fish inspection and gunshot clips are present");
             Check(!c.ActionAudio.Detail("not-a-cue", c.ExplorerPosition) && c.ActionAudio.DetailCount("not-a-cue") == 0
                 && !c.ActionAudio.Detail("RodCast", new Vector3(float.NaN, 0, 0)),
                 "Unknown cue names and invalid spatial coordinates cannot fabricate playback or counts");
@@ -303,21 +333,21 @@ namespace BoatAttack.EditorTools
         private static void ValidateSettings(FishingPrototype c)
         {
             var a = c.ActionAudio;
-            var sources = new[] { a.FootstepSource, a.ItemSource, a.FishSource };
+            var sources = new[] { a.FootstepSource, a.ItemSource, a.FishSource, a.InspectionSource };
             c.SetSetting("Effects", 0);
             foreach (var source in sources) Check(source != null && source.volume == 0 && !source.ignoreListenerVolume,
                 "Effects mute reaches the registered action source: " + (source == null ? "missing" : source.name));
             c.SetSetting("Effects", .5f);
             Check(Mathf.Abs(a.FootstepSource.volume - .085f) < .00001f
                 && Mathf.Abs(a.ItemSource.volume - .12f) < .00001f
-                && Mathf.Abs(a.FishSource.volume - .075f) < .00001f,
+                && Mathf.Abs(a.FishSource.volume - .075f) < .00001f && Mathf.Abs(a.InspectionSource.volume - .08f) < .00001f,
                 "Effects gain scales each action source's original base volume");
             c.SetSetting("Master", .4f);
             Check(Mathf.Abs(AudioListener.volume - .4f) < .00001f, "Master gain reaches the common listener");
             c.ToggleQuiet(); int pickups = a.PickupSoundsPlayed, details = a.DetailCount("RodCast");
             a.Pickup(FieldItem.Stone, c.ExplorerPosition);
             Check(c.QuietMode && AudioListener.volume == 0 && a.FootstepSource.mute && a.ItemSource.mute
-                && a.FishSource.mute && a.PickupSoundsPlayed == pickups,
+                && a.FishSource.mute && a.InspectionSource.mute && a.PickupSoundsPlayed == pickups,
                 "Quiet mode mutes every action category and suppresses new action playback");
             Check(!a.Detail("RodCast", c.ExplorerPosition) && a.DetailCount("RodCast") == details,
                 "Quiet mode also suppresses generated detail cues without accumulating replay counts");
@@ -485,6 +515,54 @@ namespace BoatAttack.EditorTools
             Check(!shop.Buy(UpgradeTrack.Line) && !shop.BuyRifle()
                 && c.Career.Coins == FishingCareer.HuntingRiflePrice && c.ActionAudio.DetailCount("ShopPurchase") == rifles + 1,
                 "Closed-counter upgrade and rifle requests stay silent and cannot spend the player's money");
+        }
+
+        private static IEnumerator ValidateToolInspections(FishingPrototype c)
+        {
+            c.EndItemInspection(); c.Hands.ResetInteraction(); c.FieldWorld.ClearToolPresentation();
+            if (!c.FirstPerson) c.ToggleView();
+            c.View.ResetLook(); c.PresentCharacterFrame(); yield return null;
+            Check(c.Career.Backpack.TryAdd(FieldItem.StonePickaxe, 1) && c.Career.Backpack.TryAdd(FieldItem.IronPickaxe, 1),
+                "The isolated inspection fixture owns real stone and iron picks beside its purchased rifle");
+            foreach (var item in new[] { FieldItem.StonePickaxe, FieldItem.IronPickaxe, FieldItem.HuntingRifle })
+            {
+                int slot = -1;
+                for (int i = 0; i < FishingBackpack.SlotCount; i++) if (c.Career.Backpack.At(i).item == item) { slot = i; break; }
+                Check(slot >= 0, "The real inspected tool exists in the backpack: " + item);
+                string cue = item == FieldItem.HuntingRifle ? "RifleInspect" : "PickaxeInspect";
+                int count = c.ActionAudio.DetailCount(cue);
+                Check(c.InspectFieldItem(slot) && c.ActionAudio.DetailCount(cue) == count,
+                    "Successful inspection queues, but does not play ahead of the visible hand pose: " + item);
+                for (int frame = 0; frame < 12 && c.ActionAudio.DetailCount(cue) == count; frame++)
+                { c.PresentCharacterFrame(); yield return null; }
+                Check(c.InspectingItem && c.FieldWorld.PresentedItem == item && c.ActionAudio.DetailCount(cue) == count + 1,
+                    "The actual visible inspected tool triggers exactly one generated handling sound: " + item);
+                Check(c.InspectFieldItem(slot), "An active inspection remains safe to request again: " + item);
+                for (int frame = 0; frame < 12; frame++)
+                {
+                    typeof(FishingPrototype).GetProperty("InspectionAngles").SetValue(c, new Vector2(frame, frame * 3));
+                    c.PresentCharacterFrame(); yield return null;
+                }
+                Check(c.ActionAudio.DetailCount(cue) == count + 1,
+                    "Turning the actual model and repeated same-tool requests never replay a per-frame inspection sound: " + item);
+                c.EndItemInspection();
+                Check(!c.ActionAudio.InspectionSource.isPlaying, "Cancelling inspection immediately stops its dedicated source: " + item);
+                yield return null;
+                Check(c.InspectFieldItem(slot), "A new inspection may begin after cancellation: " + item);
+                c.EndItemInspection();
+                for (int frame = 0; frame < 3; frame++) yield return null;
+                Check(c.ActionAudio.DetailCount(cue) == count + 1,
+                    "Cancellation before the model reaches its hand pose stays silent: " + item);
+                c.TogglePause();
+                Check(!c.InspectFieldItem(slot) && c.ActionAudio.DetailCount(cue) == count + 1
+                    && !c.ActionAudio.InspectionSource.isPlaying,
+                    "Paused inspection requests cannot trigger or queue handling sound: " + item);
+                c.TogglePause(); yield return null;
+            }
+            int picks = c.ActionAudio.DetailCount("PickaxeInspect"), rifles = c.ActionAudio.DetailCount("RifleInspect");
+            Check(!c.InspectFieldItem(-1) && !c.InspectFieldItem(FishingBackpack.SlotCount - 1)
+                && c.ActionAudio.DetailCount("PickaxeInspect") == picks && c.ActionAudio.DetailCount("RifleInspect") == rifles,
+                "Invalid or empty tool slots emit neither pickaxe nor rifle inspection sound");
         }
 
         private static void PlaceBoat(FishingPrototype c, Vector3 point)

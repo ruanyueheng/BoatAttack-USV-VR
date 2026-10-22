@@ -23,6 +23,8 @@ namespace BoatAttack.Fishing
         private Material _traceMaterial;
         private AudioSource _audio;
         private AudioClip _shot,_ownedShotFallback;
+        private AudioClip[] _shots;
+        private int _lastShot=-1;
         private float _nextShot,_flashUntil;
         private readonly Collider[] _overlaps=new Collider[32];
         private readonly RaycastHit[] _sweepHits=new RaycastHit[64];
@@ -52,7 +54,11 @@ namespace BoatAttack.Fishing
             }
             _audio=gameObject.AddComponent<AudioSource>();_audio.playOnAwake=false;_audio.spatialBlend=0;_audio.volume=.23f;
             _c.RegisterAudioSource(_audio,FishingAudioCategory.Effects,.23f);
-            _shot=Resources.Load<AudioClip>("FishingAudio/SFX/RifleShot");
+            var firstShot=Resources.Load<AudioClip>("FishingAudio/SFX/RifleShot1");
+            var secondShot=Resources.Load<AudioClip>("FishingAudio/SFX/RifleShot2");
+            if(firstShot!=null || secondShot!=null)
+                _shots=firstShot!=null && secondShot!=null?new[]{firstShot,secondShot}:new[]{firstShot!=null?firstShot:secondShot};
+            _shot=_shots!=null?_shots[0]:Resources.Load<AudioClip>("FishingAudio/SFX/RifleShot");
             if(_shot==null)
             {
                 _ownedShotFallback=AudioClip.Create("Hunting report",7056,1,44100,false);
@@ -60,6 +66,7 @@ namespace BoatAttack.Fishing
                 for(int i=0;i<samples.Length;i++){float t=i/44100f;samples[i]=(float)((random.NextDouble()*2-1)*Math.Exp(-t*45)+.3*Math.Sin(t*1050)*Math.Exp(-t*25));}
                 _ownedShotFallback.SetData(samples,0);_shot=_ownedShotFallback;
             }
+            if(_shots==null)_shots=new[]{_shot};
             _trace=new GameObject("Hunting shot trace").AddComponent<LineRenderer>();_trace.transform.SetParent(transform,false);
             _traceMaterial=new Material(_c.PaletteShader);_traceMaterial.SetFloat("_Unlit",1);_traceMaterial.SetColor("_BaseColor",new Color(1,.78f,.32f));
             _trace.sharedMaterial=_traceMaterial;_trace.positionCount=2;_trace.startWidth=.012f;_trace.endWidth=.003f;_trace.enabled=false;
@@ -250,6 +257,7 @@ namespace BoatAttack.Fishing
                     }
             }
             _trace.SetPosition(0,Muzzle);_trace.SetPosition(1,end);_trace.enabled=true;
+            _lastShot=(_lastShot+1)%_shots.Length;_shot=_shots[_lastShot];
             if(!_c.QuietMode)_audio.PlayOneShot(_shot);
             if(tracked && device.TryGetHapticCapabilities(out var capabilities) && capabilities.supportsImpulse)device.SendHapticImpulse(0,.25f,.06f);
             if(!killed)_c.Notice("未命中动物",1);

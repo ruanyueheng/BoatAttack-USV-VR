@@ -104,7 +104,7 @@ namespace BoatAttack.Fishing
             var rng=new System.Random(731);var samples=new float[22050*4];float low=0;
             for(int i=0;i<samples.Length;i++){low=Mathf.Lerp(low,(float)rng.NextDouble()*2-1,.065f);samples[i]=low*Mathf.Sin(Mathf.PI*i/(samples.Length-1));}
             var clip=AudioClip.Create("Original soft coastal wind",samples.Length,1,22050,false);clip.SetData(samples,0);_owned.Add(clip);_audio.clip=clip;
-            Controller.RegisterAudioSource(_audio,FishingAudioCategory.Ambient,.07f);_audio.Play();
+            Controller.RegisterAudioSource(_audio,FishingAudioCategory.Ambient,FishingPrototype.WindMixBase);_audio.Play();
         }
         public void ToggleReducedEffects()
         {
@@ -122,7 +122,7 @@ namespace BoatAttack.Fishing
             Controller.Career.Calendar.Tick(Time.deltaTime, frozen || Controller.Automated);
             Climate.Tick(Time.deltaTime,frozen,Controller.Automated?(BayWeather?)null:Controller.Career.Calendar.Weather);
             ApplyEnvironment();
-            if(_audio!=null)Controller.SetAudioBaseVolume(_audio,.07f+_rainAmount*.13f);
+            if(_audio!=null)Controller.SetAudioBaseVolume(_audio,FishingPrototype.WindMixBase+_rainAmount*FishingPrototype.WindRainMixBoost);
             if(_rain!=null)
             {
                 bool covered=(Controller.Realms!=null && Controller.Realms.Inside) || (Controller.TackleShop!=null && Controller.TackleShop.Inside);

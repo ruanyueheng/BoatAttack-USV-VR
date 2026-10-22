@@ -290,7 +290,7 @@ namespace BoatAttack.Fishing
                 Set(1,"舒适航行\n"+(_c.ComfortMode?"开启":"标准动力"),()=>{_c.ToggleComfort();Refresh();});
                 Set(2,"天气："+BayClimate.Name(_c.Weather.Climate.Current)+"\n点击切换",()=>{_c.Weather.CyclePreview();Refresh();});
                 Set(3,_c.Weather.Climate.Automatic?"天气循环：自动\n点击固定":"天气循环：固定\n点击自动",()=>{if(_c.Weather.Climate.Automatic)_c.Weather.Climate.Hold();else _c.Weather.Climate.ResumeCycle();Refresh();});
-                Set(4,"环境音 / 音乐\n"+(_c.QuietMode?"静音":"开启"),()=>{_c.ToggleQuiet();Refresh();});
+                Set(4,"声音混音\nBGM / 音效 / 环境",()=>Open(18));
                 Set(5,"完整手柄教学\n安全练习全部按键",BeginGuide);
                 Set(6,"校准眼高",()=>{_c.XRSeat.Recenter();Close();});
                 Set(7,"序章 / 环境特效 / 救援",()=>Open(16));Set(8,"返回首页",()=>Open());
@@ -320,6 +320,7 @@ namespace BoatAttack.Fishing
                 Set(7,"返回设置",()=>Open(14));Set(8,"返回海湾",Close);
             }
             else if(_page==17)RefreshBarbecuePage();
+            else if(_page==18)RefreshAudioPage();
             else
             {
                 _status.text="二级载重 / 动力 / 操控专精三选一\n其他两项可升至一级；旧升级保留\n金币 "+_c.Career.Coins;

@@ -14,7 +14,7 @@ namespace BoatAttack.Fishing
     public sealed class FishingActionAudio : MonoBehaviour
     {
         private FishingPrototype _c;
-        private AudioSource _feet, _items, _fish;
+        private AudioSource _feet, _items, _fish, _inspection;
         private readonly FishingFootstepClock _steps = new FishingFootstepClock();
         private readonly FishingFishFlapClock _flaps = new FishingFishFlapClock();
         private readonly System.Random _random = new System.Random(211067);
@@ -28,6 +28,9 @@ namespace BoatAttack.Fishing
         private bool _sampled;
         private string _rightFishId;
         private float _rightFishTime;
+        private int _lastFishFlap = -1;
+        private FieldItem _inspectionItem;
+        private bool _inspectionPending;
 
         public int FootstepsPlayed { get; private set; }
         public int PickupSoundsPlayed { get; private set; }
@@ -37,6 +40,7 @@ namespace BoatAttack.Fishing
         public AudioSource FootstepSource => _feet;
         public AudioSource ItemSource => _items;
         public AudioSource FishSource => _fish;
+        public AudioSource InspectionSource => _inspection;
 
         public static AudioClip Clip(string name) => Resources.Load<AudioClip>("FishingAudio/SFX/" + name);
         private static AudioClip[] Clips(string prefix, int count)
@@ -51,11 +55,13 @@ namespace BoatAttack.Fishing
             _feet = Source("Surface footsteps", .17f, .65f);
             _items = Source("Successful resource interaction", .24f, .45f);
             _fish = Source("Held live fish movement", .15f, .45f);
+            _inspection = Source("Visible tool inspection", .16f, .45f);
             _footClips[0] = Clips("StepSand", 4); _footClips[1] = Clips("StepGrass", 4);
             _footClips[2] = Clips("StepWood", 4); _footClips[3] = Clips("StepStone", 4);
             _stonePickup = Clips("StonePickup", 3); _woodPickup = Clips("WoodPickup", 3);
             _softPickup = Clips("SoftPickup", 3); _stoneHit = Clips("StoneHit", 3);
-            _fishFlop = Clips("FishFlop", 3);
+            var fishFirst = Clip("FishInspect1"); var fishSecond = Clip("FishInspect2");
+            _fishFlop = fishFirst != null && fishSecond != null ? new[] { fishFirst, fishSecond } : Clips("FishFlop", 3);
         }
         private AudioSource Source(string label, float volume, float spatial)
         {
@@ -92,7 +98,8 @@ namespace BoatAttack.Fishing
         public int DetailCount(string cue)
             => cue != null && _detailCounts.TryGetValue(cue, out int count) ? count : 0;
         /// <summary>One successful action cue. Missing imported variants stay silent; no synthesized substitute or game transaction.</summary>
-        public bool Detail(string cue, Vector3 at)
+        public bool Detail(string cue, Vector3 at) => DetailOn(_items, cue, at);
+        private bool DetailOn(AudioSource source, string cue, Vector3 at)
         {
             if (!Audible || !DetailCue(cue) || !Finite(at.x) || !Finite(at.y) || !Finite(at.z)) return false;
             if (!_detailClips.TryGetValue(cue, out var clips) || clips.Length < 2)
@@ -105,14 +112,44 @@ namespace BoatAttack.Fishing
             }
             int choice = _lastDetail.TryGetValue(cue, out int last) && clips.Length > 1
                 ? (last + 1) % clips.Length : _random.Next(clips.Length);
-            if (!Play(_items, clips[choice], at, .7f)) return false;
+            if (!Play(source, clips[choice], at, .7f)) return false;
             _lastDetail[cue] = choice;
             _detailCounts[cue] = DetailCount(cue) + 1;
             return true;
         }
         private static bool DetailCue(string cue) => cue == "RodCast" || cue == "FloatSplash" || cue == "NetFishPlace"
-            || cue == "FarmTill" || cue == "FarmPlant" || cue == "FarmWater" || cue == "FarmHarvest" || cue == "ShopPurchase";
+            || cue == "FarmTill" || cue == "FarmPlant" || cue == "FarmWater" || cue == "FarmHarvest" || cue == "ShopPurchase"
+            || cue == "PickaxeInspect" || cue == "RifleInspect";
         private static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
+        public void BeginInspection(FieldItem item)
+        {
+            EndInspection();
+            if (InspectionCue(item) == null) return;
+            _inspectionItem = item; _inspectionPending = true;
+        }
+        public void EndInspection()
+        {
+            _inspectionItem = FieldItem.Empty; _inspectionPending = false;
+            if (_inspection != null) _inspection.Stop();
+        }
+        private static string InspectionCue(FieldItem item) => item == FieldItem.StonePickaxe || item == FieldItem.IronPickaxe
+            ? "PickaxeInspect" : item == FieldItem.HuntingRifle ? "RifleInspect" : null;
+        private void TickInspection()
+        {
+            if (!Audible || !_c.InspectingItem || _c.InspectedItem != _inspectionItem
+                || _c.ShopBlocksGameplay || _c.StoryBlocksGameplay || _c.InventoryOpen || _c.JournalOpen
+                || (_c.XRNotebook != null && _c.XRNotebook.BlocksGameplay))
+            { EndInspection(); return; }
+            var world = _c.FieldWorld;
+            bool visible = world != null && world.HeldTool != null && world.HeldTool.gameObject.activeInHierarchy
+                && world.PresentedItem == _inspectionItem;
+            if (!visible) { if (_inspection != null) _inspection.Stop(); return; }
+            _inspection.transform.position = world.HeldTool.position;
+            if (!_inspectionPending) return;
+            // Wait for the actual visible hand pose, then consume this inspection edge once.
+            _inspectionPending = false;
+            DetailOn(_inspection, InspectionCue(_inspectionItem), world.HeldTool.position);
+        }
         private void LateUpdate()
         {
             if (_c == null || _c.Career == null || _c.Shore == null) return;
@@ -142,7 +179,8 @@ namespace BoatAttack.Fishing
             }
             if (!walking && _feet.isPlaying) _feet.Stop();
             TickFish(dt);
-            if (!Audible) { _feet.Stop(); _items.Stop(); _fish.Stop(); }
+            TickInspection();
+            if (!Audible) { _feet.Stop(); _items.Stop(); _fish.Stop(); _inspection.Stop(); }
         }
         private void TickFish(float dt)
         {
@@ -158,13 +196,20 @@ namespace BoatAttack.Fishing
             if (_rightFishId != id || !held) { _rightFishId = id; _rightFishTime = 0; }
             if (!left && playing && dt > 0 && !float.IsNaN(dt) && !float.IsInfinity(dt)) _rightFishTime += Mathf.Min(dt, .05f);
             float time = left ? rig.InspectionMotionTime : _rightFishTime;
-            if (_flaps.Tick(id, time, playing && (!left || rig.LeftInspectionSettled))
-                && Play(_fish, Pick(_fishFlop), _c.ActiveFish.position)) FishFlapsPlayed++;
+            if (_flaps.Tick(id, time, playing && (!left || rig.LeftInspectionSettled)))
+            {
+                int choice = (_lastFishFlap + 1) % _fishFlop.Length;
+                // A new animation peak replaces the previous tail, rather than stacking long generated clips.
+                _fish.Stop();
+                if (Play(_fish, _fishFlop[choice], _c.ActiveFish.position))
+                { _lastFishFlap = choice; FishFlapsPlayed++; }
+            }
             if (!playing && _fish.isPlaying) _fish.Stop();
         }
         private void OnDisable()
         {
             _sampled = false; _steps.Reset(); _flaps.Reset();
+            EndInspection();
             if (_feet != null) _feet.Stop(); if (_items != null) _items.Stop(); if (_fish != null) _fish.Stop();
         }
     }
