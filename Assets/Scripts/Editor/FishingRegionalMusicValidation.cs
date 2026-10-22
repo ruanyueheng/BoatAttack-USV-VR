@@ -74,14 +74,30 @@ namespace BoatAttack.EditorTools
                 Check(music.Transitioning && music.DesiredZone == 3 && music.CurrentZone == 0,
                     "A continuously held harbor candidate starts a transition while retaining the audible source deck");
                 double fadeBegan = AudioSettings.dspTime;
-                foreach (var frame in WaitDsp(1.8)) yield return frame;
-                int audible = 0;
-                for (int i = 0; i < 4; i++) if (music.ChannelGain(i) > .1f) audible++;
-                Check(music.Transitioning && music.CurrentZone == 0 && audible >= 2 && Math.Abs(Power(music) - 1) < .06,
-                    "Mid-transition both real decks have bounded equal-power gain instead of an instantaneous region cut");
-                foreach (var frame in WaitZone(music, 3)) yield return frame;
+                var oldClip = music.Track(0).Clip; var newClip = music.Track(3).Clip;
+                bool fadingOut = false, silentBoundary = false, fadingIn = false, noOverlap = true, stoppedBeforeNew = true;
+                deadline = EditorApplication.timeSinceStartup + 16;
+                while ((music.CurrentZone != 3 || music.Transitioning) && EditorApplication.timeSinceStartup < deadline)
+                {
+                    music.Step(0);
+                    double oldPower = ClipPower(music, oldClip), newPower = ClipPower(music, newClip);
+                    noOverlap &= !(oldPower > .000001 && newPower > .000001);
+                    fadingOut |= oldPower > .02 && oldPower < .98 && newPower == 0;
+                    if (Power(music) == 0 && !AnyPlaying(music)) silentBoundary = true;
+                    if (newPower > 0)
+                    {
+                        for (int i = 0; i < 4; i++)
+                            if (music.Voices[i].clip == oldClip) stoppedBeforeNew &= !music.Voices[i].isPlaying && double.IsNaN(music.ScheduledStart(i));
+                        fadingIn |= newPower > .02 && newPower < .98 && oldPower == 0;
+                    }
+                    yield return null;
+                }
+                Check(music.CurrentZone == 3 && !music.Transitioning && music.DesiredZone == 3,
+                    "The sequential transition settles the latest confirmed region");
+                Check(fadingOut && silentBoundary && fadingIn && noOverlap && stoppedBeforeNew,
+                    "Old music fades out, all old voices stop at zero, then new music fades in with no cross-track overlap");
                 Check(AudioSettings.dspTime - fadeBegan >= 3.7,
-                    "A regional transition lasts approximately four real DSP seconds rather than one update");
+                    "A regional transition includes both two-second fades, not simultaneous crossfading");
 
                 var unchanged = Starts(music);
                 c.TogglePause();
@@ -94,6 +110,28 @@ namespace BoatAttack.EditorTools
                 Check(c.InventoryOpen && music.CurrentZone == 3 && SameStarts(music, unchanged) && AnyPlaying(music),
                     "Opening the backpack preserves the current music source and its DSP schedule");
                 c.ToggleInventory(); yield return null;
+
+                // A third region confirmed during fade-out replaces the queued destination before any new track starts.
+                PlaceBoat(c, openSea);
+                deadline = EditorApplication.timeSinceStartup + 8;
+                while (!music.Transitioning && EditorApplication.timeSinceStartup < deadline) yield return null;
+                Check(music.Transitioning && music.CurrentZone == 3 && music.DesiredZone == 0,
+                    "Leaving harbor starts only the outgoing harbor fade while sailing is queued");
+                c.MoveToSpotForAutomation(0); c.Interact();
+                Check(c.Anchored && FishingRegionalMusic.ResolveZone(c) == 1,
+                    "A real fishing arrival replaces the intermediate sailing region during fade-out");
+                bool intermediateScheduled = false, rapidOverlap = false;
+                deadline = EditorApplication.timeSinceStartup + 16;
+                while ((music.CurrentZone != 1 || music.Transitioning) && EditorApplication.timeSinceStartup < deadline)
+                {
+                    for (int i = 0; i < 4; i++)
+                        if (music.Voices[i].clip == music.Track(0).Clip && !double.IsNaN(music.ScheduledStart(i))) intermediateScheduled = true;
+                    rapidOverlap |= ClipPower(music, music.Track(3).Clip) > .000001 && ClipPower(music, music.Track(1).Clip) > .000001;
+                    yield return null;
+                }
+                Check(music.CurrentZone == 1 && music.DesiredZone == 1 && !music.Transitioning
+                    && !intermediateScheduled && !rapidOverlap,
+                    "Rapid harbor-to-sailing-to-fishing arrival skips sailing entirely and never overlaps the old and latest tracks");
 
                 c.ReturnToHarbor(); PlaceBoat(c, c.Home.Berth + Vector3.up * .7f);
                 foreach (var frame in WaitDsp(.35)) yield return frame;
@@ -359,6 +397,8 @@ namespace BoatAttack.EditorTools
         }
         private static double Power(FishingRegionalMusic music)
         { double total = 0; for (int i = 0; i < 4; i++) { double gain = music.ChannelGain(i); total += gain * gain; } return total; }
+        private static double ClipPower(FishingRegionalMusic music, AudioClip clip)
+        { double total = 0; for (int i = 0; i < 4; i++) if (music.Voices[i].clip == clip) { double gain = music.ChannelGain(i); total += gain * gain; } return total; }
         private static bool AnyPlaying(FishingRegionalMusic music)
         { for (int i = 0; i < 4; i++) if (music.Voices[i].isPlaying && music.ChannelGain(i) > .01f) return true; return false; }
         private static double[] Starts(FishingRegionalMusic music)
