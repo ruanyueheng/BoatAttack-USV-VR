@@ -8,6 +8,7 @@ import math
 import shutil
 import uuid
 import wave
+import sys
 import aud
 import numpy as np
 
@@ -15,6 +16,8 @@ ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'ArtSource/Audio/UserMusic'
 OUT = ROOT / 'Assets/Resources/FishingAudio/Music'
 PREVIEW = ROOT / 'Logs/UserMusic'
+ARGS = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
+INPUT = Path(ARGS[ARGS.index('--source-dir') + 1]) if '--source-dir' in ARGS else SOURCE / 'Originals'
 FILES = [
     ('Sailing', 'Open Sea Drift & Voyage.mp3'),
     ('Fishing', 'Serene Waters Fishing Spot.mp3'),
@@ -84,12 +87,12 @@ def main():
     for p in [SOURCE / 'Originals', OUT, PREVIEW]: p.mkdir(parents=True, exist_ok=True)
     tracks = []
     for zone, (key, filename) in enumerate(FILES):
-        original = Path('E:/') / filename
+        original = INPUT / filename
         original_sha = sha(original)
         archived = SOURCE / 'Originals' / filename
         if archived.exists() and sha(archived) != original_sha:
             raise ValueError('An archived original already differs: ' + filename)
-        shutil.copy2(original, archived)
+        if original.resolve() != archived.resolve(): shutil.copy2(original, archived)
         sound = aud.Sound.file(str(original))
         rate, channels = int(sound.specs[0]), int(sound.specs[1])
         samples = sound.data().astype(np.float64)

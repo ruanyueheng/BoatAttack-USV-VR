@@ -18,6 +18,7 @@ namespace BoatAttack.Fishing
 
         private sealed class MeshData
         {
+            public Vector3[] Vertices;
             public int[] Triangles;
             public Color[] Colors;
             public Vector2[] UV;
@@ -29,6 +30,11 @@ namespace BoatAttack.Fishing
             public FishingGroundAudio Named = FishingGroundAudio.Unknown;
             public FishingGroundAudio[] Materials;
             public bool[] CoastalAtlas;
+            public Mesh VisualMesh;
+            public Transform VisualTransform;
+            public Matrix4x4 VisualMatrix;
+            public Vector3[] WorldVertices;
+            public Dictionary<Vector2Int, List<int>> VisualCells;
         }
 
         private sealed class TerrainSample
@@ -83,8 +89,20 @@ namespace BoatAttack.Fishing
             if (surface.Named != FishingGroundAudio.Unknown) return surface.Named;
             var collider = col as MeshCollider;
             var mesh = collider == null ? null : collider.sharedMesh;
+            // v036+ deliberately uses a separate position-only support mesh. Its triangle indices
+            // cannot index the visible atlas. Sample the nearby rendered triangle without changing physics.
+            if (mesh != null && surface.VisualMesh != null && mesh != surface.VisualMesh)
+            {
+                var visible = VisualSurface(surface, hit.point);
+                if (visible != FishingGroundAudio.Unknown) return visible;
+            }
             var data = mesh == null ? null : ReadMesh(mesh);
-            int submesh = 0, index = hit.triangleIndex * 3;
+            return TriangleSurface(surface, data, hit.triangleIndex * 3, hit.barycentricCoordinate);
+        }
+
+        private static FishingGroundAudio TriangleSurface(SurfaceData surface, MeshData data, int index, Vector3 weights)
+        {
+            int submesh = 0;
             if (data != null && index >= 0)
                 while (submesh + 1 < data.SubmeshEnds.Length && index >= data.SubmeshEnds[submesh]) submesh++;
             if (surface.Materials != null && submesh < surface.Materials.Length &&
@@ -92,7 +110,6 @@ namespace BoatAttack.Fishing
             if (data == null || data.Triangles == null || index < 0 || index + 2 >= data.Triangles.Length)
                 return FishingGroundAudio.Unknown;
             int a = data.Triangles[index], b = data.Triangles[index + 1], d = data.Triangles[index + 2];
-            var weights = hit.barycentricCoordinate;
             if (surface.CoastalAtlas != null && submesh < surface.CoastalAtlas.Length && surface.CoastalAtlas[submesh]
                 && data.UV != null && ValidVertices(data.UV.Length, a, b, d))
             {
@@ -109,6 +126,62 @@ namespace BoatAttack.Fishing
             return high < .85f && high - low < .12f ? FishingGroundAudio.Stone : FishingGroundAudio.Unknown;
         }
 
+        private const float VisualCellSize = 2f;
+        private static Vector2Int Cell(Vector3 point) => new Vector2Int(
+            Mathf.FloorToInt(point.x / VisualCellSize), Mathf.FloorToInt(point.z / VisualCellSize));
+
+        private static FishingGroundAudio VisualSurface(SurfaceData surface, Vector3 point)
+        {
+            var data = ReadMesh(surface.VisualMesh);
+            if (data.Vertices == null || data.Triangles == null || surface.VisualTransform == null) return FishingGroundAudio.Unknown;
+            var matrix = surface.VisualTransform.localToWorldMatrix;
+            if (surface.VisualCells == null || surface.VisualMatrix != matrix)
+            {
+                surface.VisualMatrix = matrix;
+                surface.WorldVertices = new Vector3[data.Vertices.Length];
+                for (int i = 0; i < data.Vertices.Length; i++) surface.WorldVertices[i] = matrix.MultiplyPoint3x4(data.Vertices[i]);
+                surface.VisualCells = new Dictionary<Vector2Int, List<int>>();
+                for (int i = 0; i + 2 < data.Triangles.Length; i += 3)
+                {
+                    var a = surface.WorldVertices[data.Triangles[i]];
+                    var b = surface.WorldVertices[data.Triangles[i + 1]];
+                    var c = surface.WorldVertices[data.Triangles[i + 2]];
+                    if (Vector3.Cross(b - a, c - a).normalized.y < .69f) continue;
+                    var lo = Cell(Vector3.Min(a, Vector3.Min(b, c)));
+                    var hi = Cell(Vector3.Max(a, Vector3.Max(b, c)));
+                    // Do not allocate an unbounded grid for malformed geometry.
+                    if ((long)(hi.x - lo.x + 1) * (hi.y - lo.y + 1) > 4096) continue;
+                    for (int x = lo.x; x <= hi.x; x++) for (int z = lo.y; z <= hi.y; z++)
+                    {
+                        var key = new Vector2Int(x, z);
+                        if (!surface.VisualCells.TryGetValue(key, out var indices))
+                            surface.VisualCells.Add(key, indices = new List<int>());
+                        indices.Add(i);
+                    }
+                }
+            }
+            if (!surface.VisualCells.TryGetValue(Cell(point), out var candidates)) return FishingGroundAudio.Unknown;
+            float closest = .45f; var result = FishingGroundAudio.Unknown;
+            foreach (int i in candidates)
+            {
+                var a = surface.WorldVertices[data.Triangles[i]];
+                var b = surface.WorldVertices[data.Triangles[i + 1]];
+                var c = surface.WorldVertices[data.Triangles[i + 2]];
+                float determinant = (b.z - c.z) * (a.x - c.x) + (c.x - b.x) * (a.z - c.z);
+                if (Mathf.Abs(determinant) < 1e-8f) continue;
+                float u = ((b.z - c.z) * (point.x - c.x) + (c.x - b.x) * (point.z - c.z)) / determinant;
+                float v = ((c.z - a.z) * (point.x - c.x) + (a.x - c.x) * (point.z - c.z)) / determinant;
+                float w = 1 - u - v;
+                if (u < -.0001f || v < -.0001f || w < -.0001f) continue;
+                float gap = Mathf.Abs(point.y - (a.y * u + b.y * v + c.y * w));
+                if (gap > closest) continue;
+                var type = TriangleSurface(surface, data, i, new Vector3(u, v, w));
+                if (type == FishingGroundAudio.Unknown) continue;
+                closest = gap; result = type;
+            }
+            return result;
+        }
+
         private static SurfaceData Surface(Collider col)
         {
             if (Surfaces.TryGetValue(col, out var cached)) return cached;
@@ -122,6 +195,8 @@ namespace BoatAttack.Fishing
                 if (result.Named != FishingGroundAudio.Unknown) break;
             }
             var renderer = col.GetComponent<Renderer>();
+            var filter = col.GetComponent<MeshFilter>();
+            if (filter != null) { result.VisualMesh = filter.sharedMesh; result.VisualTransform = filter.transform; }
             if (renderer != null)
             {
                 var materials = renderer.sharedMaterials;
@@ -167,7 +242,7 @@ namespace BoatAttack.Fishing
             var data = new MeshData { SubmeshEnds = new int[mesh.subMeshCount] };
             if (mesh.isReadable)
             {
-                data.Triangles = mesh.triangles; data.Colors = mesh.colors; data.UV = mesh.uv;
+                data.Vertices = mesh.vertices; data.Triangles = mesh.triangles; data.Colors = mesh.colors; data.UV = mesh.uv;
             }
             int end = 0;
             for (int i = 0; i < data.SubmeshEnds.Length; i++)
