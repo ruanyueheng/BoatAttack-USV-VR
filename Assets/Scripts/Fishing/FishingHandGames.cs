@@ -37,7 +37,7 @@ namespace BoatAttack.Fishing
         private int _index,_lastPercent=-1;
         private float _started;
         private float _motionSpeed;
-        private float _hapticAt;
+        private float _hapticAt,_audioAt;
         public static Vector2 SieveMotionPoint(Vector3 trackedPosition,Vector3 calibratedCenter,Quaternion calibratedFrame)
         {var relative=Quaternion.Inverse(calibratedFrame)*(trackedPosition-calibratedCenter);return new Vector2(relative.x,relative.y);}
         public bool Active=>_task!=null;
@@ -259,6 +259,8 @@ namespace BoatAttack.Fishing
             {
                 _motionSpeed=Mathf.Clamp01((point-_motion).magnitude/Mathf.Max(.001f,Time.unscaledDeltaTime)*2);
                 _motion=point;bool step=_task.Sample(point.x,point.y,Time.unscaledDeltaTime);
+                if(step && Time.unscaledTime>=_audioAt)
+                {_audioAt=Time.unscaledTime+.9f;_c.WorldAudio?.Play("HandcraftRub",_rightGrip.position,.28f);}
                 if(step && Time.unscaledTime>=_hapticAt && device.isValid && device.TryGetHapticCapabilities(out var cap) && cap.supportsImpulse)
                 {device.SendHapticImpulse(0,Mathf.Clamp(.12f+_motionSpeed*.12f,.12f,.24f),.035f);_hapticAt=Time.unscaledTime+.16f;}
             }
@@ -270,8 +272,8 @@ namespace BoatAttack.Fishing
             }
             if(_task.Complete && held && _ready && tracked)
             {
-                if(_task.Claim(_c.Career.Backpack)){_c.Save();_c.Notice(Name(_index)+"完成 · "+(_index==0?"海贝":"绳索")+"×1已收入背包。",6);Cancel();}
-                else {_c.Notice("背包空间或材料不足，本次没有扣除材料。",5);Cancel();}
+                if(_task.Claim(_c.Career.Backpack)){_c.WorldAudio?.Play("CraftFinish",_rightGrip.position,.45f);_c.Save();_c.Notice(Name(_index)+"完成 · "+(_index==0?"海贝":"绳索")+"×1已收入背包。",6);Cancel();}
+                else {_c.WorldAudio?.Play("UIReject",_c.ExplorerPosition,.3f);_c.Notice("背包空间或材料不足，本次没有扣除材料。",5);Cancel();}
             }
             return true;
         }

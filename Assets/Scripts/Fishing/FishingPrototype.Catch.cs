@@ -43,6 +43,7 @@ namespace BoatAttack.Fishing
             LastCatch=new CatchCard{Fish=fish.Copy(),ShownAt=Time.unscaledTime,Discovery=!Career.Discovered(fish.kind,fish.rare),PersonalBest=Career.BestGrams(fish.kind)>0 && fish.grams>Career.BestGrams(fish.kind)};
             _feedback.PlayOneShot(FishingSpecies.Of(fish.kind).Legendary?_legendTone:_successTone);
             Effects?.Splash(_fish.transform.position,1.5f);Effects?.Burst(_fish.transform.position,new Color(1,.79f,.37f));
+            WorldAudio?.Play("FishSplash",_fish.transform.position,.5f);
             if(leftHand)
             {
                 CatchRig.StartLeftInspection(_fish.transform.position);
@@ -63,6 +64,7 @@ namespace BoatAttack.Fishing
             if(!Career.ResolvePending(store,out var record,out int bounty))
             {Notice("鱼箱已满。鱼仍安全保留，可整理鱼箱或选择放生。",5);return false;}
             _caughtAt=store && !legend?Time.time:-100;_catchStart=_fish.transform.position;
+            if(store && !legend)WorldAudio?.NotifyFishStored();
             if(!store)StartCoroutine(ReleaseFishVisual(record,_catchStart,_fish.transform.rotation,_fish.transform.localScale));
             LastCatch=new CatchCard{Fish=record.Copy(),ShownAt=Time.unscaledTime,Discovery=discovery,PersonalBest=best>0 && record.grams>best,Bounty=bounty,Released=!store};
             if(legend && _trophy==null)BuildTrophy();
@@ -89,6 +91,7 @@ namespace BoatAttack.Fishing
                     visual.transform.SetPositionAndRotation(Vector3.Lerp(start,destination,u)+Vector3.up*(Mathf.Sin(u*Mathf.PI)*.15f),rotation);
                     yield return null;
                 }
+                WorldAudio?.Play("FishSplash",destination,.55f);
             }
             finally{if(visual!=null)Destroy(visual);}
         }

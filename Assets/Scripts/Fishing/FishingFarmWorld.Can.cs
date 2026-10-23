@@ -20,7 +20,7 @@ namespace BoatAttack.Fishing
         private FieldItem _canTool;
         private Vector3 _canStartActor,_startCanPosition,_startRightPalm,_canLean;
         private Quaternion _startCanRotation;
-        private bool _canCommit,_canTracked,_restoreCanStance,_ownsCanLean;
+        private bool _canCommit,_canTracked,_restoreCanStance,_ownsCanLean,_wellSoundContact;
         private float _nextDrop;
         public static readonly Vector3 CanHandle=new Vector3(-.025f,.120f,.12f);
         public static readonly Vector3 CanPalm=CanHandle+new Vector3(0,.035f,-.045f);
@@ -129,6 +129,7 @@ namespace BoatAttack.Fishing
             float duration=work==FarmWork.Refill?3.8f:work==FarmWork.Water?2.2f:.9f;
             if(!_canClock.TryBegin(FishingActionKind.UseTool,"farm:"+id,duration,duration))return false;
             _canWork=work;_canTarget=id;_canProfile=_c.Career;_canStartActor=_c.Shore.Position;_canSlot=_c.Career.Backpack.Selected;_canTool=_c.Career.Backpack.Equipped;_canTracked=XRSettings.isDeviceActive;
+            _wellSoundContact=false;
             _startCanPosition=_can.position;_startCanRotation=_can.rotation;_startRightPalm=_c.Shore.Character.PalmPosition(false);_nextDrop=0;
             _restoreCanStance=!tracked && handling && !_c.Shore.Crouched;if(_restoreCanStance)_c.Shore.SetCrouch(true);
             _ownsCanLean=!tracked && handling;
@@ -155,6 +156,8 @@ namespace BoatAttack.Fishing
                 else ok=CommitAt(_canTarget,_canWork);
             }
             finally{_canCommit=false;}
+            if(ok && (_canWork==FarmWork.TakeCan || _canWork==FarmWork.ReturnCan))_c.WorldAudio?.Play("CanHandle",_can.position,.5f);
+            if(ok && (_canWork==FarmWork.Refill || _canWork==FarmWork.Water))_c.WorldAudio?.Play("WaterFinish",_can.position,.35f);
             _c.ReportFarmContact(_canClock.ActionId,ok);_canClock.Cancel();ResetBucket();_waterStream.enabled=false;RestoreCanStance();
         }
         public void CancelWork()
@@ -233,6 +236,10 @@ namespace BoatAttack.Fishing
         }
         private void PresentRefill(float p,bool tracked,Quaternion frame)
         {
+            if((p>.25f && p<.48f) || (p>.80f && p<.98f))
+                _c.WorldAudio?.MaintainLoop("well-rope","WellRopeLoop",_targets[12].position+Vector3.up,.045f,true,9);
+            if(!_wellSoundContact && p>.17f && p<.27f)
+            {_wellSoundContact=true;_c.WorldAudio?.Play("WellBucket",WellWater.position,.42f);}
             var low=_targets[12].position+Vector3.up*(WellWaterLevel-.80f);var rest=low;var raised=_targets[12].position+Vector3.up*1.05f;
             var position=p<.18f?Vector3.Lerp(rest,low,Ease(0,.18f,p)):p<.25f?low:p<.48f?Vector3.Lerp(low,raised,Ease(.25f,.48f,p)):Vector3.Lerp(raised,rest,Ease(.78f,1,p));
             float pour=Ease(.49f,.58f,p)*(1-Ease(.71f,.80f,p));var mouth=_can.TransformPoint(new Vector3(0,.005f,.12f));
@@ -264,6 +271,7 @@ namespace BoatAttack.Fishing
         private void PresentStream(Vector3 from,Vector3 to,bool soil)
         {
             _waterStream.enabled=true;
+            _c.WorldAudio?.MaintainLoop("farm-water","WaterPourLoop",Vector3.Lerp(from,to,.6f),soil?.05f:.04f,true,10);
             for(int i=0;i<12;i++){float u=i/11f;_waterStream.SetPosition(i,Vector3.Lerp(from,to,u)+Vector3.up*(Mathf.Sin(u*Mathf.PI)*.035f));}
             if(Time.time<_nextDrop)return;_nextDrop=Time.time+(_c.Weather.ReducedEffects?.10f:.045f);
             var velocity=(to-from)/.42f+Vector3.up*.5f;

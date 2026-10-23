@@ -151,7 +151,9 @@ namespace BoatAttack.Fishing
                 if(hover)Rounded(r,ButtonHover,6);
             }
             Label(r, text, 17, selected ? Mint : Muted, true, TextAnchor.MiddleCenter);
-            return GUI.Button(r, GUIContent.none, GUIStyle.none);
+            bool clicked=GUI.Button(r, GUIContent.none, GUIStyle.none);
+            if(clicked && !selected)Controller.WorldAudio?.Play("UIConfirm",Controller.ExplorerPosition,.24f);
+            return clicked;
         }
 
         /// <summary>Pill-shaped tag; returns its width so callers can lay out a row.</summary>

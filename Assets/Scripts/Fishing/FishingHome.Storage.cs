@@ -29,8 +29,9 @@ namespace BoatAttack.Fishing
             var source=deposit?_c.Career.Backpack:_c.Career.HomeStorage;
             var destination=deposit?_c.Career.HomeStorage:_c.Career.Backpack;var item=source.At(slot);
             if(!source.TransferTo(destination,slot))
-            {_c.Notice(item.count==0?"这个格子是空的。":(deposit?"储物箱":"随身行囊")+"空间不足，请先腾出格子。",4);return false;}
+            {_c.WorldAudio?.Play("UIReject",_c.ExplorerPosition,.3f);_c.Notice(item.count==0?"这个格子是空的。":(deposit?"储物箱":"随身行囊")+"空间不足，请先腾出格子。",4);return false;}
             _c.LowerFieldTools();_c.FieldWorld.ClearToolPresentation();_c.Save();
+            _c.WorldAudio?.Play("StorageMove",StorageChest.position+Vector3.up*.4f,.45f);
             _c.Notice((deposit?"已存入 ":"已取出 ")+FishingBackpack.Name(item.item)+" ×"+item.count,4);return true;
         }
     }

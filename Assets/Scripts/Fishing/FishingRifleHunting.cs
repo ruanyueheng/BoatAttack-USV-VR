@@ -252,9 +252,17 @@ namespace BoatAttack.Fishing
                     {
                         var landing=LandingFor(animal);
                         killed=_c.Career.KillLandAnimal(animal.Id,animal.Kind,landing.x,landing.y,landing.z,animal.Root.eulerAngles.y);
-                        if(killed){_c.Save();RefreshAnimals();_c.Notice("击倒 "+FishingBackpack.AnimalName(animal.Kind)+" · "+(animal.Id>=8?"附近岸边":"靠近后")+(tracked?" A 收取 ":" E 收取 ")+FishingAnimalLoot.Description(animal.Kind),5);}
+                        if(killed)
+                        {
+                            _c.WorldAudio?.Play("AnimalHit",hit.point,.52f);
+                            _c.Save();RefreshAnimals();
+                            // The current animal rig changes straight into its grounded carcass pose; sound follows that real contact.
+                            _c.WorldAudio?.Play("BodyLand",animal.Feet,.36f);
+                            _c.Notice("击倒 "+FishingBackpack.AnimalName(animal.Kind)+" · "+(animal.Id>=8?"附近岸边":"靠近后")+(tracked?" A 收取 ":" E 收取 ")+FishingAnimalLoot.Description(animal.Kind),5);
+                        }
                         break;
                     }
+                if(!killed)_c.WorldAudio?.NotifyProjectileImpact(hit);
             }
             _trace.SetPosition(0,Muzzle);_trace.SetPosition(1,end);_trace.enabled=true;
             _lastShot=(_lastShot+1)%_shots.Length;_shot=_shots[_lastShot];
@@ -283,6 +291,7 @@ namespace BoatAttack.Fishing
             if(animal==null || !animal.Dead || !animal.Root.gameObject.activeInHierarchy || Vector3.Distance(_c.ExplorerPosition,animal.Feet)>2.2f
                 || !_c.Shore.ClearSight(Eye,animal.Root.position+Vector3.up*.1f))return false;
             if(!_c.Career.CollectHuntedAnimal(id)){_c.Notice(XRSettings.isDeviceActive?"背包空间不足，猎物保留在地上；B 打开背包整理后再收取。":"背包空间不足，猎物保留在地上；I 整理背包后再收取。",4);return false;}
+            _c.WorldAudio?.Play("LootBag",animal.Feet+Vector3.up*.2f,.5f);
             _c.Save();RefreshAnimals();_c.Notice("已收取 "+FishingAnimalLoot.Description(animal.Kind),4);return true;
         }
         private void OnDestroy(){if(_ownedShotFallback!=null)Destroy(_ownedShotFallback);if(_traceMaterial!=null)Destroy(_traceMaterial);}

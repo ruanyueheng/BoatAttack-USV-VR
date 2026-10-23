@@ -424,6 +424,8 @@ namespace BoatAttack.EditorTools
             c.View.ResetLook(); c.PresentCharacterFrame(); yield return null;
             var a = c.ActionAudio; var farm = c.Career.Farm; var bag = c.Career.Backpack;
             int till = a.DetailCount("FarmTill"), plant = a.DetailCount("FarmPlant"), water = a.DetailCount("FarmWater"), harvest = a.DetailCount("FarmHarvest");
+            bool continuousWater=c.WorldAudio!=null && c.WorldAudio.HasCue("WaterPourLoop");
+            int waterAfter=water+(continuousWater?0:1),pourStarts=c.WorldAudio==null?0:c.WorldAudio.LoopStarts("WaterPourLoop");
             Check(FarmCommit(c, id, FarmWork.Till) && farm.Plot(id).tilled && a.DetailCount("FarmTill") == till + 1,
                 "A real successful till commit emits exactly one generated soil-contact cue");
             Check(!FarmCommit(c, id, FarmWork.Till) && a.DetailCount("FarmTill") == till + 1,
@@ -467,16 +469,23 @@ namespace BoatAttack.EditorTools
             while(c.Farm.Busy && c.Farm.WorkProgress<.45f && canFrames++<600)yield return null;
             Check(c.Farm.Busy && c.Farm.WaterStreamVisible && farm.Water==charges && a.DetailCount("FarmWater")==water,
                 "The actual tilted can pours visible water before the crop transaction and success cue");
+            if(continuousWater)
+            {
+                // Audio leases are observed in LateUpdate, after the actual stream presentation.
+                yield return null;
+                Check(c.WorldAudio.LoopStarts("WaterPourLoop")==pourStarts+1 && c.WorldAudio.LoopSource("farm-water")!=null,
+                    "A real visible water stream starts one continuous pour voice, rather than waiting for the final crop transaction");
+            }
             canFinish=FinishAudioFarm(c);while(canFinish.MoveNext())yield return canFinish.Current;
-            Check(farm.Water == charges - 1 && farm.Plot(id).wateredDay==farm.Day && a.DetailCount("FarmWater") == water + 1,
-                "Only completed real can contact consumes one charge, waters the crop and emits one generated water cue");
-            Check(!FarmCommit(c, id, FarmWork.Water) && a.DetailCount("FarmWater") == water + 1,
+            Check(farm.Water == charges - 1 && farm.Plot(id).wateredDay==farm.Day && a.DetailCount("FarmWater") == waterAfter,
+                "Only completed real can contact consumes water; an available continuous stream replaces the old completion-only water recording");
+            Check(!FarmCommit(c, id, FarmWork.Water) && a.DetailCount("FarmWater") == waterAfter,
                 "An already watered plot rejects the same-day repeat without another water cue");
             canApproach=ApproachAudioFarm(c,15);while(canApproach.MoveNext())yield return canApproach.Current;
             Check(c.RequestWorldInteraction() && c.Farm.Busy && c.Farm.CarryingCan,
                 "The can returns through its real stand-contact animation");
             canFinish=FinishAudioFarm(c);while(canFinish.MoveNext())yield return canFinish.Current;
-            Check(!c.Farm.CarryingCan && farm.Water==charges-1 && a.DetailCount("FarmWater")==water+1,
+            Check(!c.Farm.CarryingCan && farm.Water==charges-1 && a.DetailCount("FarmWater")==waterAfter,
                 "Returning the can preserves saved water and cannot repeat its watering success sound");
             for(int frame=0;frame<8;frame++){c.PresentCharacterFrame();yield return null;}
             Check(c.InspectFieldItem(pickSlot),"After returning the actual can, the same Z inspection entry accepts the pickaxe");
@@ -498,7 +507,7 @@ namespace BoatAttack.EditorTools
             }
             c.Farm.Refresh();
             Check(c.Career.Calendar.Day == day + FishingFarm.GrowingDays && farm.Ready(id)
-                && a.DetailCount("FarmWater") == water + 1, "The short mature-crop fixture does not fabricate extra world-action water sounds");
+                && a.DetailCount("FarmWater") == waterAfter, "The short mature-crop fixture does not fabricate extra world-action water sounds");
             int turnips = bag.Count(FieldItem.Turnip); seeds = bag.Count(FieldItem.TurnipSeeds);
             Check(FarmCommit(c, id, FarmWork.Harvest) && bag.Count(FieldItem.Turnip) == turnips + 1
                 && bag.Count(FieldItem.TurnipSeeds) == seeds + 1 && a.DetailCount("FarmHarvest") == harvest + 1,

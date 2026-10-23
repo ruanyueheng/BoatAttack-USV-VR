@@ -63,9 +63,10 @@ namespace BoatAttack.Fishing
         }
         public bool Toggle()
         {
-            if (Open) { Close(); return true; }
+            if (Open) { Close();Controller.WorldAudio?.Play("UIBack",Controller.ExplorerPosition,.3f); return true; }
             if (!NearCounter || !ContextAllowsBrowsing || Controller.ShopBlocksGameplay) return false;
             Open = true;
+            Controller.WorldAudio?.Play("UIConfirm",Controller.ExplorerPosition,.3f);
             Controller.ShopModalChanged();
             Controller.Notice(Cashier != null
                 ? "店员：欢迎来到潮汐钓具店！请选择装备，金币和装备自动保存。"
@@ -87,7 +88,7 @@ namespace BoatAttack.Fishing
         {
             if(!CanPurchase)return false;
             if(!Controller.Career.BuyHuntingRifle())
-            {Controller.Notice("购买失败：需要 "+FishingCareer.HuntingRiflePrice+" 金币、一个空背包格，且尚未持有猎枪。",5);return false;}
+            {Controller.WorldAudio?.Play("UIReject",Controller.ExplorerPosition,.3f);Controller.Notice("购买失败：需要 "+FishingCareer.HuntingRiflePrice+" 金币、一个空背包格，且尚未持有猎枪。",5);return false;}
             var bag=Controller.Career.Backpack;
             for(int i=0;i<FishingBackpack.SlotCount;i++)if(bag.At(i).item==FieldItem.HuntingRifle)
             {

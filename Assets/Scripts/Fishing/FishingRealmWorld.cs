@@ -125,6 +125,7 @@ namespace BoatAttack.Fishing
             }
             if(Time.time<_nextUse)return false;_nextUse=Time.time+.4f;
             bool ok=Trial.Use(id);
+            if(ok && _devices[id]!=null)_c.WorldAudio?.Play("MechanismClick",_devices[id].position,.42f);
             if(Island==2 && id==0)
             {
                 _pushing=ok;
@@ -171,6 +172,7 @@ namespace BoatAttack.Fishing
             for(float t=0;t<.42f;t+=Time.unscaledDeltaTime){Blackout=1-Mathf.Clamp01(t/.42f);yield return null;}
             Blackout=0;Transitioning=false;_c.StoryModalChanged();
             if(!moved){_c.Notice("入口落脚点被遮挡，已保留当前位置。",5);yield break;}
+            _c.WorldAudio?.Play("PortalPass",_c.ExplorerPosition+Vector3.up,.5f);
             _c.Regions.Show(Inside?FishingLore.ShrineName(Island):FishingAdventure.Name(old),Inside?FishingLore.TrialObjective(Island)+" · 归航门位于探索终点":FishingLore.Subtitle(old),Inside?Island:old);
         }
         public void Abort()
@@ -207,7 +209,11 @@ namespace BoatAttack.Fishing
                 }
                 _devices[0].localPosition=Vector3.Lerp(_cargoStart,_cargoEnd,Trial.CargoProgress);
             }
-            if(ready!=Trial.Ready || progress!=Trial.Progress)Refresh();
+            if(ready!=Trial.Ready || progress!=Trial.Progress)
+            {
+                if(Trial.Ready && !ready)_c.WorldAudio?.Play("MechanismClick",_devices[3].position,.45f);
+                Refresh();
+            }
             if(_c.Shore.Position.y<Room.position.y-4)
             {
                 CancelObservation();_pushing=false;

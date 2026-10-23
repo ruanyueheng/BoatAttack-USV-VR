@@ -177,14 +177,14 @@ namespace BoatAttack.Fishing
             Actor.SetPositionAndRotation(_lastSafe,Quaternion.LookRotation(Vector3.ProjectOnPlane(feet-Controller.Player.transform.position,Vector3.up).normalized));
             Body.enabled=true;SetCrouch(false);Controller.View.ResetLook();Controller.CloseBoatPanels();
             Controller.Notice(Controller.DesktopDisplay?"已登岸 · WASD 行走 · E 互动 · 靠近船边 G 上船":"已登岸 · 左摇杆行走 · 右手柄 A 互动 · 靠近船边登船",6);
-            UpdateProximity();return true;
+            UpdateProximity();Controller.WorldAudio?.NotifyBoardingContact();return true;
         }
         public bool TryBoard()
         {
             if(!Ashore || Controller.Paused || Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay)return false;
             if(Controller.Realms.Inside){Controller.Notice("从秘境入口按E返回岛屿，再靠近船边上船；R也可救援回港。",4);return false;}
             if(!CanBoard()) {Controller.Notice("靠近船体边缘（4m 内）再按 G；高差过大或中间有墙时无法登船。",4);return false;}
-            BoardImmediately();Controller.Notice("已上船 · WASD 航行；回港按 E 提交海岸调查。",5);return true;
+            BoardImmediately();Controller.WorldAudio?.NotifyBoardingContact();Controller.Notice("已上船 · WASD 航行；回港按 E 提交海岸调查。",5);return true;
         }
         public void BoardImmediately()
         {

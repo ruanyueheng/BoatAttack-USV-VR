@@ -114,6 +114,7 @@ namespace BoatAttack.Fishing
             if(!NearGrill || _c.Paused || (_c.StoryBlocksGameplay && !MenuOpen))return false;
             if(!_c.Career.CollectGrilledFish()){_c.Notice(_c.Career.BarbecueReady?"背包已满，烤鱼留在架上；整理背包后再取。":"海鱼还在烤制，收起面板，听一会儿海风。",4);return false;}
             _c.Save();RefreshFishView();_c.FieldWorld.ShowPickupPreview(FieldItem.GrilledFish);
+            _c.WorldAudio?.Play("StorageMove",CookingPoint,.4f);
             _c.Notice("香烤海鱼已装入背包 · 选入快捷栏后使用，恢复50%体力。",6);return true;
         }
         public void RefreshSavedProgress(){_saveClock=0;RefreshFishView();}
