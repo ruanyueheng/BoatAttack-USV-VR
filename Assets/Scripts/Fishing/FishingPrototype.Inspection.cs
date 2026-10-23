@@ -12,13 +12,16 @@ namespace BoatAttack.Fishing
         {
             if(Career==null || ShopBlocksGameplay || StoryBlocksGameplay || HasPendingCatch || WorldActionBusy
                 || (Paused && !InventoryOpen) || (!CanChangeBait && Anchored) || Shore.Swimming || Shore.Climbing)return false;
+            if(Farm!=null && Farm.CarryingCan){Notice("先将水壶放回井边木架，再腾出双手检视装备。",4);return false;}
             var stack=Career.Backpack.At(slot);if(stack.count<=0)return false;
             if(InventoryOpen)ToggleInventory();
+            bool newInspection=!InspectingItem || InspectedItem!=stack.item;
             XRNotebook.Close();CancelWorldAction();FieldWorld.ClearToolPresentation();CastMotion.CancelPreparation();LowerFieldTools();
             InspectingItem=true;InspectedItem=stack.item;InspectionAngles=Vector2.zero;
+            if(newInspection)ActionAudio?.BeginInspection(stack.item);
             Notice("检视 · "+FishingBackpack.Name(stack.item)+(UnityEngine.XR.XRSettings.isDeviceActive?" · 转动右手观看 · 右扳机收起":" · 按住右键转动 · Z / F / Esc 收起"),5);return true;
         }
-        public void EndItemInspection(){InspectingItem=false;InspectedItem=FieldItem.Empty;InspectionAngles=Vector2.zero;}
+        public void EndItemInspection(){InspectingItem=false;InspectedItem=FieldItem.Empty;InspectionAngles=Vector2.zero;ActionAudio?.EndInspection();}
         private bool TickItemInspection(Keyboard keyboard,Mouse mouse,bool focused)
         {
             if(UnityEngine.XR.XRSettings.isDeviceActive)return false;

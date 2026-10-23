@@ -24,9 +24,9 @@ namespace BoatAttack.EditorTools
         public static IEnumerator Checks(FishingPrototype c)
         {
             var weather=c.Weather;var profile=c.Career.Snapshot();var previous=weather.Climate.Current;
-            bool automatic=weather.Climate.Automatic,reduced=weather.ReducedEffects,focused=Field<bool>(weather,"_focused");float effects=c.EffectsVolume;
+            bool automatic=weather.Climate.Automatic,reduced=weather.ReducedEffects,focused=Field<bool>(weather,"_focused");float effects=c.EffectsVolume,ambient=c.AmbientVolume;
             var camera=c.viewCamera.transform;var position=camera.position;var rotation=camera.rotation;
-            string output=Path.GetFullPath("Docs/Images/V037");Directory.CreateDirectory(output);
+            string output=Path.GetFullPath(Path.Combine("Logs","V037Weather",Guid.NewGuid().ToString("N")));Directory.CreateDirectory(output);
             try
             {
                 c.ReturnToHarbor();if(c.StartMenuOpen)c.FinishTitleVoyage();if(c.Paused)c.TogglePause();
@@ -70,7 +70,8 @@ namespace BoatAttack.EditorTools
                 finally{UnityEngine.Object.Destroy(flash);}
                 var thunder=Field<AudioSource>(weather,"_thunder");
                 Check(thunder!=null && !thunder.loop && !thunder.playOnAwake && thunder.clip!=null && thunder.clip.length>=3.9f,"Thunder uses a finite separately controlled original rumble");
-                c.SetSetting("Effects",.5f);Check(Mathf.Abs(thunder.volume-.21f)<.001f,"Thunder obeys the effects volume setting");
+                c.SetSetting("Ambient",.5f);Check(Mathf.Abs(thunder.volume-.06f)<.001f,"Thunder obeys the quieter environment volume setting");
+                c.SetSetting("Effects",0);Check(Mathf.Abs(thunder.volume-.06f)<.001f,"Muting action effects does not change the environment thunder route");
                 for(int i=0;i<6;i++)Tick(weather,.25f);
                 Check(Field<float>(weather,"_thunderDelay")<0,"Delayed thunder is dispatched after the distant flash");
                 Tick(weather,.25f,true);
@@ -99,7 +100,7 @@ namespace BoatAttack.EditorTools
             }
             finally
             {
-                c.SetSetting("Effects",effects);
+                c.SetSetting("Effects",effects);c.SetSetting("Ambient",ambient);
                 if(!weather.enabled)weather.enabled=true;
                 if(weather.ReducedEffects!=reduced)weather.ToggleReducedEffects();
                 typeof(FishingWeather).GetField("_focused",Private).SetValue(weather,focused);

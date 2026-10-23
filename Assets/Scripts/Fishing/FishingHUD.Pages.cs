@@ -14,8 +14,8 @@ namespace BoatAttack.Fishing
             DisplayText(new Rect(r.x+49,r.y+59,320,47),"在海风里歇一会",32,CreamInk,true);
             DisplayText(new Rect(r.x+51,r.y+110,300,26),"航程已暂停 · "+(c.LastAutoSave.Length>0?"自动保存 "+c.LastAutoSave:"内存进度保留"),15,AmberInk);
             float x=r.x+30,y=r.y+204,w=432;
-            if(Button(new Rect(x,y,w,47),"操作、画面与声音设置",true,true))c.MenuControls=true;
-            if(Button(new Rect(x+w+16,y,w,47),"音效："+(c.QuietMode?"静音":"开启")))c.ToggleQuiet();
+            if(Button(new Rect(x,y,w,47),"操作与画面设置",true,true)){SettingsTab=0;c.MenuControls=true;}
+            if(Button(new Rect(x+w+16,y,w,47),"声音混音：BGM / 音效 / 环境",true,true)){SettingsTab=2;c.MenuControls=true;}
             y+=65;
             if(Button(new Rect(x,y,w,47),"舒适航行："+(c.ComfortMode?"开启":"标准")))c.ToggleComfort();
             if(Button(new Rect(x+w+16,y,w,47),"环境特效："+(c.Weather.ReducedEffects?"精简":"标准")))c.Weather.ToggleReducedEffects();

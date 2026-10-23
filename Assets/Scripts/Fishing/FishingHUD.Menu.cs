@@ -85,7 +85,7 @@ namespace BoatAttack.Fishing
             if(SeaButton(new Rect(120,top+446,278,48),"新建游戏",false,true,26))c.StartFromMenu();
             if(SeaButton(new Rect(120,top+508,278,48),"读取存档",false,true,26))c.OpenSaveMenu("load");
             if(SeaButton(new Rect(452,top+508,278,48),"手动保存",false,c.CanContinue,23))c.OpenSaveMenu("save");
-            if(SeaButton(new Rect(120,top+570,278,48),"设置",false,true,26))c.MenuControls=true;
+            if(SeaButton(new Rect(120,top+570,278,48),"设置 / 声音混音",false,true,26)){SettingsTab=2;c.MenuControls=true;}
             if(SeaButton(new Rect(120,top+632,278,48),"退出游戏",false,true,26))Application.Quit();
             if(c.SaveMenuMessage.Length>0 || c.SaveWarning.Length>0)WorldLabel(new Rect(452,top+570,266,101),c.SaveWarning.Length>0?c.SaveWarning:c.SaveMenuMessage,15,AmberInk,onPaper:true);
             KeyCap(new Rect(120,_height-56,62,30),"Enter");WorldLabel(new Rect(196,_height-54,800,30),"继续 / 新建  ·  F11 显示模式  ·  自动与手动存档独立",15,CreamInk,onPaper:true);
@@ -125,8 +125,8 @@ namespace BoatAttack.Fishing
             WorldLabel(new Rect(131,r.y+255,202,100),"把风声调轻一些，\n把远方看得清一些。",19,CreamInk,false,TextAnchor.UpperCenter,onPaper:true);
             Fill(348,r.y+50,1,r.height-120,Hairline);
             QuietRule(r.x,r.y+36,r.width-36);
-            string[] tabs={"操作","画面","声音"};
-            for(int i=0;i<3;i++)if(SeaButton(new Rect(r.x+i*170,r.y+58,130,50),tabs[i],SettingsTab==i,true,26))SettingsTab=i;
+            string[] tabs={"操作","画面","声音混音"};
+            for(int i=0;i<3;i++)if(SeaButton(new Rect(r.x+i*170,r.y+58,150,50),tabs[i],SettingsTab==i,true,26))SettingsTab=i;
             float x=r.x,y=r.y+152;
             if(SettingsTab==0)
             {
@@ -156,12 +156,16 @@ namespace BoatAttack.Fishing
             }
             else
             {
-                SettingSlider(x,y,"主音量","Master",c.MasterVolume);
-                SettingSlider(x,y+87,"音乐","Music",c.MusicVolume);
-                SettingSlider(x,y+174,"海风与环境","Ambient",c.AmbientVolume);
-                SettingSlider(x,y+261,"互动与捕鱼音效","Effects",c.EffectsVolume);
+                SettingSlider(x,y,"总音量","Master",c.MasterVolume);
+                SettingSlider(x,y+87,"BGM 背景音乐","Music",c.MusicVolume);
+                SettingSlider(x,y+174,"环境音","Ambient",c.AmbientVolume);
+                SettingSlider(x,y+261,"动作音效","Effects",c.EffectsVolume);
+                WorldLabel(new Rect(x+248,y+38,800,25),"同时调整下方三路音量",15,AmberInk,onPaper:true);
+                WorldLabel(new Rect(x+248,y+125,800,25),"区域配乐、序章音乐；不影响引擎或枪声",15,AmberInk,onPaper:true);
+                WorldLabel(new Rect(x+248,y+212,800,25),"引擎、海浪与风雨；背景声太响时降低这一项",15,AmberInk,onPaper:true);
+                WorldLabel(new Rect(x+248,y+299,800,25),"脚步、拾取、鱼轮、活鱼与枪声等操作反馈",15,AmberInk,onPaper:true);
                 if(SeaButton(new Rect(x,y+365,580,44),"静音："+(c.QuietMode?"开启":"关闭")))c.ToggleQuiet();
-                WorldLabel(new Rect(x,y+439,1000,44),"设置自动保存，下次启航继续使用。",17,AmberInk,onPaper:true);
+                WorldLabel(new Rect(x,y+428,1000,58),"BGM、环境音与动作音效可独立调整。\n设置自动保存，下次启航继续使用；已有音量偏好保留。",17,AmberInk,onPaper:true);
             }
             KeyCap(new Rect(120,r.yMax-44,62,34),"Esc");
             if(SeaButton(new Rect(200,r.yMax-48,180,42),"返回",false,true,23)){c.MenuControls=false;c.SaveSettings();}

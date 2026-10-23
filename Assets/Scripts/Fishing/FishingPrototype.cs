@@ -216,6 +216,8 @@ namespace BoatAttack.Fishing
                 :"潮汐回响：N选择岛屿，低速G下船，E与居民交谈 / 进入潮纹秘境。J查看世界航记；店员可介绍商品，离岸可游泳。"):warning,10f);
             _initialized=true;
             InitializeSettings();
+            ActionAudio=gameObject.AddComponent<FishingActionAudio>();ActionAudio.Build(this);
+            RegionalMusic=gameObject.AddComponent<FishingRegionalMusic>();RegionalMusic.Build(this);
             InitializeSaveSlots(legacy);
             InitializeStartMenu();
             if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }
@@ -528,6 +530,7 @@ namespace BoatAttack.Fishing
             {
                 CastMotion.Launch(power);_castOrigin=_rodTip.position;_castSplash=false;
                 Angling.BeginCast(power);
+                ActionAudio?.Detail("RodCast",_rodTip.position);
                 _castGround=Spot;_previousPhase=CatchPhase.Waiting;
                 _fish.SetActive(false);Destroy(_fish);
                 _fish=MakeFish(transform,kind,rare);
@@ -577,7 +580,7 @@ namespace BoatAttack.Fishing
             bool ok=Career.Upgrade(track);
             if(ok)
             {
-                Fleet.Refresh();Save();if(track==UpgradeTrack.Hold)RefreshHold();_feedback.PlayOneShot(_successTone);
+                Fleet.Refresh();Save();if(track==UpgradeTrack.Hold)RefreshHold();ActionAudio?.Detail("ShopPurchase",ExplorerPosition+Vector3.up*.7f);
                 int level=Career.Level(track);
                 if(ShopOpen)Hands.ReachGesture(Shore.Character.HandReferencePosition+Shore.Actor.forward*.28f);
                 Notice(FishingText.UpgradeName(track)+" 升至 Lv."+level+" · "+FishingText.UpgradeEffect(track,level)+" · 花费 "+cost+" 金币，余额 "+Career.Coins,7f);
@@ -776,6 +779,7 @@ namespace BoatAttack.Fishing
             else if(phase==CatchPhase.Waiting && !_castSplash)
             {
                 _castSplash=true;Effects?.Splash(target,.6f);
+                ActionAudio?.Detail("FloatSplash",target);
             }
             _bobber.transform.position=target;
             TickAnglingPresentation();

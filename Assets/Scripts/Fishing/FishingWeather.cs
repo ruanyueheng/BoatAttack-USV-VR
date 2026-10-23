@@ -109,7 +109,7 @@ namespace BoatAttack.Fishing
             var rng=new System.Random(731);var samples=new float[22050*4];float low=0;
             for(int i=0;i<samples.Length;i++){low=Mathf.Lerp(low,(float)rng.NextDouble()*2-1,.065f);samples[i]=low*Mathf.Sin(Mathf.PI*i/(samples.Length-1));}
             var clip=AudioClip.Create("Original soft coastal wind",samples.Length,1,22050,false);clip.SetData(samples,0);_owned.Add(clip);_audio.clip=clip;
-            Controller.RegisterAudioSource(_audio,FishingAudioCategory.Ambient,.07f);_audio.Play();
+            Controller.RegisterAudioSource(_audio,FishingAudioCategory.Ambient,FishingPrototype.WindMixBase);_audio.Play();
             _thunder=gameObject.AddComponent<AudioSource>();_thunder.playOnAwake=false;_thunder.spatialBlend=0;
             var rumble=new float[22050*4];float deep=0,body=0;
             for(int i=0;i<rumble.Length;i++)
@@ -119,7 +119,7 @@ namespace BoatAttack.Fishing
                 rumble[i]=Mathf.Clamp((deep*2.6f+body*.35f)*envelope,-.85f,.85f);
             }
             var thunder=AudioClip.Create("Original distant sea thunder",rumble.Length,1,22050,false);thunder.SetData(rumble,0);_owned.Add(thunder);_thunder.clip=thunder;
-            Controller.RegisterAudioSource(_thunder,FishingAudioCategory.Effects,.42f);
+            Controller.RegisterAudioSource(_thunder,FishingAudioCategory.Ambient,.12f);
         }
         public void ToggleReducedEffects()
         {
@@ -140,7 +140,7 @@ namespace BoatAttack.Fishing
             ApplyEnvironment();
             bool covered=(Controller.Realms!=null && Controller.Realms.Inside) || (Controller.TackleShop!=null && Controller.TackleShop.Inside);
             TickStorm(Time.deltaTime,frozen || covered);
-            if(_audio!=null)Controller.SetAudioBaseVolume(_audio,.07f+_rainAmount*.13f);
+            if(_audio!=null)Controller.SetAudioBaseVolume(_audio,FishingPrototype.WindMixBase+_rainAmount*FishingPrototype.WindRainMixBoost);
             if(_rain!=null)
             {
                 _rain.SetActive(_rainAmount>.03f && !covered);
