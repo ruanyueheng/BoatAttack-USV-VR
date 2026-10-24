@@ -10,8 +10,9 @@ namespace BoatAttack.Fishing
     {
         public const float Range=45f, ShotInterval=.65f;
         public static readonly Vector3 RightGrip=new Vector3(.022f,0,0);
-        public static readonly Vector3 LeftGrip=new Vector3(0,-.030f,.095f);
-        public static readonly Vector3 MuzzleLocal=new Vector3(0,.069f,.447f);
+        // NewAK: support the fore-end rather than the magazine; the source grip is the origin.
+        public static readonly Vector3 LeftGrip=new Vector3(0,.043f,.184f);
+        public static readonly Vector3 MuzzleLocal=new Vector3(-.0045f,.0695f,.416f);
         private FishingPrototype _c;
         private Transform _rifle;
         private MeshFilter _mesh;

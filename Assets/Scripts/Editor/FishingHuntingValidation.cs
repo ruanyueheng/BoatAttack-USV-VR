@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 using System.Linq;
 using BoatAttack.Fishing;
+using UnityEditor;
 using UnityEngine;
 namespace BoatAttack.EditorTools
 {
@@ -29,6 +30,7 @@ namespace BoatAttack.EditorTools
         public static IEnumerator Checks(FishingPrototype c)
         {
             Check(c.RifleHunting!=null && c.RifleHunting.Rifle!=null,"supplied rifle prefab resolves");
+            ValidateNewAK(c);
             var trace=(LineRenderer)typeof(FishingRifleHunting).GetField("_trace",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(c.RifleHunting);
             Check(trace.sharedMaterial.shader==c.PaletteShader,"Shot trace reuses the packaged palette shader instead of a stripped string-only shader");
             ValidateIcons();
@@ -55,6 +57,32 @@ namespace BoatAttack.EditorTools
             Check(c.RifleHunting.Presented && !c.RifleHunting.Obstructed,"rifle visible in free space");
             Check(Vector3.Distance(c.Shore.Character.PalmPosition(true),c.Hands.Left.Palm.position)<.035f && Vector3.Distance(c.Shore.Character.PalmPosition(false),c.Hands.Right.Palm.position)<.035f,"both real hands reach independent rifle grips");
             Capture(c,"first-person-rifle");
+            int rifleSlot=c.Career.Backpack.Selected;
+            Check(c.InspectFieldItem(rifleSlot),"new AK enters the existing item inspection mode");
+            foreach(var angles in new[]{Vector2.zero,new Vector2(30,90),new Vector2(-30,180),new Vector2(0,270)})
+            {
+                typeof(FishingPrototype).GetProperty("InspectionAngles").SetValue(c,angles);
+                for(int frame=0;frame<8;frame++){c.PresentCharacterFrame();yield return null;}
+                var held=c.FieldWorld.HeldTool;
+                Check(c.FieldWorld.PresentedItem==FieldItem.HuntingRifle && held.gameObject.activeInHierarchy
+                    && !c.RifleHunting.Presented,"inspection uses the new mesh without a duplicate shooting rifle");
+                Check(c.FieldWorld.HeldToolRenderer.sharedMaterial==c.RifleHunting.Rifle.GetComponentInChildren<Renderer>().sharedMaterial,
+                    "inspection retains all new AK PBR textures");
+                Check(Vector3.Distance(c.Hands.Right.Palm.position,held.TransformPoint(FishingRifleHunting.RightGrip))<.04f,
+                    "inspection hand follows the pistol grip while rotating");
+                Check(Vector3.Distance(c.Shore.Character.PalmPosition(false),c.Hands.Right.Palm.position)<.04f,
+                    "inspection wrist remains within real arm reach");
+                var filter=held.GetComponent<MeshFilter>();var matrix=c.viewCamera.worldToCameraMatrix*filter.transform.localToWorldMatrix;
+                foreach(var vertex in filter.sharedMesh.vertices)
+                {
+                    var p=matrix.MultiplyPoint3x4(vertex);
+                    if(-p.z<=c.viewCamera.nearClipPlane+.008f)throw new Exception("New AK inspection crosses the camera near plane");
+                }
+                Capture(c,"new-ak-inspection-"+(int)angles.y);
+            }
+            c.EndItemInspection();
+            for(int frame=0;frame<8;frame++){c.PresentCharacterFrame();yield return null;}
+            Check(c.RifleHunting.Presented && !c.RifleHunting.Obstructed,"new AK returns to its two-hand firing pose after inspection");
             c.Shore.SetCrouch(true);for(int i=0;i<30;i++)yield return null;c.PresentCharacterFrame();
             Check(c.RifleHunting.Presented && !c.RifleHunting.Obstructed,"crouched rifle retains safe grip");Capture(c,"crouched-rifle");
             c.Shore.SetCrouch(false);for(int i=0;i<30;i++)yield return null;
@@ -169,6 +197,33 @@ namespace BoatAttack.EditorTools
             ValidateSuspendedRecovery(c,gull);
             c.FieldWorld.enabled=true;
             ValidateNotebookIcons(c);
+        }
+        private static void ValidateNewAK(FishingPrototype c)
+        {
+            var filter=c.RifleHunting.Rifle.GetComponentInChildren<MeshFilter>();var mesh=filter.sharedMesh;
+            Check(mesh.vertexCount>=30000 && mesh.vertexCount<50000 && mesh.triangles.Length==150000,
+                "new supplied AK has its original 50000 triangles, not the previous mesh");
+            Check(Mathf.Abs(mesh.bounds.size.z-.66f)<.002f && mesh.bounds.size.y>.19f && mesh.bounds.size.x<.09f,
+                "new AK is uniformly scaled to 66 cm with muzzle along +Z and top along +Y");
+            Check(FishingV023Art.ItemMesh(FieldItem.HuntingRifle)==mesh,"shooting and item inspection resolve the same replacement mesh");
+            foreach(var grip in new[]{FishingRifleHunting.RightGrip,FishingRifleHunting.LeftGrip})
+            {
+                float distance=float.MaxValue;foreach(var p in mesh.vertices)distance=Mathf.Min(distance,Vector3.Distance(p,grip));
+                Check(distance<.035f,"new AK palm anchor lies beside actual geometry: "+grip+" distance="+distance);
+            }
+            Check(FishingRifleHunting.MuzzleLocal.z>mesh.bounds.max.z && FishingRifleHunting.MuzzleLocal.z-mesh.bounds.max.z<.02f,
+                "new muzzle anchor clears the barrel end without extending the shot through a wall");
+            var material=c.RifleHunting.Rifle.GetComponentInChildren<Renderer>().sharedMaterial;
+            Check(material!=null && material.shader.isSupported && material.IsKeywordEnabled("_NORMALMAP")
+                && material.IsKeywordEnabled("_METALLICSPECGLOSSMAP"),"new AK uses supported textured URP normal/metallic shader variants");
+            foreach(var property in new[]{"_BaseMap","_BumpMap","_MetallicGlossMap"})
+            {
+                var texture=material.GetTexture(property);Check(texture!=null && texture.width==2048 && texture.height==2048,
+                    "new AK retains a 2K PBR texture: "+property);
+                var importer=(TextureImporter)AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(texture));
+                Check(importer.sRGBTexture==(property=="_BaseMap") && (property!="_BumpMap" || importer.textureType==TextureImporterType.NormalMap),
+                    "new AK texture has the correct linear/color/normal import: "+property);
+            }
         }
         private static void ValidateSuspendedRecovery(FishingPrototype c,FishingFieldWorld.Animal animal)
         {

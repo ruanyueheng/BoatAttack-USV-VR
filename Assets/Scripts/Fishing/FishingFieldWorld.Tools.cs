@@ -117,6 +117,11 @@ namespace BoatAttack.Fishing
                         position=Vector3.Lerp(position,desired,Mathf.Sin(Mathf.Clamp01(_thrust/.48f)*Mathf.PI));
                     }
                     break;
+                case FieldItem.HuntingRifle:
+                    scale=.82f;rightPalm=FishingRifleHunting.RightGrip;
+                    rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.right);
+                    fingers=new FishingFingerPose(.25f,.8f,.82f,.85f,.62f);
+                    break;
                 case FieldItem.Workbench:
                     twoHands=true;scale=.35f;leftPalm=new Vector3(-.68f,.88f,0);rightPalm=new Vector3(.68f,.88f,0);
                     fingers=FishingFingerPose.Book;
@@ -147,6 +152,15 @@ namespace BoatAttack.Fishing
                 rotation=frame*Quaternion.Euler(_c.InspectionAngles.x,_c.InspectionAngles.y,0);
                 rightPalm=bounds.center+Vector3.down*bounds.extents.y;
                 twoHands=false;fingers=FishingFingerPose.Book;rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.down);
+                if(item==FieldItem.HuntingRifle)
+                {
+                    // Keep the pistol grip in the hand and show the new side silhouette,
+                    // instead of balancing the magazine tip on a flat palm.
+                    rightPalm=FishingRifleHunting.RightGrip;
+                    rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.right);
+                    fingers=new FishingFingerPose(.25f,.8f,.82f,.85f,.62f);
+                    rotation=frame*Quaternion.Euler(_c.InspectionAngles.x,_c.InspectionAngles.y-65,8);
+                }
                 position=shoulderFrame+frame*new Vector3(.10f,.17f,.32f)-rotation*(bounds.center*scale);
             }
             _held.localScale=Vector3.one*scale;_held.SetPositionAndRotation(position,rotation);
