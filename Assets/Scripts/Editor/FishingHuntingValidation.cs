@@ -53,13 +53,20 @@ namespace BoatAttack.EditorTools
             Check(c.FieldWorld.TryLocation(animal.Feet,3,180,out var ground),"dry position near real rabbit");
             Feet(c,ground+Vector3.up*.06f,animal.Hitbox.bounds.center);
             for(int i=0;i<35;i++){c.Shore.Move(Vector2.zero,false,false,false,.02f);c.PresentCharacterFrame();yield return null;}
-            Debug.Log("[HUNTING] POSE: presented="+c.RifleHunting.Presented+" obstruction="+c.RifleHunting.Obstructed+" gun="+c.viewCamera.transform.InverseTransformPoint(c.RifleHunting.Rifle.position)+" L="+c.viewCamera.WorldToViewportPoint(c.Hands.Left.Palm.position)+" R="+c.viewCamera.WorldToViewportPoint(c.Hands.Right.Palm.position));
+            Debug.Log("[HUNTING] POSE: presented="+c.RifleHunting.Presented+" obstruction="+c.RifleHunting.Obstructed+" reason="+c.RifleHunting.ObstructionReason+" gun="+c.viewCamera.transform.InverseTransformPoint(c.RifleHunting.Rifle.position)+" L="+c.viewCamera.WorldToViewportPoint(c.Hands.Left.Palm.position)+" R="+c.viewCamera.WorldToViewportPoint(c.Hands.Right.Palm.position));
             Check(c.RifleHunting.Presented && !c.RifleHunting.Obstructed,"rifle visible in free space");
             Check(Vector3.Distance(c.Shore.Character.PalmPosition(true),c.Hands.Left.Palm.position)<.035f && Vector3.Distance(c.Shore.Character.PalmPosition(false),c.Hands.Right.Palm.position)<.035f,"both real hands reach independent rifle grips");
+            ValidateRifleHands(c,c.RifleHunting.Rifle,"standing firing pose");
+            ValidateScreenPresence(c,c.RifleHunting.Rifle,"standing firing pose");
             Capture(c,"first-person-rifle");
             int rifleSlot=c.Career.Backpack.Selected;
             Check(c.InspectFieldItem(rifleSlot),"new AK enters the existing item inspection mode");
-            foreach(var angles in new[]{Vector2.zero,new Vector2(30,90),new Vector2(-30,180),new Vector2(0,270)})
+            float inspectPitch=FishingRifleHunting.InspectionPitchLimit,inspectYaw=FishingRifleHunting.InspectionYawLimit;
+            Check(Quaternion.Angle(FishingRifleHunting.InspectionRotation(new Vector2(-75,-90)),FishingRifleHunting.InspectionRotation(new Vector2(-inspectPitch,-inspectYaw)))<.01f
+                && Quaternion.Angle(FishingRifleHunting.InspectionRotation(new Vector2(75,90)),FishingRifleHunting.InspectionRotation(new Vector2(inspectPitch,inspectYaw)))<.01f,
+                "rifle inspection clamps externally supplied angles to its supported two-hand range");
+            int inspectionFrame=0;
+            foreach(var angles in new[]{Vector2.zero,new Vector2(-inspectPitch,-inspectYaw),new Vector2(inspectPitch,inspectYaw),new Vector2(-inspectPitch,inspectYaw),new Vector2(inspectPitch,-inspectYaw),new Vector2(-75,-90),new Vector2(75,90)})
             {
                 typeof(FishingPrototype).GetProperty("InspectionAngles").SetValue(c,angles);
                 for(int frame=0;frame<8;frame++){c.PresentCharacterFrame();yield return null;}
@@ -72,27 +79,33 @@ namespace BoatAttack.EditorTools
                     "inspection hand follows the pistol grip while rotating");
                 Check(Vector3.Distance(c.Shore.Character.PalmPosition(false),c.Hands.Right.Palm.position)<.04f,
                     "inspection wrist remains within real arm reach");
+                ValidateRifleHands(c,held,"two-hand inspection "+angles);
+                ValidateScreenPresence(c,held,"two-hand inspection "+angles);
                 var filter=held.GetComponent<MeshFilter>();var matrix=c.viewCamera.worldToCameraMatrix*filter.transform.localToWorldMatrix;
                 foreach(var vertex in filter.sharedMesh.vertices)
                 {
                     var p=matrix.MultiplyPoint3x4(vertex);
                     if(-p.z<=c.viewCamera.nearClipPlane+.008f)throw new Exception("New AK inspection crosses the camera near plane");
                 }
-                Capture(c,"new-ak-inspection-"+(int)angles.y);
+                if(angles==Vector2.zero)LogInspectionPose(c,held);
+                Capture(c,"new-ak-inspection-"+inspectionFrame++);
             }
             c.EndItemInspection();
             for(int frame=0;frame<8;frame++){c.PresentCharacterFrame();yield return null;}
             Check(c.RifleHunting.Presented && !c.RifleHunting.Obstructed,"new AK returns to its two-hand firing pose after inspection");
             c.Shore.SetCrouch(true);for(int i=0;i<30;i++)yield return null;c.PresentCharacterFrame();
-            Check(c.RifleHunting.Presented && !c.RifleHunting.Obstructed,"crouched rifle retains safe grip");Capture(c,"crouched-rifle");
+            Check(c.RifleHunting.Presented && !c.RifleHunting.Obstructed,"crouched rifle retains safe grip");
+            ValidateRifleHands(c,c.RifleHunting.Rifle,"crouched firing pose");Capture(c,"crouched-rifle");
             c.Shore.SetCrouch(false);for(int i=0;i<30;i++)yield return null;
             c.ToggleView();for(int i=0;i<8;i++)yield return null;c.PresentCharacterFrame();
-            Check(c.RifleHunting.Presented,"third person keeps the same weapon and hand rig");Capture(c,"third-person-rifle");
+            Check(c.RifleHunting.Presented,"third person keeps the same weapon and hand rig");
+            ValidateRifleHands(c,c.RifleHunting.Rifle,"third-person firing pose");Capture(c,"third-person-rifle");
             c.ToggleView();yield return null;
             foreach(float aspect in new[]{16f/9,5f/4,21f/9})
             {
                 c.viewCamera.aspect=aspect;c.PresentCharacterFrame();
                 Check(c.RifleHunting.Presented && !c.RifleHunting.Obstructed,"rifle stays usable at aspect "+aspect);
+                ValidateScreenPresence(c,c.RifleHunting.Rifle,"firing at aspect "+aspect);
             }
             c.viewCamera.ResetAspect();
             foreach(float pitch in new[]{-30f,0f,30f})
@@ -102,6 +115,7 @@ namespace BoatAttack.EditorTools
                 Check(c.RifleHunting.Presented && !c.RifleHunting.Obstructed,"open-space pitch keeps gun usable "+pitch+" reason="+c.RifleHunting.ObstructionReason);
                 Check(Vector3.Distance(c.Shore.Character.PalmPosition(true),c.Hands.Left.Palm.position)<.04f
                     && Vector3.Distance(c.Shore.Character.PalmPosition(false),c.Hands.Right.Palm.position)<.04f,"grips remain reachable at pitch "+pitch);
+                ValidateRifleHands(c,c.RifleHunting.Rifle,"firing at pitch "+pitch);
                 Capture(c,"pitch-"+pitch);
             }
             Feet(c,c.Shore.Position,animal.Hitbox.bounds.center);for(int i=0;i<6;i++)yield return null;c.PresentCharacterFrame();
@@ -205,6 +219,9 @@ namespace BoatAttack.EditorTools
                 "new supplied AK has its original 50000 triangles, not the previous mesh");
             Check(Mathf.Abs(mesh.bounds.size.z-.66f)<.002f && mesh.bounds.size.y>.19f && mesh.bounds.size.x<.09f,
                 "new AK is uniformly scaled to 66 cm with muzzle along +Z and top along +Y");
+            Check(Mathf.Abs(FishingRifleHunting.HeldScale-1.18f)<.0001f
+                && Mathf.Abs(mesh.bounds.size.z*FishingRifleHunting.HeldScale-.7788f)<.003f,
+                "AK is presented at about 78 cm rather than the previous 54 cm compact scale");
             Check(FishingV023Art.ItemMesh(FieldItem.HuntingRifle)==mesh,"shooting and item inspection resolve the same replacement mesh");
             foreach(var grip in new[]{FishingRifleHunting.RightGrip,FishingRifleHunting.LeftGrip})
             {
@@ -224,6 +241,65 @@ namespace BoatAttack.EditorTools
                 Check(importer.sRGBTexture==(property=="_BaseMap") && (property!="_BumpMap" || importer.textureType==TextureImporterType.NormalMap),
                     "new AK texture has the correct linear/color/normal import: "+property);
             }
+        }
+        private static void ValidateRifleHands(FishingPrototype c,Transform tool,string label)
+        {
+            Check((tool.lossyScale-Vector3.one*FishingRifleHunting.HeldScale).sqrMagnitude<.0001f,
+                label+": the same uniform rifle scale is used without shrinking inspection or stretching an axis");
+            float separation=Vector3.Distance(tool.TransformPoint(FishingRifleHunting.LeftGrip),tool.TransformPoint(FishingRifleHunting.RightGrip));
+            Check(separation>.20f && separation<.34f,label+": support and firing hands have distinct human-sized grip spacing");
+            foreach(bool left in new[]{true,false})
+            {
+                var target=left?c.Hands.Left:c.Hands.Right;var character=c.Shore.Character;
+                var grip=left?FishingRifleHunting.LeftGrip:FishingRifleHunting.RightGrip;
+                var rotation=left?FishingRifleHunting.LeftPalmRotation:FishingRifleHunting.RightPalmRotation;
+                string side=left?"left":"right";
+                Check(target.Visible && target.HasGripSurface && target.ForearmRoll>0,
+                    label+": "+side+" hand uses a contact-constrained grip and shares roll with its forearm");
+                Check(Vector3.Distance(target.Palm.position,tool.TransformPoint(grip))<.004f
+                    && Quaternion.Angle(target.Palm.rotation,tool.rotation*rotation)<.1f,
+                    label+": "+side+" palm follows the shared gun-space mount, not an IK-output weapon parent");
+                Check(Vector3.Distance(character.PalmPosition(left),target.Palm.position)<.04f
+                    && Quaternion.Angle(character.PalmRotation(left),target.Palm.rotation)<2,
+                    label+": "+side+" real hand reaches the grip without a disconnected or rolled wrist");
+                float upper=Vector3.Distance(character.ShoulderPosition(left),character.ElbowPosition(left));
+                float lower=Vector3.Distance(character.ElbowPosition(left),(left?character.LeftWrist:character.RightWrist).position);
+                Check(upper>.08f && lower>.08f && Mathf.Abs(upper+lower-character.ArmReach(left))<.0001f,
+                    label+": "+side+" source arm segments retain their physical lengths");
+            }
+        }
+        private static void ValidateScreenPresence(FishingPrototype c,Transform tool,string label)
+        {
+            var filter=tool.GetComponentInChildren<MeshFilter>();var vertices=filter.sharedMesh.vertices;
+            int visible=0;float minX=float.MaxValue,maxX=float.MinValue,minY=float.MaxValue,maxY=float.MinValue;
+            foreach(var vertex in vertices)
+            {
+                var p=c.viewCamera.WorldToViewportPoint(filter.transform.TransformPoint(vertex));
+                if(p.z<=c.viewCamera.nearClipPlane)continue;
+                if(p.x>=0 && p.x<=1 && p.y>=0 && p.y<=1)visible++;
+                minX=Mathf.Min(minX,p.x);maxX=Mathf.Max(maxX,p.x);minY=Mathf.Min(minY,p.y);maxY=Mathf.Max(maxY,p.y);
+            }
+            Check(visible>vertices.Length*.025f && maxX-minX>.08f && maxY-minY>.05f,
+                label+": actual mesh has meaningful visible screen presence rather than disappearing or becoming a toy-sized dot");
+            Debug.Log("[HUNTING] SCREEN "+label+": visible="+visible+"/"+vertices.Length+" viewportMin="+new Vector2(minX,minY).ToString("F4")+" max="+new Vector2(maxX,maxY).ToString("F4"));
+        }
+        private static void LogInspectionPose(FishingPrototype c,Transform held)
+        {
+            var character=c.Shore.Character;var filter=held.GetComponent<MeshFilter>();
+            float near=float.MaxValue;Vector2 min=Vector2.one*float.MaxValue,max=Vector2.one*float.MinValue;
+            foreach(var vertex in filter.sharedMesh.vertices)
+            {
+                var p=c.viewCamera.WorldToViewportPoint(filter.transform.TransformPoint(vertex));near=Mathf.Min(near,p.z);
+                min=Vector2.Min(min,new Vector2(p.x,p.y));max=Vector2.Max(max,new Vector2(p.x,p.y));
+            }
+            Debug.Log("[HUNTING] INSPECTION ZERO: eye="+c.viewCamera.transform.position.ToString("F4")
+                +" shoulderRef="+character.HandReferencePosition.ToString("F4")+" shoulders="+character.ShoulderPosition(true).ToString("F4")+" / "+character.ShoulderPosition(false).ToString("F4")
+                +" scale="+held.lossyScale.ToString("F4")+" cameraRoot="+c.viewCamera.transform.InverseTransformPoint(held.position).ToString("F4")
+                +" nearestMeshDepth="+near.ToString("F4")+" viewport="+min.ToString("F4")+" / "+max.ToString("F4")
+                +" armReach="+character.ArmReach(true).ToString("F4")+" / "+character.ArmReach(false).ToString("F4")
+                +" upperLengths="+Vector3.Distance(character.ShoulderPosition(true),character.ElbowPosition(true)).ToString("F4")+" / "+Vector3.Distance(character.ShoulderPosition(false),character.ElbowPosition(false)).ToString("F4")
+                +" lowerLengths="+Vector3.Distance(character.ElbowPosition(true),character.LeftWrist.position).ToString("F4")+" / "+Vector3.Distance(character.ElbowPosition(false),character.RightWrist.position).ToString("F4")
+                +" wristPalm="+Vector3.Distance(character.LeftWrist.position,character.PalmPosition(true)).ToString("F4")+" / "+Vector3.Distance(character.RightWrist.position,character.PalmPosition(false)).ToString("F4"));
         }
         private static void ValidateSuspendedRecovery(FishingPrototype c,FishingFieldWorld.Animal animal)
         {

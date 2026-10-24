@@ -118,9 +118,9 @@ namespace BoatAttack.Fishing
                     }
                     break;
                 case FieldItem.HuntingRifle:
-                    scale=.82f;rightPalm=FishingRifleHunting.RightGrip;
-                    rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.right);
-                    fingers=new FishingFingerPose(.25f,.8f,.82f,.85f,.62f);
+                    scale=FishingRifleHunting.HeldScale;rightPalm=FishingRifleHunting.RightGrip;leftPalm=FishingRifleHunting.LeftGrip;
+                    rightRotation=FishingRifleHunting.RightPalmRotation;leftRotation=FishingRifleHunting.LeftPalmRotation;
+                    fingers=FishingRifleHunting.RightFingers;twoHands=true;
                     break;
                 case FieldItem.Workbench:
                     twoHands=true;scale=.35f;leftPalm=new Vector3(-.68f,.88f,0);rightPalm=new Vector3(.68f,.88f,0);
@@ -154,14 +154,17 @@ namespace BoatAttack.Fishing
                 twoHands=false;fingers=FishingFingerPose.Book;rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.down);
                 if(item==FieldItem.HuntingRifle)
                 {
-                    // Keep the pistol grip in the hand and show the new side silhouette,
-                    // instead of balancing the magazine tip on a flat palm.
+                    // Full-size two-hand inspection: never shrink the gun to a toy.
+                    // Controlled side-on rotation keeps a long barrel/stock out of the face.
+                    scale=FishingRifleHunting.HeldScale;twoHands=true;
                     rightPalm=FishingRifleHunting.RightGrip;
-                    rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.right);
-                    fingers=new FishingFingerPose(.25f,.8f,.82f,.85f,.62f);
-                    rotation=frame*Quaternion.Euler(_c.InspectionAngles.x,_c.InspectionAngles.y-65,8);
+                    leftPalm=FishingRifleHunting.LeftGrip;
+                    rightRotation=FishingRifleHunting.RightPalmRotation;leftRotation=FishingRifleHunting.LeftPalmRotation;
+                    fingers=FishingRifleHunting.RightFingers;
+                    rotation=frame*FishingRifleHunting.InspectionRotation(_c.InspectionAngles);
                 }
-                position=shoulderFrame+frame*new Vector3(.10f,.17f,.32f)-rotation*(bounds.center*scale);
+                position=item==FieldItem.HuntingRifle?eye+bodyFrame*new Vector3(.08f,-.26f,.39f)
+                    :shoulderFrame+frame*new Vector3(.10f,.17f,.32f)-rotation*(bounds.center*scale);
             }
             _held.localScale=Vector3.one*scale;_held.SetPositionAndRotation(position,rotation);
             bool tracked=XRSettings.isDeviceActive;
@@ -183,9 +186,14 @@ namespace BoatAttack.Fishing
                 _held.position=palm-_held.rotation*(rightPalm*scale);
             }
             if(pick && !tracked)rightRotation=PickHandRotation(_held.rotation,bodyFrame);
-            if(twoHands)_c.Hands.SetToolTarget(true,_held,leftPalm,leftRotation,curl,fingers:item==FieldItem.FieldGuide && _c.GuideOpening?FishingFingerPose.Book:fingers);
+            if(twoHands)_c.Hands.SetToolTarget(true,_held,leftPalm,leftRotation,curl,fingers:item==FieldItem.HuntingRifle?FishingRifleHunting.LeftFingers:item==FieldItem.FieldGuide && _c.GuideOpening?FishingFingerPose.Book:fingers);
             else if(!tracked)_c.Hands.RestHand(true);
             _c.Hands.SetToolTarget(false,_held,rightPalm,rightRotation,curl,fingers:fingers);
+            if(item==FieldItem.HuntingRifle)
+            {
+                FishingRifleHunting.ConfigureGripSurface(_c.Hands.Right,_held,false);
+                if(twoHands)FishingRifleHunting.ConfigureGripSurface(_c.Hands.Left,_held,true);
+            }
             if(pick)_c.Hands.Right.SetGripSurface(_held.TransformPoint(new Vector3(0,-.10f,0)),_held.TransformPoint(new Vector3(0,.15f,0)),.018f*scale);
             else if(item==FieldItem.HuntingSpear)_c.Hands.Right.SetGripSurface(_held.TransformPoint(new Vector3(0,0,-.14f)),_held.TransformPoint(new Vector3(0,0,.14f)),.025f*scale);
             if(pick || item==FieldItem.Lantern)_c.Hands.Right.SetForearmRoll(.65f);
