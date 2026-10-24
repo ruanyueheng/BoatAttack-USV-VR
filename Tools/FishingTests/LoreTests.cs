@@ -53,5 +53,10 @@ internal static class LoreTests
         for(int i=0;i<40;i++)hydraulic.PushCargo(.1f);check(!hydraulic.Use(0),"V035: cargo stops on the plate");
         hydraulic.Use(1);hydraulic.Tick(2);check(!hydraulic.Ready && Math.Abs(hydraulic.WaterLevel-.5f)<.001f,"V032: float bridge needs enough water");
         hydraulic.Tick(float.PositiveInfinity);check(Math.Abs(hydraulic.WaterLevel-.5f)<.001f,"V032: invalid time cannot solve hydraulics");
+        hydraulic.Tick(2);check(hydraulic.Ready,"V038: loaded floating bridge reaches its upper landing");
+        hydraulic.Use(1);hydraulic.Tick(1);
+        check(hydraulic.State(1)==0 && hydraulic.WaterLevel==1 && hydraulic.Ready,"V038: closing the filled valve preserves the floating crossing");
+        hydraulic.Use(1);hydraulic.Tick(1);
+        check(!hydraulic.Ready && hydraulic.WaterLevel<.95f,"V038: actually draining the hold lowers the crossing");
     }
 }

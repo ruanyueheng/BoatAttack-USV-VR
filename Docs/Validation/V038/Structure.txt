@@ -1,0 +1,6 @@
+[USV-VALIDATION] Shared input settings loaded.
+[USV-VALIDATION] Desktop build scene entries include menu and island.
+[USV-VALIDATION] Scene opened without missing scripts: Assets/scenes/main_menu.unity
+[USV-VALIDATION] Scene opened without missing scripts: Assets/scenes/demo_Island.unity
+[USV-VALIDATION] Scene opened without missing scripts: Assets/scenes/_levels/level_Island.unity
+[USV-VALIDATION] PASS: import, input settings and three scene structures only; no Play Mode, build, rendering or headset test.

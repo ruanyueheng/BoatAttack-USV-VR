@@ -1,0 +1,106 @@
+Assertion summary: exact duplicate lines omitted; raw run identifiers are recorded in suite-logs.json.
+[INTERACTION] CHECK: 仅操作临时隔离存档
+[INTERACTION] CHECK: 沿原四岸点的实际入口登陆
+[INTERACTION] CHECK: 真实跨帧姿态与落地已稳定，crouched=True
+[INTERACTION] CHECK: 石料夹具通过真实碰撞确认 Grounded/Crouched：resource:1
+[INTERACTION] CHECK: 站位预检未启动、推进或提交动作
+[INTERACTION] CHECK: E 使用真实动作请求并锁定资源 ID：请求返回 true
+[INTERACTION] CHECK: E 使用真实动作请求并锁定资源 ID：锁定 resource:1
+[INTERACTION] CHECK: E 使用真实动作请求并锁定资源 ID：实际落地/蹲姿及共享预检通过
+[INTERACTION] CHECK: 重复 E 不替换动作
+[INTERACTION] CHECK: 起手阶段不提前发料
+[INTERACTION] CHECK: 切换视角不重放或取消动作
+[INTERACTION] CHECK: 低帧率跨过接触/结束仍只提交一次
+[INTERACTION] CHECK: 徒手接触：真实蒙皮掌心到达独立目标
+[INTERACTION] CHECK: 徒手接触：目标未依赖 IK 夹短补救
+[INTERACTION] CHECK: 已消费许可不会重复收益
+[INTERACTION] CHECK: 目标切换回归起手：请求返回 true
+[INTERACTION] CHECK: 目标切换回归起手：锁定 resource:1
+[INTERACTION] CHECK: 目标切换回归起手：实际落地/蹲姿及共享预检通过
+[INTERACTION] CHECK: 石料夹具通过真实碰撞确认 Grounded/Crouched：resource:7
+[INTERACTION] CHECK: 移离后仍锁定原动作编号和资源 ID
+[INTERACTION] CHECK: 走近另一矿点不会把旧许可改投最近资源
+[INTERACTION] CHECK: 暂停回归起手：请求返回 true
+[INTERACTION] CHECK: 暂停回归起手：锁定 resource:1
+[INTERACTION] CHECK: 暂停回归起手：实际落地/蹲姿及共享预检通过
+[INTERACTION] CHECK: 暂停取消未接触动作
+[INTERACTION] CHECK: 失焦回归起手：请求返回 true
+[INTERACTION] CHECK: 失焦回归起手：锁定 resource:1
+[INTERACTION] CHECK: 失焦回归起手：实际落地/蹲姿及共享预检通过
+[INTERACTION] CHECK: 失焦不遗留接触回调
+[INTERACTION] CHECK: 换槽回归起手：请求返回 true
+[INTERACTION] CHECK: 换槽回归起手：锁定 resource:1
+[INTERACTION] CHECK: 换槽回归起手：实际落地/蹲姿及共享预检通过
+[INTERACTION] CHECK: 切换装备取消旧快照
+[INTERACTION] CHECK: XR 边界回归起手：请求返回 true
+[INTERACTION] CHECK: XR 边界回归起手：锁定 resource:1
+[INTERACTION] CHECK: XR 边界回归起手：实际落地/蹲姿及共享预检通过
+[INTERACTION] CHECK: 模拟 XR 激活取消桌面动作
+[INTERACTION] CHECK: 消失目标回归起手：请求返回 true
+[INTERACTION] CHECK: 消失目标回归起手：锁定 resource:1
+[INTERACTION] CHECK: 消失目标回归起手：实际落地/蹲姿及共享预检通过
+[INTERACTION] CHECK: 目标消失作废旧许可，不转投其他资源
+[INTERACTION] CHECK: 读档回归起手：请求返回 true
+[INTERACTION] CHECK: 读档回归起手：锁定 resource:7
+[INTERACTION] CHECK: 读档回归起手：实际落地/蹲姿及共享预检通过
+[INTERACTION] CHECK: 读档使旧动作编号失效
+[INTERACTION] CHECK: 满包回归仍走接触请求：请求返回 true
+[INTERACTION] CHECK: 满包回归仍走接触请求：锁定 resource:7
+[INTERACTION] CHECK: 满包回归仍走接触请求：实际落地/蹲姿及共享预检通过
+[INTERACTION] CHECK: 满包失败不消耗资源
+[INTERACTION] CHECK: 装备夹具加入 StonePickaxe
+[INTERACTION] CHECK: F 镐采集使用同一动作时钟：请求返回 true
+[INTERACTION] CHECK: F 镐采集使用同一动作时钟：锁定 resource:7
+[INTERACTION] CHECK: F 镐采集使用同一动作时钟：实际落地/蹲姿及共享预检通过
+[INTERACTION] CHECK: 镐尖与收益接触点一致
+[INTERACTION] CHECK: 镐柄接触：真实蒙皮掌心到达独立目标
+[INTERACTION] CHECK: 镐柄接触：目标未依赖 IK 夹短补救
+[INTERACTION] CHECK: 拾取夹具使用实际岸面
+[INTERACTION] CHECK: 第三人称 E 选择更近的拾取而非远处资源：请求返回 true
+[INTERACTION] CHECK: 第三人称 E 选择更近的拾取而非远处资源：锁定 pickup:0
+[INTERACTION] CHECK: 第三人称 E 选择更近的拾取而非远处资源：实际落地/蹲姿及共享预检通过
+[INTERACTION] CHECK: 拾取起手不提前置领取位
+[INTERACTION] CHECK: 拾取接触只提交已锁定物品
+[INTERACTION] CHECK: 拾取接触：真实蒙皮掌心到达独立目标
+[INTERACTION] CHECK: 拾取接触：目标未依赖 IK 夹短补救
+[INTERACTION] CHECK: 装备夹具加入 Workbench
+[INTERACTION] CHECK: 真实跨帧姿态与落地已稳定，crouched=False
+[INTERACTION] CHECK: 落位预览阶段不扣除设施；placing=True stations=6 expectedStations=6 count=1 message=前方需要平整、可见、干燥的岸面。 actor=(-60.46, 1.18, -24.64)
+[INTERACTION] CHECK: 取消放置无损退回原物品
+[INTERACTION] CHECK: 同一合法落位可以重新请求
+[INTERACTION] CHECK: 接触时复核落位并只生成一个设施
+[INTERACTION] CHECK: 维修夹具位于旧港实际可站立岸面
+[INTERACTION] CHECK: 维修入口使用实际接触请求：请求返回 true
+[INTERACTION] CHECK: 维修入口使用实际接触请求：锁定 expedition:4
+[INTERACTION] CHECK: 维修入口使用实际接触请求：实际落地/蹲姿及共享预检通过
+[INTERACTION] CHECK: 维修入口锁定 Repair 动作类型
+[INTERACTION] CHECK: 接触前不打开信标校准
+[INTERACTION] CHECK: 接触只打开原校准事务，不提前修复或消耗线圈
+[INTERACTION] CHECK: 待处理鱼事务夹具
+[INTERACTION] CHECK: 鱼获夹具等待真实坐姿落位，帧数=5
+[INTERACTION] CHECK: 未测量鱼获使用左手检视入口
+[INTERACTION] CHECK: 左手检视开始时记录测量，鱼获仍待处理且不启动旧双手动作
+[INTERACTION] CHECK: 手持鱼必须先入网再结算
+[INTERACTION] CHECK: 检视完成时左掌接触同一条鱼
+[INTERACTION] CHECK: 再次 E 开始放入抄网，重复 E 不重启动作
+[INTERACTION] CHECK: 入网保留原凭证，不提前入箱
+[INTERACTION] CHECK: 入箱使用动作请求；message=活鱼已放入抄网。E 再次检视，F 入鱼箱，X 放生。 box=(-94.26, 1.82, -25.73) shoulder=(-94.27, 2.40, -25.34) reach=0.3931281 surface=(-94.17, 2.21, -25.42) seated=True boat=(-94.74, 1.00, -25.70) euler=(0.00, 328.00, 12.00)
+[INTERACTION] CHECK: 木箱保留右侧实体上沿
+[INTERACTION] CHECK: 接收点位于实际箱沿上表面，不是悬空代理
+[INTERACTION] CHECK: 入箱锁定箱沿面内接收点，而非远端角点
+[INTERACTION] CHECK: 取消入箱保留待处理鱼
+[INTERACTION] CHECK: 取消后可用新编号重新入箱
+[INTERACTION] CHECK: 鱼获事务只结算一次
+[INTERACTION] CHECK: 新动作保存鱼获与工坊数据
+[INTERACTION] CHECK: 普通鱼放生夹具
+[INTERACTION] CHECK: 鱼获夹具等待真实坐姿落位，帧数=0
+[INTERACTION] CHECK: 第一次 X 仅要求确认
+[INTERACTION] CHECK: 第二次 X 发起可达的真实放生动作；再按 X 确认放生；不出售、不增加普通鱼金币。
+[INTERACTION] CHECK: 松手前仍保留鱼获所有权
+[INTERACTION] CHECK: 普通鱼松手只结算一次，不产生售鱼金币
+[INTERACTION] CHECK: 传说鱼放生夹具
+[INTERACTION] CHECK: 传说鱼未测量仍不能结算
+[INTERACTION] CHECK: 先测量传说鱼
+[INTERACTION] CHECK: 已测量传说鱼可用双 X 正常放生；再按 X 确认放生；不出售、不增加普通鱼金币。
+[INTERACTION] CHECK: 传说鱼放生与赏金只结算一次
+[INTERACTION] PASS: v0.38.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。

@@ -29,6 +29,7 @@ namespace BoatAttack.Fishing
             public int Digit;
             public LocalPose Neutral;
             public int SkinIndex;
+            public readonly List<SkinPoint> Contact=new List<SkinPoint>();
         }
         private struct SkinPoint
         {
@@ -44,6 +45,11 @@ namespace BoatAttack.Fishing
             public readonly List<OverlayBone> Overlay=new List<OverlayBone>();
             public readonly List<FingerJoint> Fingers=new List<FingerJoint>();
             public readonly List<SkinPoint>[] Contact=new[]{new List<SkinPoint>(),new List<SkinPoint>(),new List<SkinPoint>(),new List<SkinPoint>(),new List<SkinPoint>()};
+            public LocalPose[] GripPose;
+            public Vector3 GripStart,GripEnd,GripScale;
+            public FishingFingerPose GripFingers;
+            public float GripRadius;
+            public bool GripCached,GripPointing;
         }
         private Arm _leftArm,_rightArm;
         private int _armBaseFrame=-1;
@@ -59,6 +65,7 @@ namespace BoatAttack.Fishing
         public Transform RightWrist=>_rightArm?.Wrist;
         public int LeftFingerJointCount=>_leftArm?.Fingers.Count ?? 0;
         public int RightFingerJointCount=>_rightArm?.Fingers.Count ?? 0;
+        public int ContactSolveCount {get;private set;}
         public Vector3 HandReferencePosition=>HandRigReady?(_leftArm.Upper.position+_rightArm.Upper.position)*.5f:transform.position+transform.up*1.3f;
         public Vector3 ShoulderPosition(bool left)=>(left?_leftArm:_rightArm).Upper.position;
         public Vector3 ElbowPosition(bool left)=>(left?_leftArm:_rightArm).Lower.position;
@@ -155,6 +162,7 @@ namespace BoatAttack.Fishing
                 }
             }
             CacheFingerSurfaces(arm);
+            arm.GripPose=new LocalPose[arm.Fingers.Count];
             return arm;
         }
         private void CacheFingerSurfaces(Arm arm)
@@ -178,6 +186,13 @@ namespace BoatAttack.Fishing
                     }
                 }
             }
+            foreach(var joint in arm.Fingers)
+                foreach(var point in arm.Contact[joint.Digit])
+                {
+                    var w=point.Weight;
+                    if((w.weight0>0 && _contactBones[w.boneIndex0].IsChildOf(joint.Bone)) || (w.weight1>0 && _contactBones[w.boneIndex1].IsChildOf(joint.Bone)))
+                        joint.Contact.Add(point);
+                }
         }
         private Vector3 SurfacePalmCentre(Dictionary<string,Transform> bones,string side)
         {
@@ -230,7 +245,7 @@ namespace BoatAttack.Fishing
         private void ApplyArm(Arm arm,FishingHandTarget target,bool left,bool tracked)
         {
             foreach(var bone in arm.Overlay)bone.Sample.Apply(bone.Bone);
-            if(_armsPaused || _armBaseFrame!=Time.frameCount || target==null || !target.Visible || target.IsLeft!=left)return;
+            if(_armsPaused || _armBaseFrame!=Time.frameCount || target==null || !target.Visible || target.IsLeft!=left){arm.GripCached=false;return;}
             arm.Wrist.localScale=arm.WristScale;
             var desiredRotation=target.Palm.rotation*Quaternion.Inverse(arm.WristToPalm);
             // Preserve the sampled rig's actual segment scales; only rotations are solved.
@@ -251,8 +266,21 @@ namespace BoatAttack.Fishing
             arm.Wrist.rotation=desiredRotation;
             // Tracked hands use the hand-only source mesh: controller reach cannot stretch a visible forearm.
             if(tracked)arm.Wrist.position=wristTarget;
+            var gripStart=target.HasGripSurface?arm.Wrist.InverseTransformPoint(target.GripStart):Vector3.zero;
+            var gripEnd=target.HasGripSurface?arm.Wrist.InverseTransformPoint(target.GripEnd):Vector3.zero;
+            var gripScale=arm.Wrist.lossyScale;
+            // A rigid tool moving with its palm does not change finger contact geometry.
+            if(target.HasGripSurface && arm.GripCached && (gripStart-arm.GripStart).sqrMagnitude<4e-8f && (gripEnd-arm.GripEnd).sqrMagnitude<4e-8f
+                && (gripScale-arm.GripScale).sqrMagnitude<1e-8f && target.GripRadius==arm.GripRadius && target.Pointing==arm.GripPointing
+                && target.Fingers.Fingers==arm.GripFingers.Fingers && target.Fingers.Thumb==arm.GripFingers.Thumb)
+            {
+                for(int i=0;i<arm.Fingers.Count;i++)arm.GripPose[i].Apply(arm.Fingers[i].Bone);
+                return;
+            }
+            arm.GripCached=false;
             if(target.HasGripSurface)
             {
+                ContactSolveCount++;
                 for(int digit=0;digit<5;digit++)SetDigit(arm,digit,0);
                 for(int i=0;i<_contactBones.Length;i++)_contactMatrices[i]=_contactBones[i].localToWorldMatrix*_contactBindposes[i];
             }
@@ -271,18 +299,24 @@ namespace BoatAttack.Fishing
                     for(int step=1;step<=12;step++)
                     {
                         float next=curl*step/12f;SetContactJoint(arm,joint,next,axis,degrees);
-                        if(DigitTouches(arm,digit,target))
+                        if(DigitTouches(joint,target))
                         {
                             for(int refine=0;refine<4;refine++)
                             {
                                 float middle=(previous+next)*.5f;SetContactJoint(arm,joint,middle,axis,degrees);
-                                if(DigitTouches(arm,digit,target))next=middle;else previous=middle;
+                                if(DigitTouches(joint,target))next=middle;else previous=middle;
                             }
                             SetContactJoint(arm,joint,previous,axis,degrees);break;
                         }
                         previous=next;
                     }
                 }
+            }
+            if(target.HasGripSurface)
+            {
+                for(int i=0;i<arm.Fingers.Count;i++)arm.GripPose[i]=new LocalPose(arm.Fingers[i].Bone);
+                arm.GripStart=gripStart;arm.GripEnd=gripEnd;arm.GripScale=gripScale;arm.GripRadius=target.GripRadius;
+                arm.GripFingers=target.Fingers;arm.GripPointing=target.Pointing;arm.GripCached=true;
             }
         }
         private static void SetDigit(Arm arm,int digit,float curl)
@@ -322,10 +356,11 @@ namespace BoatAttack.Fishing
             foreach(var joint in arm.Fingers)if(joint.Digit==changed.Digit && joint.SkinIndex>=0)
                 _contactMatrices[joint.SkinIndex]=joint.Bone.localToWorldMatrix*_contactBindposes[joint.SkinIndex];
         }
-        private bool DigitTouches(Arm arm,int digit,FishingHandTarget target)
+        private bool DigitTouches(FingerJoint joint,FishingHandTarget target)
         {
             var axis=target.GripEnd-target.GripStart;float length=axis.sqrMagnitude,radius=target.GripRadius+.001f;
-            foreach(var point in arm.Contact[digit])
+            // Contact on a fixed knuckle cannot stop a different, still straight distal joint.
+            foreach(var point in joint.Contact)
             {
                 var w=point.Weight;var v=point.Vertex;
                 var p=_contactMatrices[w.boneIndex0].MultiplyPoint3x4(v)*w.weight0+_contactMatrices[w.boneIndex1].MultiplyPoint3x4(v)*w.weight1;

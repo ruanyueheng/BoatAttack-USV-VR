@@ -1,0 +1,6 @@
+[V038-SWIMMING] CHECK: 仅操作临时隔离存档
+[V038] CHECK: Production exterior landing starts the sea-swimming regression
+[V038] CHECK: The exterior jetty still has clear supported footing
+[V038] CHECK: Walking off the exterior jetty still enters the ocean with the eye near its water level
+[V038] CHECK: Real swimming and jump input still climb back onto the exterior jetty
+[V038-SWIMMING] PASS: v0.38.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。

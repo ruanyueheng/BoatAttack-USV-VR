@@ -175,7 +175,7 @@ namespace BoatAttack.Fishing
             var check=new InteractionPreflight{Actor=ExplorerPosition,RootPosition=root==null?contact:root.position,Contact=contact,
                 Shoulder=character.ShoulderPosition(false),Grounded=Shore.Grounded,Crouched=Shore.Crouched,ArmReach=character.ArmReach(false)};
             check.BaseShoulder=check.Shoulder-character.AppliedInteractionLean;
-            check.Palm=pick?FishingFieldWorld.PickContactPalm(contact,rotation):contact;
+            check.Palm=pick?FishingFieldWorld.PickContactPalm(contact,rotation,Quaternion.Euler(0,Shore.Actor.eulerAngles.y,0)):contact;
             var wrist=pick?ActionPickWrist(check.Palm,rotation):check.Palm;
             float ReachDistance(Vector3 shoulder)=>Mathf.Max(Vector3.Distance(shoulder,check.Palm),Vector3.Distance(shoulder,wrist));
             // 使用当前输入最终对应的姿态；起身途中的瞬时可达不能冒充站姿可达。
@@ -220,7 +220,7 @@ namespace BoatAttack.Fishing
                 if(WorldActionBusy)return Farm!=null && Farm.Busy?Farm.ActionHint:"动作进行中 · "+Mathf.RoundToInt(Actions.Progress*100)+"% · Esc 取消";
                 if(Shore.Swimming)return "游泳 · 朝低岸移动并按空格上岸 · 靠近船边G上船";
                 if(Shore.Climbing)return Shore.ClimbHint;
-                if(Realms!=null && Realms.NearbyHint!=null)return Realms.NearbyHint;
+                var realmHint=Realms?.NearbyHint;if(realmHint!=null)return realmHint;
                 if(Residents!=null && Residents.TryNearby(out int resident))return resident==4?"E 与汐禾交谈 · Tab 查看商品":"E 与"+FishingLore.ResidentName(resident)+"交谈";
                 if(Shore.ClimbHint!=null)return Shore.ClimbHint;
                 if(TackleShop!=null && TackleShop.NearCounter)return "E / Tab 潮汐钓具店 · 柜台购买升级";
@@ -402,7 +402,7 @@ namespace BoatAttack.Fishing
             {
                 request.Attempted=true;_actionContactFrame=_actionConsumedFrame=Time.frameCount;
                 var character=Shore.Character;var baseShoulder=character.ShoulderPosition(false)-character.AppliedInteractionLean;
-                var palm=ActionUsesHeldTool?FishingFieldWorld.PickContactPalm(ActionTargetPosition,request.ToolRotation):ActionTargetPosition;
+                var palm=ActionUsesHeldTool?FishingFieldWorld.PickContactPalm(ActionTargetPosition,request.ToolRotation,Quaternion.Euler(0,Shore.Actor.eulerAngles.y,0)):ActionTargetPosition;
                 bool reachable=Vector3.Distance(baseShoulder+request.Lean,palm)<=character.ArmReach(false)-.005f
                     && (!ActionUsesHeldTool || Vector3.Distance(baseShoulder+request.Lean,ActionPickWrist(palm,request.ToolRotation))<=character.ArmReach(false)-.005f)
                     && ClearActionSight(baseShoulder,palm,request.ContactRoot)

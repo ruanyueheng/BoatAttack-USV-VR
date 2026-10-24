@@ -27,7 +27,7 @@ namespace BoatAttack.EditorTools
             Debug.Log("[V023] SPEAR AXES: "+FishingV023Art.ItemMesh(FieldItem.HuntingSpear).bounds);
             Check(FishingV023Art.ItemMesh(FieldItem.HuntingSpear).bounds.max.z>.91f,"Spear's visible tip shares the positive-Z gameplay contact axis");
             Check(Resources.Load<GameObject>("FishingV023/Home/HouseShellView").GetComponentInChildren<MeshFilter>().sharedMesh.bounds.min.z<-7.9f,"Visible porch shares the negative-Z entrance and floor colliders");
-            Check(pick!=null && Mathf.Abs(pick.bounds.size.y-.58f)<.01f && pick.bounds.Contains(FishingFieldWorld.PickTip) && pick.bounds.Contains(FishingFieldWorld.PickPalm),"Supplied pick retains calibrated metre grip and contact axes");
+            Check(pick!=null && Mathf.Abs(pick.bounds.size.y-.58f)<.01f && pick.bounds.Contains(FishingFieldWorld.PickTip) && Mathf.Abs(FishingFieldWorld.PickPalm.y)<.01f,"Supplied pick retains calibrated metre surface mount and contact axes");
             foreach(FieldItem item in Enum.GetValues(typeof(FieldItem)))
             {
                 // Appended hunting/forge items use the supplied textured rifle and

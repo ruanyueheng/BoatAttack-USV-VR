@@ -8,9 +8,9 @@ namespace BoatAttack.Fishing
         public Transform HeldTool=>_held;
         public Renderer HeldToolRenderer=>_heldRenderer;
         public FieldItem PresentedItem { get; private set; }
-        public static readonly Vector3 PickPalm=new Vector3(.034f,0,0);
+        public static readonly Vector3 PickPalm=PickGripPalm(Quaternion.identity,Quaternion.identity);
         public static readonly Vector3 PickTip=new Vector3(.1531086f,.39003575f,.02396736f);
-        private static readonly FishingFingerPose PickFingers=new FishingFingerPose(.65f,.44f,.44f,.42f,1f);
+        private static readonly FishingFingerPose PickFingers=FishingFingerPose.Handle;
         public static readonly Vector3 BinocularLeftPalm=new Vector3(-.365f,0,-.055f);
         public static readonly Vector3 BinocularRightPalm=new Vector3(.365f,0,-.055f);
         public const float PickScale=.68f;
@@ -30,7 +30,8 @@ namespace BoatAttack.Fishing
         private float _previewUntil;
         public void ShowPickupPreview(FieldItem item){_previewItem=item;_previewUntil=Time.time+1.4f;}
         public void ClearToolPresentation(){_previewUntil=0;CancelHunt();PresentedItem=FieldItem.Empty;if(_held!=null)_held.gameObject.SetActive(false);if(_lamp!=null)_lamp.enabled=false;}
-        public static Vector3 PickContactPalm(Vector3 contact,Quaternion rotation)=>contact+rotation*((PickPalm-PickTip)*PickScale);
+        public static Vector3 PickGripPalm(Quaternion tool,Quaternion frame)=>PickHandRotation(tool,frame)*new Vector3(0,.035f,-.045f)/PickScale;
+        public static Vector3 PickContactPalm(Vector3 contact,Quaternion rotation,Quaternion frame)=>contact+rotation*((PickGripPalm(rotation,frame)-PickTip)*PickScale);
         public static Quaternion PickContactRotation(Vector3 heading)=>Quaternion.LookRotation(heading)*Quaternion.FromToRotation(PickTip-PickPalm,new Vector3(0,-.24f,.30f));
         public static Quaternion PickHandRotation(Quaternion tool,Quaternion frame)
         {
@@ -100,11 +101,12 @@ namespace BoatAttack.Fishing
                     rotation=bodyFrame;rightPalm=LanternPalm;rightRotation=LanternHandRotation;
                     position=shoulderFrame+bodyFrame*new Vector3(_c.Shore.Character.HandSide(false)*.15f,.14f,.42f)-rotation*(rightPalm*scale);break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:
-                    scale=PickScale;rightPalm=PickPalm;curl=.94f;fingers=PickFingers;
+                    scale=PickScale;curl=.94f;fingers=PickFingers;
                     // Keep the wrist beside the chest, not beside the eye. Palm orientation
                     // follows the real shaft while fingers remain forward instead of rolled inward.
                     rotation=bodyFrame*Quaternion.Euler(XRSettings.isDeviceActive?5:-5,-45,0);
                     rightRotation=PickHandRotation(rotation,bodyFrame);
+                    rightPalm=PickGripPalm(rotation,bodyFrame);
                     position=shoulderFrame+bodyFrame*new Vector3(_c.Shore.Character.HandSide(false)*.12f,XRSettings.isDeviceActive?-.065f:-.035f,.53f)-rotation*(rightPalm*scale);break;
                 case FieldItem.HuntingSpear:
                     scale=1;rightPalm=SpearPalm;rightRotation=Quaternion.LookRotation(Vector3.up,Vector3.right);
@@ -163,12 +165,18 @@ namespace BoatAttack.Fishing
             {
                 // 镐尖与接触许可使用同一个目标，不能先夹短手臂再让远处矿石扣减。
                 var contactRotation=_c.ActionToolRotation;
-                var contactPalm=PickContactPalm(_c.ActionTargetPosition,contactRotation);
+                var contactPalm=PickContactPalm(_c.ActionTargetPosition,contactRotation,bodyFrame);
                 var palm=Vector3.Lerp(_c.ActionStartPalm,contactPalm,_c.ActionContactBlend);
                 _held.rotation=Quaternion.Slerp(rotation,contactRotation,_c.ActionContactBlend);
+                rightRotation=PickHandRotation(_held.rotation,bodyFrame);rightPalm=PickGripPalm(_held.rotation,bodyFrame);
                 _held.position=palm-_held.rotation*(rightPalm*scale);
             }
-            if(pick && !tracked)rightRotation=PickHandRotation(_held.rotation,bodyFrame);
+            else if(pick && !tracked)
+            {
+                var palm=_held.TransformPoint(rightPalm);
+                rightRotation=PickHandRotation(_held.rotation,bodyFrame);rightPalm=PickGripPalm(_held.rotation,bodyFrame);
+                _held.position=palm-_held.rotation*(rightPalm*scale);
+            }
             if(twoHands)_c.Hands.SetToolTarget(true,_held,leftPalm,leftRotation,curl,fingers:item==FieldItem.FieldGuide && _c.GuideOpening?FishingFingerPose.Book:fingers);
             else if(!tracked)_c.Hands.RestHand(true);
             _c.Hands.SetToolTarget(false,_held,rightPalm,rightRotation,curl,fingers:fingers);

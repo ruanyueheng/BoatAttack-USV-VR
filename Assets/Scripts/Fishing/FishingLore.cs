@@ -96,7 +96,7 @@ namespace BoatAttack.Fishing
         }
         public int State(int device) => device >= 0 && device < 3 ? _states[device] : 0;
         public bool Ready => Island == 0 ? Progress == 3 : Island == 1 ? Growth>=1
-            : Island == 2 ? _cargo>=1 && _states[1] == 2 && WaterLevel>=.95f : _starStage>=3;
+            : Island == 2 ? _cargo>=1 && WaterLevel>=.95f : _starStage>=3;
         public bool Use(int device)
         {
             if (device < 0 || device >= (Island == 2 ? 2 : 3)) return false;

@@ -1,0 +1,14 @@
+[V036-PERFORMANCE] CHECK: 仅操作临时隔离存档
+[V036-PERFORMANCE] CHECK: V035 reference finds the actual home voyage around the coast
+[V036-PERFORMANCE] CHECK: Reusable heap planner preserves the V035 A* route numerically
+[V036-PERFORMANCE] CHECK: Starting a runtime replan keeps the current safe route intact
+[V036-PERFORMANCE] CHECK: Incremental and synchronous planning produce the same route and endpoint
+[V036-PERFORMANCE] CHECK: Every planning slice respects the 32-node work bound and leaves partial results private
+[V036-PERFORMANCE] CHECK: Replans retain the world-sized search arrays
+[V036-PERFORMANCE] CHECK: Unchanged hull clearance on committed route segment 1
+[V036-PERFORMANCE] CHECK: Warm replans allocate only bounded request state, not world-sized arrays or tree nodes
+[V036-PERFORMANCE] CHECK: Changing the waypoint cancels the previous search without publishing stale results
+[V036-PERFORMANCE] CHECK: Disabling route guidance cancels pending search work
+[V036-PERFORMANCE] CHECK: Returning to harbor cancels the in-flight route request
+[V036-PERFORMANCE] Route equivalence: V035 reference = reusable synchronous = incremental
+[V036-PERFORMANCE] PASS: v0.38.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。

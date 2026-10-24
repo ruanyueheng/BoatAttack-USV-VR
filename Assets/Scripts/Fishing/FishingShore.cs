@@ -244,6 +244,13 @@ namespace BoatAttack.Fishing
             SetCrouch(crouch);
             var heading=Quaternion.Euler(0,Controller.viewCamera.transform.eulerAngles.y,0);
             var axes=Vector2.ClampMagnitude(input,1);
+            if(Controller.Realms.Inside)
+            {
+                bool wet=Controller.Realms.TryWater(Actor.position,out float level,out _);
+                if(Swimming && (!wet || (GroundBelow(Actor.position,Actor.position.y+.6f,2.4f,out var bed) && level-bed.y<1.1f)))
+                {Swimming=false;_motion.Reset();}
+                else if(wet && level-Actor.position.y>1.15f){Swim(axes,heading,sprint,jump,dt);return;}
+            }
             if(Swimming){Swim(axes,heading,sprint,jump,dt);return;}
             _motion.Exert(sprint && axes.sqrMagnitude>.01f && !Crouched,axes.sqrMagnitude<.01f,dt);
             sprint &= Stamina>.08f;
