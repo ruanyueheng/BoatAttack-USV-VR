@@ -1,0 +1,15 @@
+{
+  "provider": "Tencent Hunyuan3D",
+  "website": "https://3d.hunyuan.tencent.com/creation",
+  "generatedDate": "2026-10-25",
+  "model": "V3.1",
+  "faceBudget": 50000,
+  "textureStyle": "卡通",
+  "prompt": "一条完整的炭烤海鲷，平放侧卧，金黄焦香的鱼皮，四道斜切焦痕和细腻油亮烤纹，饱满鱼身，自然鱼头和分叉鱼尾。温暖治愈的海岛冒险游戏风格，精致手绘PBR贴图。单独烤鱼，无盘子、无烤架、无地面、无配菜。",
+  "submissions": 1,
+  "selectedCandidate": 3,
+  "creditsUsed": 1,
+  "sourceFile": "GrilledSeaBream_Hunyuan_Source.glb",
+  "sourceSha256": "0d60aec87190b7d5d08af393a09272850d1d40c76bbb5aedc198f7105d23670c",
+  "attachedModelMatchesGeneratedSource": true
+}

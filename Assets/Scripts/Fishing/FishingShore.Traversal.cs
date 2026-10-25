@@ -30,8 +30,13 @@ namespace BoatAttack.Fishing
         public bool Relocate(Vector3 feet, Quaternion rotation)
         {
             if (!Ashore || !Ground(feet, out var supported) || Mathf.Abs(supported.y - feet.y) > .3f || !Clearance(supported)) return false;
+            SetFeet(supported,rotation);return true;
+        }
+        private void SetFeet(Vector3 supported,Quaternion rotation)
+        {
             Body.enabled = false; Actor.SetPositionAndRotation(supported + Vector3.up * .08f, rotation); Body.enabled = true;
-            _lastSafe = Actor.position; _motion.Reset(); Swimming = Climbing = false; SetCrouch(false, true); return true;
+            if(supported.y>.6f)_lastSafe = Actor.position;
+            _motion.Reset(); Swimming = Climbing = false; SetCrouch(false, true);
         }
         public string ClimbHint => Climbing ? "W / S 攀登 · 空格离开绳梯" : NearbyClimb() != null ? "E 攀登绳梯 · 登高观察岛屿" : null;
         private FishingClimbRoute NearbyClimb()
@@ -76,11 +81,14 @@ namespace BoatAttack.Fishing
             float speed = UnityEngine.XR.XRSettings.isDeviceActive ? 1.2f : sprint && Stamina > .08f ? 2.7f : 1.45f;
             var velocity = heading * new Vector3(axes.x, 0, axes.y) * speed;
             float water = WaterHeight();
+            bool climb=jump || UnityEngine.XR.XRSettings.isDeviceActive;
             var grab=Position+Vector3.ProjectOnPlane(velocity,Vector3.up).normalized*.9f;
-            if ((jump || UnityEngine.XR.XRSettings.isDeviceActive) && axes.sqrMagnitude>.01f && GroundBelow(grab, water + 1.7f, 2.6f, out var shore) && shore.y <= water + 1.35f && SafeCoastalFooting(shore) && Clearance(shore)
-                && ClearSight(Position+Vector3.up*1.55f,shore+Vector3.up*1.55f))
+            float minimum=climb?.35f:water-.65f;
+            if ((axes.sqrMagnitude>.01f || Body.isGrounded) && GroundBelow(grab, water + 1.7f, 2.6f, out var shore,minimum)
+                && shore.y <= water + (climb?1.35f:.8f) && SafeCoastalFooting(shore,minimum) && Clearance(shore)
+                && ClearSwimExit(shore,climb))
             {
-                if (Relocate(shore, Actor.rotation)) { Controller.View.ResetLook(); Controller.Notice("已攀上低岸 · 继续探索。", 3); return; }
+                SetFeet(shore,Actor.rotation);Controller.View.ResetLook();if(climb)Controller.Notice("已攀上低岸 · 继续探索。", 3);return;
             }
             float eyeHeight = UnityEngine.XR.XRSettings.isDeviceActive ? FishingXRSeat.EyeHeight : _character.EyePosition.y - Actor.position.y;
             float vertical = Mathf.Clamp((water + .24f - eyeHeight - Actor.position.y) * 4, -2.4f, 1.8f);
@@ -88,6 +96,18 @@ namespace BoatAttack.Fishing
             if(Controller.Realms.Inside && velocity.sqrMagnitude>.01f)Controller.Realms.DisturbWater(Position);
             WalkSpeed = Vector3.ProjectOnPlane(Position - previous, Vector3.up).magnitude / dt;
             if (velocity.sqrMagnitude > .01f) Actor.rotation = Quaternion.LookRotation(velocity);
+        }
+        private bool ClearSwimExit(Vector3 shore,bool climb)
+        {
+            // Sweep body width at chest height so automatic exits cannot pass through a fence.
+            var start=Position+Vector3.up*.85f;start.y=Mathf.Max(start.y,WaterHeight()+.25f);
+            var end=shore+Vector3.up*.85f;
+            // A deliberate mantle clears a low handrail from above; automatic wading cannot cross it.
+            if(climb)start.y=end.y=shore.y+1.35f;
+            var delta=end-start;
+            foreach(var hit in Physics.SphereCastAll(start,Body.radius,delta.normalized,delta.magnitude,~(1<<4),QueryTriggerInteraction.Ignore))
+                if(!Ignored(hit.collider))return false;
+            return true;
         }
         public void ApplyTraversalPose()
         {

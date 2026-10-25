@@ -1,0 +1,1 @@
+[XR-BUILD] PASS: ARM64 APK built: <PROJECT>\Builds\FishingPrototype-v0.39.0-Android\FishingPrototype.apk. Build validation does not certify headset comfort or controller calibration.

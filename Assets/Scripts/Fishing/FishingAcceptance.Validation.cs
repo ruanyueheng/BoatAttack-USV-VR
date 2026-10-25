@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.IO;
 using UnityEngine;
@@ -145,7 +145,7 @@ namespace BoatAttack.Fishing
                 throw new InvalidOperationException("Barbecue capture lacks the reachable fish-selection menu.");
             if(CurrentCase==FishingAcceptanceCase.HomeGrilledFish)
             {
-                var cooked=c.CoastWorld.Grill.Find("Whole grilled sea fish · scored skin and lemon");
+                var cooked=c.CoastWorld.Grill.Find(FishingV028CoastWorld.CookedFishName);
                 if(!c.CoastWorld.NearGrill || !c.Career.BarbecueReady || c.Career.Count!=2 || cooked==null || !cooked.gameObject.activeInHierarchy)
                     throw new InvalidOperationException("Barbecue capture lacks its reserved fish or visible cooked model.");
             }

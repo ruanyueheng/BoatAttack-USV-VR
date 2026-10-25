@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using UnityEngine;
 
@@ -218,7 +218,7 @@ namespace BoatAttack.Fishing
             get
             {
                 if(WorldActionBusy)return Farm!=null && Farm.Busy?Farm.ActionHint:"动作进行中 · "+Mathf.RoundToInt(Actions.Progress*100)+"% · Esc 取消";
-                if(Shore.Swimming)return "游泳 · 朝低岸移动并按空格上岸 · 靠近船边G上船";
+                if(Shore.Swimming)return "游泳 · 朝浅岸移动自动站起 · 空格攀低台 · 靠近船边G上船";
                 if(Shore.Climbing)return Shore.ClimbHint;
                 var realmHint=Realms?.NearbyHint;if(realmHint!=null)return realmHint;
                 if(Residents!=null && Residents.TryNearby(out int resident))return resident==4?"E 与汐禾交谈 · Tab 查看商品":"E 与"+FishingLore.ResidentName(resident)+"交谈";

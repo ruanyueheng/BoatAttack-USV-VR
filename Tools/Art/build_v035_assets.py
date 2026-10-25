@@ -490,7 +490,7 @@ def build(name):
     obj=bpy.data.objects.new('GEO-'+name,data);bpy.context.scene.collection.objects.link(obj)
     data.materials.append(bpy.data.materials['MAT-V035 coastal craftsmanship'])
     leaf_tiles=(8,9,10,11,12) if name in ('SanctuaryWind','MeadowPatch','FlowerPatch') else (8,9,11)
-    if name.startswith(('Sanctuary','WindBridge')) or name in ('RootBridge','Galleon','Windmill','AncientTree','ObservatoryExterior'):leaf_tiles=tuple(set(leaf_tiles+(13,)))
+    # Rope is structural: keep tile 13 in the solid submesh used to build physics.
     if name=='Galleon':leaf_tiles=tuple(set(leaf_tiles+(10,)))
     mixed=any(tile in leaf_tiles for tile in TILES)
     if mixed:

@@ -1,0 +1,17 @@
+{
+  "version": "0.39.0",
+  "versionCode": 39,
+  "windowsFiles": 210,
+  "windowsZip": "Builds/FishingPrototype-v0.39.0-Windows.zip",
+  "windowsZipBytes": 569341507,
+  "windowsSha256": "D7C932BBD7796013EFA4E9C58A4BBE787BB07EC518E3A82D1FD215E5F75C56DF",
+  "androidApk": "Builds/FishingPrototype-v0.39.0-Android/FishingPrototype.apk",
+  "androidApkBytes": 428584619,
+  "androidSha256": "723B233BEC797783954336BE7333423F66E6560F243D07817FE49925AFEE99B2",
+  "androidIdentity": "package: name='com.ruanyueheng.tidefin.vr' versionCode='39' versionName='0.39.0' platformBuildVersionName='13' platformBuildVersionCode='33' compileSdkVersion='33' compileSdkVersionCodename='13'",
+  "androidV2Signature": true,
+  "sameUpdateCertificateAsV038": true,
+  "nativeUniqueCasesPassed": 88,
+  "nativeFixtureApplications": 91,
+  "preExistingXrFilesUnchanged": true
+}

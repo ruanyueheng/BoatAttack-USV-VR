@@ -133,6 +133,18 @@ namespace BoatAttack.EditorTools
             {
                 var run=FishingActionAudioValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
             }
+            if(suite=="V039-REALM")
+            {
+                var checks=FishingV039Validation.Realm(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V039-HOME")
+            {
+                var checks=FishingV039Validation.Home(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V039")
+            {
+                var checks=FishingV039Validation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;
+            }
             if(suite=="V038")
             {
                 var checks=FishingV038Validation.Checks(c);try{while(checks.MoveNext())yield return checks.Current;}finally{(checks as IDisposable)?.Dispose();}yield break;

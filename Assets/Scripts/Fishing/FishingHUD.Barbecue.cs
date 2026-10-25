@@ -13,7 +13,7 @@ namespace BoatAttack.Fishing
             Label(330,134,650,44,"海风烧烤 · 渔屋鱼箱",30,InkText,true);
             Label(331,187,780,48,"从共用鱼箱挑选一尾海鱼，取出后放上烤架。\n炭烤18秒；收起面板继续，烤熟后领取到背包。",16,Muted);
             if(Button(new Rect(1130,138,138,36),"Esc 收起",true,false,15)){coast.CloseMenu();return;}
-            var photo=Resources.Load<Texture2D>("FishingV028/Coast/GrilledFishThumbnail");
+            var photo=Resources.Load<Texture2D>("FishingV039/GrilledFishThumbnail");
             if(photo!=null)GUI.DrawTexture(new Rect(1000,228,250,190),photo,ScaleMode.ScaleToFit,true);
             if(data.fish!=null)
             {

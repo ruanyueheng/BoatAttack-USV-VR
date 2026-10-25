@@ -1,0 +1,33 @@
+[CASHIER] CHECK: production Resources path resolves
+[CASHIER] CHECK: existing authored shop prefab exists
+[CASHIER] CHECK: original clerk/customer anchors retained
+[CASHIER] CHECK: original first clerk anchor retained
+[CASHIER] CHECK: repeated production creation returns one attendant
+[CASHIER] CHECK: attendant is active
+[CASHIER] CHECK: exactly one attendant under shop
+[CASHIER] CHECK: attendant feet use the original anchor without an extra position offset
+[CASHIER] CHECK: attendant faces customers, not the back wall
+[CASHIER] CHECK: visual NPC adds no collision or trade authority
+[CASHIER] CHECK: authored pose is static; no fabricated animation system
+[CASHIER] CHECK: LOD group is enabled
+[CASHIER] CHECK: near/far LOD thresholds retained
+[CASHIER] CHECK: one draw renderer per LOD 0
+[CASHIER] CHECK: LOD is a visible Default-layer mesh 0
+[CASHIER] CHECK: single real human mesh/submesh 0
+[CASHIER] CHECK: mesh budget LOD 0: 69999
+[CASHIER] CHECK: one shared character material 0
+[CASHIER] CHECK: URP albedo/normal bindings valid 0
+[CASHIER] CHECK: original metallic/smoothness texture retained 0
+[CASHIER] CHECK: opaque depth-writing character, not an invisible transparent material 0
+[CASHIER] CHECK: one draw renderer per LOD 1
+[CASHIER] CHECK: LOD is a visible Default-layer mesh 1
+[CASHIER] CHECK: single real human mesh/submesh 1
+[CASHIER] CHECK: mesh budget LOD 1: 22000
+[CASHIER] CHECK: one shared character material 1
+[CASHIER] CHECK: URP albedo/normal bindings valid 1
+[CASHIER] CHECK: original metallic/smoothness texture retained 1
+[CASHIER] CHECK: opaque depth-writing character, not an invisible transparent material 1
+[CASHIER] CHECK: enlarged attendant stands approximately 1.98m with feet at anchor: Center: (-1.40, 0.99, 4.00), Extents: (0.40, 0.99, 0.27)
+[CASHIER] CHECK: arms rest in front of the abdomen, not a wide T-pose
+[CASHIER] CHECK: other five NPC reservations remain empty
+[FISHING] PASS: Windows prototype built: <PROJECT>\Builds\FishingPrototype-v0.39.0\FishingPrototype.exe

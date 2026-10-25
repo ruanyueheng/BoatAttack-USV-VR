@@ -1,0 +1,15 @@
+{
+  "provider": "Meowa / ElevenLabs generator",
+  "projectUrl": "https://meowa.ai/canvas?projectId=proj-1792905111478-pk6gr42r",
+  "generatedTitle": "轻柔烤鱼循环",
+  "variants": 1,
+  "sourceSeconds": 4,
+  "loop": true,
+  "creditsUsed": 20,
+  "prompt": "Seamless loop of one whole fish gently grilling over charcoal. Appetizing close-up delicate cooking oil sizzle, soft wet bubbling and tiny occasional crisp fat pops, subtle low charcoal crackle. Warm cozy island cooking game. Natural dry sound, no voices, no music, no sea or room ambience, no fire roar, no dramatic whoosh. Consistent moderate level, loopable tail.",
+  "originalSha256": "8248cdcd448d906f3d44088311cc7dffd2da50c8d5763a9e45f71fc040e0b583",
+  "runtimeSeconds": 3.96,
+  "sampleRate": 44100,
+  "channels": 1,
+  "preparation": "Mono, DC removal, 40 ms loop overlap, constant gain with peak capped at 0.86. Original retained unchanged."
+}

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 using Keyboard=UnityEngine.InputSystem.Keyboard;
 using Mouse=UnityEngine.InputSystem.Mouse;
@@ -89,7 +89,7 @@ namespace BoatAttack.Fishing
                 else
                 {
                     _tools[1]=Model("WinderBody",root);_tools[1].localPosition=new Vector3(0,.958f,0);
-                    _tools[1].localScale=Vector3.one*1.6f;_tools[1].localRotation=Quaternion.Euler(0,-55,0);
+                    _tools[1].localScale=Vector3.one*1.6f;_tools[1].localRotation=Quaternion.identity;
                     _crank=Model("WinderCrank",_tools[1]);_crank.localPosition=new Vector3(0,.134f,.035f);_crank.localScale=Vector3.one*.8f;
                     var wheelMesh=_crank.GetChild(0);wheelMesh.localRotation=Quaternion.Euler(0,180,0)*wheelMesh.localRotation;
                     _coil=Model("WinderCoil",_crank);_crank.localRotation=Quaternion.Euler(0,0,180);
@@ -185,6 +185,8 @@ namespace BoatAttack.Fishing
             }
             else
             {
+                var facing=Vector3.ProjectOnPlane(_c.Shore.Character.EyePosition-_tools[1].position,Vector3.up);
+                if(facing.sqrMagnitude>.01f)_tools[1].rotation=Quaternion.LookRotation(facing);
                 _leftGrip=Vector3.Dot(_supportA.position-_supportB.position,_frame*Vector3.right)<0?_supportA:_supportB;_rightGrip=_winderHandle;
                 _crank.localRotation=Quaternion.identity;_crankStart=Vector3.Dot(_winderHandle.position-_crank.position,_frame*Vector3.right)>0?0:180;
                 _crank.localRotation=Quaternion.Euler(0,0,_crankStart);var before=_winderHandle.position;
@@ -363,7 +365,7 @@ namespace BoatAttack.Fishing
         public void Cancel()
         {
             if(!Active)return;
-            _tools[_index].localPosition=_toolHome;_tools[_index].localRotation=_index==1?Quaternion.Euler(0,-55,0):Quaternion.identity;
+            _tools[_index].localPosition=_toolHome;_tools[_index].localRotation=Quaternion.identity;
             _task=null;_career=null;_canvas.gameObject.SetActive(false);_sand.localScale=Vector3.one;_sand.localPosition=Vector3.zero;_coil.localScale=Vector3.one;_crank.localRotation=Quaternion.Euler(0,0,180);
             ResetShells();_caughtSand.gameObject.SetActive(false);_feedCoil.localScale=Vector3.one*.65f;_visualSpeed=_motionSpeed=0;
             for(int i=0;i<_grains.Length;i++){_grainAge[i]=-1;_grains[i].gameObject.SetActive(false);}

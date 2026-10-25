@@ -160,15 +160,23 @@ def path(points,width=2.5):
             # Gravel is part of HomeLand; only edge stones are added here to avoid overlapping coplanar crossings.
         for i in range(max(1,int(d.length/.6))):
             p=a+d*(i+.5)/max(1,int(d.length/.6))
-            for s in [-1,1]:rock(tuple(p+side*s*(width*.5+.05)),(.15,.065,.11),1,1)
+            for s in [-1,1]:
+                q=p+side*s*(width*.5+.05);q.y=land_height(q.x,q.z)+.015
+                rock(tuple(q),(.15,.065,.11),1,1)
 
 def fence(a,b):
     a,b=Vector(a),Vector(b);delta=b-a;n=max(1,math.ceil(delta.length/1.8));side=Vector((-delta.z,0,delta.x)).normalized()
     for i in range(n+1):
-        p=a+delta*i/n;profile(tuple(p),[(0,.065),(1.05,.065),(1.12,.095),(1.21,0)],3,8)
-    for h in [.38,.85]:tube([tuple(a+Vector((0,h,0))),tuple(b+Vector((0,h,0)))],.038,3,7)
+        p=a+delta*i/n;p.y=land_height(p.x,p.z)-.10
+        profile(tuple(p),[(0,.065),(1.15,.065),(1.22,.095),(1.31,0)],3,8)
+    for h in [.38,.85]:
+        points=[]
+        for i in range(n*4+1):
+            p=a+delta*i/(n*4);p.y=land_height(p.x,p.z)+h;points.append(tuple(p))
+        tube(points,.038,3,7)
     for i in range(max(1,int(delta.length/.30))):
-        p=a+delta*(i+.5)/max(1,int(delta.length/.30));tube([tuple(p+Vector((0,.15,0))),tuple(p+Vector((0,1.0,0)))],.027,3,6)
+        p=a+delta*(i+.5)/max(1,int(delta.length/.30));p.y=land_height(p.x,p.z)
+        tube([tuple(p-Vector((0,.04,0))),tuple(p+Vector((0,1.0,0)))],.027,3,6)
 
 def home_details():
     path([(0,0,-8.3),(7.6,0,-9),(10.2,0,-11),(29.2,0,-11),(30.8,0,12),(7.6,0,12),(7.6,0,5.8)],2.4)

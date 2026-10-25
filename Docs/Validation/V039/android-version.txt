@@ -1,0 +1,1 @@
+package: name='com.ruanyueheng.tidefin.vr' versionCode='39' versionName='0.39.0' platformBuildVersionName='13' platformBuildVersionCode='33' compileSdkVersion='33' compileSdkVersionCodename='13'

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 namespace BoatAttack.Fishing
 {
     public sealed partial class FishingShore
@@ -55,12 +55,12 @@ namespace BoatAttack.Fishing
                 }
             return found;
         }
-        public bool SafeCoastalFooting(Vector3 p)
+        public bool SafeCoastalFooting(Vector3 p,float minimumHeight=.35f)
         {
-            if(p.y<.35f)return false;
+            if(p.y<minimumHeight)return false;
             // Four supporting samples reject narrow ledges, posts and a capsule hanging over water.
             foreach(var offset in new[]{new Vector3(.24f,0,0),new Vector3(-.24f,0,0),new Vector3(0,0,.24f),new Vector3(0,0,-.24f)})
-                if(!GroundBelow(p+offset,p.y+.25f,.65f,out var floor) || Mathf.Abs(floor.y-p.y)>.28f)return false;
+                if(!GroundBelow(p+offset,p.y+.25f,.65f,out var floor,minimumHeight) || Mathf.Abs(floor.y-p.y)>.28f)return false;
             return true;
         }
         private bool ClearTransfer(Vector3 feet)
