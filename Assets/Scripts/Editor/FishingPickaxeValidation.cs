@@ -26,7 +26,7 @@ namespace BoatAttack.EditorTools
             }
             Debug.Log("[PICKAXE] WOOD SAMPLES: "+woodSamples);
             Check(woodSamples>10,"imported wooden shaft UV samples preserve the actual brown wood atlas");
-            Check(mesh.bounds.Contains(FishingFieldWorld.PickTip) && mesh.bounds.Contains(FishingFieldWorld.PickPalm),"real grip and contact lie within supplied mesh bounds");
+            Check(mesh.bounds.Contains(FishingFieldWorld.PickTip) && Mathf.Abs(FishingFieldWorld.PickPalm.y)<.01f,"The contact is on the supplied head and the surface mount is beside the wooden shaft");
             c.ReturnToHarbor();var rb=c.Player.engine.RB;rb.position=c.Shore.Sites[0].Berth+Vector3.up;rb.velocity=rb.angularVelocity=Vector3.zero;c.Player.transform.position=rb.position;Physics.SyncTransforms();
             Check(c.Shore.TryDisembark(),"production shore landing for pick pose");
             Check(c.FieldWorld.TryLocation(c.Shore.Sites[0].Landing,4,90,out var feet) && c.Shore.Relocate(feet+Vector3.up*.05f,Quaternion.identity),"pick stance uses dry clear footing");
@@ -60,6 +60,8 @@ namespace BoatAttack.EditorTools
                             Check(palm.z>.18f && palm.x>.04f && palm.x<.96f && palm.y>.025f && palm.y<.56f,"supplied pick grip remains in the lower visible screen area when looking level");
                         }
                         Check(Mathf.Abs(character.ArmReach(false)-reach)<.003f && Vector3.Distance(character.PalmPosition(false),c.Hands.Right.Palm.position)<.03f,"source arm lengths preserved and palm reaches the calibrated wooden grip");
+                        FishingV016Validation.Capture(c,output,item+"-grip-"+(crouch?"crouched":"standing")+"-"+pitch);
+                        FishingV038Validation.InspectGrip(c,"pick "+item+" crouch="+crouch+" pitch="+pitch);
                         foreach(var vertex in mesh.vertices)
                         {
                             var point=c.viewCamera.transform.InverseTransformPoint(c.FieldWorld.HeldTool.TransformPoint(vertex));

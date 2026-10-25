@@ -33,12 +33,21 @@ namespace BoatAttack.EditorTools
                     {
                         measured=true;
                         for(int warm=0;warm<5;warm++)character.ApplyHandTargets(c.Hands.Left,c.Hands.Right);
+                        int solved=character.ContactSolveCount;
                         var timer=new System.Diagnostics.Stopwatch();
                         long before=GC.GetAllocatedBytesForCurrentThread();timer.Start();
                         for(int sample=0;sample<30;sample++)character.ApplyHandTargets(c.Hands.Left,c.Hands.Right);
                         timer.Stop();long allocated=GC.GetAllocatedBytesForCurrentThread()-before;
                         Debug.Log("[V037-HANDS] COST grip skin solve averageMs="+(timer.Elapsed.TotalMilliseconds/30).ToString("F3")+" allocatedBytes="+allocated);
                         Check(allocated==0,"Warmed grip skin contact solving allocates no managed memory");
+                        Check(character.ContactSolveCount==solved,"Rigid palm/shaft geometry reuses cached source finger rotations");
+                        Check(timer.Elapsed.TotalMilliseconds/30<.5,"A rigid grip reuses the solved finger pose within a 0.5 ms editor CPU budget");
+                        var hand=c.Hands.Right;float radius=hand.GripRadius;var start=hand.GripStart;var end=hand.GripEnd;
+                        hand.SetGripSurface(start,end,radius+.002f);character.ApplyHandTargets(c.Hands.Left,hand);
+                        Check(character.ContactSolveCount>solved,"Changing the real handle radius invalidates the cached contact solve");
+                        hand.SetGripSurface(start,end,radius);character.ApplyHandTargets(c.Hands.Left,hand);
+                        Directory.CreateDirectory("Logs/V038");
+                        File.WriteAllText("Logs/V038/grip-performance.txt","Version: "+FishingPrototype.Version+"\nUTC: "+DateTime.UtcNow.ToString("O")+"\nWarm mean: "+(timer.Elapsed.TotalMilliseconds/30).ToString("F3")+" ms\nManaged bytes for 30 calls: "+allocated+"\nSame geometry reuses rotations; changed radius invalidates. Editor CPU timing, not headset FPS.\n");
                     }
                     string phase=(c.Farm.Busy?c.Farm.ActionHint.Split('·')[0]:"carry")+Mathf.FloorToInt(c.Farm.WorkProgress*5);
                     if(!seen.Add(phase))continue;
@@ -47,6 +56,7 @@ namespace BoatAttack.EditorTools
                     if(phase=="carry0" || (c.Farm.Busy && c.Farm.WorkProgress>=.4f && c.Farm.WorkProgress<.6f))
                         CaptureGripSide(c,"hand-grip-palm-"+seen.Count.ToString("D2"),true);
                     InspectCan(c,phase);
+                    FishingV038Validation.InspectCan(c,phase);
                 }
             }
             finally{try{(farm as IDisposable)?.Dispose();}finally{Time.maximumDeltaTime=maximumDeltaTime;}}
@@ -106,7 +116,7 @@ namespace BoatAttack.EditorTools
                         if(IsDigit(bones[weight.boneIndex0],weight.weight0,digit) || IsDigit(bones[weight.boneIndex1],weight.weight1,digit))nearestDigits[digit]=Mathf.Min(nearestDigits[digit],distance);
                     if(distance<nearest){nearest=distance;closestVertex=p;}
                     if(distance<.007f){insideHandle++;if(insideHandle<7)Debug.Log("[V037-HANDS] HANDLE "+p.ToString("F4")+" bone="+bones[weight.boneIndex0].name+" weight="+weight.weight0);}
-                    if(p.y<-.015f && p.y>-.21f && p.x*p.x+(p.z-.12f)*(p.z-.12f)/(.88f*.88f)<.095f*.095f)
+                    if(p.y<-.015f && p.y>-.21f && p.x*p.x+(p.z+.12f)*(p.z+.12f)/(.88f*.88f)<.095f*.095f)
                     {insideBody++;if(insideBody<7)Debug.Log("[V037-HANDS] INSIDE "+p.ToString("F4")+" bone="+bones[weight.boneIndex0].name+" weight="+weight.weight0);}
                 }
                 Debug.Log("[V037-HANDS] SKIN "+phase+" fingerVertices="+tested+" minimumHandleDistance="+nearest+" closest="+closestVertex.ToString("F4")+" insideHandle="+insideHandle+" deepInsideCan="+insideBody+" predictionError="+predictionError);

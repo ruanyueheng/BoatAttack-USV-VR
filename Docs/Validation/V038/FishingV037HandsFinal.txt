@@ -1,0 +1,432 @@
+Assertion summary: exact duplicate lines omitted; raw run identifiers are recorded in suite-logs.json.
+[V037-HANDS] CHECK: 仅操作临时隔离存档
+[V037-HANDS] CHECK: All five digits retain the source-skinned joints on both hands
+[V037-HANDS] CHECK: Contact and both rendered player skins use the same project two-influence skinning
+[V037-HANDS] COST grip skin solve averageMs=0.041 allocatedBytes=0
+[V037-HANDS] CHECK: Warmed grip skin contact solving allocates no managed memory
+[V037-HANDS] CHECK: Rigid palm/shaft geometry reuses cached source finger rotations
+[V037-HANDS] CHECK: A rigid grip reuses the solved finger pose within a 0.5 ms editor CPU budget
+[V037-HANDS] CHECK: Changing the real handle radius invalidates the cached contact solve
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 拿起井边水壶 1
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 拿起井边水壶 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.90486 拿起井边水壶 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.1273 拿起井边水壶 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.46186 拿起井边水壶 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.11081 拿起井边水壶 1
+[V037-HANDS] SKIN 拿起井边水壶 1 fingerVertices=2685 minimumHandleDistance=0.01101412 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.052136E-05
+[V037-HANDS] DIGIT handle distances=0.01109427,0.01104789,0.01120904,0.01101654,0.01101412
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 拿起井边水壶 1
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 拿起井边水壶 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 拿起井边水壶 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 拿起井边水壶 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 拿起井边水壶 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 拿起井边水壶 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 拿起井边水壶 1
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007995992 拿起井边水壶 1
+[V038] CHECK: Distal finger wraps the real shaft: Index can 拿起井边水壶 1
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 拿起井边水壶 1
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 拿起井边水壶 1
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 拿起井边水壶 1
+[V038] CHECK: Liquid boundary meets the real inner wall or rim
+[V038] CHECK: Every liquid vertex remains inside the authored can shell
+[V038] CHECK: The contained free surface stays horizontal under gravity through can tilt
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 拿起井边水壶 2
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 拿起井边水壶 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.90016 拿起井边水壶 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.14613 拿起井边水壶 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.46776 拿起井边水壶 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.10751 拿起井边水壶 2
+[V037-HANDS] SKIN 拿起井边水壶 2 fingerVertices=2685 minimumHandleDistance=0.01101384 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.052223E-05
+[V037-HANDS] DIGIT handle distances=0.01110804,0.01105615,0.01122592,0.01102934,0.01101384
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 拿起井边水壶 2
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 拿起井边水壶 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 拿起井边水壶 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 拿起井边水壶 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 拿起井边水壶 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 拿起井边水壶 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 拿起井边水壶 2
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007993238 拿起井边水壶 2
+[V038] CHECK: Distal finger wraps the real shaft: Index can 拿起井边水壶 2
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 拿起井边水壶 2
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 拿起井边水壶 2
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 拿起井边水壶 2
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 拿起井边水壶 3
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 拿起井边水壶 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.90712 拿起井边水壶 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.14846 拿起井边水壶 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.45802 拿起井边水壶 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.103 拿起井边水壶 3
+[V037-HANDS] SKIN 拿起井边水壶 3 fingerVertices=2685 minimumHandleDistance=0.01101623 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.05213E-05
+[V037-HANDS] DIGIT handle distances=0.01109826,0.01105578,0.01121083,0.01102495,0.01101623
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 拿起井边水壶 3
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 拿起井边水壶 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 拿起井边水壶 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 拿起井边水壶 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 拿起井边水壶 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 拿起井边水壶 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 拿起井边水壶 3
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007996566 拿起井边水壶 3
+[V038] CHECK: Distal finger wraps the real shaft: Index can 拿起井边水壶 3
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 拿起井边水壶 3
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 拿起井边水壶 3
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 拿起井边水壶 3
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 拿起井边水壶 4
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 拿起井边水壶 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.89912 拿起井边水壶 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.13564 拿起井边水壶 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.45057 拿起井边水壶 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.10865 拿起井边水壶 4
+[V037-HANDS] SKIN 拿起井边水壶 4 fingerVertices=2685 minimumHandleDistance=0.01101944 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.052154E-05
+[V037-HANDS] DIGIT handle distances=0.01110317,0.01105312,0.01121591,0.01102705,0.01101944
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 拿起井边水壶 4
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 拿起井边水壶 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 拿起井边水壶 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 拿起井边水壶 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 拿起井边水壶 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 拿起井边水壶 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 拿起井边水壶 4
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007998505 拿起井边水壶 4
+[V038] CHECK: Distal finger wraps the real shaft: Index can 拿起井边水壶 4
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 拿起井边水壶 4
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 拿起井边水壶 4
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 拿起井边水壶 4
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: carry0
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: carry0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.91843 carry0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.14775 carry0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.46342 carry0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.11736 carry0
+[V037-HANDS] SKIN carry0 fingerVertices=2685 minimumHandleDistance=0.01101271 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=4.577885E-05
+[V037-HANDS] DIGIT handle distances=0.01110363,0.01105069,0.0112164,0.01103102,0.01101271
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: carry0
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: carry0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 carry0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 carry0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 carry0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 carry0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 carry0
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007996605 carry0
+[V038] CHECK: Distal finger wraps the real shaft: Index can carry0
+[V038] CHECK: Distal finger wraps the real shaft: Middle can carry0
+[V038] CHECK: Distal finger wraps the real shaft: Ring can carry0
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can carry0
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 摇井绳 → 提起水桶 → 灌入水壶 0
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 摇井绳 → 提起水桶 → 灌入水壶 0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.89395 摇井绳 → 提起水桶 → 灌入水壶 0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.14791 摇井绳 → 提起水桶 → 灌入水壶 0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.46323 摇井绳 → 提起水桶 → 灌入水壶 0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.11789 摇井绳 → 提起水桶 → 灌入水壶 0
+[V037-HANDS] SKIN 摇井绳 → 提起水桶 → 灌入水壶 0 fingerVertices=2685 minimumHandleDistance=0.01101266 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.051874E-05
+[V037-HANDS] DIGIT handle distances=0.01110348,0.01105137,0.0112164,0.01103108,0.01101266
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 摇井绳 → 提起水桶 → 灌入水壶 0
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 摇井绳 → 提起水桶 → 灌入水壶 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 摇井绳 → 提起水桶 → 灌入水壶 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 摇井绳 → 提起水桶 → 灌入水壶 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 摇井绳 → 提起水桶 → 灌入水壶 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 摇井绳 → 提起水桶 → 灌入水壶 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 摇井绳 → 提起水桶 → 灌入水壶 0
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007996605 摇井绳 → 提起水桶 → 灌入水壶 0
+[V038] CHECK: Distal finger wraps the real shaft: Index can 摇井绳 → 提起水桶 → 灌入水壶 0
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 摇井绳 → 提起水桶 → 灌入水壶 0
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 摇井绳 → 提起水桶 → 灌入水壶 0
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 摇井绳 → 提起水桶 → 灌入水壶 0
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 摇井绳 → 提起水桶 → 灌入水壶 1
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 摇井绳 → 提起水桶 → 灌入水壶 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.91821 摇井绳 → 提起水桶 → 灌入水壶 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.14751 摇井绳 → 提起水桶 → 灌入水壶 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.46265 摇井绳 → 提起水桶 → 灌入水壶 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.10535 摇井绳 → 提起水桶 → 灌入水壶 1
+[V037-HANDS] SKIN 摇井绳 → 提起水桶 → 灌入水壶 1 fingerVertices=2685 minimumHandleDistance=0.01101159 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.052619E-05
+[V037-HANDS] DIGIT handle distances=0.01110334,0.01105192,0.01121624,0.01103114,0.01101159
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 摇井绳 → 提起水桶 → 灌入水壶 1
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 摇井绳 → 提起水桶 → 灌入水壶 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 摇井绳 → 提起水桶 → 灌入水壶 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 摇井绳 → 提起水桶 → 灌入水壶 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 摇井绳 → 提起水桶 → 灌入水壶 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 摇井绳 → 提起水桶 → 灌入水壶 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 摇井绳 → 提起水桶 → 灌入水壶 1
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007996605 摇井绳 → 提起水桶 → 灌入水壶 1
+[V038] CHECK: Distal finger wraps the real shaft: Index can 摇井绳 → 提起水桶 → 灌入水壶 1
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 摇井绳 → 提起水桶 → 灌入水壶 1
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 摇井绳 → 提起水桶 → 灌入水壶 1
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 摇井绳 → 提起水桶 → 灌入水壶 1
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 摇井绳 → 提起水桶 → 灌入水壶 2
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 摇井绳 → 提起水桶 → 灌入水壶 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.91849 摇井绳 → 提起水桶 → 灌入水壶 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.13047 摇井绳 → 提起水桶 → 灌入水壶 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.44427 摇井绳 → 提起水桶 → 灌入水壶 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.10465 摇井绳 → 提起水桶 → 灌入水壶 2
+[V037-HANDS] SKIN 摇井绳 → 提起水桶 → 灌入水壶 2 fingerVertices=2685 minimumHandleDistance=0.01101486 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.052154E-05
+[V037-HANDS] DIGIT handle distances=0.0111023,0.0110573,0.01121471,0.01102878,0.01101486
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 摇井绳 → 提起水桶 → 灌入水壶 2
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 摇井绳 → 提起水桶 → 灌入水壶 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 摇井绳 → 提起水桶 → 灌入水壶 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 摇井绳 → 提起水桶 → 灌入水壶 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 摇井绳 → 提起水桶 → 灌入水壶 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 摇井绳 → 提起水桶 → 灌入水壶 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 摇井绳 → 提起水桶 → 灌入水壶 2
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007996605 摇井绳 → 提起水桶 → 灌入水壶 2
+[V038] CHECK: Distal finger wraps the real shaft: Index can 摇井绳 → 提起水桶 → 灌入水壶 2
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 摇井绳 → 提起水桶 → 灌入水壶 2
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 摇井绳 → 提起水桶 → 灌入水壶 2
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 摇井绳 → 提起水桶 → 灌入水壶 2
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 摇井绳 → 提起水桶 → 灌入水壶 3
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 摇井绳 → 提起水桶 → 灌入水壶 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.89343 摇井绳 → 提起水桶 → 灌入水壶 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.13028 摇井绳 → 提起水桶 → 灌入水壶 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.44632 摇井绳 → 提起水桶 → 灌入水壶 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.1048 摇井绳 → 提起水桶 → 灌入水壶 3
+[V037-HANDS] SKIN 摇井绳 → 提起水桶 → 灌入水壶 3 fingerVertices=2685 minimumHandleDistance=0.01100744 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.052154E-05
+[V037-HANDS] DIGIT handle distances=0.01110721,0.01106212,0.01121995,0.01103422,0.01100744
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 摇井绳 → 提起水桶 → 灌入水壶 3
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 摇井绳 → 提起水桶 → 灌入水壶 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 摇井绳 → 提起水桶 → 灌入水壶 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 摇井绳 → 提起水桶 → 灌入水壶 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 摇井绳 → 提起水桶 → 灌入水壶 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 摇井绳 → 提起水桶 → 灌入水壶 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 摇井绳 → 提起水桶 → 灌入水壶 3
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007996605 摇井绳 → 提起水桶 → 灌入水壶 3
+[V038] CHECK: Distal finger wraps the real shaft: Index can 摇井绳 → 提起水桶 → 灌入水壶 3
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 摇井绳 → 提起水桶 → 灌入水壶 3
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 摇井绳 → 提起水桶 → 灌入水壶 3
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 摇井绳 → 提起水桶 → 灌入水壶 3
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 摇井绳 → 提起水桶 → 灌入水壶 4
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 摇井绳 → 提起水桶 → 灌入水壶 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.89323 摇井绳 → 提起水桶 → 灌入水壶 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.14752 摇井绳 → 提起水桶 → 灌入水壶 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.44624 摇井绳 → 提起水桶 → 灌入水壶 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.1182 摇井绳 → 提起水桶 → 灌入水壶 4
+[V037-HANDS] SKIN 摇井绳 → 提起水桶 → 灌入水壶 4 fingerVertices=2685 minimumHandleDistance=0.01102021 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.052136E-05
+[V037-HANDS] DIGIT handle distances=0.01110114,0.01105249,0.01121281,0.01102552,0.01102021
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 摇井绳 → 提起水桶 → 灌入水壶 4
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 摇井绳 → 提起水桶 → 灌入水壶 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 摇井绳 → 提起水桶 → 灌入水壶 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 摇井绳 → 提起水桶 → 灌入水壶 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 摇井绳 → 提起水桶 → 灌入水壶 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 摇井绳 → 提起水桶 → 灌入水壶 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 摇井绳 → 提起水桶 → 灌入水壶 4
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007996605 摇井绳 → 提起水桶 → 灌入水壶 4
+[V038] CHECK: Distal finger wraps the real shaft: Index can 摇井绳 → 提起水桶 → 灌入水壶 4
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 摇井绳 → 提起水桶 → 灌入水壶 4
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 摇井绳 → 提起水桶 → 灌入水壶 4
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 摇井绳 → 提起水桶 → 灌入水壶 4
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=1 angle=0
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=1 angle=25
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=1 angle=50
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=1 angle=85
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=1 angle=135
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=1 angle=180
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=6 angle=0
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=6 angle=25
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=6 angle=50
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=6 angle=85
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=6 angle=135
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=6 angle=180
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=12 angle=0
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=12 angle=25
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=12 angle=50
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=12 angle=85
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=12 angle=135
+[V038] CHECK: Calibrated water-charge height survives tilt: fill=12 angle=180
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 缓缓倾壶浇灌 0
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 缓缓倾壶浇灌 0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.91814 缓缓倾壶浇灌 0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.13127 缓缓倾壶浇灌 0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.46387 缓缓倾壶浇灌 0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.10427 缓缓倾壶浇灌 0
+[V037-HANDS] SKIN 缓缓倾壶浇灌 0 fingerVertices=2685 minimumHandleDistance=0.01101643 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.05213E-05
+[V037-HANDS] DIGIT handle distances=0.01110347,0.01105041,0.01121655,0.01101992,0.01101643
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 缓缓倾壶浇灌 0
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 缓缓倾壶浇灌 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 缓缓倾壶浇灌 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 缓缓倾壶浇灌 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 缓缓倾壶浇灌 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 缓缓倾壶浇灌 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 缓缓倾壶浇灌 0
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.00799627 缓缓倾壶浇灌 0
+[V038] CHECK: Distal finger wraps the real shaft: Index can 缓缓倾壶浇灌 0
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 缓缓倾壶浇灌 0
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 缓缓倾壶浇灌 0
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 缓缓倾壶浇灌 0
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 缓缓倾壶浇灌 1
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 缓缓倾壶浇灌 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.90858 缓缓倾壶浇灌 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.15101 缓缓倾壶浇灌 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.45724 缓缓倾壶浇灌 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.1021 缓缓倾壶浇灌 1
+[V037-HANDS] SKIN 缓缓倾壶浇灌 1 fingerVertices=2685 minimumHandleDistance=0.01101153 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.052503E-05
+[V037-HANDS] DIGIT handle distances=0.01110205,0.01105646,0.01121108,0.01102368,0.01101153
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 缓缓倾壶浇灌 1
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 缓缓倾壶浇灌 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 缓缓倾壶浇灌 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 缓缓倾壶浇灌 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 缓缓倾壶浇灌 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 缓缓倾壶浇灌 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 缓缓倾壶浇灌 1
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007994467 缓缓倾壶浇灌 1
+[V038] CHECK: Distal finger wraps the real shaft: Index can 缓缓倾壶浇灌 1
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 缓缓倾壶浇灌 1
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 缓缓倾壶浇灌 1
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 缓缓倾壶浇灌 1
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 缓缓倾壶浇灌 2
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 缓缓倾壶浇灌 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.90859 缓缓倾壶浇灌 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.13887 缓缓倾壶浇灌 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.45118 缓缓倾壶浇灌 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.1245 缓缓倾壶浇灌 2
+[V037-HANDS] SKIN 缓缓倾壶浇灌 2 fingerVertices=2685 minimumHandleDistance=0.0110144 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.05213E-05
+[V037-HANDS] DIGIT handle distances=0.01109729,0.01105077,0.01121462,0.01102636,0.0110144
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 缓缓倾壶浇灌 2
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 缓缓倾壶浇灌 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 缓缓倾壶浇灌 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 缓缓倾壶浇灌 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 缓缓倾壶浇灌 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 缓缓倾壶浇灌 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 缓缓倾壶浇灌 2
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007995517 缓缓倾壶浇灌 2
+[V038] CHECK: Distal finger wraps the real shaft: Index can 缓缓倾壶浇灌 2
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 缓缓倾壶浇灌 2
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 缓缓倾壶浇灌 2
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 缓缓倾壶浇灌 2
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 缓缓倾壶浇灌 3
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 缓缓倾壶浇灌 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.88979 缓缓倾壶浇灌 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.13867 缓缓倾壶浇灌 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.44912 缓缓倾壶浇灌 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.10569 缓缓倾壶浇灌 3
+[V037-HANDS] SKIN 缓缓倾壶浇灌 3 fingerVertices=2685 minimumHandleDistance=0.01101286 closest=(0.0171, 0.1186, -0.1091) insideHandle=0 deepInsideCan=0 predictionError=3.053248E-05
+[V037-HANDS] DIGIT handle distances=0.01109434,0.01105037,0.01120263,0.01101286,0.01102378
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 缓缓倾壶浇灌 3
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 缓缓倾壶浇灌 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 缓缓倾壶浇灌 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 缓缓倾壶浇灌 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 缓缓倾壶浇灌 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 缓缓倾壶浇灌 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 缓缓倾壶浇灌 3
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007995379 缓缓倾壶浇灌 3
+[V038] CHECK: Distal finger wraps the real shaft: Index can 缓缓倾壶浇灌 3
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 缓缓倾壶浇灌 3
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 缓缓倾壶浇灌 3
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 缓缓倾壶浇灌 3
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 缓缓倾壶浇灌 4
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 缓缓倾壶浇灌 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.8923 缓缓倾壶浇灌 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.13703 缓缓倾壶浇灌 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.44878 缓缓倾壶浇灌 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.11173 缓缓倾壶浇灌 4
+[V037-HANDS] SKIN 缓缓倾壶浇灌 4 fingerVertices=2685 minimumHandleDistance=0.01101253 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.052968E-05
+[V037-HANDS] DIGIT handle distances=0.01110244,0.01105437,0.01121525,0.01102697,0.01101253
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 缓缓倾壶浇灌 4
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 缓缓倾壶浇灌 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 缓缓倾壶浇灌 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 缓缓倾壶浇灌 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 缓缓倾壶浇灌 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 缓缓倾壶浇灌 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 缓缓倾壶浇灌 4
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007993635 缓缓倾壶浇灌 4
+[V038] CHECK: Distal finger wraps the real shaft: Index can 缓缓倾壶浇灌 4
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 缓缓倾壶浇灌 4
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 缓缓倾壶浇灌 4
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 缓缓倾壶浇灌 4
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 将水壶放回木架 0
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 将水壶放回木架 0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.89336 将水壶放回木架 0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.14713 将水壶放回木架 0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.44554 将水壶放回木架 0
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.11855 将水壶放回木架 0
+[V037-HANDS] SKIN 将水壶放回木架 0 fingerVertices=2685 minimumHandleDistance=0.01100906 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.052596E-05
+[V037-HANDS] DIGIT handle distances=0.01110379,0.01106446,0.01121752,0.01103374,0.01100906
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 将水壶放回木架 0
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 将水壶放回木架 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 将水壶放回木架 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 将水壶放回木架 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 将水壶放回木架 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 将水壶放回木架 0
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 将水壶放回木架 0
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007996605 将水壶放回木架 0
+[V038] CHECK: Distal finger wraps the real shaft: Index can 将水壶放回木架 0
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 将水壶放回木架 0
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 将水壶放回木架 0
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 将水壶放回木架 0
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 将水壶放回木架 1
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 将水壶放回木架 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.90448 将水壶放回木架 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.14294 将水壶放回木架 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.45107 将水壶放回木架 1
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.1041 将水壶放回木架 1
+[V037-HANDS] SKIN 将水壶放回木架 1 fingerVertices=2685 minimumHandleDistance=0.01101439 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.052223E-05
+[V037-HANDS] DIGIT handle distances=0.01109789,0.01104506,0.01120649,0.01102009,0.01101439
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 将水壶放回木架 1
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 将水壶放回木架 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 将水壶放回木架 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 将水壶放回木架 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 将水壶放回木架 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 将水壶放回木架 1
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 将水壶放回木架 1
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007996613 将水壶放回木架 1
+[V038] CHECK: Distal finger wraps the real shaft: Index can 将水壶放回木架 1
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 将水壶放回木架 1
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 将水壶放回木架 1
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 将水壶放回木架 1
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 将水壶放回木架 2
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 将水壶放回木架 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.90459 将水壶放回木架 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.13907 将水壶放回木架 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.44873 将水壶放回木架 2
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.10263 将水壶放回木架 2
+[V037-HANDS] SKIN 将水壶放回木架 2 fingerVertices=2685 minimumHandleDistance=0.01101069 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.052154E-05
+[V037-HANDS] DIGIT handle distances=0.01109908,0.01105016,0.01121035,0.01102513,0.01101069
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 将水壶放回木架 2
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 将水壶放回木架 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 将水壶放回木架 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 将水壶放回木架 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 将水壶放回木架 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 将水壶放回木架 2
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 将水壶放回木架 2
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007996851 将水壶放回木架 2
+[V038] CHECK: Distal finger wraps the real shaft: Index can 将水壶放回木架 2
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 将水壶放回木架 2
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 将水壶放回木架 2
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 将水壶放回木架 2
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 将水壶放回木架 3
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 将水壶放回木架 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.89904 将水壶放回木架 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.13115 将水壶放回木架 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.44932 将水壶放回木架 3
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.11333 将水壶放回木架 3
+[V037-HANDS] SKIN 将水壶放回木架 3 fingerVertices=2685 minimumHandleDistance=0.0110161 closest=(-0.0956, 0.1219, -0.1293) insideHandle=0 deepInsideCan=0 predictionError=3.051874E-05
+[V037-HANDS] DIGIT handle distances=0.01109888,0.01105529,0.01121314,0.01102487,0.0110161
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 将水壶放回木架 3
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 将水壶放回木架 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 将水壶放回木架 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 将水壶放回木架 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 将水壶放回木架 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 将水壶放回木架 3
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 将水壶放回木架 3
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007995646 将水壶放回木架 3
+[V038] CHECK: Distal finger wraps the real shaft: Index can 将水壶放回木架 3
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 将水壶放回木架 3
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 将水壶放回木架 3
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 将水壶放回木架 3
+[V037-HANDS] CHECK: The visible palm reaches its independent surface mount: 将水壶放回木架 4
+[V037-HANDS] CHECK: Palm thickness clears the handle and the fingers close downwards: 将水壶放回木架 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Index degrees=69.90546 将水壶放回木架 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Middle degrees=74.12776 将水壶放回木架 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Ring degrees=73.46099 将水壶放回木架 4
+[V037-HANDS] CHECK: Finger bends around the handle beyond proximal contact: Pinky degrees=47.11113 将水壶放回木架 4
+[V037-HANDS] SKIN 将水壶放回木架 4 fingerVertices=2685 minimumHandleDistance=0.01101655 closest=(0.0171, 0.1186, -0.1091) insideHandle=0 deepInsideCan=0 predictionError=3.051944E-05
+[V037-HANDS] DIGIT handle distances=0.01109247,0.01104944,0.01120779,0.01101655,0.01102268
+[V037-HANDS] CHECK: Cached source-weight skin prediction matches Unity BakeMesh: 将水壶放回木架 4
+[V037-HANDS] CHECK: Actual finger skin grasps the handle while clearing its core and the can interior: 将水壶放回木架 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 0 将水壶放回木架 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 1 将水壶放回木架 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 2 将水壶放回木架 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 3 将水壶放回木架 4
+[V037-HANDS] CHECK: Every digit participates in the handle grasp: 4 将水壶放回木架 4
+[V038] CHECK: The calibrated grip centreline is inside the actual imported ivory handle, distance=0.007995659 将水壶放回木架 4
+[V038] CHECK: Distal finger wraps the real shaft: Index can 将水壶放回木架 4
+[V038] CHECK: Distal finger wraps the real shaft: Middle can 将水壶放回木架 4
+[V038] CHECK: Distal finger wraps the real shaft: Ring can 将水壶放回木架 4
+[V038] CHECK: Distal finger wraps the real shaft: Pinky can 将水壶放回木架 4
+[V037-HANDS] CHECK: Real pickup, carry, refill, watering and return expose multiple solved contact phases
+[V037-HANDS] PASS: v0.38.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。

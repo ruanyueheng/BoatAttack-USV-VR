@@ -1,0 +1,305 @@
+Assertion summary: exact duplicate lines omitted; raw run identifiers are recorded in suite-logs.json.
+[V036-PORTAL] CHECK: 仅操作临时隔离存档
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: V019 island character / Portal
+[V036-PORTAL] CHECK: Portal uses three batched surfaces
+[V036-PORTAL] CHECK: Light curtain never blocks walking or simulates particles
+[V036-PORTAL] CHECK: Portal has its translucent animated curtain
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: Realm 0 / Device 4
+[V036-PORTAL] CHECK: Exit remains at the terminal platform 0
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: Realm 1 / Device 4
+[V036-PORTAL] CHECK: Exit remains at the terminal platform 1
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: Realm 2 / Device 4
+[V036-PORTAL] CHECK: Exit remains at the terminal platform 2
+[V036-PORTAL] CHECK: Celestial portal is visibly framed: Realm 3 / Device 4
+[V036-PORTAL] CHECK: Exit remains at the terminal platform 3
+[V035-LEVELS] CHECK: Physical island landing 0
+[V035-LEVELS] CHECK: Continuous supported walking to (-203.00, 1.15, 198.80) actual=(-203.04, 1.13, 198.85)
+[V035-LEVELS] CHECK: Resident is reachable on the redesigned island 0
+[V035-LEVELS] CHECK: Resident names the corresponding sanctuary 0
+[V035-LEVELS] CHECK: Dialogue still owns movement 0
+[V035-LEVELS] CHECK: New island geometry is installed 0
+[V035-LEVELS] CHECK: Continuous supported walking to (-210.00, 1.04, 206.40) actual=(-209.91, 1.15, 206.30)
+[V035-LEVELS] CHECK: Continuous supported walking to (-210.00, 1.21, 190.00) actual=(-210.00, 1.23, 190.05)
+[V035-LEVELS] CHECK: Continuous supported walking to (-213.00, 3.57, 174.00) actual=(-212.98, 3.59, 174.08)
+[V035-LEVELS] CHECK: Continuous supported walking to (-206.00, 1.93, 162.00) actual=(-206.02, 1.97, 162.04)
+[V035-LEVELS] CHECK: Continuous supported walking to (-199.00, 1.22, 162.00) actual=(-198.87, 1.24, 162.16)
+[V035-LEVELS] CHECK: Continuous supported walking to (-199.00, 1.24, 163.35) actual=(-199.00, 1.26, 163.32)
+[V035-LEVELS] CHECK: Authored approach reaches the actual entrance 0
+[V035-LEVELS] CHECK: Entrance line of sight 0
+[V035-LEVELS] CHECK: Production entry starts the fade 0
+[V035-LEVELS] CHECK: Fade blocks walking 0
+[V035-LEVELS] CHECK: Supported authored interior entry 0
+[V036-PORTAL] CHECK: No return portal at the sanctuary entrance 0
+[V036-PORTAL] CHECK: Entry cannot accidentally trigger a return 0
+[V036-PORTAL] CHECK: Terminal portal stands on the authored floor 0
+[V035-LEVELS] CHECK: Old shared rectangular room and gate removed 0
+[V035-LEVELS] CHECK: Wind bridge starts absent
+[V035-LEVELS] CHECK: Continuous supported walking to (500.00, 96.00, 434.00) actual=(500.00, 96.05, 433.90)
+[V035-LEVELS] CHECK: Continuous supported walking to (502.20, 96.00, 438.00) actual=(502.15, 96.04, 437.91)
+[V035-LEVELS] CHECK: Continuous supported walking to (505.80, 97.50, 442.70) actual=(505.77, 97.53, 442.67)
+[V035-LEVELS] CHECK: Continuous supported walking to (507.00, 97.50, 447.00) actual=(506.98, 97.55, 446.92)
+[V035-LEVELS] CHECK: Walking onto two pads extends two bridges
+[V035-LEVELS] CHECK: Continuous supported walking to (504.00, 97.50, 450.40) actual=(504.02, 97.55, 450.38)
+[V035-LEVELS] CHECK: Continuous supported walking to (497.80, 99.20, 455.20) actual=(497.86, 99.20, 455.16)
+[V035-LEVELS] CHECK: Continuous supported walking to (494.00, 99.20, 459.00) actual=(494.08, 99.25, 458.92)
+[V035-LEVELS] CHECK: Continuous supported walking to (496.60, 99.20, 462.60) actual=(496.58, 99.25, 462.57)
+[V035-LEVELS] CHECK: Continuous supported walking to (501.00, 101.00, 468.80) actual=(500.94, 101.05, 468.72)
+[V035-LEVELS] CHECK: Continuous supported walking to (500.00, 101.00, 473.00) actual=(500.02, 101.03, 472.91)
+[V035-LEVELS] CHECK: Footstep sequence completes the ascending island chain
+[V035-LEVELS] CHECK: Continuous supported walking to (500.00, 101.00, 471.60) actual=(500.00, 101.03, 471.74)
+[V035-LEVELS] CHECK: The final focal object is reachable 0
+[V035-LEVELS] CHECK: Continuous supported walking to (496.70, 101.00, 471.40) actual=(496.77, 101.03, 471.41)
+[V035-LEVELS] CHECK: Continuous supported walking to (496.70, 101.00, 475.10) actual=(496.72, 101.03, 475.02)
+[V035-LEVELS] CHECK: Continuous supported walking to (498.40, 101.00, 475.50) actual=(498.34, 101.03, 475.48)
+[V036-PORTAL] CHECK: Terminal portal can be used independently of claiming the echo 0
+[V036-PORTAL] CHECK: Terminal prompt clearly says where it leads 0
+[V035-LEVELS] CHECK: Continuous supported walking to (496.70, 101.00, 475.10) actual=(496.82, 101.03, 475.13)
+[V035-LEVELS] CHECK: Continuous supported walking to (496.70, 101.00, 471.40) actual=(496.73, 101.03, 471.48)
+[V035-LEVELS] CHECK: Continuous supported walking to (500.00, 101.00, 471.60) actual=(499.97, 101.03, 471.60)
+[V035-LEVELS] CHECK: Optional echo stays accessible after inspecting the exit 0
+[V035-LEVELS] CHECK: Different physical puzzle completed 0
+[V035-LEVELS] CHECK: First echo reward uses production interaction 0
+[V035-LEVELS] CHECK: Echo reward is never duplicated 0
+[V035-LEVELS] CHECK: Continuous supported walking to (496.70, 101.00, 471.40) actual=(496.73, 101.03, 471.40)
+[V035-LEVELS] CHECK: Continuous supported walking to (496.70, 101.00, 475.10) actual=(496.71, 101.03, 475.05)
+[V035-LEVELS] CHECK: Continuous supported walking to (498.40, 101.00, 475.50) actual=(498.34, 101.03, 475.49)
+[V035-LEVELS] CHECK: Return interaction at the exploration endpoint 0
+[V035-LEVELS] CHECK: Restores island feet after leaving 0
+[V035-LEVELS] CHECK: Exterior lighting restored 0
+[V035-LEVELS] CHECK: Physical island landing 1
+[V035-LEVELS] CHECK: Continuous supported walking to (217.00, 1.09, 178.80) actual=(216.96, 1.09, 178.85)
+[V035-LEVELS] CHECK: Resident is reachable on the redesigned island 1
+[V035-LEVELS] CHECK: Resident names the corresponding sanctuary 1
+[V035-LEVELS] CHECK: Dialogue still owns movement 1
+[V035-LEVELS] CHECK: New island geometry is installed 1
+[V035-LEVELS] CHECK: Continuous supported walking to (210.00, 1.04, 186.40) actual=(210.09, 1.15, 186.30)
+[V035-LEVELS] CHECK: Continuous supported walking to (210.00, 0.82, 170.00) actual=(210.00, 0.84, 170.05)
+[V035-LEVELS] CHECK: Continuous supported walking to (213.00, 1.27, 146.00) actual=(212.99, 1.30, 146.06)
+[V035-LEVELS] CHECK: Continuous supported walking to (201.00, 0.94, 145.00) actual=(201.08, 0.97, 145.01)
+[V035-LEVELS] CHECK: Continuous supported walking to (201.00, 0.93, 146.64) actual=(201.00, 0.96, 146.57)
+[V035-LEVELS] CHECK: Authored approach reaches the actual entrance 1
+[V035-LEVELS] CHECK: Entrance line of sight 1
+[V035-LEVELS] CHECK: Production entry starts the fade 1
+[V035-LEVELS] CHECK: Fade blocks walking 1
+[V035-LEVELS] CHECK: Supported authored interior entry 1
+[V036-PORTAL] CHECK: No return portal at the sanctuary entrance 1
+[V036-PORTAL] CHECK: Entry cannot accidentally trigger a return 1
+[V036-PORTAL] CHECK: Terminal portal stands on the authored floor 1
+[V035-LEVELS] CHECK: Old shared rectangular room and gate removed 1
+[V035-LEVELS] CHECK: Unsolved roots cannot be walked across
+[V035-LEVELS] CHECK: Continuous supported walking to (561.00, 96.00, 445.00) actual=(561.00, 96.02, 444.92)
+[V035-LEVELS] CHECK: Continuous supported walking to (552.60, 96.00, 445.00) actual=(552.68, 96.06, 445.00)
+[V035-LEVELS] CHECK: Rotate connected mirror 0 turn 0
+[V035-LEVELS] CHECK: Continuous supported walking to (554.00, 96.00, 445.00) actual=(553.98, 96.07, 445.00)
+[V035-LEVELS] CHECK: Continuous supported walking to (554.00, 96.00, 456.60) actual=(554.00, 96.07, 456.57)
+[V035-LEVELS] CHECK: Rotate connected mirror 1 turn 0
+[V035-LEVELS] CHECK: Rotate connected mirror 1 turn 1
+[V035-LEVELS] CHECK: Continuous supported walking to (554.00, 96.00, 458.00) actual=(554.00, 96.06, 457.87)
+[V035-LEVELS] CHECK: Continuous supported walking to (540.60, 96.00, 458.00) actual=(540.61, 96.07, 458.00)
+[V035-LEVELS] CHECK: Rotate connected mirror 2 turn 0
+[V035-LEVELS] CHECK: Rotate connected mirror 2 turn 1
+[V035-LEVELS] CHECK: Rotate connected mirror 2 turn 2
+[V035-LEVELS] CHECK: Continuous supported walking to (542.00, 96.00, 458.00) actual=(541.91, 96.07, 458.00)
+[V035-LEVELS] CHECK: Connected beam grows the actual root crossing
+[V035-LEVELS] CHECK: Continuous supported walking to (542.00, 96.00, 463.50) actual=(542.00, 96.02, 463.46)
+[V035-LEVELS] CHECK: Continuous supported walking to (542.00, 96.00, 469.30) actual=(542.00, 96.07, 469.18)
+[V035-LEVELS] CHECK: Continuous supported walking to (542.00, 96.00, 469.60) actual=(542.00, 95.98, 469.57)
+[V035-LEVELS] CHECK: The final focal object is reachable 1
+[V035-LEVELS] CHECK: Continuous supported walking to (544.90, 96.00, 469.30) actual=(544.85, 95.98, 469.30)
+[V035-LEVELS] CHECK: Continuous supported walking to (544.90, 96.00, 471.60) actual=(544.90, 95.98, 471.51)
+[V036-PORTAL] CHECK: Terminal portal can be used independently of claiming the echo 1
+[V036-PORTAL] CHECK: Terminal prompt clearly says where it leads 1
+[V035-LEVELS] CHECK: Continuous supported walking to (544.90, 96.00, 469.30) actual=(544.90, 96.00, 469.43)
+[V035-LEVELS] CHECK: Continuous supported walking to (542.00, 96.00, 469.60) actual=(542.04, 95.97, 469.60)
+[V035-LEVELS] CHECK: Optional echo stays accessible after inspecting the exit 1
+[V035-LEVELS] CHECK: Different physical puzzle completed 1
+[V035-LEVELS] CHECK: First echo reward uses production interaction 1
+[V035-LEVELS] CHECK: Echo reward is never duplicated 1
+[V035-LEVELS] CHECK: Continuous supported walking to (544.90, 96.00, 469.30) actual=(544.89, 95.99, 469.30)
+[V035-LEVELS] CHECK: Continuous supported walking to (544.90, 96.00, 471.60) actual=(544.90, 95.97, 471.51)
+[V035-LEVELS] CHECK: Return interaction at the exploration endpoint 1
+[V035-LEVELS] CHECK: Restores island feet after leaving 1
+[V035-LEVELS] CHECK: Exterior lighting restored 1
+[V035-LEVELS] CHECK: Physical island landing 2
+[V035-LEVELS] CHECK: Continuous supported walking to (-343.00, 1.23, -321.20) actual=(-343.04, 1.26, -321.15)
+[V035-LEVELS] CHECK: Resident is reachable on the redesigned island 2
+[V035-LEVELS] CHECK: Resident names the corresponding sanctuary 2
+[V035-LEVELS] CHECK: Dialogue still owns movement 2
+[V035-LEVELS] CHECK: New island geometry is installed 2
+[V035-LEVELS] CHECK: Continuous supported walking to (-350.00, 1.04, -313.60) actual=(-349.91, 1.15, -313.70)
+[V035-LEVELS] CHECK: Continuous supported walking to (-350.00, 1.25, -330.00) actual=(-350.00, 1.27, -329.95)
+[V035-LEVELS] CHECK: Continuous supported walking to (-368.00, 1.25, -330.00) actual=(-367.94, 1.27, -330.00)
+[V035-LEVELS] CHECK: Continuous supported walking to (-368.00, 0.77, -343.80) actual=(-368.00, 0.80, -343.78)
+[V035-LEVELS] CHECK: Continuous supported walking to (-365.00, 0.86, -343.80) actual=(-365.14, 0.88, -343.80)
+[V035-LEVELS] CHECK: Continuous supported walking to (-360.94, 2.12, -343.80) actual=(-360.98, 2.13, -343.80)
+[V035-LEVELS] CHECK: Continuous supported walking to (-358.00, 2.12, -342.89) actual=(-358.12, 2.13, -342.93)
+[V035-LEVELS] CHECK: Authored approach reaches the actual entrance 2
+[V035-LEVELS] CHECK: Entrance line of sight 2
+[V035-LEVELS] CHECK: Production entry starts the fade 2
+[V035-LEVELS] CHECK: Fade blocks walking 2
+[V035-LEVELS] CHECK: Supported authored interior entry 2
+[V036-PORTAL] CHECK: No return portal at the sanctuary entrance 2
+[V036-PORTAL] CHECK: Entry cannot accidentally trigger a return 2
+[V036-PORTAL] CHECK: Terminal portal stands on the authored floor 2
+[V035-LEVELS] CHECK: Old shared rectangular room and gate removed 2
+[V035-LEVELS] CHECK: Water blocks the lower hold and the final floating route
+[V035-LEVELS] CHECK: Continuous supported walking to (591.80, 97.80, 435.00) actual=(591.84, 97.83, 434.99)
+[V035-LEVELS] CHECK: Continuous supported walking to (591.80, 97.80, 440.00) actual=(591.80, 97.83, 439.93)
+[V035-LEVELS] CHECK: Continuous supported walking to (591.80, 97.80, 453.60) actual=(591.80, 97.83, 453.58)
+[V035-LEVELS] CHECK: Drain from the upper catwalk
+[V035-LEVELS] CHECK: Drained water opens the actual stair hatch
+[V035-LEVELS] CHECK: Continuous supported walking to (591.80, 97.80, 438.00) actual=(591.80, 97.83, 438.11)
+[V035-LEVELS] CHECK: Continuous supported walking to (600.20, 97.80, 438.00) actual=(600.09, 97.83, 438.04)
+[V035-LEVELS] CHECK: Continuous supported walking to (600.20, 97.80, 441.00) actual=(600.20, 97.83, 440.90)
+[V035-LEVELS] CHECK: Continuous supported walking to (598.20, 94.20, 446.00) actual=(598.21, 94.29, 445.98)
+[V035-LEVELS] CHECK: Continuous supported walking to (594.00, 94.20, 446.00) actual=(594.05, 94.23, 446.00)
+[V035-LEVELS] CHECK: Continuous supported walking to (594.00, 94.20, 442.50) actual=(594.00, 94.22, 442.62)
+[V035-LEVELS] CHECK: Continuous supported walking to (595.50, 94.20, 442.50) actual=(595.43, 94.22, 442.51)
+[V035-LEVELS] CHECK: Held E starts sustained physical cargo pushing
+[V035-LEVELS] CHECK: Cargo travels continuously for seven seconds onto its plate
+[V035-LEVELS] CHECK: Releasing E clears the push input owner
+[V035-LEVELS] CHECK: Continuous supported walking to (596.00, 94.20, 446.00) actual=(595.99, 94.23, 446.03)
+[V035-LEVELS] CHECK: Continuous supported walking to (598.20, 94.20, 446.00) actual=(598.07, 94.23, 446.00)
+[V035-LEVELS] CHECK: Continuous supported walking to (600.20, 97.80, 441.00) actual=(600.16, 97.81, 441.10)
+[V035-LEVELS] CHECK: Continuous supported walking to (600.20, 97.80, 438.00) actual=(600.20, 97.83, 438.11)
+[V035-LEVELS] CHECK: Continuous supported walking to (591.80, 97.80, 438.00) actual=(591.87, 97.83, 438.00)
+[V035-LEVELS] CHECK: Continuous supported walking to (591.80, 97.80, 453.60) actual=(591.80, 97.83, 453.47)
+[V035-LEVELS] CHECK: Refill after loading the pressure plate
+[V035-LEVELS] CHECK: Refilled water raises a collidable gangway
+[V035-LEVELS] CHECK: Close the filled valve without draining the hold
+[V035-LEVELS] CHECK: A closed valve preserves the raised bridge and its walking collision
+[V035-LEVELS] CHECK: Continuous supported walking to (591.80, 97.80, 457.00) actual=(591.80, 97.83, 456.98)
+[V035-LEVELS] CHECK: Continuous supported walking to (596.00, 97.80, 457.00) actual=(595.96, 97.83, 457.00)
+[V035-LEVELS] CHECK: Continuous supported walking to (596.00, 97.80, 466.40) actual=(596.00, 97.82, 466.36)
+[V038] CHECK: Cargo hold water has a tessellated bounded free surface
+[V038] CHECK: The filled cargo hold has actual navigable water depth
+[V038] CHECK: Local water does not extend through the hull into empty air
+[V035-LEVELS] CHECK: Continuous supported walking to (595.35, 97.80, 466.40) actual=(595.48, 97.83, 466.39)
+[V035-LEVELS] CHECK: Continuous supported walking to (595.35, 97.80, 457.00) actual=(595.35, 97.83, 457.03)
+[V035-LEVELS] CHECK: Continuous supported walking to (596.65, 97.80, 466.40) actual=(596.64, 97.83, 466.30)
+[V035-LEVELS] CHECK: Continuous supported walking to (596.65, 97.80, 457.00) actual=(596.65, 97.83, 457.07)
+[V038] CHECK: The actual lower hold floor supports the immersion fixture
+[V038] CHECK: Entering deep hold water produces buoyant swimming at the local level
+[V038] CHECK: Real swimming and jump input climb from the water back onto the side deck
+[V035-LEVELS] CHECK: Continuous supported walking to (591.80, 97.80, 446.00) actual=(591.91, 97.82, 446.00)
+[V035-LEVELS] CHECK: Continuous supported walking to (591.80, 97.80, 457.00) actual=(591.80, 97.83, 456.92)
+[V035-LEVELS] CHECK: Continuous supported walking to (596.00, 97.80, 457.00) actual=(595.94, 97.83, 457.00)
+[V035-LEVELS] CHECK: The final focal object is reachable 2
+[V035-LEVELS] CHECK: Continuous supported walking to (598.50, 97.80, 467.60) actual=(598.45, 97.83, 467.57)
+[V036-PORTAL] CHECK: Terminal portal can be used independently of claiming the echo 2
+[V036-PORTAL] CHECK: Terminal prompt clearly says where it leads 2
+[V035-LEVELS] CHECK: Continuous supported walking to (596.00, 97.80, 466.60) actual=(596.03, 97.83, 466.61)
+[V035-LEVELS] CHECK: Optional echo stays accessible after inspecting the exit 2
+[V035-LEVELS] CHECK: Different physical puzzle completed 2
+[V035-LEVELS] CHECK: First echo reward uses production interaction 2
+[V035-LEVELS] CHECK: Echo reward is never duplicated 2
+[V035-LEVELS] CHECK: Continuous supported walking to (598.50, 97.80, 467.60) actual=(598.44, 97.83, 467.58)
+[V035-LEVELS] CHECK: Return interaction at the exploration endpoint 2
+[V035-LEVELS] CHECK: Restores island feet after leaving 2
+[V035-LEVELS] CHECK: Exterior lighting restored 2
+[V035-LEVELS] CHECK: Physical island landing 3
+[V035-LEVELS] CHECK: Continuous supported walking to (357.00, 1.24, -321.20) actual=(356.96, 1.19, -321.15)
+[V035-LEVELS] CHECK: Resident is reachable on the redesigned island 3
+[V035-LEVELS] CHECK: Resident names the corresponding sanctuary 3
+[V035-LEVELS] CHECK: Dialogue still owns movement 3
+[V035-LEVELS] CHECK: New island geometry is installed 3
+[V035-LEVELS] CHECK: Continuous supported walking to (350.00, 1.04, -313.60) actual=(350.09, 1.15, -313.70)
+[V035-LEVELS] CHECK: Continuous supported walking to (350.00, 1.58, -330.00) actual=(350.00, 1.60, -329.95)
+[V035-LEVELS] CHECK: Continuous supported walking to (354.00, 2.14, -338.16) actual=(353.98, 2.31, -338.13)
+[V035-LEVELS] CHECK: Continuous supported walking to (354.00, 3.15, -341.16) actual=(354.00, 3.18, -341.12)
+[V035-LEVELS] CHECK: Continuous supported walking to (354.00, 3.15, -342.20) actual=(354.00, 3.18, -342.16)
+[V035-LEVELS] CHECK: Continuous supported walking to (348.15, 3.15, -356.50) actual=(348.16, 3.20, -356.47)
+[V035-LEVELS] CHECK: Continuous supported walking to (349.78, 3.15, -356.50) actual=(349.72, 3.28, -356.50)
+[V035-LEVELS] CHECK: Continuous supported walking to (349.92, 3.35, -355.41) actual=(349.91, 3.46, -355.48)
+[V035-LEVELS] CHECK: Continuous supported walking to (350.34, 3.54, -354.39) actual=(350.29, 3.64, -354.51)
+[V035-LEVELS] CHECK: Continuous supported walking to (351.01, 3.74, -353.51) actual=(350.98, 3.86, -353.56)
+[V035-LEVELS] CHECK: Continuous supported walking to (351.89, 3.93, -352.84) actual=(351.79, 4.03, -352.92)
+[V035-LEVELS] CHECK: Continuous supported walking to (352.91, 4.13, -352.42) actual=(352.86, 4.25, -352.44)
+[V035-LEVELS] CHECK: Continuous supported walking to (354.00, 4.32, -352.28) actual=(353.89, 4.43, -352.29)
+[V035-LEVELS] CHECK: Continuous supported walking to (355.09, 4.52, -352.42) actual=(355.05, 4.64, -352.41)
+[V035-LEVELS] CHECK: Continuous supported walking to (356.11, 4.71, -352.84) actual=(356.02, 4.82, -352.80)
+[V035-LEVELS] CHECK: Continuous supported walking to (356.99, 4.91, -353.51) actual=(356.96, 5.03, -353.49)
+[V035-LEVELS] CHECK: Continuous supported walking to (357.66, 5.10, -354.39) actual=(357.60, 5.21, -354.31)
+[V035-LEVELS] CHECK: Continuous supported walking to (358.08, 5.30, -355.41) actual=(358.07, 5.42, -355.39)
+[V035-LEVELS] CHECK: Continuous supported walking to (358.23, 5.49, -356.50) actual=(358.21, 5.52, -356.42)
+[V035-LEVELS] CHECK: Continuous supported walking to (356.28, 5.49, -356.50) actual=(356.40, 5.56, -356.49)
+[V035-LEVELS] CHECK: Continuous supported walking to (354.00, 5.49, -355.46) actual=(354.13, 5.56, -355.52)
+[V035-LEVELS] CHECK: Continuous supported walking to (352.44, 5.49, -355.61) actual=(352.57, 5.56, -355.60)
+[V035-LEVELS] CHECK: Authored approach reaches the actual entrance 3
+[V035-LEVELS] CHECK: Entrance line of sight 3
+[V035-LEVELS] CHECK: Production entry starts the fade 3
+[V035-LEVELS] CHECK: Fade blocks walking 3
+[V035-LEVELS] CHECK: Supported authored interior entry 3
+[V036-PORTAL] CHECK: No return portal at the sanctuary entrance 3
+[V036-PORTAL] CHECK: Entry cannot accidentally trigger a return 3
+[V036-PORTAL] CHECK: Terminal portal stands on the authored floor 3
+[V035-LEVELS] CHECK: Old shared rectangular room and gate removed 3
+[V035-LEVELS] CHECK: Continuous supported walking to (653.00, 96.00, 460.00) actual=(652.96, 96.05, 459.88)
+[V035-LEVELS] CHECK: Continuous supported walking to (650.50, 96.00, 460.00) actual=(650.62, 96.18, 459.99)
+[V035-LEVELS] CHECK: Continuous supported walking to (650.28, 96.30, 458.32) actual=(650.28, 96.47, 458.34)
+[V035-LEVELS] CHECK: Continuous supported walking to (649.63, 96.60, 456.75) actual=(649.64, 96.77, 456.78)
+[V035-LEVELS] CHECK: Continuous supported walking to (648.60, 96.90, 455.40) actual=(648.62, 97.07, 455.43)
+[V035-LEVELS] CHECK: Continuous supported walking to (647.25, 97.20, 454.37) actual=(647.28, 97.37, 454.39)
+[V035-LEVELS] CHECK: Continuous supported walking to (645.68, 97.50, 453.72) actual=(645.72, 97.67, 453.74)
+[V035-LEVELS] CHECK: Continuous supported walking to (644.00, 97.80, 453.50) actual=(644.05, 97.97, 453.51)
+[V035-LEVELS] CHECK: Continuous supported walking to (642.32, 98.10, 453.72) actual=(642.37, 98.27, 453.71)
+[V035-LEVELS] CHECK: Continuous supported walking to (640.75, 98.40, 454.37) actual=(640.81, 98.57, 454.35)
+[V035-LEVELS] CHECK: Continuous supported walking to (639.40, 98.70, 455.40) actual=(639.46, 98.87, 455.37)
+[V035-LEVELS] CHECK: Continuous supported walking to (638.37, 99.00, 456.75) actual=(638.41, 99.17, 456.70)
+[V035-LEVELS] CHECK: Continuous supported walking to (637.72, 99.30, 458.32) actual=(637.75, 99.47, 458.25)
+[V035-LEVELS] CHECK: Continuous supported walking to (637.50, 99.60, 460.00) actual=(637.51, 99.63, 459.92)
+[V035-LEVELS] CHECK: Continuous supported walking to (640.50, 99.60, 460.00) actual=(640.37, 99.69, 460.00)
+[V035-LEVELS] CHECK: Continuous supported walking to (644.00, 99.60, 458.40) actual=(643.94, 99.69, 458.43)
+[V035-LEVELS] CHECK: Spiral stair reaches the raised telescope platform
+[V035-LEVELS] CHECK: Production E takes the continuous telescope controls
+[V035-LEVELS] CHECK: Scope owns movement while observing
+[V035-LEVELS] CHECK: Focus loss restores the camera and releases controls
+[V035-LEVELS] CHECK: Scope can be reopened after cancellation
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 0 0
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 0 1
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 0 2
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 0 3
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 0 4
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 0 5
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 0 6
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 0 7
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 0 8
+[V035-LEVELS] CHECK: Continuous aim and stable focus records constellation 0
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 1 0
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 1 1
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 1 2
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 1 3
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 1 4
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 1 5
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 1 6
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 1 7
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 1 8
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 1 9
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 1 10
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 1 11
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 1 12
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 1 13
+[V035-LEVELS] CHECK: Continuous aim and stable focus records constellation 1
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 2 0
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 2 1
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 2 2
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 2 3
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 2 4
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 2 5
+[V035-LEVELS] CHECK: Constellation has an unobstructed optical sight line: Star 2 6
+[V035-LEVELS] CHECK: Continuous aim and stable focus records constellation 2
+[V035-LEVELS] CHECK: Continuous supported walking to (642.00, 99.60, 458.00) actual=(642.04, 99.69, 458.01)
+[V035-LEVELS] CHECK: Continuous supported walking to (642.00, 99.60, 462.00) actual=(642.00, 99.69, 461.91)
+[V035-LEVELS] CHECK: Continuous supported walking to (645.00, 99.60, 461.60) actual=(644.98, 99.69, 461.60)
+[V035-LEVELS] CHECK: The final focal object is reachable 3
+[V035-LEVELS] CHECK: Continuous supported walking to (641.40, 99.60, 461.00) actual=(641.51, 99.69, 461.02)
+[V036-PORTAL] CHECK: Terminal portal can be used independently of claiming the echo 3
+[V036-PORTAL] CHECK: Terminal prompt clearly says where it leads 3
+[V035-LEVELS] CHECK: Optional echo stays accessible after inspecting the exit 3
+[V035-LEVELS] CHECK: Different physical puzzle completed 3
+[V035-LEVELS] CHECK: First echo reward uses production interaction 3
+[V035-LEVELS] CHECK: Echo reward is never duplicated 3
+[V035-LEVELS] CHECK: Return interaction at the exploration endpoint 3
+[V035-LEVELS] CHECK: Restores island feet after leaving 3
+[V035-LEVELS] CHECK: Exterior lighting restored 3
+[V036-PORTAL] PASS: v0.38.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。

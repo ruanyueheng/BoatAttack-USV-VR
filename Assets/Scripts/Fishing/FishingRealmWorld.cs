@@ -21,6 +21,10 @@ namespace BoatAttack.Fishing
         private int _demoNote,_padInside=-1,_windBridgeStage;
         private Material _lightMaterial;
         private Transform _rootBridge,_seedling,_cargoBridge,_waterSurface,_holdGate,_valveWheel;
+        private FishingWaterVolume _holdWater;
+        private BoxCollider _gangwayDeck;
+        private Transform _sunWell,_seedReceiver;
+        private readonly RaycastHit[] _targetHits=new RaycastHit[64];
         private bool _pushing;
         public int Island { get; private set; }=-1;
         public bool Inside=>Island>=0;
@@ -34,6 +38,13 @@ namespace BoatAttack.Fishing
         public Transform ExitPortal(int island)=>island>=0 && island<4?_exits[island]:null;
         public Vector3 PortalApproach(int island)=>_portals[island].Find("Approach").position;
         public Transform Device(int id)=>id>=0 && id<5?_devices[id]:null;
+        public bool TryWater(Vector3 position,out float surface,out float bottom)
+        {
+            surface=bottom=0;
+            if(!Inside || Island!=2 || _holdWater==null || !_holdWater.Contains(position))return false;
+            surface=_holdWater.SurfaceHeight;bottom=_holdWater.BottomHeight;return true;
+        }
+        public void DisturbWater(Vector3 position){if(Inside && Island==2)_holdWater.Disturb(position);}
         public Transform Landmark(string name)=>Inside?Marker(Room,name):null;
         public static Transform Marker(Transform room,string name)
         {
@@ -73,8 +84,13 @@ namespace BoatAttack.Fishing
         {
             var from=_c.ExplorerPosition+Vector3.up*1.4f;float height=Inside && Island==2 && target==_devices[0]?.45f:1.2f;
             var to=target.position+Vector3.up*height;var delta=to-from;
-            foreach(var hit in Physics.RaycastAll(from,delta.normalized,delta.magnitude,~(1<<4),QueryTriggerInteraction.Ignore))
+            int count=Physics.RaycastNonAlloc(from,delta.normalized,_targetHits,delta.magnitude,~(1<<4),QueryTriggerInteraction.Ignore);
+            if(count==_targetHits.Length)return false;
+            for(int i=0;i<count;i++)
+            {
+                var hit=_targetHits[i];
                 if(hit.collider!=_c.Shore.Body && !hit.transform.IsChildOf(target) && !FishingShore.NonSolidSurface(hit.collider))return false;
+            }
             return true;
         }
         public bool TryTarget(out int id,out Transform target)
@@ -158,7 +174,7 @@ namespace BoatAttack.Fishing
                 {
                     Island=destination;Trial=new FishingShrineTrial(destination);_nextUse=0;_demoAge=0;_demoNote=0;_padInside=-1;_windBridgeStage=0;
                     for(int i=0;i<5;i++)_devices[i]=Room.Find("Device "+i);
-                    Refresh();
+                    Refresh();PresentTrial();
                 }
                 else _rooms[destination].gameObject.SetActive(false);
             }
@@ -205,7 +221,6 @@ namespace BoatAttack.Fishing
                     if(!held || !focused || FishingPrototype.FlatDistance(_c.Shore.Position,_devices[0].position)>2.1f || Trial.WaterLevel>.15f)_pushing=false;
                     else Trial.PushCargo(Time.deltaTime);
                 }
-                _devices[0].localPosition=Vector3.Lerp(_cargoStart,_cargoEnd,Trial.CargoProgress);
             }
             if(ready!=Trial.Ready || progress!=Trial.Progress)Refresh();
             if(_c.Shore.Position.y<Room.position.y-4)
@@ -227,7 +242,7 @@ namespace BoatAttack.Fishing
             }
             if(Island==0)for(int i=0;i<3;i++)_windBridges[i].gameObject.SetActive(open || _windBridgeStage>i);
             if(Island==1)foreach(var collider in _rootBridge.GetComponentsInChildren<Collider>())collider.enabled=open;
-            if(Island==2)_cargoBridge.GetComponent<BoxCollider>().enabled=open;
+            if(Island==2)_gangwayDeck.enabled=open && Trial.WaterLevel>=.95f;
         }
         private Transform Model(string name,Transform parent,Vector3 local,bool solid=false)
         {
@@ -243,6 +258,7 @@ namespace BoatAttack.Fishing
             if(island==0)for(int i=0;i<3;i++){_windBridges[i]=Model("WindBridge"+i,room,Vector3.zero,true);_windBridges[i].gameObject.SetActive(false);}
             if(island==1)
             {
+                _sunWell=Marker(room,"SunWell");_seedReceiver=Marker(room,"Seed");
                 for(int i=0;i<3;i++)_mirrors[i]=Model("MirrorHead",room.Find("Device "+i),Vector3.up*1.5f);
                 for(int i=0;i<4;i++){_forestLight[i]=FishingArt.Line("Connected sunlight "+i,room,_lightMaterial,.035f,false);_forestLight[i].useWorldSpace=true;_forestLight[i].positionCount=2;}
                 _rootBridge=Model("RootBridge",room,room.InverseTransformPoint(Marker(room,"RootBridge").position),true);
@@ -254,11 +270,14 @@ namespace BoatAttack.Fishing
                 _valveWheel=Model("ValveWheel",room.Find("Device 1"),new Vector3(0,1.15f,-.2f));
                 _cargoStart=room.InverseTransformPoint(Marker(room,"CargoStart").position);_cargoEnd=room.InverseTransformPoint(Marker(room,"CargoEnd").position);
                 _gangwayHome=room.InverseTransformPoint(Marker(room,"FloatGangway").position);_cargoBridge=Model("FloatGangway",room,_gangwayHome);
-                var deck=_cargoBridge.gameObject.AddComponent<BoxCollider>();deck.center=Vector3.up*.02f;deck.size=new Vector3(2.4f,.24f,5.8f);deck.enabled=false;
+                _cargoBridge.localScale=new Vector3(1,1,1.08f);
+                _gangwayDeck=_cargoBridge.gameObject.AddComponent<BoxCollider>();_gangwayDeck.center=Vector3.down*.02f;_gangwayDeck.size=new Vector3(2.4f,.20f,5.8f);_gangwayDeck.enabled=false;
                 _holdGate=Model("HoldHatch",room,room.InverseTransformPoint(Marker(room,"HoldGate").position));
                 var hatch=_holdGate.gameObject.AddComponent<BoxCollider>();hatch.center=Vector3.up*.75f;hatch.size=new Vector3(2.1f,1.5f,.20f);
                 _holdGate.rotation=Quaternion.LookRotation(Vector3.ProjectOnPlane(Marker(room,"HoldLanding").position-_holdGate.position,Vector3.up));
-                _waterSurface=FishingArt.Shape("Moving water in cargo hold",PrimitiveType.Plane,room,Vector3.zero,new Vector3(.93f,1,2.1f),Resources.Load<Material>("FishingV035/RealmWater")).transform;
+                _holdWater=new GameObject("Moving water in cargo hold").AddComponent<FishingWaterVolume>();_waterSurface=_holdWater.transform;
+                _waterSurface.SetParent(room,false);_waterSurface.localPosition=Vector3.forward*.5f;
+                _holdWater.Build(new Vector2(9.3f,28),-2.5f,Resources.Load<Material>("FishingV035/RealmWater"));
             }
             if(island==3)BuildObservation(room);
         }
@@ -266,7 +285,7 @@ namespace BoatAttack.Fishing
         {
             if(Island==1)
             {
-                var source=Marker(Room,"SunWell").position;var receiver=Marker(Room,"Seed").position+Vector3.up*.6f;
+                var source=_sunWell.position;var receiver=_seedReceiver.position+Vector3.up*.6f;
                 var first=_devices[0].position+Vector3.up*1.5f;_forestLight[0].enabled=true;_forestLight[0].SetPosition(0,source);_forestLight[0].SetPosition(1,first);
                 bool connected=true;
                 for(int i=0;i<3;i++)
@@ -283,9 +302,10 @@ namespace BoatAttack.Fishing
             }
             if(Island==2)
             {
+                _devices[0].localPosition=Vector3.Lerp(_cargoStart,_cargoEnd,Trial.CargoProgress);
                 var p=_gangwayHome;p.y=Mathf.Lerp(_cargoStart.y-.3f,_gangwayHome.y,Trial.WaterLevel);_cargoBridge.localPosition=p;
                 _valveWheel.localRotation=Quaternion.Slerp(_valveWheel.localRotation,Quaternion.Euler(0,0,Trial.State(1)==1?-90:Trial.State(1)==2?90:0),Time.deltaTime*5);
-                _waterSurface.localPosition=new Vector3(0,Mathf.Lerp(_cargoStart.y-.5f,.6f,Trial.WaterLevel),-2);
+                _holdWater.SetLevel(Mathf.Lerp(_cargoStart.y-.5f,1.2f,Trial.WaterLevel));
                 _holdGate.gameObject.SetActive(Trial.WaterLevel>.2f);
             }
         }

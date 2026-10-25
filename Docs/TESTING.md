@@ -195,3 +195,13 @@ dotnet run --project Tools/InputTests/InputTests.csproj --configuration Release 
 人物专项检查源Legacy曲线、缩放曲线、bindpose/蒙皮权重与索引，360真实帧的站坐蹲/走跑跳/双手握持与抄鱼/游泳攀登、同帧幂等及暂停恢复，另120真实帧睡眠。独立回归同时运行第一人称、捕鱼、床与工具、秘境、31版菜单航记和Smoke，避免多套测试共用脏夹具。
 
 本次纯规则 **3871通过**，纯输入 **70通过**；七组串行Unity专项/回归全部通过，最新V033复验通过；Windows与ARM64 Android候选构建、210文件便携ZIP逐项校验以及Android v2签名校验通过。新版独立Windows Player的73场景Smoke及73张1600×900完整HUD截图均通过。完整记录见本次交付报告。全屏偏好写入沿用V032键；隔离测试不修改用户偏好，设置重启的真实交互体验、物理键鼠/耳听音量、PICO立体/实体手柄、长时间性能与全部动画观感仍需人工验收，不用自动断言替代。
+
+## 第38版：水体、浮桥与握持
+
+```powershell
+./Tools/Run-V038Validation.ps1
+./Tools/Run-FishingBuilds.ps1
+./Tools/Run-FishingAcceptance.ps1 -Mode Smoke -Session v038-review
+```
+
+V038专项覆盖沉船沙洲全流程、满水关阀后桥梁支持、双侧双向步行、局部游泳与爬回甲板、源水壶网格、实际手皮和远端闭合、18种余量/倾角下的液面水平与贴壁、刚性握持缓存及失效。其余工具、四境、航线与外海游泳分开回归。液面收尾追加运行 `FishingV037Hands` 后重新构建，两平台均通过；4356项规则、70项输入及最终Windows程序88场景冒烟通过。证据和性能范围见[第38版验证记录](VALIDATION_V038.md)。

@@ -19,6 +19,7 @@ namespace BoatAttack.Fishing
         public void RefreshClimbRoutes() => _routes = FindObjectsOfType<FishingClimbRoute>();
         private float WaterHeight()
         {
+            if(Controller.Realms!=null && Controller.Realms.TryWater(Actor.position,out var surface,out _))return surface;
             if (!GerstnerWavesJobs.Initialized) return 0;
             if (!_waterPoint.IsCreated) _waterPoint = new NativeArray<float3>(1, Allocator.Persistent);
             _waterPoint[0] = Actor.position;
@@ -84,6 +85,7 @@ namespace BoatAttack.Fishing
             float eyeHeight = UnityEngine.XR.XRSettings.isDeviceActive ? FishingXRSeat.EyeHeight : _character.EyePosition.y - Actor.position.y;
             float vertical = Mathf.Clamp((water + .24f - eyeHeight - Actor.position.y) * 4, -2.4f, 1.8f);
             var previous = Position; Body.Move((velocity + Vector3.up * vertical) * dt);
+            if(Controller.Realms.Inside && velocity.sqrMagnitude>.01f)Controller.Realms.DisturbWater(Position);
             WalkSpeed = Vector3.ProjectOnPlane(Position - previous, Vector3.up).magnitude / dt;
             if (velocity.sqrMagnitude > .01f) Actor.rotation = Quaternion.LookRotation(velocity);
         }

@@ -1,0 +1,5 @@
+Version: 0.38.0
+UTC: 2026-10-24T14:28:25.8289046Z
+Warm mean: 0.041 ms
+Managed bytes for 30 calls: 0
+Same geometry reuses rotations; changed radius invalidates. Editor CPU timing, not headset FPS.

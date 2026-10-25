@@ -94,7 +94,9 @@ namespace BoatAttack.EditorTools
                 Check(c.Career.Farm.Water==water && c.Farm.CarryingCan && !c.Farm.WaterStreamVisible,"Interrupted bucket pouring grants no water and retains the carried can");
                 Check(c.RequestWorldInteraction(),"The cancelled refill can restart");finish=Finish(c);while(finish.MoveNext())yield return null;
                 Check(c.Career.Farm.Water==FishingFarm.WaterCapacity,"Only a completed refill fills the bounded, saved water reservoir");
-                c.PresentCharacterFrame();Check(c.Farm.CanWater.gameObject.activeSelf && Mathf.Abs(c.Farm.CanWater.localPosition.y-.002f)<.001f,"Refilled ivory can visibly contains water up to its opening");
+                c.PresentCharacterFrame();Check(c.Farm.CanWater.gameObject.activeSelf,"Refilled ivory can visibly contains water inside its opening");
+                FishingV038Validation.InspectLiquid(c);
+                FishingV038Validation.InspectLiquidOrientations(c);
 
                 move=Approach(c,0);while(move.MoveNext())yield return null;
                 int attempts=c.ActionCommitAttempts;

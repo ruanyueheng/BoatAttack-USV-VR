@@ -121,7 +121,11 @@ namespace BoatAttack.EditorTools
                 foreach(var p in new[]{new Vector3(0,-1.8f,-4),new Vector3(-2.2f,-1.8f,-4),new Vector3(-4.2f,1.8f,-9),new Vector3(-4.2f,1.8f,-12),new Vector3(4.2f,1.8f,-12),new Vector3(4.2f,1.8f,3.6f)}){walk=Walk(c,r.Room.TransformPoint(new Vector3(-p.x,p.y,p.z)));while(walk.MoveNext())yield return null;}
                 Check(c.RequestWorldInteraction(),"Refill after loading the pressure plate");var fill=Wait(4.3f);while(fill.MoveNext())yield return null;
                 Check(r.Trial.Ready && r.Room.Find("FloatGangway").GetComponent<BoxCollider>().enabled,"Refilled water raises a collidable gangway");
+                Check(c.RequestWorldInteraction(),"Close the filled valve without draining the hold");
+                yield return null;
+                Check(r.Trial.WaterLevel>=.95f && r.Trial.Ready && r.Room.Find("FloatGangway").GetComponent<BoxCollider>().enabled,"A closed valve preserves the raised bridge and its walking collision");
                 foreach(var p in new[]{new Vector3(4.2f,1.8f,7),new Vector3(0,1.8f,7),new Vector3(0,1.8f,16.4f)}){walk=Walk(c,r.Room.TransformPoint(new Vector3(-p.x,p.y,p.z)));while(walk.MoveNext())yield return null;}
+                var waterCheck=FishingV038Validation.InspectHold(c);while(waterCheck.MoveNext())yield return waterCheck.Current;
             }
             if(id==3)
             {
