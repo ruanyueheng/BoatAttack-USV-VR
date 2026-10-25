@@ -102,7 +102,7 @@ namespace BoatAttack.Fishing
 
         // Surveyed heights keep docks below awnings from being mistaken for roofs.
         public bool Ground(Vector3 seed,out Vector3 point) => GroundBelow(seed,seed.y>.6f?seed.y+.6f:80,seed.y>.6f?1.2f:80,out point);
-        private bool GroundBelow(Vector3 seed,float originY,float distance,out Vector3 point)
+        private bool GroundBelow(Vector3 seed,float originY,float distance,out Vector3 point,float minimumHeight=.6f)
         {
             point=seed;
             int count=Physics.RaycastNonAlloc(new Vector3(seed.x,originY,seed.z),Vector3.down,_groundHits,distance,~(1<<4),QueryTriggerInteraction.Ignore);
@@ -111,19 +111,20 @@ namespace BoatAttack.Fishing
             for(int i=0;i<count;i++)
             {
                 var h=_groundHits[i];
-                if(Ignored(h.collider) || h.point.y<.6f || h.normal.y<.69f || h.point.y<=top)continue;
+                if(Ignored(h.collider) || h.point.y<minimumHeight || h.normal.y<.69f || h.point.y<=top)continue;
                 top=h.point.y;point=h.point;found=true;
             }
             return found;
         }
         private bool WalkingGroundBelow(Vector3 seed,float originY,float distance,out Vector3 point)
         {
-            if(GroundBelow(seed,originY,distance,out point))return true;
+            float minimum=!Controller.Realms.Inside && Actor.position.y<1.4f?WaterHeight()-.65f:.6f;
+            if(GroundBelow(seed,originY,distance,out point,minimum))return true;
             // 仅连续步行容忍胶囊足印内的窄缝；登陆和设施支撑仍使用精确中心射线。
             // 用实际表面射线取坡度，不能把球扫掠在陡边上的接触法线当作平地法线。
             bool found=false;float top=float.MinValue;
             foreach(var offset in SeamOffsets)
-                if(GroundBelow(seed+offset*(Body.radius*.6f),originY,distance,out var nearby) && nearby.y>top)
+                if(GroundBelow(seed+offset*(Body.radius*.6f),originY,distance,out var nearby,minimum) && nearby.y>top)
                 {top=nearby.y;point=new Vector3(seed.x,nearby.y,seed.z);found=true;}
             return found;
         }
@@ -249,7 +250,9 @@ namespace BoatAttack.Fishing
                 bool wet=Controller.Realms.TryWater(Actor.position,out float level,out _);
                 if(Swimming && (!wet || (GroundBelow(Actor.position,Actor.position.y+.6f,2.4f,out var bed) && level-bed.y<1.1f)))
                 {Swimming=false;_motion.Reset();}
-                else if(wet && level-Actor.position.y>1.15f){Swim(axes,heading,sprint,jump,dt);return;}
+                else if(wet && level-Actor.position.y>1.15f
+                    && (!WalkingGroundBelow(Actor.position,Actor.position.y+.35f,.7f,out var supportFloor) || level-supportFloor.y>.75f))
+                {Swim(axes,heading,sprint,jump,dt);return;}
             }
             if(Swimming){Swim(axes,heading,sprint,jump,dt);return;}
             _motion.Exert(sprint && axes.sqrMagnitude>.01f && !Crouched,axes.sqrMagnitude<.01f,dt);
@@ -286,7 +289,7 @@ namespace BoatAttack.Fishing
             WalkSpeed=Vector3.ProjectOnPlane(Actor.position-previous,Vector3.up).magnitude/dt;
             if(velocity.sqrMagnitude>.01f)Actor.rotation=Quaternion.LookRotation(velocity);
             if(Body.isGrounded && Actor.position.y>.6f)_lastSafe=Actor.position;
-            if(Actor.position.y<.2f){Body.enabled=false;Actor.position=_lastSafe;Body.enabled=true;_motion.Reset();}
+            if(Actor.position.y<.2f && !support){Body.enabled=false;Actor.position=_lastSafe;Body.enabled=true;_motion.Reset();}
         }
         public Vector3 RoomStep(Vector3 delta)
         {

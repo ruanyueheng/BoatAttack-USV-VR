@@ -1,0 +1,67 @@
+[V028-COAST] CHECK: 仅操作临时隔离存档
+[V028-COAST] CHECK: Coast validation uses an isolated profile
+[V028-COAST] CHECK: An empty grill survives the actual JsonUtility disk save/load
+[V028-COAST] CHECK: Refined metre-scale vertex-colour coast mesh imports: Barbecue
+[V028-COAST] CHECK: Matching real model photograph imports: Barbecue
+[V028-COAST] CHECK: Refined metre-scale vertex-colour coast mesh imports: FishCooler
+[V028-COAST] CHECK: Matching real model photograph imports: FishCooler
+[V028-COAST] CHECK: Refined metre-scale vertex-colour coast mesh imports: GrilledFish
+[V028-COAST] CHECK: Matching real model photograph imports: GrilledFish
+[V028-COAST] CHECK: Refined metre-scale vertex-colour coast mesh imports: OldBoot
+[V028-COAST] CHECK: Matching real model photograph imports: OldBoot
+[V028-COAST] CHECK: Refined metre-scale vertex-colour coast mesh imports: RustyCan
+[V028-COAST] CHECK: Matching real model photograph imports: RustyCan
+[V028-COAST] CHECK: Refined metre-scale vertex-colour coast mesh imports: SeaTreasure
+[V028-COAST] CHECK: Matching real model photograph imports: SeaTreasure
+[V028-COAST] CHECK: Dry geometry supports the actual footprint corner of 海风烧烤架 · 从鱼箱取鱼: -0.625, -0.39
+[V028-COAST] CHECK: Dry geometry supports the actual footprint corner of 海风烧烤架 · 从鱼箱取鱼: -0.625, 0.39
+[V028-COAST] CHECK: Dry geometry supports the actual footprint corner of 海风烧烤架 · 从鱼箱取鱼: 0.625, -0.39
+[V028-COAST] CHECK: Dry geometry supports the actual footprint corner of 海风烧烤架 · 从鱼箱取鱼: 0.625, 0.39
+[V028-COAST] CHECK: Dry geometry supports the actual footprint corner of 渔屋鱼箱 · 与船上鱼箱共用库存: -0.48, -0.325
+[V028-COAST] CHECK: Dry geometry supports the actual footprint corner of 渔屋鱼箱 · 与船上鱼箱共用库存: -0.48, 0.325
+[V028-COAST] CHECK: Dry geometry supports the actual footprint corner of 渔屋鱼箱 · 与船上鱼箱共用库存: 0.48, -0.325
+[V028-COAST] CHECK: Dry geometry supports the actual footprint corner of 渔屋鱼箱 · 与船上鱼箱共用库存: 0.48, 0.325
+[V028-COAST] CHECK: Home berth still reaches the V027 island
+[V028-COAST] CHECK: Barbecue front apron has dry ground and capsule clearance
+[V028-COAST] CHECK: The actual front apron offers the new grill interaction
+[V028-COAST] CHECK: An unavailable fish ID cannot consume a fish
+[V028-COAST] CHECK: A solid blocker prevents reaching and starting a barbecue through it
+[V028-COAST] CHECK: Desktop E opens the selected barbecue fishbox menu
+[V028-COAST] CHECK: Tracked A uses the shared immediate home/barbecue target route
+[V028-COAST] CHECK: Selected mackerel moves out of the real fishbox into the saved grill
+[V039] CHECK: Real Meowa sizzle loops at the cooking grill in 3D
+[V039] CHECK: Real cooking produces bounded smoke particles; playing=True count=13
+[V039] CHECK: Production grill uses textured Hunyuan fish within the mobile triangle budget
+[V039] CHECK: Backpack, held fish and icon all use the same Hunyuan asset
+[V039] CHECK: Pause stops the grill loop and smoke emission
+[V028-COAST] CHECK: Reserved fish and progress survive an actual disk reload
+[V028-COAST] CHECK: Pause never advances the grill
+[V028-COAST] CHECK: The open fishbox menu never advances cooking
+[V028-COAST] CHECK: Cooked fish is collected once into the shared backpack
+[V028-COAST] CHECK: A collected empty grill and meal survive the real disk roundtrip
+[V028-COAST] CHECK: The island keeps a clear route away from the grill
+[V028-COAST] CHECK: A distant grill cannot remove fish remotely
+[V028-COAST] CHECK: A pooled sea fish reaches its visible airborne jump apex
+[V028-COAST] CHECK: An existing sky bird completes the fishing dive near the water
+[V028-COAST] CHECK: The climbing bird actually carries its visible fish
+[V028-COAST] CHECK: The carried fish is 12–17 cm in world space and touches the calibrated supplied gull's beak
+[V028-COAST] CHECK: A real production cast starts the sea-find fixture: OldBoot
+[V028-COAST] CHECK: A deterministic ordinary catch receipt selects OldBoot
+[V028-COAST] CHECK: The sea-find fixture hooks through production input
+[V028-COAST] CHECK: Actual assisted net capture reports a committed sea find without inventing a pending fish: OldBoot
+[V028-COAST] CHECK: Repeating the scoop or receipt cannot duplicate the sea find: OldBoot
+[V028-COAST] CHECK: The sea-find receipt survives the real disk roundtrip: OldBoot
+[V028-COAST] CHECK: A real production cast starts the sea-find fixture: RustyCan
+[V028-COAST] CHECK: A deterministic ordinary catch receipt selects RustyCan
+[V028-COAST] CHECK: The sea-find fixture hooks through production input
+[V028-COAST] CHECK: Actual assisted net capture reports a committed sea find without inventing a pending fish: RustyCan
+[V028-COAST] CHECK: Repeating the scoop or receipt cannot duplicate the sea find: RustyCan
+[V028-COAST] CHECK: The sea-find receipt survives the real disk roundtrip: RustyCan
+[V028-COAST] CHECK: A real production cast starts the sea-find fixture: SeaTreasure
+[V028-COAST] CHECK: A deterministic ordinary catch receipt selects SeaTreasure
+[V028-COAST] CHECK: The sea-find fixture hooks through production input
+[V028-COAST] CHECK: Actual assisted net capture reports a committed sea find without inventing a pending fish: SeaTreasure
+[V028-COAST] CHECK: Repeating the scoop or receipt cannot duplicate the sea find: SeaTreasure
+[V028-COAST] CHECK: The sea-find receipt survives the real disk roundtrip: SeaTreasure
+[V028-COAST] EVIDENCE: <PROJECT>\Logs\v028-coast-d843c8e8f7e64464a95d76fb2c10439a
+[V028-COAST] PASS: v0.39.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。

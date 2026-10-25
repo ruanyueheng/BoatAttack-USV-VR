@@ -13,7 +13,7 @@ namespace BoatAttack.Fishing
             {
                 _status.text+="\n"+FishingSpecies.Name(data.fish.kind)+(_c.Career.BarbecueReady?" · 已烤熟":" · 余下 "+Mathf.CeilToInt(data.remaining)+"秒");
                 Set(0,_c.Career.BarbecueReady?"领取香烤海鱼":"海鱼烤制中",near && _c.Career.BarbecueReady?(Action)(()=>{_c.CoastWorld.Collect();Refresh();}):null);
-                Photo(0,Resources.Load<Texture2D>("FishingV028/Coast/GrilledFishThumbnail"));
+                Photo(0,Resources.Load<Texture2D>("FishingV039/GrilledFishThumbnail"));
             }
             else
             {

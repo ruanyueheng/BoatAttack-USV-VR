@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
@@ -83,6 +83,8 @@ namespace BoatAttack.EditorTools
             if(id==2)
             {
                 Check(r.Room.Find("HoldHatch").gameObject.activeSelf && !r.Room.Find("FloatGangway").GetComponent<BoxCollider>().enabled,"Water blocks the lower hold and the final floating route");
+                var lockedBridge=r.Room.Find("FloatGangway");var lockedDeck=lockedBridge.GetComponent<BoxCollider>();
+                Check(r.TryWater(lockedBridge.position,out float lockedWater,out _) && lockedBridge.TransformPoint(lockedDeck.center+Vector3.up*lockedDeck.size.y*.5f).y<lockedWater,"Unloaded gangway is visibly held below water rather than showing a false walkable deck");
                 foreach(int i in new[]{1,2}){walk=Walk(c,r.Landmark("Route"+i).position);while(walk.MoveNext())yield return null;}
                 walk=Walk(c,r.Device(1).position+Vector3.back*1.4f);while(walk.MoveNext())yield return null;
                 Check(c.RequestWorldInteraction(),"Drain from the upper catwalk");var drain=Wait(4.3f);while(drain.MoveNext())yield return null;

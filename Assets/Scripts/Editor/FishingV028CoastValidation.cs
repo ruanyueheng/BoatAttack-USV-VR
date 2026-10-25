@@ -50,6 +50,7 @@ namespace BoatAttack.EditorTools
                 Check(coast.MenuOpen && (bool)typeof(FishingPrototype).GetProperty("HomeInteractionTargetSelected",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(c),"Tracked A uses the shared immediate home/barbecue target route");
                 coast.CloseMenu();c.XRNotebook.Close();yield return null;
                 Check(coast.StartRoasting("v028-bbq-mackerel") && c.Career.Count==1 && c.Career.Barbecue.fish.id=="v028-bbq-mackerel","Selected mackerel moves out of the real fishbox into the saved grill");
+                var cookingEffects=FishingV039Validation.InspectBarbecue(c);while(cookingEffects.MoveNext())yield return cookingEffects.Current;
                 yield return null;yield return null;
                 Capture(c,coast.Grill.position+new Vector3(3.8f,2.2f,-4),coast.Grill.position+Vector3.up*.7f,Path.Combine(evidence,"barbecue-raw-fish.png"));
                 var saved=FishingSaveStore.Load(c.SavePath,out warning);

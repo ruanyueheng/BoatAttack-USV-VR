@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
@@ -48,7 +48,7 @@ namespace BoatAttack.EditorTools
                     Field("_motion").SetValue(c.HandGames,game==0?new Vector2(.1f+Mathf.Cos(frame*.7f)*.055f,Mathf.Sin(frame*.7f)*.065f):new Vector2(Mathf.Cos(frame*.7f)*.1f,Mathf.Sin(frame*.7f)*.1f));
                     Field("_motionSpeed").SetValue(c.HandGames,1f);Field("_visualFrame").SetValue(c.HandGames,-1);
                     c.PresentCharacterFrame();
-                    if(game==1)Check(Vector3.Dot(c.HandGames.HandlePoint-station.Find("WinderBody").position,c.Shore.Actor.right)>-.02f,"Crank remains on the working hand's side of the reel");
+                    if(game==1)Check(Vector3.Dot(station.Find("WinderBody").forward,Vector3.ProjectOnPlane(c.viewCamera.transform.position-station.position,Vector3.up).normalized)>.98f,"Winding plane faces the player throughout the complete turn");
                     maxGripError=Mathf.Max(maxGripError,Vector3.Distance(c.Hands.Left.Palm.position,c.Shore.Character.PalmPosition(true)),Vector3.Distance(c.Hands.Right.Palm.position,c.Shore.Character.PalmPosition(false)));
                     if(game==0)falling|=grains.Any(t=>t.gameObject.activeSelf);
                     if(frame%6==0)Capture(c,(game==0?"sieve":"winder")+"-motion-"+frame.ToString("D2"));

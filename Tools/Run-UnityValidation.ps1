@@ -1,6 +1,6 @@
 param(
     [string]$EditorRoot,
-    [ValidateSet("FishingV038Swimming", "FishingV038", "FishingAudioMix", "FishingRegionalMusic", "FishingActionAudio", "FishingMouseFishing", "FishingAngling", "FishingV035Farm", "FishingV035", "FishingV035Levels", "FishingV035Art", "FishingV034Art", "FishingV034", "FishingV033", "FishingV032", "FishingV031", "FishingV030", "FishingV029", "FishingV028", "FishingV028UI", "FishingV028ToolsSleep", "FishingV028Coast", "FishingCashierDialogue", "FishingLantern", "FishingPickaxe", "FishingV027", "FishingV026", "FishingV025", "FishingV024", "FishingV023Art", "FishingV023", "FishingV022Art", "FishingV022", "FishingV021", "FishingV020Install", "FishingV020", "FishingV019Install", "FishingV019", "FishingV018Install", "FishingV018", "FishingSkiffBuild", "FishingV017", "FishingV016", "FishingLivingCoast", "Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild", "FishingWorkshop", "FishingTerrain", "FishingShopInstall", "FishingShop", "FishingMap", "FishingCharacter", "FishingInteraction", "FishingPlayer", "FishingPlayerBoundary", "FishingFirstPerson", "FishingCashierBuild", "FishingCashier", "FishingHunting", "FishingForge", "FishingV037Hands", "FishingV037Portal", "FishingV037Weather", "FishingV037UI", "FishingV036Storage", "FishingV036Orchard", "FishingV036Performance", "FishingV036", "FishingV036Art", "FishingV036Portal", "FishingV036Farm", "FishingV036UI")]
+    [ValidateSet("FishingV039Realm", "FishingV039Home", "FishingV039", "FishingV038Swimming", "FishingV038", "FishingAudioMix", "FishingRegionalMusic", "FishingActionAudio", "FishingMouseFishing", "FishingAngling", "FishingV035Farm", "FishingV035", "FishingV035Levels", "FishingV035Art", "FishingV034Art", "FishingV034", "FishingV033", "FishingV032", "FishingV031", "FishingV030", "FishingV029", "FishingV028", "FishingV028UI", "FishingV028ToolsSleep", "FishingV028Coast", "FishingCashierDialogue", "FishingLantern", "FishingPickaxe", "FishingV027", "FishingV026", "FishingV025", "FishingV024", "FishingV023Art", "FishingV023", "FishingV022Art", "FishingV022", "FishingV021", "FishingV020Install", "FishingV020", "FishingV019Install", "FishingV019", "FishingV018Install", "FishingV018", "FishingSkiffBuild", "FishingV017", "FishingV016", "FishingLivingCoast", "Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild", "FishingWorkshop", "FishingTerrain", "FishingShopInstall", "FishingShop", "FishingMap", "FishingCharacter", "FishingInteraction", "FishingPlayer", "FishingPlayerBoundary", "FishingFirstPerson", "FishingCashierBuild", "FishingCashier", "FishingHunting", "FishingForge", "FishingV037Hands", "FishingV037Portal", "FishingV037Weather", "FishingV037UI", "FishingV036Storage", "FishingV036Orchard", "FishingV036Performance", "FishingV036", "FishingV036Art", "FishingV036Portal", "FishingV036Farm", "FishingV036UI")]
 
 
 
@@ -40,6 +40,9 @@ $method = switch ($Suite) {
     'FishingRegionalMusic' { 'BoatAttack.EditorTools.FishingRegionalMusicValidation.Run' }
     'FishingActionAudio' { 'BoatAttack.EditorTools.FishingActionAudioValidation.Run' }
     'FishingV038Swimming' { 'BoatAttack.EditorTools.FishingV038Validation.RunSwimming' }
+    'FishingV039Realm' { 'BoatAttack.EditorTools.FishingV039Validation.RunRealm' }
+    'FishingV039Home' { 'BoatAttack.EditorTools.FishingV039Validation.RunHome' }
+    'FishingV039' { 'BoatAttack.EditorTools.FishingV039Validation.Run' }
     'FishingV038' { 'BoatAttack.EditorTools.FishingV038Validation.Run' }
     'FishingV037Hands' { 'BoatAttack.EditorTools.FishingV037HandsValidation.Run' }
     'FishingV037Portal' { 'BoatAttack.EditorTools.FishingV037PortalValidation.Run' }
@@ -129,6 +132,9 @@ $marker = switch ($Suite) {
     'FishingRegionalMusic' { '[REGIONAL-MUSIC]' }
     'FishingActionAudio' { '[ACTION-AUDIO]' }
     'FishingV038Swimming' { '[V038-SWIMMING]' }
+    'FishingV039Realm' { '[V039-REALM]' }
+    'FishingV039Home' { '[V039-HOME]' }
+    'FishingV039' { '[V039]' }
     'FishingV038' { '[V038]' }
     'FishingV037Hands' { '[V037-HANDS]' }
     'FishingV037Portal' { '[V037-PORTAL]' }
@@ -216,7 +222,7 @@ $marker = switch ($Suite) {
 $arguments = '-batchmode -nographics -buildTarget StandaloneWindows64 -projectPath "' + $repo.Replace('\', '/') + '" -executeMethod ' + $method + ' -logFile "' + $log + '"'
 if ($Suite -in @('FishingAudioMix','FishingActionAudio','FishingRegionalMusic')) { $arguments = $arguments.Replace(' -nographics', '') + ' -screen-width 1600 -screen-height 900' }
 if ($Suite -in @('FishingV022Art', 'FishingV022', 'FishingV021', 'FishingHunting', 'FishingForge', 'FishingV020Install', 'FishingV020', 'FishingV019Install', 'FishingV019', 'FishingV018', 'FishingV017', 'FishingV016', 'FishingCatch', 'FishingLivingCoast', 'FishingFirstPerson', 'FishingPlayerBoundary', 'FishingPlayer', 'FishingMap', 'FishingCharacter', 'FishingInteraction', 'FishingShop', 'FishingShore', 'FishingField', 'FishingExpedition', 'FishingSmoke', 'FishingWorkshop', 'FishingExpeditionCapture', 'FishingFieldCapture', 'FishingCatchCapture')) { $arguments = $arguments.Replace(' -nographics', '') }
-if ($Suite -in @('FishingV038Swimming','FishingV038','FishingV037Hands','FishingV037Portal','FishingV037Weather','FishingV037UI','FishingV036Storage','FishingV036Orchard','FishingV036Performance','FishingV036','FishingV036Portal','FishingV036Farm','FishingV036UI','FishingMouseFishing','FishingAngling','FishingV035Farm','FishingV035Levels','FishingV035','FishingV034','FishingV033','FishingV032','FishingV031','FishingV030','FishingV029','FishingV028','FishingV028UI','FishingV028ToolsSleep','FishingV028Coast','FishingCashierDialogue','FishingLantern','FishingPickaxe','FishingV023','FishingV024','FishingV025','FishingV026','FishingV027')) { $arguments = $arguments.Replace(' -nographics', '') + ' -screen-width 1600 -screen-height 900' }
+if ($Suite -in @('FishingV039Realm','FishingV039Home','FishingV039','FishingV038Swimming','FishingV038','FishingV037Hands','FishingV037Portal','FishingV037Weather','FishingV037UI','FishingV036Storage','FishingV036Orchard','FishingV036Performance','FishingV036','FishingV036Portal','FishingV036Farm','FishingV036UI','FishingMouseFishing','FishingAngling','FishingV035Farm','FishingV035Levels','FishingV035','FishingV034','FishingV033','FishingV032','FishingV031','FishingV030','FishingV029','FishingV028','FishingV028UI','FishingV028ToolsSleep','FishingV028Coast','FishingCashierDialogue','FishingLantern','FishingPickaxe','FishingV023','FishingV024','FishingV025','FishingV026','FishingV027')) { $arguments = $arguments.Replace(' -nographics', '') + ' -screen-width 1600 -screen-height 900' }
 if ($DisableBurst) { $arguments += ' --burst-disable-compilation' }
 
 

@@ -1,0 +1,80 @@
+[
+  {
+    "name": "HomeLandscaping",
+    "triangles": 55840,
+    "vertices": 31474,
+    "fbxSha256": "d5c3359da458eb68da90c7f4c5f5eafee3a8d4cc54f5adb422178f6b1b120fb9"
+  },
+  {
+    "name": "SanctuaryWind",
+    "triangles": 99410,
+    "vertices": 88589,
+    "fbxSha256": "6676801db252493c92a9089da4943dd9d282efc206b4b60c3e8c28a761bbed89"
+  },
+  {
+    "name": "SanctuaryGrove",
+    "triangles": 72064,
+    "vertices": 50313,
+    "fbxSha256": "d98f24ded6e3f6356fa62616ad5855d835bae6542dbd288611a16f68ca653bea"
+  },
+  {
+    "name": "SanctuaryStars",
+    "triangles": 56734,
+    "vertices": 30240,
+    "fbxSha256": "198b34cf5a31704e709e96001e6f98e15be0cac5ba9a456a06cbc08f638c46f0"
+  },
+  {
+    "name": "WindBridge0",
+    "triangles": 2484,
+    "vertices": 1338,
+    "fbxSha256": "25454247021bb4aa7a0a8816b163ee69cee16694421529f85ad87a14b1ecd959"
+  },
+  {
+    "name": "WindBridge1",
+    "triangles": 3044,
+    "vertices": 1642,
+    "fbxSha256": "ea1115f7d759e09481c0a69b1c8ca0e2619f9be324e0ee54d664e29ece186053"
+  },
+  {
+    "name": "WindBridge2",
+    "triangles": 2984,
+    "vertices": 1610,
+    "fbxSha256": "e74f3ddbc2a39c981377589071bf61570864b8874923a40b3957c320cb3b3ec9"
+  },
+  {
+    "name": "RootBridge",
+    "triangles": 3444,
+    "vertices": 1888,
+    "fbxSha256": "ae37b4df1f68d6da9840722e9dc0b008551080c08a5a5d966c52e62b999001ef"
+  },
+  {
+    "name": "Galleon",
+    "triangles": 50456,
+    "vertices": 27295,
+    "fbxSha256": "930094ae107822d21b154cfc23bbd37ae5d42345000d22eedadb8c71266ca438"
+  },
+  {
+    "name": "Windmill",
+    "triangles": 25680,
+    "vertices": 13890,
+    "fbxSha256": "63e2e8d987f934069d6c81585f9e5fe82609fc9cb9294d97d07587d6d51cfd8f"
+  },
+  {
+    "name": "AncientTree",
+    "triangles": 42500,
+    "vertices": 35854,
+    "fbxSha256": "0684141659b8220d9bae622dea02fbfcec9c95c83e83d3e37d3aba893a1aa32a"
+  },
+  {
+    "name": "ObservatoryExterior",
+    "triangles": 57590,
+    "vertices": 30672,
+    "fbxSha256": "f5b6b0158f3d24072732210639ec5491a0358232ce9d43bbb4445054ada8acfe"
+  },
+  {
+    "name": "SanctuaryDrydock",
+    "triangles": 112724,
+    "vertices": 60758,
+    "fbxSha256": "5c0fdbf3e4407291a9685f585f859732b51649cdb99271eed88d4d50ceacb0d8"
+  }
+]

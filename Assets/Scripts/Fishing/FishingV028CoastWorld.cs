@@ -16,6 +16,7 @@ namespace BoatAttack.Fishing
     /// <summary>The home grill is a view of a saved transaction; animations never own fish or rewards.</summary>
     public sealed class FishingV028CoastWorld : MonoBehaviour
     {
+        public const string CookedFishName="Hunyuan charcoal-grilled sea bream";
         private FishingPrototype _c;
         private Material _palette;
         private readonly List<UnityEngine.Object> _owned=new List<UnityEngine.Object>();
@@ -53,8 +54,9 @@ namespace BoatAttack.Fishing
             var obstacle=Grill.gameObject.AddComponent<BoxCollider>();obstacle.center=new Vector3(0,.49f,0);obstacle.size=new Vector3(1.55f,.98f,.76f);
             Cooler=Model("FishCooler",transform).transform;Cooler.name="渔屋鱼箱 · 与船上鱼箱共用库存";Cooler.position=coolerFloor+Vector3.up*.015f;
             var box=Cooler.gameObject.AddComponent<BoxCollider>();box.center=new Vector3(0,.3f,0);box.size=new Vector3(.85f,.6f,.56f);
-            _cooked=Model("GrilledFish",Grill);_cooked.name="Whole grilled sea fish · scored skin and lemon";
+            _cooked=Model("GrilledFish",Grill);_cooked.name=CookedFishName;
             _cooked.transform.localPosition=new Vector3(0,.97f,0);_cooked.SetActive(false);
+            Grill.gameObject.AddComponent<FishingBarbecueEffects>().Build(c);
             var lamp=new GameObject("Charcoal warmth",typeof(Light));lamp.transform.SetParent(Grill,false);lamp.transform.localPosition=Vector3.up*.77f;
             _embers=lamp.GetComponent<Light>();_embers.color=new Color(1,.46f,.13f);_embers.type=LightType.Point;_embers.range=2.8f;_embers.shadows=LightShadows.None;
             var sign=new GameObject("Barbecue instructions",typeof(TextMesh));sign.transform.SetParent(Grill,false);sign.transform.localPosition=new Vector3(-.7f,1.5f,.32f);
@@ -71,10 +73,12 @@ namespace BoatAttack.Fishing
         }
         private GameObject Model(string name,Transform parent)
         {
-            var source=Resources.Load<GameObject>("FishingV029/"+name) ?? Resources.Load<GameObject>("FishingV028/Coast/"+name);
+            var source=name=="GrilledFish"?Resources.Load<GameObject>("FishingV039/GrilledFish")
+                :Resources.Load<GameObject>("FishingV029/"+name) ?? Resources.Load<GameObject>("FishingV028/Coast/"+name);
             if(source==null)throw new InvalidOperationException("Missing V028 coast model: "+name);
             var result=Instantiate(source,parent,false);result.name=name;
-            foreach(var renderer in result.GetComponentsInChildren<Renderer>()){renderer.sharedMaterial=_palette;renderer.shadowCastingMode=ShadowCastingMode.Off;}
+            foreach(var renderer in result.GetComponentsInChildren<Renderer>())
+            {renderer.sharedMaterial=name=="GrilledFish"?Resources.Load<Material>("FishingV039/GrilledFish"):_palette;renderer.shadowCastingMode=name=="GrilledFish"?ShadowCastingMode.On:ShadowCastingMode.Off;}
             return result;
         }
         public bool TryTarget(out Transform root)
@@ -132,8 +136,8 @@ namespace BoatAttack.Fishing
                 }
             }
             bool cooking=data.fish!=null;
-            if(_raw!=null)_raw.SetActive(cooking && !_c.Career.BarbecueReady);
-            _cooked.SetActive(_c.Career.BarbecueReady);
+            if(_raw!=null)_raw.SetActive(cooking && !_c.Career.BarbecueReady && _transfer>0);
+            _cooked.SetActive(cooking && (_c.Career.BarbecueReady || _transfer<=0));
             _embers.intensity=cooking?Mathf.Lerp(.35f,.55f,Mathf.Sin(Time.time*4)*.5f+.5f):.06f;
             string interact=_c.DesktopDisplay?"E":"右手柄 A";
             _sign.text=cooking?(_c.Career.BarbecueReady?"香烤海鱼已熟\n"+interact+" 领取":Mathf.CeilToInt(data.remaining)+" 秒 · 海风炭烤\n收起面板后继续"):"海风烧烤\n"+interact+" 从鱼箱取鱼";

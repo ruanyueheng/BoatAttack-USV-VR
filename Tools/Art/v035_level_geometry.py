@@ -18,7 +18,7 @@ def stair(a,b,width=2.2):
         p=Vector(a)+delta*((i+.5)/count);p.y=Vector(a).y+delta.y*(i+1)/count-.09
         box(tuple(p),(max(.22,math.hypot(delta.x,delta.z)/count+.025),.18,width),0,.012,yaw)
 
-def walkway(a,b,width=2,rope=True,open_mid=False):
+def walkway(a,b,width=2,rope=True,open_mid=False,openings=()):
     a,b=Vector(a),Vector(b);delta=b-a;flat=Vector((delta.x,0,delta.z));length=flat.length
     tangent=flat.normalized();side=Vector((-tangent.z,0,tangent.x));count=max(2,math.ceil(length/.25))
     for i in range(count):
@@ -29,12 +29,24 @@ def walkway(a,b,width=2,rope=True,open_mid=False):
                 pin=p+side*s*width*.40;rock(tuple(pin+Vector((0,.014,0))),(.014,.008,.014),4,subdivisions=1)
     inset=min(.30,1.4/length)
     for s in [-1,1]:
-        pts=[]
-        for i in range(9):
-            t=inset+(1-2*inset)*i/8;p=a+delta*t+side*s*width*.52+Vector((0,.80-.12*math.sin(t*math.pi),0));pts.append(tuple(p))
-        if rope:tube(pts,.022,13,7)
+        gaps=[(center-width_*.5,center+width_*.5) for rail,center,width_ in openings if rail==s]
+        if open_mid:gaps.append((length*.5-1.6,length*.5+1.6))
+        spans=[(inset,1-inset)]
+        for start,end in gaps:
+            cut=[]
+            for lo,hi in spans:
+                if end/length<=lo or start/length>=hi:cut.append((lo,hi));continue
+                if lo<start/length:cut.append((lo,start/length))
+                if end/length<hi:cut.append((end/length,hi))
+            spans=cut
+        if rope:
+            for lo,hi in spans:
+                pts=[]
+                for i in range(9):
+                    t=lo+(hi-lo)*i/8;p=a+delta*t+side*s*width*.52+Vector((0,.80-.12*math.sin(t*math.pi),0));pts.append(tuple(p))
+                tube(pts,.022,13,7)
         for t in [inset,inset+(1-2*inset)*.25,.5,inset+(1-2*inset)*.75,1-inset]:
-            if open_mid and abs(t-.5)*length<1.2:continue
+            if any(start-.08<t*length<end+.08 for start,end in gaps):continue
             p=a+delta*t+side*s*width*.52
             profile(tuple(p-Vector((0,.14,0))),[(0,.065),(.94,.055),(1.0,.07)],3,10)
             if not rope:box(tuple(p+Vector((0,.85,0))),(width*.03,.08,.35),3)
@@ -176,9 +188,9 @@ def level_wreck():
     for j in range(42):box((0,-1.87,-11+j*.46),(7.4,.14,.44),3,.01)
     for side in [-1,1]:
         if side<0:
-            walkway((side*4.2,1.8,-15),(side*4.2,1.8,-9),width=2.1)
+            walkway((side*4.2,1.8,-15),(side*4.2,1.8,-9),width=2.1,openings=((-1,3,2.4),))
             walkway((side*4.2,1.8,-3),(side*4.2,1.8,8),width=2.1)
-        else:walkway((side*4.2,1.8,-15),(side*4.2,1.8,8),width=2.1)
+        else:walkway((side*4.2,1.8,-15),(side*4.2,1.8,8),width=2.1,openings=((1,3,2.4),))
         tube([(side*5.3,2.5,-14),(side*5.3,2.5,7)],.065,4,10)
     for j in range(11):box((0,1.725,-19+j*.48),(9,.15,.46),3,.012)
     stair((-4.2,1.8,-9),(-2.2,-1.8,-4),2.1)

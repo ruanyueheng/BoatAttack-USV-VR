@@ -23,6 +23,7 @@ namespace BoatAttack.Fishing
         private Transform _rootBridge,_seedling,_cargoBridge,_waterSurface,_holdGate,_valveWheel;
         private FishingWaterVolume _holdWater;
         private BoxCollider _gangwayDeck;
+        private readonly BoxCollider[] _gangwayRails=new BoxCollider[2];
         private Transform _sunWell,_seedReceiver;
         private readonly RaycastHit[] _targetHits=new RaycastHit[64];
         private bool _pushing;
@@ -111,13 +112,17 @@ namespace BoatAttack.Fishing
         {
             get
             {
-                if(!TryTarget(out int id,out _))return null;
+                if(!TryTarget(out int id,out _))
+                {
+                    if(!Inside || Island!=2 || _gangwayDeck.enabled || FishingPrototype.FlatDistance(_c.Shore.Position,_cargoBridge.position)>=5)return null;
+                    return Trial.CargoProgress>=1 || _c.Career.Lore.Cleared(2)?"浮桥尚未接平 · 回到水阀注满船舱":"浮桥仍锁在水下 · 先排水，将货箱推上铜台，再注满水";
+                }
                 if(id>=8)return "E 穿过星光门 · 进入 "+FishingLore.ShrineName(id-8);
                 if(id==4)return "E 穿过归航门 · 返回岛屿";
                 if(id==3)return "E 读取潮汐回响";
                 if(Island==0)return "走入「"+(id==0?"风":id==1?"潮":"星")+"」共鸣台 · 循声登高";
                 if(Island==1)return "E 转动反光镜 · 将光接向下一面镜 / 种池";
-                if(Island==2)return id==0?(_c.DesktopDisplay?"按住 E 随货箱前进":"按住右手柄 A 随货箱前进")+" · "+(Trial.CargoProgress*100).ToString("0")+"%":"E 水阀："+new[]{"关闭","排水","注水"}[Trial.State(1)];
+                if(Island==2)return id==0?(_c.DesktopDisplay?"按住 E 随货箱前进":"按住右手柄 A 随货箱前进")+" · "+Mathf.FloorToInt(Trial.CargoProgress*100)+"%":"E 水阀："+new[]{"关闭","排水","注水"}[Trial.State(1)];
                 return id==0?"E 操作望远镜 · 观测 "+Trial.StarStage+" / 3":"E 阅读星图线索";
             }
         }
@@ -242,7 +247,11 @@ namespace BoatAttack.Fishing
             }
             if(Island==0)for(int i=0;i<3;i++)_windBridges[i].gameObject.SetActive(open || _windBridgeStage>i);
             if(Island==1)foreach(var collider in _rootBridge.GetComponentsInChildren<Collider>())collider.enabled=open;
-            if(Island==2)_gangwayDeck.enabled=open && Trial.WaterLevel>=.95f;
+            if(Island==2)
+            {
+                _gangwayDeck.enabled=open && Trial.WaterLevel>=.95f;
+                foreach(var rail in _gangwayRails)rail.enabled=_gangwayDeck.enabled;
+            }
         }
         private Transform Model(string name,Transform parent,Vector3 local,bool solid=false)
         {
@@ -270,8 +279,13 @@ namespace BoatAttack.Fishing
                 _valveWheel=Model("ValveWheel",room.Find("Device 1"),new Vector3(0,1.15f,-.2f));
                 _cargoStart=room.InverseTransformPoint(Marker(room,"CargoStart").position);_cargoEnd=room.InverseTransformPoint(Marker(room,"CargoEnd").position);
                 _gangwayHome=room.InverseTransformPoint(Marker(room,"FloatGangway").position);_cargoBridge=Model("FloatGangway",room,_gangwayHome);
-                _cargoBridge.localScale=new Vector3(1,1,1.08f);
+                _cargoBridge.localScale=new Vector3(1.25f,1,1.08f);
                 _gangwayDeck=_cargoBridge.gameObject.AddComponent<BoxCollider>();_gangwayDeck.center=Vector3.down*.02f;_gangwayDeck.size=new Vector3(2.4f,.20f,5.8f);_gangwayDeck.enabled=false;
+                for(int i=0;i<2;i++)
+                {
+                    var rail=new GameObject("Solid gangway side rope "+i).AddComponent<BoxCollider>();rail.transform.SetParent(_cargoBridge,false);
+                    rail.center=new Vector3(i==0?-1.24f:1.24f,.38f,0);rail.size=new Vector3(.08f,.86f,5.2f);rail.enabled=false;_gangwayRails[i]=rail;
+                }
                 _holdGate=Model("HoldHatch",room,room.InverseTransformPoint(Marker(room,"HoldGate").position));
                 var hatch=_holdGate.gameObject.AddComponent<BoxCollider>();hatch.center=Vector3.up*.75f;hatch.size=new Vector3(2.1f,1.5f,.20f);
                 _holdGate.rotation=Quaternion.LookRotation(Vector3.ProjectOnPlane(Marker(room,"HoldLanding").position-_holdGate.position,Vector3.up));
@@ -303,7 +317,10 @@ namespace BoatAttack.Fishing
             if(Island==2)
             {
                 _devices[0].localPosition=Vector3.Lerp(_cargoStart,_cargoEnd,Trial.CargoProgress);
-                var p=_gangwayHome;p.y=Mathf.Lerp(_cargoStart.y-.3f,_gangwayHome.y,Trial.WaterLevel);_cargoBridge.localPosition=p;
+                bool released=Trial.CargoProgress>=1 || _c.Career.Lore.Cleared(2);
+                // Locked moorings keep the boards submerged until the cargo plate releases the route.
+                float floatLevel=released?Trial.WaterLevel:Mathf.Min(Trial.WaterLevel,.75f);
+                var p=_gangwayHome;p.y=Mathf.Lerp(_cargoStart.y-.3f,_gangwayHome.y,floatLevel);_cargoBridge.localPosition=p;
                 _valveWheel.localRotation=Quaternion.Slerp(_valveWheel.localRotation,Quaternion.Euler(0,0,Trial.State(1)==1?-90:Trial.State(1)==2?90:0),Time.deltaTime*5);
                 _holdWater.SetLevel(Mathf.Lerp(_cargoStart.y-.5f,1.2f,Trial.WaterLevel));
                 _holdGate.gameObject.SetActive(Trial.WaterLevel>.2f);

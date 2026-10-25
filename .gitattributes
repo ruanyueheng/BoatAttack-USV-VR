@@ -28,6 +28,8 @@ ArtSource/V035/*.blend filter=lfs diff=lfs merge=lfs -text
 ArtSource/V036/*.blend filter=lfs diff=lfs merge=lfs -text
 ArtSource/V036/Well/*.blend filter=lfs diff=lfs merge=lfs -text
 ArtSource/V037/*.blend filter=lfs diff=lfs merge=lfs -text
+ArtSource/V039/*.blend filter=lfs diff=lfs merge=lfs -text
+ArtSource/V039/Meowa/*.mp3 filter=lfs diff=lfs merge=lfs -text
 ArtSource/UserPickaxe/*.blend filter=lfs diff=lfs merge=lfs -text
 ArtSource/UserLantern/*.blend filter=lfs diff=lfs merge=lfs -text
 
