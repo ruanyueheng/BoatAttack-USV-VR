@@ -104,16 +104,17 @@ namespace BoatAttack.Fishing
             if(Lounging || Sleeping || !_c.Ashore || _c.Paused || _c.StoryBlocksGameplay || _c.WorldActionBusy || _c.HasPendingCatch || !ReachInteraction(4))return false;
             _loungeCamera=_c.viewCamera.transform.position;_loungeRotation=_c.viewCamera.transform.rotation;
             Lounging=true;_sitAge=0;_leaveAge=-1;_loungePrimary.Reset();_loungeSecondary.Reset();LoungeEyeOffset=Vector3.zero;
+            _c.WorldAudio?.Play("CushionCloth",_loungeHip,.45f);
             _c.XRNotebook.Close();_c.StoryModalChanged();_c.Notice(XRSettings.isDeviceActive?"沙发休息 · A 起身 · B 开关潮汐放映机":"沙发休息 · E / Esc 起身 · 空格开关潮汐放映机",12);return true;
         }
         public void StandUp(bool immediately=false)
         {
             if(!Lounging)return;
-            if(!immediately){if(_leaveAge<0)_leaveAge=0;return;}
+            if(!immediately){if(_leaveAge<0){_leaveAge=0;_c.WorldAudio?.Play("CushionCloth",_loungeHip,.35f);}return;}
             Lounging=false;_leaveAge=-1;LoungeEyeOffset=Vector3.zero;
             if(_c!=null && _c.Shore!=null){_c.Shore.SyncRider();_c.View.ResetLook();_c.StoryModalChanged();}
         }
-        public void ToggleTelevision(){TelevisionOn=!TelevisionOn;_film.SetFloat("_Playing",TelevisionOn?1:0);}
+        public void ToggleTelevision(){TelevisionOn=!TelevisionOn;_film.SetFloat("_Playing",TelevisionOn?1:0);_c.WorldAudio?.Play("TVSwitch",_screen.bounds.center,.42f);}
         public void TickLeisureInput(Keyboard keyboard,bool focused,bool xr)
         {
             if(!_c.Ashore){StandUp(true);return;}

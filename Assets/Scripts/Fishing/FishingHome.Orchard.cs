@@ -107,6 +107,7 @@ namespace BoatAttack.Fishing
             var seed=tree.Root.position+away*1.55f;if(!_c.Shore.Ground(seed,out var floor))return false;
             tree.Start=tree.Root.position+Vector3.up*2.9f+away*.45f;tree.Ground=floor+Vector3.up*.025f;tree.Head=_c.Shore.Character.EyePosition+Vector3.up*.27f;
             tree.Bonk=OrchardHeadBonk(id,_c.Career.Calendar.Day);tree.Hit=false;tree.Shake=0;tree.Gesture.Suspend();
+            _c.WorldAudio?.Play("FruitShake",tree.Root.position+Vector3.up*1.8f,.45f);
             _c.Effects?.Burst(tree.Root.position+Vector3.up*2.5f,new Color(.66f,.83f,.36f));_c.Notice("枝叶沙沙作响……等果子落地后再拾取。",4);return true;
         }
         private bool PickOrchardFruit(int id)
@@ -114,6 +115,7 @@ namespace BoatAttack.Fishing
             var tree=_orchard[id];if(tree.Fall<1.12f || !tree.Fruit.gameObject.activeSelf || !ReachOrchard(id) || !_c.Career.TryHarvestHomeFruit(id))
             {_c.Notice("背包暂时装不下，果子会留在地上。",4);return false;}
             tree.Fruit.gameObject.SetActive(false);tree.Fall=-1;_interactables[id+7]=tree.Root;_interactionPoints[id+7]=tree.Root.position+Vector3.up*1.1f;
+            _c.WorldAudio?.Play("LootBag",tree.Ground,.35f);
             _c.Save();_c.Effects?.Burst(tree.Ground,new Color(1,.78f,.35f));_c.Notice("拾取海岛甜果 ×1 · 已收入背包",4);return true;
         }
         private void UpdateOrchard()
@@ -140,7 +142,7 @@ namespace BoatAttack.Fishing
                         tree.Fruit.position=Vector3.Lerp(tree.Bonk?tree.Head:tree.Start,tree.Ground,u)+Vector3.up*Mathf.Sin(u*Mathf.PI)*(tree.Bonk?.42f:.30f);
                     }
                     tree.Fruit.Rotate(Vector3.right,dt*150,Space.World);
-                    if(tree.Fall>=1.12f){tree.Fruit.position=tree.Ground;tree.Fruit.rotation=Quaternion.identity;}
+                    if(tree.Fall>=1.12f){tree.Fruit.position=tree.Ground;tree.Fruit.rotation=Quaternion.identity;_c.WorldAudio?.Play("BodyLand",tree.Ground,.22f);}
                 }
                 if(!xr || _c.Automated || !OrchardAvailable || !Application.isFocused || tree.Shake>=0 || tree.Fall>=0 || !_c.Career.CanHarvestHomeFruit(id) || FishingPrototype.FlatDistance(_c.Shore.Position,tree.Root.position)>2.2f){tree.Gesture.Suspend();continue;}
                 var hand=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);bool tracked=_c.Hands.TryControllerPalm(false,out var palm,out _);

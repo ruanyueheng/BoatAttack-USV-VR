@@ -80,6 +80,9 @@ namespace BoatAttack.Fishing
             return best < 0 ? FishingGroundAudio.Unknown : Classify(Hits[best]);
         }
 
+        public static FishingGroundAudio FromHit(RaycastHit hit)
+            => hit.collider == null ? FishingGroundAudio.Unknown : Classify(hit);
+
         private static FishingGroundAudio Classify(RaycastHit hit)
         {
             var col = hit.collider;

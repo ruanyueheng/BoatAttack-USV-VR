@@ -114,7 +114,7 @@ namespace BoatAttack.Fishing
                 : id == 4 ? (xr?"先升级操舵会让靠岸更轻松。左扳机制动，左摇杆后拉倒航；按X下船前先降至5.4公里每小时以下。B → 地图可以设置四岛航点。":"先升级操舵会让靠岸更轻松。Shift刹车，S倒航；G下船前先把航速降到5.4公里每小时以下。J日志能直接设置四岛航点。")
                 : "捕鱼、委托、旧航标与秘境共享金币。你可以按任意顺序探索；R随时救援回港，鱼获和已完成的故事会保留。");
         }
-        private void Say(string text) { Speech = text; _spokenAt = Time.unscaledTime; }
+        private void Say(string text) { Speech = text; _spokenAt = Time.unscaledTime;_c.WorldAudio?.Play("UIConfirm",_c.ExplorerPosition,.26f); }
         public bool BrowseCashierGoods()
         {
             if(!Open || ActiveId!=4 || _c.Paused || !InRange(4))return false;

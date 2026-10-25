@@ -119,6 +119,7 @@ namespace BoatAttack.Fishing
         public void Open(int page=0)
         {
             if(!XRSettings.isDeviceActive)return;
+            if(page!=8 && (!IsOpen || _page!=page))_c.WorldAudio?.Play("UIConfirm",_c.ExplorerPosition,.24f);
             if(!IsOpen)
             {
                 var eye=_c.viewCamera.transform;var forward=Vector3.ProjectOnPlane(eye.forward,Vector3.up).normalized;

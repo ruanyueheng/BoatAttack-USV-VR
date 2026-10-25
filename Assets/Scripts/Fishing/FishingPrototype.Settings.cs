@@ -27,7 +27,7 @@ namespace BoatAttack.Fishing
             public AudioSource Source;
             public FishingAudioCategory Category;
             public float BaseVolume, OriginalVolume;
-            public bool OriginalMute, OriginalIgnoreListener;
+            public bool OriginalMute, OriginalIgnoreListener, AllowDuringPause;
         }
         private readonly Dictionary<AudioSource,AudioSetting> _settingAudio=new Dictionary<AudioSource,AudioSetting>();
         private bool _listenerCaptured, _graphicsCaptured;
@@ -55,7 +55,7 @@ namespace BoatAttack.Fishing
             ApplyAudioSettings();
             if(!HasIsolatedProfile)PlayerPrefs.SetFloat(SettingsKey+name,value);
         }
-        public void RegisterAudioSource(AudioSource source,FishingAudioCategory category,float baseVolume)
+        public void RegisterAudioSource(AudioSource source,FishingAudioCategory category,float baseVolume,bool allowDuringPause=false)
         {
             if(source==null || source.gameObject.scene!=gameObject.scene || float.IsNaN(baseVolume) || float.IsInfinity(baseVolume))return;
             if(!_settingAudio.TryGetValue(source,out var entry))
@@ -63,8 +63,15 @@ namespace BoatAttack.Fishing
                 entry=new AudioSetting{Source=source,OriginalVolume=source.volume,OriginalMute=source.mute,OriginalIgnoreListener=source.ignoreListenerVolume};
                 _settingAudio.Add(source,entry);
             }
-            entry.Category=category;entry.BaseVolume=Mathf.Clamp01(baseVolume);
+            entry.Category=category;entry.BaseVolume=Mathf.Clamp01(baseVolume);entry.AllowDuringPause=allowDuringPause;
             ApplyAudioSettings();
+        }
+        /// <summary>Registered source gain before listener/master, quiet and pause gates. Unowned sources return zero.</summary>
+        public float GetAudioChannelVolume(AudioSource source)
+        {
+            if(source==null || !_settingAudio.TryGetValue(source,out var entry))return 0;
+            float volume=entry.Category==FishingAudioCategory.Music?MusicVolume:entry.Category==FishingAudioCategory.Ambient?AmbientVolume:EffectsVolume;
+            return entry.BaseVolume*volume;
         }
         public void SetAudioBaseVolume(AudioSource source,float baseVolume)
         {
@@ -83,7 +90,7 @@ namespace BoatAttack.Fishing
                 float volume=entry.Category==FishingAudioCategory.Music?MusicVolume:entry.Category==FishingAudioCategory.Ambient?AmbientVolume:EffectsVolume;
                 entry.Source.ignoreListenerVolume=false;
                 entry.Source.volume=entry.BaseVolume*volume;
-                entry.Source.mute=entry.OriginalMute || QuietMode || (Paused && !StartMenuOpen && entry.Category!=FishingAudioCategory.Music);
+                entry.Source.mute=entry.OriginalMute || QuietMode || (Paused && !StartMenuOpen && entry.Category!=FishingAudioCategory.Music && !entry.AllowDuringPause);
             }
         }
         public void PersistDisplaySettings(bool fullscreen,int windowWidth,int windowHeight)

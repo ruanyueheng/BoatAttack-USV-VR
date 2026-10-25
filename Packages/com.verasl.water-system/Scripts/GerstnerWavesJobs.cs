@@ -88,6 +88,38 @@ namespace WaterSystem
                 _waveNormal.Slice(offsets.x, offsets.y - offsets.x).CopyTo(outNorm);
         }
 
+        /// <summary>Release a sampler and retain every other sampler's positions and completed results.</summary>
+        public static void RemoveSamplePoints(int guid)
+        {
+            if (!Registry.TryGetValue(guid, out var removed)) return;
+            // All three arrays are shared by the height job. Finish it before moving any range.
+            CompleteJobs();
+            int count = removed.y - removed.x;
+            int remaining = _positionCount - count;
+            if (count > 0 && _positions.IsCreated && _wavePos.IsCreated && _waveNormal.IsCreated)
+            {
+                for (int from = removed.y; from < _positionCount; from++)
+                {
+                    int to = from - count;
+                    _positions[to] = _positions[from];
+                    _wavePos[to] = _wavePos[from];
+                    _waveNormal[to] = _waveNormal[from];
+                }
+                for (int i = remaining; i < _positionCount; i++)
+                {
+                    _positions[i] = _wavePos[i] = _waveNormal[i] = float3.zero;
+                }
+            }
+            Registry.Remove(guid);
+            // Updating values invalidates a Dictionary enumerator on the Unity runtime.
+            foreach (int other in new List<int>(Registry.Keys))
+            {
+                var offsets = Registry[other];
+                if (offsets.x >= removed.y) Registry[other] = new int2(offsets.x - count, offsets.y - count);
+            }
+            _positionCount = remaining;
+        }
+
         // Height jobs for the next frame
         public static void UpdateHeights()
         {
