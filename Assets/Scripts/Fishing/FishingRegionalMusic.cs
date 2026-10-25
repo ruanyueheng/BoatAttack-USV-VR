@@ -9,12 +9,13 @@ namespace BoatAttack.Fishing
         public FishingRegionalMusic RegionalMusic { get; private set; }
     }
 
-    /// <summary>Two independently looping decks. Zone transitions never recycle a still-audible deck.</summary>
+    /// <summary>Each track loops smoothly, but different regions fade through complete silence.</summary>
     [DefaultExecutionOrder(600)]
     public sealed class FishingRegionalMusic : MonoBehaviour
     {
         public const int SilenceZone = -1, KeepZone = -2;
-        public const float MusicBase = .18f, RegionFadeSeconds = 4f;
+        public const float MusicBase = .18f, RegionFadeOutSeconds = 2f, RegionFadeInSeconds = 2f;
+        public const float RegionFadeSeconds = RegionFadeOutSeconds + RegionFadeInSeconds;
         private const double ScheduleLead = .18;
         private static readonly string[] Keys = { "Sailing", "Fishing", "Home", "HarborShop", "Exploration",
             "RealmWind", "RealmForest", "RealmWreck", "RealmStars" };
@@ -218,9 +219,16 @@ namespace BoatAttack.Fishing
                 return;
             }
             var track = Track(zone); if (track == null) return;
+            if (_decks[0].Active || _decks[1].Active)
+            {
+                // Do not even schedule the next track until every old voice has reached zero and stopped.
+                // Step then starts the latest confirmed DesiredZone, including changes during this fade-out.
+                BeginFade(-1, now, RegionFadeOutSeconds);
+                return;
+            }
             int incoming = _currentDeck == 0 ? 1 : 0;
             StartDeck(_decks[incoming], track, now + ScheduleLead);
-            BeginFade(incoming, now + ScheduleLead, RegionFadeSeconds);
+            BeginFade(incoming, now + ScheduleLead, RegionFadeInSeconds);
         }
         private void BeginFade(int targetDeck, double start, float seconds)
         {

@@ -217,6 +217,7 @@ namespace BoatAttack.Fishing
             _initialized=true;
             InitializeSettings();
             ActionAudio=gameObject.AddComponent<FishingActionAudio>();ActionAudio.Build(this);
+            WorldAudio=gameObject.AddComponent<FishingWorldAudio>();WorldAudio.Build(this);
             RegionalMusic=gameObject.AddComponent<FishingRegionalMusic>();RegionalMusic.Build(this);
             InitializeSaveSlots(legacy);
             InitializeStartMenu();
@@ -346,6 +347,7 @@ namespace BoatAttack.Fishing
                 {
                     if(Session.Phase==CatchPhase.Bite)
                     {
+                        WorldAudio?.Play("FishBite",_bobber.transform.position,.55f);
                         bool legend=Session.Species.Legendary;
                         bool special=legend || Session.Rare || FishingSpecies.SizePermille(Session.Kind,Session.Grams)>=850;
                         _feedback.PlayOneShot(special?_legendTone:_biteTone);
@@ -542,6 +544,7 @@ namespace BoatAttack.Fishing
         public bool Hook()
         {
             if(!Anchored || Paused || !Session.Hook())return false;
+            WorldAudio?.Play("FishHook",_bobber.transform.position,.5f);
             Hands?.HookGesture();return true;
         }
         public bool Scoop()=>CatchRig!=null && CatchRig.RequestScoop();

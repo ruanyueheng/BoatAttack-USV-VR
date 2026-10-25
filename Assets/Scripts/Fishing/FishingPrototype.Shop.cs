@@ -33,7 +33,7 @@ namespace BoatAttack.Fishing
                 Save();ActionAudio?.Detail("ShopPurchase",ExplorerPosition+Vector3.up*.7f);
                 Notice("购入 "+FishingBackpack.Name(FishingSupplies.Items[product])+" ×"+FishingSupplies.Quantity(product)+(UnityEngine.XR.XRSettings.isDeviceActive?" · B 打开背包，点选换入快捷位；Y 换装备。":" · 已放入背包，I 查看并装备。"),5);
             }
-            else Notice("无法购买：请检查金币余额和背包空位。",4);
+            else {WorldAudio?.Play("UIReject",ExplorerPosition,.3f);Notice("无法购买：请检查金币余额和背包空位。",4);}
             return ok;
         }
         internal void ShopModalChanged()

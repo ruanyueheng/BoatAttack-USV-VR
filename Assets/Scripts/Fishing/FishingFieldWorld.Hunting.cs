@@ -48,6 +48,8 @@ namespace BoatAttack.Fishing
                     bool ok=_c.Career.Hunting.Harvest(_c.Career.Backpack,_huntTarget.Id,_huntTarget.Kind,_c.Career.Calendar.TotalMinutes);
                     if(ok)
                     {
+                        _c.WorldAudio?.Play("AnimalHit",target,.48f);
+                        _c.WorldAudio?.Play("LootBag",target,.35f);
                         _huntTarget.Root.gameObject.SetActive(false);_c.Save();
                         _c.Effects?.Burst(target,new Color(.91f,.73f,.44f));
                         _c.Notice("获得"+FishingAnimalLoot.Description(_huntTarget.Kind,true)+" · 熔炉可烤肉；动物继续游玩 5 分钟后恢复。",5);

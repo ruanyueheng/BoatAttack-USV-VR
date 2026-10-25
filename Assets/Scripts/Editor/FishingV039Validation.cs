@@ -162,6 +162,7 @@ namespace BoatAttack.EditorTools
             var audio=effect.GetComponent<AudioSource>();
             var smoke=effect.GetComponentsInChildren<ParticleSystem>().Single(x=>x.name=="Soft curling grill smoke");
             Check(audio.clip!=null && audio.clip.length>3.8f && audio.isPlaying && audio.spatialBlend==1,"Real Meowa sizzle loops at the cooking grill in 3D");
+            Check(c.WorldAudio!=null && c.WorldAudio.LoopSource("barbecue")==null,"V039 grill owns its cooking sound without a duplicate world-audio loop");
             Check(smoke.isPlaying && smoke.particleCount>0 && smoke.particleCount<=64,"Real cooking produces bounded smoke particles; playing="+smoke.isPlaying+" count="+smoke.particleCount);
             var fish=c.CoastWorld.Grill.Find(FishingV028CoastWorld.CookedFishName);
             Check(fish!=null && fish.GetComponentInChildren<MeshFilter>().sharedMesh.triangles.Length/3<=6100 && fish.GetComponentInChildren<Renderer>().sharedMaterial.mainTexture!=null,"Production grill uses textured Hunyuan fish within the mobile triangle budget");

@@ -9,13 +9,34 @@ namespace BoatAttack.Fishing
     public sealed class FishingRifleHunting : MonoBehaviour
     {
         public const float Range=45f, ShotInterval=.65f;
+        public const float HeldScale=1.18f, InspectionPitchLimit=25f, InspectionYawLimit=20f;
         public static readonly Vector3 RightGrip=new Vector3(.022f,0,0);
-        public static readonly Vector3 LeftGrip=new Vector3(0,-.030f,.095f);
-        public static readonly Vector3 MuzzleLocal=new Vector3(0,.069f,.447f);
+        // NewAK: support the fore-end rather than the magazine; the source grip is the origin.
+        public static readonly Vector3 LeftGrip=new Vector3(0,.043f,.184f);
+        public static readonly Vector3 MuzzleLocal=new Vector3(-.0045f,.0695f,.416f);
+        public static readonly Quaternion RightPalmRotation=Quaternion.LookRotation(Vector3.forward,Vector3.right);
+        public static readonly Quaternion LeftPalmRotation=Quaternion.LookRotation(Vector3.right,Vector3.down);
+        public static readonly FishingFingerPose RightFingers=new FishingFingerPose(.22f,.85f,.90f,.92f,.72f);
+        public static readonly FishingFingerPose LeftFingers=new FishingFingerPose(.68f,.74f,.78f,.82f,.72f);
+        public static Vector2 ClampInspection(Vector2 angles)=>new Vector2(
+            Mathf.Clamp(angles.x,-InspectionPitchLimit,InspectionPitchLimit),
+            Mathf.Clamp(angles.y,-InspectionYawLimit,InspectionYawLimit));
+        public static Quaternion InspectionRotation(Vector2 angles)
+        {angles=ClampInspection(angles);return Quaternion.Euler(angles.x,angles.y-80,3);}
+        public static void ConfigureGripSurface(FishingHandTarget hand,Transform tool,bool left)
+        {
+            // Palm surfaces and handle centrelines are separate: fingers close around
+            // the fore-end/pistol grip, instead of intersecting a decorative receiver.
+            var start=left?new Vector3(0,.062f,.12f):new Vector3(0,-.042f,-.02f);
+            var end=left?new Vector3(0,.062f,.245f):new Vector3(0,.042f,.005f);
+            hand.SetGripSurface(tool.TransformPoint(start),tool.TransformPoint(end),.018f*tool.lossyScale.x);
+            hand.SetForearmRoll(.65f);
+        }
         private FishingPrototype _c;
         private Transform _rifle;
         private MeshFilter _mesh;
         private Vector3[] _vertices;
+        private Vector3[] _clearancePoints;
         private readonly List<FishingFieldWorld.Animal> _targets=new List<FishingFieldWorld.Animal>();
         private readonly Dictionary<Transform,Vector4> _finMotion=new Dictionary<Transform,Vector4>();
         public IReadOnlyList<FishingFieldWorld.Animal> Targets=>_targets;
@@ -47,7 +68,7 @@ namespace BoatAttack.Fishing
         {
             _c=controller;
             var prefab=Resources.Load<GameObject>("FishingHunting/HuntingRifle");
-            if(prefab!=null){_rifle=Instantiate(prefab,transform).transform;_rifle.localScale=Vector3.one*.82f;_mesh=_rifle.GetComponentInChildren<MeshFilter>();_vertices=_mesh.sharedMesh.vertices;_rifle.gameObject.SetActive(false);}
+            if(prefab!=null){_rifle=Instantiate(prefab,transform).transform;_rifle.localScale=Vector3.one*HeldScale;_mesh=_rifle.GetComponentInChildren<MeshFilter>();_vertices=_mesh.sharedMesh.vertices;BuildClearancePoints();_rifle.gameObject.SetActive(false);}
             foreach(var animal in _c.FieldWorld.Animals)
             {
                 Register(animal);
@@ -150,14 +171,29 @@ namespace BoatAttack.Fishing
             for(int i=0;i<count;i++)if(!Ignored(_sweepHits[i].collider))return true;
             return false;
         }
+        private void BuildClearancePoints()
+        {
+            // Use actual surface extrema, not empty AABB corners below a long barrel.
+            // At full rifle size those empty corners could touch the ground while
+            // every part of the gun is clear, making the weapon disappear when aiming down.
+            var points=new List<Vector3>();
+            for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++)for(int z=-1;z<=1;z++)
+            {
+                int axes=(x==0?0:1)+(y==0?0:1)+(z==0?0:1);if(axes!=1 && axes!=3)continue;
+                var direction=new Vector3(x,y,z);var best=_vertices[0];float distance=float.MinValue;
+                foreach(var vertex in _vertices)
+                {float dot=Vector3.Dot(vertex,direction);if(dot>distance){distance=dot;best=vertex;}}
+                if(!points.Contains(best))points.Add(best);
+            }
+            _clearancePoints=points.ToArray();
+        }
         private bool ClearModel()
         {
             var eye=Eye;
             if(SolidSegment(eye,Muzzle,.045f)){ObstructionReason="muzzle clearance";return false;}
-            var b=_mesh.sharedMesh.bounds;
-            for(int i=0;i<8;i++)
+            foreach(var point in _clearancePoints)
             {
-                var p=_mesh.transform.TransformPoint(b.center+Vector3.Scale(b.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1)));
+                var p=_mesh.transform.TransformPoint(point);
                 if(SolidSegment(_rifle.position,p,.012f)){ObstructionReason="model clearance";return false;}
             }
             // Inspect the actual mesh, not empty AABB corners above the stock.
@@ -165,7 +201,8 @@ namespace BoatAttack.Fishing
             if(_c.FirstPerson || XRSettings.isDeviceActive)foreach(var vertex in _vertices)
             {
                 var p=meshToCamera.MultiplyPoint3x4(vertex);p.z=-p.z;
-                if(p.z<_c.viewCamera.nearClipPlane+.008f && Mathf.Abs(p.x)<.06f && Mathf.Abs(p.y)<.06f){ObstructionReason="eye clearance";return false;}
+                if(p.z<_c.viewCamera.nearClipPlane+.008f && Mathf.Abs(p.x)<.06f && Mathf.Abs(p.y)<.06f)
+                {ObstructionReason="eye clearance at "+p.ToString("F3")+" grip="+_c.viewCamera.transform.InverseTransformPoint(_rifle.position).ToString("F3");return false;}
             }
             return true;
         }
@@ -181,9 +218,9 @@ namespace BoatAttack.Fishing
             // Keep the rear grip at chest height while aiming. Rotating the entire
             // eye-to-grip offset upward pushed the stock through the face.
             var holdFrame=Quaternion.Euler(0,frame.eulerAngles.y,0);
-            _rifle.SetPositionAndRotation(eye+holdFrame*new Vector3(.13f,-.17f,.32f),frame*Quaternion.Euler(0,-14,5));
-            var leftRotation=Quaternion.LookRotation(Vector3.right,Vector3.down);
-            var rightRotation=Quaternion.LookRotation(Vector3.forward,Vector3.right);
+            _rifle.SetPositionAndRotation(eye+holdFrame*new Vector3(.13f,-.25f,.39f),frame*Quaternion.Euler(0,-20,1));
+            var leftRotation=LeftPalmRotation;
+            var rightRotation=RightPalmRotation;
             bool leftHeld=true;
             if(tracked)
             {
@@ -199,17 +236,20 @@ namespace BoatAttack.Fishing
             Obstructed=!fit || !ClearModel();
             if(Obstructed)
             {
+                string standingReason=ObstructionReason;
                 // A tracked weapon cannot be moved away from its physical controller to clear a wall.
                 if(tracked){_rifle.gameObject.SetActive(false);return;}
-                _rifle.SetPositionAndRotation(eye+frame*new Vector3(.025f,-.24f,.25f),frame*Quaternion.Euler(55,0,0));
+                _rifle.SetPositionAndRotation(eye+frame*new Vector3(.025f,-.30f,.31f),frame*Quaternion.Euler(55,0,0));
                 if(!_c.Hands.FitToolPose(_rifle,LeftGrip,RightGrip,leftRotation,rightRotation) || !ClearModel())
-                {_rifle.gameObject.SetActive(false);_c.Hands.RestHand(true);_c.Hands.RestHand(false);return;}
+                {ObstructionReason=standingReason+" / lowered: "+ObstructionReason;_rifle.gameObject.SetActive(false);_c.Hands.RestHand(true);_c.Hands.RestHand(false);return;}
             }
-            _c.Hands.SetToolTarget(false,_rifle,RightGrip,Quaternion.LookRotation(Vector3.forward,Vector3.right),.72f,fingers:new FishingFingerPose(.25f,.8f,.82f,.85f,.62f));
+            _c.Hands.SetToolTarget(false,_rifle,RightGrip,rightRotation,.85f,fingers:RightFingers);
+            ConfigureGripSurface(_c.Hands.Right,_rifle,false);
             if(leftHeld)
             {
-                if(tracked)_c.Hands.Left.SetFingers(new FishingFingerPose(.4f,.45f,.5f,.55f,.5f));
-                else _c.Hands.SetToolTarget(true,_rifle,LeftGrip,Quaternion.LookRotation(Vector3.right,Vector3.down),.45f,fingers:new FishingFingerPose(.4f,.45f,.5f,.55f,.5f));
+                if(tracked)_c.Hands.Left.SetFingers(LeftFingers);
+                else _c.Hands.SetToolTarget(true,_rifle,LeftGrip,leftRotation,.74f,fingers:LeftFingers);
+                ConfigureGripSurface(_c.Hands.Left,_rifle,true);
             }
         }
         private bool FirstHit(Vector3 start,Vector3 direction,float distance,out RaycastHit closest)
@@ -252,9 +292,17 @@ namespace BoatAttack.Fishing
                     {
                         var landing=LandingFor(animal);
                         killed=_c.Career.KillLandAnimal(animal.Id,animal.Kind,landing.x,landing.y,landing.z,animal.Root.eulerAngles.y);
-                        if(killed){_c.Save();RefreshAnimals();_c.Notice("击倒 "+FishingBackpack.AnimalName(animal.Kind)+" · "+(animal.Id>=8?"附近岸边":"靠近后")+(tracked?" A 收取 ":" E 收取 ")+FishingAnimalLoot.Description(animal.Kind),5);}
+                        if(killed)
+                        {
+                            _c.WorldAudio?.Play("AnimalHit",hit.point,.52f);
+                            _c.Save();RefreshAnimals();
+                            // The current animal rig changes straight into its grounded carcass pose; sound follows that real contact.
+                            _c.WorldAudio?.Play("BodyLand",animal.Feet,.36f);
+                            _c.Notice("击倒 "+FishingBackpack.AnimalName(animal.Kind)+" · "+(animal.Id>=8?"附近岸边":"靠近后")+(tracked?" A 收取 ":" E 收取 ")+FishingAnimalLoot.Description(animal.Kind),5);
+                        }
                         break;
                     }
+                if(!killed)_c.WorldAudio?.NotifyProjectileImpact(hit);
             }
             _trace.SetPosition(0,Muzzle);_trace.SetPosition(1,end);_trace.enabled=true;
             _lastShot=(_lastShot+1)%_shots.Length;_shot=_shots[_lastShot];
@@ -283,6 +331,7 @@ namespace BoatAttack.Fishing
             if(animal==null || !animal.Dead || !animal.Root.gameObject.activeInHierarchy || Vector3.Distance(_c.ExplorerPosition,animal.Feet)>2.2f
                 || !_c.Shore.ClearSight(Eye,animal.Root.position+Vector3.up*.1f))return false;
             if(!_c.Career.CollectHuntedAnimal(id)){_c.Notice(XRSettings.isDeviceActive?"背包空间不足，猎物保留在地上；B 打开背包整理后再收取。":"背包空间不足，猎物保留在地上；I 整理背包后再收取。",4);return false;}
+            _c.WorldAudio?.Play("LootBag",animal.Feet+Vector3.up*.2f,.5f);
             _c.Save();RefreshAnimals();_c.Notice("已收取 "+FishingAnimalLoot.Description(animal.Kind),4);return true;
         }
         private void OnDestroy(){if(_ownedShotFallback!=null)Destroy(_ownedShotFallback);if(_traceMaterial!=null)Destroy(_traceMaterial);}

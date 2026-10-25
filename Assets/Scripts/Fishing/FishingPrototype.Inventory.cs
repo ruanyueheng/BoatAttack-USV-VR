@@ -19,6 +19,7 @@ namespace BoatAttack.Fishing
             TackleShop?.Close();
             if((Paused && !InventoryOpen) || _xrActive || JournalOpen)return;
             InventoryOpen=!InventoryOpen;if(_hud!=null)_hud.ClearFieldSelection();BinocularsRaised=false;TogglePause();
+            WorldAudio?.Play(InventoryOpen?"UIConfirm":"UIBack",ExplorerPosition,.3f);
             if(InventoryOpen){ShowDetails=false;HarborDeskOpen=false;WorkshopWorld?.SelectNearby();}
             else if(_workshopReceipt)
             {
@@ -45,7 +46,7 @@ namespace BoatAttack.Fishing
         {
             if(!InventoryOpen)return;
             if(quick?Career.Backpack.QuickMove(from):Career.Backpack.Move(from,to,half))
-            {BinocularsRaised=false;LanternOn=false;Save();}
+            {BinocularsRaised=false;LanternOn=false;Save();WorldAudio?.Play("StorageMove",ExplorerPosition,.3f);}
         }
         public bool DiscardFieldItem(int slot,FieldItem expected,int count)
         {
@@ -71,7 +72,7 @@ namespace BoatAttack.Fishing
                 case FieldItem.FieldGuide: OpenFieldGuide();break;
                 case FieldItem.Binoculars:
                     BinocularsRaised=!BinocularsRaised;Notice(BinocularsRaised?(_xrActive?"望远镜 · A 记录动物 / 扳机放下":"望远镜 · T 记录动物 / F 放下"):"已放下望远镜",3);break;
-                case FieldItem.Lantern:LanternOn=!LanternOn;Notice(LanternOn?"提灯已点亮":"提灯已熄灭",3);break;
+                case FieldItem.Lantern:LanternOn=!LanternOn;WorldAudio?.Play("LanternSwitch",ExplorerPosition+Vector3.up,.5f);Notice(LanternOn?"提灯已点亮":"提灯已熄灭",3);break;
                 default:Notice(UnityEngine.XR.XRSettings.isDeviceActive?"Y 换装备，右扳机使用工具。B → 制作查看配方；设施换入快捷栏后按右扳机放置。":"1–9 选择自然手册、望远镜或提灯，再按 F 使用。I → 制作查看配方；工作台 / 熔炉放入快捷栏后 F 放置。",4);break;
             }
         }

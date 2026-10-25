@@ -115,7 +115,8 @@ namespace BoatAttack.Fishing
                 _c.Save();Refresh();
                 string cue=expected==FarmWork.Till?"FarmTill":expected==FarmWork.Plant?"FarmPlant"
                     :expected==FarmWork.Water?"FarmWater":expected==FarmWork.Harvest?"FarmHarvest":null;
-                if(cue!=null)_c.ActionAudio?.Detail(cue,Target(id).position+Vector3.up*.2f);
+                if(cue!=null && (expected!=FarmWork.Water || _c.WorldAudio==null || !_c.WorldAudio.HasCue("WaterPourLoop")))
+                    _c.ActionAudio?.Detail(cue,Target(id).position+Vector3.up*.2f);
                 _c.Effects?.Burst(Target(id).position+Vector3.up*.2f,expected==FarmWork.Water?new Color(.45f,.8f,1):new Color(.85f,.73f,.42f),false);
             }
             return ok;

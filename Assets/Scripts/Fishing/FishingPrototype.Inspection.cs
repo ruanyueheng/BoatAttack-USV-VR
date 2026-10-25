@@ -34,7 +34,9 @@ namespace BoatAttack.Fishing
             else if(!Automated && mouse!=null && mouse.rightButton.isPressed)
             {
                 var delta=mouse.delta.ReadValue();
-                InspectionAngles=new Vector2(Mathf.Clamp(InspectionAngles.x-delta.y*.25f,-75,75),Mathf.Repeat(InspectionAngles.y+delta.x*.25f,360));
+                InspectionAngles=InspectedItem==FieldItem.HuntingRifle
+                    ?FishingRifleHunting.ClampInspection(InspectionAngles+new Vector2(-delta.y,delta.x)*.25f)
+                    :new Vector2(Mathf.Clamp(InspectionAngles.x-delta.y*.25f,-75,75),Mathf.Repeat(InspectionAngles.y+delta.x*.25f,360));
             }
             return true;
         }

@@ -307,7 +307,8 @@ namespace BoatAttack.Fishing
         public void Tick(float seconds)
         {
             if(!Sleeping || float.IsNaN(seconds) || float.IsInfinity(seconds) || seconds<0)return;
-            _age+=Mathf.Min(seconds,.25f);
+            float before=_age;_age+=Mathf.Min(seconds,.25f);
+            if((before<.85f && _age>=.85f) || (before<4.45f && _age>=4.45f))_c.WorldAudio?.NotifyBedContact(Bed.position);
             if(!_committed && _age>=3.5f){_committed=true;_c.CompleteRest();}
             float opacity=_age<3.5f?Mathf.SmoothStep(0,1,Mathf.InverseLerp(2.65f,3.4f,_age)):1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(3.8f,4.45f,_age));
             _black.color=new Color(.015f,.025f,.035f,opacity);

@@ -50,7 +50,8 @@ namespace BoatAttack.Fishing
                 else if(i==6)ArtIllustration(icon,"StarPrism");
                 else NavGlyph(icon,new[]{0,5,3,2,6,6,8}[i],selected?AmberInk:CreamInk);
                 DisplayText(new Rect(tab.x+58,tab.y+16,166,30),JournalTabs[i],20,selected?AmberInk:CreamInk);
-                if(GUI.Button(tab,GUIContent.none,GUIStyle.none)){_journalPage=i;_journalOrderOpen=false;}
+                if(GUI.Button(tab,GUIContent.none,GUIStyle.none))
+                {if(_journalPage!=i)Controller.WorldAudio?.Play("UIConfirm",Controller.ExplorerPosition,.24f);_journalPage=i;_journalOrderOpen=false;}
             }
             DisplayText(new Rect(r.x+28,r.yMax-100,200,52),"每次发现，都有回响。\n记录随航程保存",15,CreamInk,true);
             if(SeaButton(new Rect(r.x+24,r.yMax-49,206,32),c.ReadingFieldGuide?"Esc  合上手册":"J / Esc  返回海湾",false,true,15))c.ToggleJournal();

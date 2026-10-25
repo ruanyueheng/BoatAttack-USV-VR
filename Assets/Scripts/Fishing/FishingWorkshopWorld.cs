@@ -305,29 +305,44 @@ namespace BoatAttack.Fishing
             if(!_c.Shore.Ground(feet,out var ground) || !ValidPlacement(ground,yaw,out var checkedFeet) || Vector3.Distance(checkedFeet,feet)>.1f)return false;
             int id=State.Place(_c.Career.Backpack,FishingRecipes.StationKind(expectedItem),feet.x,feet.y+.02f,feet.z,yaw);
             if(id<0){_c.Notice("无法放置：自建设施已达 "+FishingWorkshop.MaxPlayerStations+" 个上限或物品不足。",3);return false;}
-            Spawn(State.Station(id));Physics.SyncTransforms();_c.Save();_c.Notice("已放置"+FishingBackpack.Name(expectedItem)+(UnityEngine.XR.XRSettings.isDeviceActive?" · 靠近按 A 使用":" · 靠近按 E 使用"),4);return true;
+            Spawn(State.Station(id));Physics.SyncTransforms();_c.WorldAudio?.Play(expectedItem==FieldItem.Workbench?"ImpactWood":"ImpactStone",feet,.5f);
+            _c.Save();_c.Notice("已放置"+FishingBackpack.Name(expectedItem)+(UnityEngine.XR.XRSettings.isDeviceActive?" · 靠近按 A 使用":" · 靠近按 E 使用"),4);return true;
         }
         public bool PlaceEquipped()=>TryPlacement(1.02f,out var feet,out var yaw) && PlaceAt(feet,yaw,_c.Career.Backpack.Equipped);
         public bool Craft(string recipe)
         {
             if(!(_c.InventoryOpen || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen)))return false;
-            bool ok=FishingRecipes.Craft(_c.Career.Backpack,recipe,Context);if(ok){_c.Save();_c.NotifyWorkshopTransaction();_c.Notice("已制作 "+FishingBackpack.Name(FishingRecipes.Find(recipe).Output),3);}else _c.Notice("材料不足、背包已满，或需要靠近对应的制作设施。",4);return ok;
+            var context=Context;
+            bool ok=FishingRecipes.Craft(_c.Career.Backpack,recipe,context);
+            if(ok)
+            {
+                var root=StationRoot(SelectedStation);var at=root==null?_c.ExplorerPosition+Vector3.up*.8f:root.position+Vector3.up*.6f;
+                _c.WorldAudio?.Play(context==CraftStation.Forge?"ForgeStrike":context==CraftStation.Workbench?"WorkbenchAssemble":"CraftFinish",at,.48f);
+                _c.Save();_c.NotifyWorkshopTransaction();_c.Notice("已制作 "+FishingBackpack.Name(FishingRecipes.Find(recipe).Output),3);
+            }
+            else {_c.WorldAudio?.Play("UIReject",_c.ExplorerPosition,.3f);_c.Notice("材料不足、背包已满，或需要靠近对应的制作设施。",4);}
+            return ok;
         }
         public bool Smelt(string recipe,int count,FieldItem fuel)
         {
             if(!(_c.InventoryOpen || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen)) || Context!=CraftStation.Furnace)return false;
-            bool ok=State.Start(_c.Career.Backpack,SelectedStation,recipe,count,fuel);if(ok){_c.Save();_c.NotifyWorkshopTransaction();}else _c.Notice("检查材料、燃料，并先领取炉内成品。",4);return ok;
+            bool ok=State.Start(_c.Career.Backpack,SelectedStation,recipe,count,fuel);
+            if(ok){_c.WorldAudio?.Play("UIConfirm",_c.ExplorerPosition,.3f);_c.Save();_c.NotifyWorkshopTransaction();}
+            else {_c.WorldAudio?.Play("UIReject",_c.ExplorerPosition,.3f);_c.Notice("检查材料、燃料，并先领取炉内成品。",4);}return ok;
         }
         public bool Collect()
         {
             if(!(_c.InventoryOpen || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen)) || Context!=CraftStation.Furnace)return false;
-            bool ok=State.Collect(_c.Career.Backpack,SelectedStation);if(ok){_c.Save();_c.NotifyWorkshopTransaction();}else _c.Notice("没有成品或背包已满；成品会留在炉内。",4);return ok;
+            bool ok=State.Collect(_c.Career.Backpack,SelectedStation);
+            if(ok){_c.WorldAudio?.Play("StorageMove",_c.ExplorerPosition,.45f);_c.Save();_c.NotifyWorkshopTransaction();}
+            else {_c.WorldAudio?.Play("UIReject",_c.ExplorerPosition,.3f);_c.Notice("没有成品或背包已满；成品会留在炉内。",4);}return ok;
         }
         public bool Remove()
         {
             if(!(_c.InventoryOpen || (_c.XRNotebook!=null && _c.XRNotebook.IsOpen)) || !ReachStation(SelectedStation))return false;
             if(!State.Remove(_c.Career.Backpack,SelectedStation)){_c.Notice("公共设施不可拆；先领取成品并清空熔炉，背包需留空格。",4);return false;}
-            var root=_stations[SelectedStation];root.gameObject.SetActive(false);Destroy(root.gameObject);_stations.Remove(SelectedStation);_fires.Remove(SelectedStation);SelectedStation=-1;_c.Save();return true;
+            var root=_stations[SelectedStation];_c.WorldAudio?.Play("StorageMove",root.position,.4f);
+            root.gameObject.SetActive(false);Destroy(root.gameObject);_stations.Remove(SelectedStation);_fires.Remove(SelectedStation);SelectedStation=-1;_c.Save();return true;
         }
         private void OnApplicationQuit(){if(_c!=null && _c.Career!=null)_c.Save();}
         private void OnDestroy(){foreach(var mesh in _meshes.Values)if(mesh!=null)Destroy(mesh);if(_palette!=null)Destroy(_palette);}
