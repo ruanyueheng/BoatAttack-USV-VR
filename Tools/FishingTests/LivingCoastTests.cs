@@ -5,6 +5,29 @@ internal static class LivingCoastTests
 {
     public static void Run(Action<bool,string> check)
     {
+        for(int version=9;version<=19;version++)
+        {
+            var legacySave=new FishingCareer().Snapshot();legacySave.version=version;legacySave.coins=87;
+            legacySave.hunting.availableDays=new List<int>(new int[8]);legacySave.hunting.availableMinutes=new List<double>(new double[8]);
+            legacySave.hunting.availableDays[1]=1;legacySave.hunting.availableMinutes[1]=legacySave.calendar.minute+200;legacySave.hunting.harvests=3;
+            check(FishingCareer.TryRestore(legacySave,out var loaded),"Eight-entry wildlife saves remain readable: schema "+version);
+            if(loaded!=null)
+            {
+                check(loaded.Coins==87 && loaded.Hunting.Harvests==3 && !loaded.Hunting.Available(1,legacySave.calendar.minute+199.99)
+                    && loaded.Hunting.Available(1,legacySave.calendar.minute+200),"Legacy migration preserves coins, harvests and exact cooldown: "+version);
+                check(legacySave.hunting.availableDays.Count==8 && legacySave.hunting.availableMinutes.Count==8
+                    && FishingCareer.TryRestore(loaded.Snapshot(),out _),"Legacy migration leaves its source intact and can resave: "+version);
+            }
+        }
+        foreach(int count in new[]{0,7,9,15,17})
+        {
+            var invalidHunting=new HuntingData{availableDays=new List<int>(new int[count]),availableMinutes=new List<double>(new double[count])};
+            check(!FishingHunting.TryRestore(invalidHunting,out _),"Unknown wildlife array lengths still fail: "+count);
+        }
+        var mismatched=new HuntingData{availableDays=new List<int>(new int[8]),availableMinutes=new List<double>(new double[16])};
+        check(!FishingHunting.TryRestore(mismatched,out _),"Migration rejects mismatched wildlife day and minute arrays");
+        mismatched.availableMinutes=new List<double>(new double[8]);mismatched.availableMinutes[2]=double.NaN;
+        check(!FishingHunting.TryRestore(mismatched,out _),"Legacy wildlife migration rejects nonfinite cooldowns");
         var manual=new FishingCalendar();
         manual.ToggleAutomatic();double held=manual.TotalMinutes;manual.Tick(.25f,false);
         check(manual.TotalMinutes==held && !manual.Automatic,"Manual clock holds during active play");

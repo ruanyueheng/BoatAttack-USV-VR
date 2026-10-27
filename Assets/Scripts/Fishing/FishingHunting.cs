@@ -5,15 +5,17 @@ namespace BoatAttack.Fishing
     [Serializable]
     public sealed class HuntingData
     {
-        public List<int> availableDays = new List<int>(new int[FishingBackpack.PickupCount]);
+        public List<int> availableDays = new List<int>(new int[FishingHunting.SpawnCount]);
         public List<double> availableMinutes;
         public int harvests;
     }
     /// <summary>Stable spawn IDs and saved return dates prevent repeated meat after a reload.</summary>
     public sealed class FishingHunting
     {
+        // Wildlife save slots must not change when unrelated shoreline pickups are added.
+        public const int SpawnCount=16,LegacySpawnCount=8;
         public const double RecoveryMinutes = 480; // Five active real minutes at the 15-minute day rate.
-        private HuntingData _data = new HuntingData { availableMinutes = new List<double>(new double[FishingBackpack.PickupCount]) };
+        private HuntingData _data = new HuntingData { availableMinutes = new List<double>(new double[SpawnCount]) };
         private readonly HashSet<int> _liveCaptures=new HashSet<int>();
         public int Harvests => _data.harvests;
         public bool Available(int id, double now) => id >= 0 && id < _data.availableMinutes.Count && !_liveCaptures.Contains(id) && !double.IsNaN(now)
@@ -33,7 +35,8 @@ namespace BoatAttack.Fishing
         public static bool TryRestore(HuntingData data, out FishingHunting hunting, double now = 0)
         {
             hunting = null;
-            if (double.IsNaN(now) || double.IsInfinity(now) || now < 0 || data == null || data.availableDays == null || data.availableDays.Count != FishingBackpack.PickupCount
+            if (double.IsNaN(now) || double.IsInfinity(now) || now < 0 || data == null || data.availableDays == null
+                || (data.availableDays.Count!=SpawnCount && data.availableDays.Count!=LegacySpawnCount)
                 || data.harvests < 0 || data.harvests > 100000000) return false;
             foreach (int day in data.availableDays) if (day < 0 || day > FishingCalendar.MaxDay) return false;
             var minutes = data.availableMinutes;
@@ -42,10 +45,12 @@ namespace BoatAttack.Fishing
                 minutes = new List<double>();
                 foreach (int day in data.availableDays) minutes.Add(Math.Min(day * 1440d, now + RecoveryMinutes));
             }
-            if (minutes.Count != FishingBackpack.PickupCount) return false;
+            if (minutes.Count != data.availableDays.Count) return false;
             foreach (double due in minutes) if (double.IsNaN(due) || double.IsInfinity(due) || due < 0 || due > now + RecoveryMinutes) return false;
-            hunting = new FishingHunting { _data = new HuntingData { availableDays = new List<int>(data.availableDays),
-                availableMinutes = new List<double>(minutes), harvests = data.harvests } }; return true;
+            var restoredDays=new List<int>(data.availableDays);var restoredMinutes=new List<double>(minutes);
+            while(restoredDays.Count<SpawnCount){restoredDays.Add(0);restoredMinutes.Add(0);}
+            hunting = new FishingHunting { _data = new HuntingData { availableDays = restoredDays,
+                availableMinutes = restoredMinutes, harvests = data.harvests } }; return true;
         }
     }
 }

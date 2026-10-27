@@ -70,7 +70,7 @@ namespace BoatAttack.EditorTools
             foreach(var angles in new[]{Vector2.zero,new Vector2(-inspectPitch,-inspectYaw),new Vector2(inspectPitch,inspectYaw),new Vector2(-inspectPitch,inspectYaw),new Vector2(inspectPitch,-inspectYaw),new Vector2(-75,-90),new Vector2(75,90)})
             {
                 typeof(FishingPrototype).GetProperty("InspectionAngles").SetValue(c,angles);
-                for(int frame=0;frame<8;frame++){c.PresentCharacterFrame();yield return null;}
+                for(float settleUntil=Time.realtimeSinceStartup+.6f;Time.realtimeSinceStartup<settleUntil;){c.PresentCharacterFrame();yield return null;}
                 var held=c.FieldWorld.HeldTool;
                 Check(c.FieldWorld.PresentedItem==FieldItem.HuntingRifle && held.gameObject.activeInHierarchy
                     && !c.RifleHunting.Presented,"inspection uses the new mesh without a duplicate shooting rifle");
@@ -92,13 +92,13 @@ namespace BoatAttack.EditorTools
                 Capture(c,"new-ak-inspection-"+inspectionFrame++);
             }
             c.EndItemInspection();
-            for(int frame=0;frame<8;frame++){c.PresentCharacterFrame();yield return null;}
+            for(float settleUntil=Time.realtimeSinceStartup+.6f;Time.realtimeSinceStartup<settleUntil;){c.PresentCharacterFrame();yield return null;}
             Check(c.RifleHunting.Presented && !c.RifleHunting.Obstructed,"new AK returns to its two-hand firing pose after inspection");
             c.Shore.SetCrouch(true);for(int i=0;i<30;i++)yield return null;c.PresentCharacterFrame();
             Check(c.RifleHunting.Presented && !c.RifleHunting.Obstructed,"crouched rifle retains safe grip");
             ValidateRifleHands(c,c.RifleHunting.Rifle,"crouched firing pose");Capture(c,"crouched-rifle");
             c.Shore.SetCrouch(false);for(int i=0;i<30;i++)yield return null;
-            c.ToggleView();for(int i=0;i<8;i++)yield return null;c.PresentCharacterFrame();
+            c.ToggleView();for(float viewSettleUntil=Time.realtimeSinceStartup+.6f;Time.realtimeSinceStartup<viewSettleUntil;)yield return null;c.PresentCharacterFrame();
             Check(c.RifleHunting.Presented,"third person keeps the same weapon and hand rig");
             ValidateRifleHands(c,c.RifleHunting.Rifle,"third-person firing pose");Capture(c,"third-person-rifle");
             c.ToggleView();yield return null;
@@ -112,7 +112,7 @@ namespace BoatAttack.EditorTools
             foreach(float pitch in new[]{-30f,0f,30f})
             {
                 c.View.ResetLook();c.View.ApplyShoreLookDelta(new Vector2(0,-pitch/.12f));
-                for(int frame=0;frame<4;frame++){c.PresentCharacterFrame();yield return null;}
+                for(float pitchSettleUntil=Time.realtimeSinceStartup+.6f;Time.realtimeSinceStartup<pitchSettleUntil;){c.PresentCharacterFrame();yield return null;}
                 Check(c.RifleHunting.Presented && !c.RifleHunting.Obstructed,"open-space pitch keeps gun usable "+pitch+" reason="+c.RifleHunting.ObstructionReason);
                 Check(Vector3.Distance(c.Shore.Character.PalmPosition(true),c.Hands.Left.Palm.position)<.04f
                     && Vector3.Distance(c.Shore.Character.PalmPosition(false),c.Hands.Right.Palm.position)<.04f,"grips remain reachable at pitch "+pitch);
