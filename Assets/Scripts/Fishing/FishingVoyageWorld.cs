@@ -16,6 +16,7 @@ namespace BoatAttack.Fishing
         private float _opening;
         private readonly RaycastHit[] _hits = new RaycastHit[32];
         public Transform TreasureChest => _chest;
+        public Vector3 TreasureFocus { get; private set; }
         public Transform TreasureLid => _lid;
         public Quaternion TreasureLidOpenRotation=>_lidClosed*Quaternion.Euler(_lidAngle,0,0);
         public Vector3 TreasureApproach { get; private set; }
@@ -78,6 +79,7 @@ namespace BoatAttack.Fishing
             }
             var closedBounds=ChestBounds(true);crate.localScale*=1.65f/Mathf.Max(.01f,closedBounds.size.x);closedBounds=ChestBounds(true);
             crate.position+=new Vector3(_chest.position.x-closedBounds.center.x,_chest.position.y+.97f-closedBounds.min.y,_chest.position.z-closedBounds.center.z);
+            TreasureFocus=ChestBounds(true).center;
             var bodyBounds=ChestBounds(false);var body=new GameObject("Solid treasure chest body").AddComponent<BoxCollider>();body.transform.SetParent(_chest,false);body.center=_chest.InverseTransformPoint(bodyBounds.center);body.size=bodyBounds.size;
             var lidMesh=_lid.GetComponentInChildren<MeshFilter>();var lidCollider=lidMesh.gameObject.AddComponent<BoxCollider>();lidCollider.center=lidMesh.sharedMesh.bounds.center;lidCollider.size=lidMesh.sharedMesh.bounds.size;
             _lidClosed=_lid.localRotation;_lidAngle=-Mathf.Sign(lidMesh.sharedMesh.bounds.center.z)*105;

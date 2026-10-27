@@ -93,12 +93,20 @@ namespace BoatAttack.Fishing
                 Vector3 basePos=p+new Vector3((i-2.5f)*.67f,.08f,Mathf.Sin(i*4)*.8f);
                 if(zone==0)
                 {
-                    for(int branch=0;branch<3;branch++)
+                    basePos.y=-.57f;basePos.z+=Mathf.Sin(i*2.3f)*.35f;
+                    var tint=Color.Lerp(coral,new Color(.49f,.43f,.61f),i%3*.22f);
+                    var stem=basePos+new Vector3(.03f,.16f,.02f);
+                    b.Tube(basePos,stem,.065f,.046f,tint,8);
+                    for(int branch=0;branch<4;branch++)
                     {
-                        Vector3 mid=basePos+new Vector3((branch-1)*.25f,.46f,0),tip=mid+new Vector3((branch-1)*.12f,.32f,.04f);
-                        b.Tube(basePos,mid,.08f,.047f,coral);b.Tube(mid,tip,.047f,.028f,coral);
-                        b.Tube(mid,mid+new Vector3(.18f,.15f,0),.035f,.012f,coral);
-                        b.Ellipsoid(tip,Vector3.one*.045f,new Color(.94f,.63f,.4f),8,4);
+                        float angle=(branch*92+i*31)*Mathf.Deg2Rad;
+                        var direction=new Vector3(Mathf.Cos(angle),0,Mathf.Sin(angle));
+                        var bend=stem+direction*.12f+Vector3.up*(.12f+(branch%2)*.035f);
+                        var tip=bend+direction*.08f+Vector3.up*.15f;
+                        b.Tube(stem,bend,.036f,.026f,tint,8);b.Tube(bend,tip,.026f,.012f,tint,8);
+                        b.Ellipsoid(tip,new Vector3(.025f,.035f,.025f),Color.Lerp(tint,new Color(.94f,.77f,.62f),.35f),8,4);
+                        var twig=bend+new Vector3(-direction.z,.7f,direction.x)*.1f;
+                        b.Tube(bend,twig,.018f,.007f,tint,7);
                     }
                 }
                 else

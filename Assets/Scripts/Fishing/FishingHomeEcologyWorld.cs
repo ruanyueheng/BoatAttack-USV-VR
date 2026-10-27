@@ -35,7 +35,7 @@ namespace BoatAttack.Fishing
             if(Active && Time.time>_trapAt){CheckTraps();_trapAt=Time.time+.2f;}
             for(int i=0;i<_fish.Count;i++)
             {
-                float t=Time.time*.5f+i*1.8f;var f=_fish[i];f.localPosition=new Vector3(Mathf.Sin(t)*.8f,.7f+(i%2)*.25f,Mathf.Cos(t)*.27f);f.localRotation=Quaternion.Euler(0,Mathf.Cos(t)>0?90:270,0);
+                float t=Time.time*.5f+i*1.8f;var f=_fish[i];f.localPosition=new Vector3(Mathf.Sin(t)*.8f,.7f+(i%2)*.25f,Mathf.Cos(t)*.27f);f.localRotation=Quaternion.Slerp(f.localRotation,Quaternion.Euler(0,Mathf.Cos(t)>0?90:270,0),Mathf.Min(1,Time.deltaTime*3));
             }
             for(int i=0;i<_pets.Count;i++)if(_pets[i]!=null && Active)_pets[i].localRotation=Quaternion.Euler(0,Mathf.Sin(Time.time*.35f+i)*35,0);
             if(_hearts!=null){_hearts.gameObject.SetActive(Time.time<_heartUntil);_hearts.position=_heartPoint+Vector3.up*(1.1f+(1-(_heartUntil-Time.time)/3)*.5f);_hearts.rotation=Quaternion.LookRotation(_hearts.position-_c.viewCamera.transform.position);}
@@ -202,10 +202,16 @@ namespace BoatAttack.Fishing
                 FittedModel("FishingV023/Items/Plank",aquarium,new Vector3(0,.51f,0),new Vector3(2,.08f,.9f));
                 foreach(float z in new[]{-.46f,.46f})FittedModel("FishingV023/Items/Glass",aquarium,new Vector3(0,.94f,z),new Vector3(2,.8f,.025f));
                 foreach(float x in new[]{-1f,1f})FittedModel("FishingV023/Items/Glass",aquarium,new Vector3(x,.94f,0),new Vector3(.025f,.8f,.9f));
+                FittedModel("FishingV035/ShoreRock",aquarium,new Vector3(-.65f,.58f,.25f),new Vector3(.30f,.14f,.22f));
+                FittedModel("FishingV035/ShoreRock",aquarium,new Vector3(.63f,.57f,-.22f),new Vector3(.23f,.12f,.19f));
                 foreach(var f in _profile.AquariumFish)
-                {var fish=FishingArt.Fish(aquarium,_owned,_c.PaletteShader,f.fish.kind,f.fish.rare).transform;fish.localScale*=Mathf.Lerp(.18f,.3f,_profile.AquariumGrowth(f.fish.id));_fish.Add(fish);}
+                {
+                    var fish=FishingArt.Fish(aquarium,_owned,_c.PaletteShader,f.fish.kind,f.fish.rare).transform;
+                    var renderers=fish.GetComponentsInChildren<Renderer>();var bounds=renderers[0].bounds;foreach(var renderer in renderers)bounds.Encapsulate(renderer.bounds);
+                    float mature=Mathf.Clamp(FishingSpecies.LengthMeters(f.fish.kind),.22f,.38f);
+                    fish.localScale*=Mathf.Lerp(mature*.65f,mature,_profile.AquariumGrowth(f.fish.id))/Mathf.Max(.001f,bounds.size.x,bounds.size.y,bounds.size.z);_fish.Add(fish);
+                }
             }
-            FishingV019Art.Sign(_profile.AquariumLevel>0?"家园水族箱":"水族箱安装点",aquarium,new Vector3(0,1.5f,0),.012f,new Color(.85f,.92f,.82f));
             for(int i=0;i<5;i++)
             {
                 var kind=(LandAnimalKind)i;var root=new GameObject(FishingCareer.HabitatName(kind)).transform;root.SetParent(_display,false);var desired=HabitatPosition(kind);if(_c.Shore.Ground(new Vector3(desired.x,0,desired.z),out var ground))desired.y=ground.y;root.position=desired;

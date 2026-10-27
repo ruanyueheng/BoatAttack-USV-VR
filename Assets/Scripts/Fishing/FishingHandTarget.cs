@@ -19,6 +19,7 @@ namespace BoatAttack.Fishing
         public bool Pointing { get; private set; }
         public float ForearmRoll { get; private set; }
         public bool HasGripSurface { get; private set; }
+        public bool AuthoredMotion { get; private set; }
         public Vector3 GripStart { get; private set; }
         public Vector3 GripEnd { get; private set; }
         public float GripRadius { get; private set; }
@@ -26,15 +27,16 @@ namespace BoatAttack.Fishing
         public bool Visible=>_available && _frame==Time.frameCount && isActiveAndEnabled;
         public void Build(bool left){IsLeft=left;Disable();}
         public void BeginFrame()=>Disable();
-        public void Disable(){_available=false;_frame=-1;Curl=0;Fingers=FishingFingerPose.Uniform(0);Pointing=false;ForearmRoll=0;HasGripSurface=false;}
+        public void Disable(){_available=false;_frame=-1;Curl=0;Fingers=FishingFingerPose.Uniform(0);Pointing=false;ForearmRoll=0;HasGripSurface=false;AuthoredMotion=false;}
         public void SetForearmRoll(float blend){if(Visible && Finite(blend))ForearmRoll=Mathf.Clamp01(blend);}
+        public void FollowAuthoredMotion(){if(Visible)AuthoredMotion=true;}
         public void SetPose(Vector3 position,Quaternion rotation,float curl,bool pointing=false)
         {
             if(!Finite(position.x)||!Finite(position.y)||!Finite(position.z)||!Finite(rotation.x)||!Finite(rotation.y)
                 ||!Finite(rotation.z)||!Finite(rotation.w)||Quaternion.Dot(rotation,rotation)<.5f || !Finite(curl))
             {Disable();return;}
             transform.SetPositionAndRotation(position,rotation.normalized);
-            HasGripSurface=false;
+            HasGripSurface=false;AuthoredMotion=false;
             Curl=Mathf.Clamp01(curl);Fingers=FishingFingerPose.Uniform(Curl);Pointing=pointing;_frame=Time.frameCount;_available=true;
         }
         /// <summary>Change grip on an already supplied goal; cannot revive expired tracking.</summary>

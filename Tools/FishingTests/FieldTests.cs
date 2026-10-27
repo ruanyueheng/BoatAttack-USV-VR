@@ -20,7 +20,7 @@ internal static class FieldTests
         check(!bag.Select(9) && !bag.Select(-1) && bag.Select(1) && bag.Equipped==FieldItem.Binoculars,"Only nine shortcut slots selectable");
         var copy=bag.At(1);copy.count=99;check(bag.At(1).count==1,"Slot readers cannot mutate inventory");
         check(bag.TryCollect(0,FieldItem.Lantern,1) && !bag.TryCollect(0,FieldItem.Lantern,1),"World pickup claim is exactly once");
-        check(!bag.TryCollect(8,FieldItem.Lantern,1) && !bag.TryCollect(-1,FieldItem.Lantern,1),"Unknown pickup IDs rejected");
+        check(!bag.TryCollect(FishingBackpack.PickupCount,FieldItem.Lantern,1) && !bag.TryCollect(-1,FieldItem.Lantern,1),"Unknown pickup IDs rejected");
         check(bag.Observe(LandAnimalKind.Fox) && !bag.Observe(LandAnimalKind.Fox) && !bag.Observe((LandAnimalKind)9),"Animal discoveries are bounded and unique");
         check(FishingBackpack.TryRestore(bag.Snapshot(),bag.Selected,bag.CollectedMask,bag.AnimalMask,out var loaded) && loaded.Collected(0) && loaded.Seen(LandAnimalKind.Fox) && loaded.Equipped==FieldItem.Binoculars,"All bag and exploration state round trips");
         var full=new FishingBackpack(false);check(full.TryAdd(FieldItem.Shell,36*64),"All 36 slots usable");
@@ -30,7 +30,13 @@ internal static class FieldTests
         check(!almost.TryAdd(FieldItem.Shell,2) && Count(almost,FieldItem.Shell)==2303,"Partial-capacity insert is atomic");
         foreach(int n in new[]{-1,9,100})check(!FishingBackpack.TryRestore(bag.Snapshot(),n,0,0,out _),"Invalid selection rejects save "+n);
         check(!FishingBackpack.TryRestore(null,0,0,0,out _) && !FishingBackpack.TryRestore(new System.Collections.Generic.List<FieldStack>(),0,0,0,out _),"Missing/wrong-size backpack rejected");
-        foreach(int n in new[]{-1,256})check(!FishingBackpack.TryRestore(bag.Snapshot(),0,n,0,out _),"Unknown collected mask rejected "+n);
+        foreach(int n in new[]{-1,1<<FishingBackpack.PickupCount})check(!FishingBackpack.TryRestore(bag.Snapshot(),0,n,0,out _),"Unknown collected mask rejected "+n);
+        var caches=new FishingCareer();
+        check(caches.Backpack.TryCollect(8,FieldItem.SeaTreasure,1) && !caches.Backpack.TryCollect(8,FieldItem.SeaTreasure,1),"New wild cache IDs pay exactly once");
+        check(caches.Backpack.TryCollect(15,FieldItem.Plank,4) && !caches.Backpack.TryCollect(16,FieldItem.Plank,4),"Appended wild cache ID range stays bounded");
+        check(FishingCareer.TryRestore(caches.Snapshot(),out var cacheLoaded) && cacheLoaded.Backpack.Collected(8) && cacheLoaded.Backpack.Collected(15),"New cache receipts survive a career reload");
+        var oldCache=caches.Snapshot();oldCache.version=18;
+        check(!FishingCareer.TryRestore(oldCache,out _),"Older schemas cannot smuggle new cache receipts");
         foreach(int n in new[]{-1,8})check(!FishingBackpack.TryRestore(bag.Snapshot(),0,0,n,out _),"Unknown animal mask rejected "+n);
         var invalid=bag.Snapshot();invalid[0].count=2;check(!FishingBackpack.TryRestore(invalid,0,0,0,out _),"Overstacked tool save rejected");
         invalid=bag.Snapshot();invalid[0].item=FieldItem.Empty;check(!FishingBackpack.TryRestore(invalid,0,0,0,out _),"Nonempty empty-slot save rejected");

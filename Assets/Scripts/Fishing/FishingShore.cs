@@ -36,6 +36,8 @@ namespace BoatAttack.Fishing
         private float _nextWarning;
         private readonly FishingLocomotion _motion = new FishingLocomotion();
         private readonly RaycastHit[] _groundHits = new RaycastHit[32];
+        private readonly RaycastHit[] _sightHits = new RaycastHit[64];
+        private readonly Dictionary<Collider,bool> _nonSolidRoles=new Dictionary<Collider,bool>();
         private readonly Collider[] _stepOverlaps = new Collider[32];
         private static readonly Vector3[] SeamOffsets = { Vector3.right,Vector3.left,Vector3.forward,Vector3.back,
             new Vector3(.7071f,0,.7071f),new Vector3(-.7071f,0,.7071f),new Vector3(.7071f,0,-.7071f),new Vector3(-.7071f,0,-.7071f) };
@@ -165,7 +167,17 @@ namespace BoatAttack.Fishing
         }
         public static bool NonSolidSurface(Collider collider,bool walking=true)=>collider.GetComponentInParent<WaterSystem.Water>()!=null || collider.name=="NavMesh"
             || (walking && collider.name=="Boat building barrier");
-        private bool Ignored(Collider collider) => collider==Body || collider.gameObject.layer==5 || collider.transform.IsChildOf(Controller.Player.transform) || NonSolidSurface(collider);
+        private bool Ignored(Collider collider)
+        {
+            if(collider==Body || collider.gameObject.layer==5 || collider.transform.IsChildOf(Controller.Player.transform))return true;
+            // shortcut: scene collision roles are fixed; clear this cache if an existing collider is renamed or reparented.
+            if(!_nonSolidRoles.TryGetValue(collider,out bool ignored))
+            {
+                if(_nonSolidRoles.Count>=1024)_nonSolidRoles.Clear();
+                ignored=NonSolidSurface(collider);_nonSolidRoles.Add(collider,ignored);
+            }
+            return ignored;
+        }
         public bool Clearance(Vector3 feet)
         {
             foreach(var col in Physics.OverlapCapsule(feet+Vector3.up*.36f,feet+Vector3.up*1.46f,.28f,~(1<<4),QueryTriggerInteraction.Ignore))
@@ -173,10 +185,13 @@ namespace BoatAttack.Fishing
             return true;
         }
         public bool CanSeeTask(Vector3 target) => Ashore && ClearSight(Actor.position+Vector3.up*EyeHeight,target+Vector3.up*1.1f);
-        public bool ClearSight(Vector3 from,Vector3 to)
+        public bool ClearSight(Vector3 from,Vector3 to,Transform target=null)
         {
             var delta=to-from;
-            foreach(var h in Physics.RaycastAll(from,delta.normalized,delta.magnitude,~(1<<4),QueryTriggerInteraction.Ignore)) if(!Ignored(h.collider))return false;
+            int count=Physics.RaycastNonAlloc(from,delta.normalized,_sightHits,delta.magnitude,~(1<<4),QueryTriggerInteraction.Ignore);
+            // Fail closed if a dense sight ray saturates the bounded buffer.
+            if(count==_sightHits.Length)return false;
+            for(int i=0;i<count;i++)if((target==null || !_sightHits[i].collider.transform.IsChildOf(target)) && !Ignored(_sightHits[i].collider))return false;
             return true;
         }
         public void UpdateProximity()

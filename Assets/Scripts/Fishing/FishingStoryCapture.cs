@@ -23,6 +23,21 @@ namespace BoatAttack.Fishing
             if(c.StartMenuOpen)c.SendMessage("CloseStartMenuForCapture",SendMessageOptions.DontRequireReceiver);
             foreach(FishingPrologue.Sequence sequence in Enum.GetValues(typeof(FishingPrologue.Sequence)))
             {
+                if(c.Acceptance!=null)
+                {
+                    var scenes=new[]{FishingAcceptanceCase.FreePlay,FishingAcceptanceCase.HomeInterior,FishingAcceptanceCase.WindSanctuary,FishingAcceptanceCase.ForestSanctuary,FishingAcceptanceCase.WreckSanctuary,FishingAcceptanceCase.StarSanctuary,FishingAcceptanceCase.ArchIslet};
+                    c.Acceptance.SelectCase(scenes[(int)sequence]);
+                    float deadline=Time.realtimeSinceStartup+20;
+                    while(c.AcceptanceFixturePreparing || c.Realms.Transitioning)
+                    {if(Time.realtimeSinceStartup>deadline)throw new TimeoutException("Story fixture setup: "+sequence);yield return null;}
+                    if(sequence==FishingPrologue.Sequence.Finale)
+                    {
+                        c.Career.AcceptMayorship();c.Career.DiscoverChart();
+                        for(int island=0;island<4;island++){c.Career.CompleteShrine(island);if(!c.Career.ClaimShrineReward(island))throw new InvalidOperationException("Story reward fixture rejected");}
+                        if(!c.Career.CraftVoyageCompass(CraftStation.Workbench) || c.Career.OpenGrandTreasure()==0)throw new InvalidOperationException("Story treasure fixture rejected");
+                    }
+                    yield return new WaitForSecondsRealtime(.8f);
+                }
                 if(!c.Prologue.BeginForCapture(sequence)){Debug.LogError("[STORY-CAPTURE] cannot begin "+sequence);continue;}
                 int shots=Mathf.RoundToInt(c.Prologue.Duration/FishingPrologue.ShotSeconds);
                 for(int shot=0;shot<shots;shot++)

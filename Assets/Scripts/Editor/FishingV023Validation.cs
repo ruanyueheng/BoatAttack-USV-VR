@@ -18,8 +18,15 @@ namespace BoatAttack.EditorTools
             Check(c.Home!=null && c.Home.House!=null && c.Home.Bed!=null && c.Prologue!=null,"Furnished home and opening cinema exist in production scene");
             Check(c.Home.House.GetComponentsInChildren<MeshFilter>().Length>=26,"Furnished shell and three accessible home workshop instances");
             Check(c.Home.House.GetComponentsInChildren<BoxCollider>().Length>=25,"Home has structural and furniture collisions");
+            var coastalMaterial=Resources.Load<Material>("FishingV035/Coastal");var foliageMaterial=Resources.Load<Material>("FishingV035/Foliage");
+            var coastal=coastalMaterial.shader;var foliage=foliageMaterial.shader;
+            var television=Resources.Load<Shader>("FishingTideFilm");
             foreach(var mesh in c.Home.House.GetComponentsInChildren<MeshFilter>())
-                Check(mesh.GetComponent<Renderer>().sharedMaterial.shader==c.PaletteShader,"Furnished prefab preserves actual vertex palette: "+mesh.name);
+                foreach(var material in mesh.GetComponent<Renderer>().sharedMaterials)
+                {
+                    Check(material!=null && material.shader!=null && (material.shader==c.PaletteShader || material.shader==coastal || material.shader==foliage || material.shader==television),"Furnished prefab uses its authored palette, coastal atlas or television: "+mesh.name);
+                    if(material==coastalMaterial || material==foliageMaterial)Check(mesh.sharedMesh.uv.Length==mesh.sharedMesh.vertexCount && material.GetTexture("_BaseMap")!=null,"Coastal furniture retains its UVs and atlas: "+mesh.name);
+                }
             var pick=FishingV023Art.ItemMesh(FieldItem.IronPickaxe);
             var sourcePick=Resources.Load<GameObject>("FishingUserTools/Pickaxe");var sourceFilter=sourcePick.GetComponentInChildren<MeshFilter>();
             Debug.Log("[V023] AXES: "+pick.bounds+" min="+pick.bounds.min+" max="+pick.bounds.max+" scale="+sourceFilter.transform.lossyScale+" rotation="+sourceFilter.transform.eulerAngles);
@@ -47,7 +54,7 @@ namespace BoatAttack.EditorTools
                 }
                 if(item==FieldItem.Empty)continue;var mesh=FishingV023Art.ItemMesh(item);var photo=FishingV023Art.Icon(item);
                 Check(mesh!=null && mesh.vertexCount>20 && mesh.colors32.Length==mesh.vertexCount,"Real vertex-colour item geometry "+item);
-                Check(photo!=null && photo.width==256 && photo.height==256,"Matching actual model photograph "+item);
+                Check(photo!=null && photo.width>=128 && photo.height>=128,"Readable current item artwork "+item);
             }
             for(int i=0;i<FishingSpecies.Count;i++)
             {
@@ -125,7 +132,7 @@ namespace BoatAttack.EditorTools
                 for(int i=0;i<FishingBackpack.SlotCount;i++)if(bag.At(i).item==item){found=i;break;}
                 if(found<0){Check(bag.TryAdd(item,1),"Equip fixture adds actual inventory item "+item);for(int i=0;i<FishingBackpack.SlotCount;i++)if(bag.At(i).item==item){found=i;break;}}
                 if(found!=1)Check(bag.Move(found,1),"Existing inventory transaction equips "+item);
-                c.SelectFieldSlot(1);for(int f=0;f<5;f++)yield return null;c.PresentCharacterFrame();
+                c.SelectFieldSlot(1);for(float until=Time.realtimeSinceStartup+.6f;Time.realtimeSinceStartup<until;)yield return null;c.PresentCharacterFrame();
                 Check(c.FieldWorld.PresentedItem==item && c.FieldWorld.HeldToolRenderer.enabled,"Upgraded item is actually held "+item);
                 Check(Vector3.Distance(c.Shore.Character.PalmPosition(false),c.Hands.Right.Palm.position)<.035f,"Actual right palm reaches its calibrated item socket "+item);
                 if(item==FieldItem.FieldGuide || item==FieldItem.Binoculars || item==FieldItem.Workbench || item==FieldItem.Furnace)

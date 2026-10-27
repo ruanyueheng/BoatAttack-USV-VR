@@ -77,7 +77,8 @@ namespace BoatAttack.EditorTools
                     Check(line.positionCount==12 && Vector3.Distance(line.GetPosition(0),line.GetPosition(11))>.08f,"Continuous flax runs from the supply coil to the turning spindle");
                 }
                 c.HandGames.Cancel();yield return null;
-                Check(!grains.Any(t=>t.gameObject.activeSelf) && character.FirstPersonSkin.sharedMesh!=character.TabletopArmsMesh,"Cancel clears particles and restores the normal body "+game);
+                bool tabletop=(bool)typeof(FishingCharacter).GetField("_tabletopView",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(character);
+                Check(!grains.Any(t=>t.gameObject.activeSelf) && !tabletop && !c.HandGames.Active,"Cancel clears particles and releases the tabletop presentation override "+game);
             }
         }
     }

@@ -61,7 +61,7 @@ namespace BoatAttack.EditorTools
                     }
                     if(page==0){CaptureCanvas(screen,Path.Combine(evidence,"notebook-home.png"));FishingNotebookUIValidation.Checks(c,evidence);}
                 }
-                var dock=c.DockConsole.GetComponentInChildren<Canvas>(true);
+                var dock=(Canvas)typeof(FishingDockConsole).GetField("_canvas",Private).GetValue(c.DockConsole);
                 foreach(var text in dock.GetComponentsInChildren<Text>(true))Check(!text.text.Contains("CONFIRM") && !text.text.Contains("HELM") && !text.text.Contains("order"),"Dock commands no longer expose old English labels");
                 c.DockConsole.PreviewForValidation();CaptureCanvas(dock,Path.Combine(evidence,"dock-commands.png"));
                 typeof(FishingDockConsole).GetField("_preview",Private).SetValue(c.DockConsole,false);c.DockConsole.Hide();

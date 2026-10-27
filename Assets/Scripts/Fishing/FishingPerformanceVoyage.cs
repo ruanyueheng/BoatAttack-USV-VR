@@ -85,8 +85,15 @@ namespace BoatAttack.Fishing
                     }
                     else if(area==1){berth=_c.Home.Berth;outward=Vector3.back;navigation=_c.HomeNavigationIndex;label="home-coast";}
                     else{int island=area-2;berth=FishingIslandWorld.Berth(island);outward=Vector3.forward;navigation=_c.IslandNavigationIndex(island);label="island-"+island;}
-                    var start=berth+outward*100;_goal=berth+outward*40;start.y=_goal.y=0;
-                    Require(_c.WaterRoute.ClearSegment(start,_goal),"Fixed sailing segment is obstructed: "+label);
+                    Vector3 start=Vector3.zero;bool found=false;
+                    foreach(float degrees in new[]{0f,15f,-15f,30f,-30f,60f,-60f,90f,-90f,180f})
+                    {
+                        var direction=Quaternion.Euler(0,degrees,0)*outward;
+                        start=berth+direction*100;_goal=berth+direction*40;start.y=_goal.y=0;
+                        if(!_c.WaterRoute.ClearPoint(start) || !_c.WaterRoute.ClearPoint(_goal) || !_c.WaterRoute.ClearSegment(start,_goal))continue;
+                        found=true;break;
+                    }
+                    Require(found,"No collision-free measured shore approach: "+label);
                     _c.TeleportForPerformance(start+Vector3.up*.5f,Quaternion.LookRotation(-outward));_c.SelectNavigation(navigation);
                     yield return new WaitForSeconds(WarmupSeconds);
                     var phase=NewPhase(label+(night==0?"-day":"-night"),"production-engine sailing; scene transition excluded");

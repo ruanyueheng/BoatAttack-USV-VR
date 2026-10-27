@@ -12,6 +12,9 @@ namespace BoatAttack.Fishing
         private Transform _model,_body,_head,_leftThigh,_rightThigh,_leftShin,_rightShin,_leftAnkle,_rightAnkle,_leftFoot,_rightFoot;
         private LocalPose _modelRest;
         private Renderer[] _renderers;
+        private ShadowCastingMode[] _filmShadows;
+        private bool[] _filmHidden;
+        private bool _filmPresentation,_filmHandsHidden,_filmWaistHidden;
         private readonly Dictionary<string,string> _clips=new Dictionary<string,string>();
         private readonly List<OverlayBone> _rigPose=new List<OverlayBone>();
         private readonly Dictionary<string,float> _fadeStart=new Dictionary<string,float>();
@@ -98,6 +101,7 @@ namespace BoatAttack.Fishing
                         _animation[clip.name].wrapMode=WrapMode.ClampForever;
                     }
             _renderers=_model.GetComponentsInChildren<Renderer>();
+            _filmShadows=new ShadowCastingMode[_renderers.Length];_filmHidden=new bool[_renderers.Length];
             if(_renderers.Length==0 || _clips.Count<3)throw new InvalidOperationException("Beach Character rig/locomotion import incomplete");
             // FBX animation bounds include exporter unit-conversion transforms and are not
             // a reliable measure of this rig. Normalize the *sampled skin*, in our local frame.
@@ -206,6 +210,19 @@ namespace BoatAttack.Fishing
             }
             CaptureRigBase();
             CaptureArmBase(paused);
+        }
+        public void SetFilmPresentation(bool active)
+        {
+            if(_renderers==null || _filmPresentation==active)return;
+            _filmPresentation=active;
+            for(int i=0;i<_renderers.Length;i++)
+            {
+                var renderer=_renderers[i];if(renderer==null)continue;
+                if(active){_filmShadows[i]=renderer.shadowCastingMode;_filmHidden[i]=renderer.forceRenderingOff;renderer.shadowCastingMode=ShadowCastingMode.On;renderer.forceRenderingOff=false;}
+                else{renderer.shadowCastingMode=_filmShadows[i];renderer.forceRenderingOff=_filmHidden[i];}
+            }
+            if(FirstPersonSkin!=null){if(active)_filmHandsHidden=FirstPersonSkin.forceRenderingOff;FirstPersonSkin.forceRenderingOff=active || _filmHandsHidden;}
+            if(WaistCover!=null){if(active)_filmWaistHidden=WaistCover.forceRenderingOff;WaistCover.forceRenderingOff=active || _filmWaistHidden;}
         }
         private void SelectClip(string clip)
         {

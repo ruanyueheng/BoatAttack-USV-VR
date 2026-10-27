@@ -81,9 +81,23 @@ namespace BoatAttack.Fishing
                 shot=Shot(station==2?"wood-saw":"forge-hammer");while(shot.MoveNext())yield return shot.Current;
                 _c.HandGames.Cancel();yield return null;
             }
+            _c.Acceptance.SelectCase(FishingAcceptanceCase.IslandLanding);yield return null;Equip(FieldItem.Empty);
+            FishingFieldWorld.Pickup cache=null;foreach(var pickup in _c.FieldWorld.Pickups)if(pickup.Id==8){cache=pickup;break;}
+            Require(cache!=null,"The appended wild cache exists");bool approached=false;
+            for(int i=0;i<12;i++)
+            {
+                var seed=cache.Feet+Quaternion.Euler(0,i*30,0)*Vector3.forward*1.4f;
+                if(!_c.Shore.Ground(seed,out var floor) || !_c.Shore.Clearance(floor))continue;
+                Stand(floor,cache.Root.position+Vector3.up*.3f);approached=true;break;
+            }
+            Require(approached,"Wild cache has a supported viewing approach");
+            yield return new WaitForSecondsRealtime(.6f);
+            Require(_c.FieldWorld.PickupById(cache.Id,cache.Item,cache.Count),"Native fixture opens the real wild cache");
+            _c.FieldWorld.ClearToolPresentation();
+            var cacheShot=Shot("wild-cache-opening");while(cacheShot.MoveNext())yield return cacheShot.Current;
             string output=_c.AcceptanceOptions.OutputDirectory;
             File.WriteAllText(Path.Combine(output,"feedback-manifest.json"),JsonUtility.ToJson(_manifest,true));
-            Debug.Log("[FEEDBACK-CAPTURE] PASS: seven native full-HUD captures; physical input was not tested. "+output);Application.Quit(0);
+            Debug.Log("[FEEDBACK-CAPTURE] PASS: eight native full-HUD captures; physical input was not tested. "+output);Application.Quit(0);
         }
         private void Equip(FieldItem item)
         {
@@ -102,7 +116,7 @@ namespace BoatAttack.Fishing
         }
         private IEnumerator Shot(string stage)
         {
-            for(int i=0;i<12;i++)yield return null;
+            yield return new WaitForSecondsRealtime(.6f);
             var capture=_c.Acceptance.CaptureFrame();while(capture.MoveNext())yield return capture.Current;
             Require(FishingAcceptance.Failure==null && _c.Acceptance.CaptureDirectory!=null,"Native backbuffer and opaque HUD proof are present");
             _manifest.captures.Add(new Entry{stage=stage,directory=_c.Acceptance.CaptureDirectory});

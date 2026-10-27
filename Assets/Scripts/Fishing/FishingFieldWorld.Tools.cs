@@ -185,6 +185,12 @@ namespace BoatAttack.Fishing
             }
             _held.localScale=Vector3.one*scale;_held.SetPositionAndRotation(position,rotation);
             bool tracked=XRSettings.isDeviceActive;
+            if(!tracked && !_c.InspectingItem && !_c.ActionUsesHeldTool && _huntTarget==null && !(item==FieldItem.Binoculars && (_c.BinocularsRaised || _c.View.BinocularBlend>0)) && !(item==FieldItem.FieldGuide && _c.GuideOpening))
+            {
+                float down=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.2f,.85f,-_c.viewCamera.transform.forward.y));
+                var lowered=shoulderFrame+bodyFrame*new Vector3(_c.Shore.Character.HandSide(false)*.12f,-.32f,.34f);
+                _held.position+=(lowered-_held.TransformPoint(rightPalm))*down;
+            }
             if(tracked)
             {
                 if(!_c.Hands.TryControllerPalm(false,out var palm,out var palmFrame)){ClearToolPresentation();_held.gameObject.SetActive(false);return;}
@@ -219,7 +225,13 @@ namespace BoatAttack.Fishing
             }
             if(pick)_c.Hands.Right.SetGripSurface(_held.TransformPoint(new Vector3(0,-.10f,0)),_held.TransformPoint(new Vector3(0,.15f,0)),.018f*scale);
             else if(item==FieldItem.HuntingSpear)_c.Hands.Right.SetGripSurface(_held.TransformPoint(new Vector3(0,0,-.14f)),_held.TransformPoint(new Vector3(0,0,.14f)),.025f*scale);
+            else if(item==FieldItem.Binoculars)
+            {
+                _c.Hands.Left.SetGripSurface(_held.TransformPoint(new Vector3(-.15f,0,-.15f)),_held.TransformPoint(new Vector3(-.15f,0,.22f)),.14f*scale);
+                _c.Hands.Right.SetGripSurface(_held.TransformPoint(new Vector3(.15f,0,-.15f)),_held.TransformPoint(new Vector3(.15f,0,.22f)),.14f*scale);
+            }
             if(pick || item==FieldItem.Rake || item==FieldItem.Lantern)_c.Hands.Right.SetForearmRoll(.65f);
+            if(_c.ActionUsesHeldTool)_c.Hands.Right.FollowAuthoredMotion();
             _lamp.enabled=item==FieldItem.Lantern && _c.LanternOn;
             _lamp.transform.position=_held.TransformPoint(LanternLightPoint);
             if(item==FieldItem.Lantern)

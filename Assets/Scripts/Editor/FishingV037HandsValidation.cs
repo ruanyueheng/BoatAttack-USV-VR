@@ -38,8 +38,10 @@ namespace BoatAttack.EditorTools
                         long before=GC.GetAllocatedBytesForCurrentThread();timer.Start();
                         for(int sample=0;sample<30;sample++)character.ApplyHandTargets(c.Hands.Left,c.Hands.Right);
                         timer.Stop();long allocated=GC.GetAllocatedBytesForCurrentThread()-before;
-                        Debug.Log("[V037-HANDS] COST grip skin solve averageMs="+(timer.Elapsed.TotalMilliseconds/30).ToString("F3")+" allocatedBytes="+allocated);
-                        Check(allocated==0,"Warmed grip skin contact solving allocates no managed memory");
+                        bool allocationCounter=before>0;
+                        Debug.Log("[V037-HANDS] COST grip skin solve averageMs="+(timer.Elapsed.TotalMilliseconds/30).ToString("F3")+" allocatedBytes="+(allocationCounter?allocated.ToString():"NA"));
+                        if(allocationCounter)Check(allocated==0,"Warmed grip skin contact solving allocates no managed memory");
+                        else Debug.Log("[V037-HANDS] LIMIT: this Mono runtime exposes no thread allocation counter; zero is not an allocation measurement.");
                         Check(character.ContactSolveCount==solved,"Rigid palm/shaft geometry reuses cached source finger rotations");
                         Check(timer.Elapsed.TotalMilliseconds/30<.5,"A rigid grip reuses the solved finger pose within a 0.5 ms editor CPU budget");
                         var hand=c.Hands.Right;float radius=hand.GripRadius;var start=hand.GripStart;var end=hand.GripEnd;
@@ -47,7 +49,7 @@ namespace BoatAttack.EditorTools
                         Check(character.ContactSolveCount>solved,"Changing the real handle radius invalidates the cached contact solve");
                         hand.SetGripSurface(start,end,radius);character.ApplyHandTargets(c.Hands.Left,hand);
                         Directory.CreateDirectory("Logs/V038");
-                        File.WriteAllText("Logs/V038/grip-performance.txt","Version: "+FishingPrototype.Version+"\nUTC: "+DateTime.UtcNow.ToString("O")+"\nWarm mean: "+(timer.Elapsed.TotalMilliseconds/30).ToString("F3")+" ms\nManaged bytes for 30 calls: "+allocated+"\nSame geometry reuses rotations; changed radius invalidates. Editor CPU timing, not headset FPS.\n");
+                        File.WriteAllText("Logs/V038/grip-performance.txt","Version: "+FishingPrototype.Version+"\nUTC: "+DateTime.UtcNow.ToString("O")+"\nWarm mean: "+(timer.Elapsed.TotalMilliseconds/30).ToString("F3")+" ms\nManaged bytes for 30 calls: "+(allocationCounter?allocated.ToString():"NA")+"\nSame geometry reuses rotations; changed radius invalidates. Editor CPU timing, not headset FPS.\n");
                     }
                     string phase=(c.Farm.Busy?c.Farm.ActionHint.Split('·')[0]:"carry")+Mathf.FloorToInt(c.Farm.WorkProgress*5);
                     if(!seen.Add(phase))continue;

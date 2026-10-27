@@ -132,9 +132,10 @@ namespace BoatAttack.Fishing
         public void RestHand(bool left)
         {
             var hand=left?_left:_right;if(!CanPresent){hand.Disable();return;}
-            GetToolFrame(out _,out var frame);var character=_c.Shore.Character;
+            var character=_c.Shore.Character;
+            var restFrame=Quaternion.Euler(0,character.transform.eulerAngles.y,0);
             float drop=Mathf.Min(.28f,character.ArmReach(left)*.7f);
-            hand.SetPose(character.ShoulderPosition(left)+frame*new Vector3(character.HandSide(left)*.035f,-drop,.07f),frame,.15f);
+            hand.SetPose(character.ShoulderPosition(left)+restFrame*new Vector3(character.HandSide(left)*.035f,-drop,.07f),restFrame,.15f);
         }
         public bool CanPresentTools=>CanPresent;
         public bool CanReach(bool left,Vector3 point,float reserve=.02f)

@@ -7,6 +7,8 @@ namespace BoatAttack.Fishing
         public sealed class Pickup
         {
             public int Id, Count;public FieldItem Item;public Transform Root;public Vector3 Feet;
+            public Transform Lid;public Quaternion ClosedLid;public float OpenedAt=-1,LidAngle;
+            public bool Cache=>Id>=8;
         }
         public sealed class Animal
         {
@@ -22,7 +24,7 @@ namespace BoatAttack.Fishing
         private Pickup _nearby;private Animal _candidate;private float _senseAt,_aiAt;private int _wander;
         public IReadOnlyList<Pickup> Pickups=>_pickups;
         public IReadOnlyList<Animal> Animals=>_animals;
-        public string ActionTitle=>_nearby!=null?"E 拾取 "+FishingBackpack.Name(_nearby.Item)+" ×"+_nearby.Count:_candidate!=null?(_c.Career.Backpack.Equipped==FieldItem.HuntingSpear && FishingHunting.Huntable(_candidate.Kind)?"F 刺击 · 蹲下接近 ":"T 观察 ")+FishingBackpack.AnimalName(_candidate.Kind):null;
+        public string ActionTitle=>_nearby!=null?(_nearby.Cache?"E 打开岸边补给箱":"E 拾取 "+FishingBackpack.Name(_nearby.Item)+" ×"+_nearby.Count):_candidate!=null?(_c.Career.Backpack.Equipped==FieldItem.HuntingSpear && FishingHunting.Huntable(_candidate.Kind)?"F 刺击 · 蹲下接近 ":"T 观察 ")+FishingBackpack.AnimalName(_candidate.Kind):null;
         public void Build(FishingPrototype c)
         {
             _c=c;_palette=new Material(c.PaletteShader){name="Field exploration vertex palette",enableInstancing=true};_owned.Add(_palette);
@@ -52,6 +54,23 @@ namespace BoatAttack.Fishing
                     }
                 }
             }
+            var cacheLoot=new[]{FieldItem.SeaTreasure,FieldItem.Fiber,FieldItem.IronOre,FieldItem.FishFeed,FieldItem.SeaTreasure,FieldItem.TurnipSeeds,FieldItem.Glass,FieldItem.Plank};
+            var cacheCounts=new[]{1,8,4,6,1,8,3,4};
+            for(int i=0;i<8;i++)
+            {
+                var seed=FishingIslandWorld.Landing(i/2);seed.y=1.08f;
+                if(!TryLocation(seed,5+i%2*8,70+i*137.5f,out var feet))throw new System.InvalidOperationException("No supported cache position: "+i);
+                var source=Resources.Load<GameObject>("FishingFeedbackTools/HomeChest");
+                if(source==null)throw new System.InvalidOperationException("Wild caches need the shared hinged chest");
+                var chest=Instantiate(source,transform).transform;chest.name="Shore supply cache "+(8+i);chest.position=feet;
+                chest.localScale*=1.15f;
+                foreach(var renderer in chest.GetComponentsInChildren<Renderer>())renderer.sharedMaterial=_palette;
+                Transform lid=null;foreach(var part in chest.GetComponentsInChildren<Transform>())if(part.name.Equals("lid",System.StringComparison.OrdinalIgnoreCase)){lid=part;break;}
+                if(lid==null)throw new System.InvalidOperationException("Wild cache lid missing");
+                var renderers=chest.GetComponentsInChildren<Renderer>();var bounds=renderers[0].bounds;foreach(var renderer in renderers)bounds.Encapsulate(renderer.bounds);
+                var collider=chest.gameObject.AddComponent<BoxCollider>();collider.center=chest.InverseTransformPoint(bounds.center);collider.size=bounds.size/chest.lossyScale.x;
+                _pickups.Add(new Pickup{Id=8+i,Item=cacheLoot[i],Count=cacheCounts[i],Root=chest,Feet=feet,Lid=lid,ClosedLid=lid.localRotation,LidAngle=-Mathf.Sign(lid.GetComponent<MeshFilter>().sharedMesh.bounds.center.z)*105});
+            }
             _held=MeshObject("Equipped field tool",_tools[FieldItem.FieldGuide]);_heldMesh=_held.GetComponent<MeshFilter>();
             _lamp=new GameObject("Field lantern light").AddComponent<Light>();_lamp.transform.SetParent(transform,false);
             _lamp.type=LightType.Point;_lamp.color=new Color(1,.67f,.30f);_lamp.range=11;_lamp.intensity=2.6f;
@@ -75,7 +94,16 @@ namespace BoatAttack.Fishing
             }
             return false;
         }
-        public void RefreshPickups(){foreach(var p in _pickups)if(p.Root!=null)p.Root.gameObject.SetActive(!_c.Career.Backpack.Collected(p.Id));_nearby=null;_c.RifleHunting?.RefreshAnimals();}
+        public void RefreshPickups()
+        {
+            foreach(var p in _pickups)if(p.Root!=null)
+            {
+                bool collected=_c.Career.Backpack.Collected(p.Id);
+                if(!collected){p.OpenedAt=-1;if(p.Lid!=null)p.Lid.localRotation=p.ClosedLid;}
+                p.Root.gameObject.SetActive(!collected || (p.OpenedAt>=0 && Time.time-p.OpenedAt<.85f));
+            }
+            _nearby=null;_c.RifleHunting?.RefreshAnimals();
+        }
         private void Update()
         {
             if(_c==null)return;
@@ -100,7 +128,13 @@ namespace BoatAttack.Fishing
                 float hop=a.Kind==LandAnimalKind.Rabbit?Mathf.Abs(Mathf.Sin(Time.time*8))*moving*.085f:Mathf.Sin(Time.time*5)*moving*.014f;
                 a.Root.position=Vector3.Lerp(a.Root.position,a.Feet+Vector3.up*hop,Mathf.Min(1,Time.deltaTime*16));
             }
-            foreach(var p in _pickups)if(p.Root!=null && p.Root.gameObject.activeSelf)p.Root.position=p.Feet+Vector3.up*(.32f+Mathf.Sin(Time.time*2+p.Id)*.025f);
+            foreach(var p in _pickups)if(p.Root!=null && p.Root.gameObject.activeSelf)
+            {
+                if(!p.Cache){p.Root.position=p.Feet+Vector3.up*(.32f+Mathf.Sin(Time.time*2+p.Id)*.025f);continue;}
+                if(p.OpenedAt<0)continue;
+                float age=Time.time-p.OpenedAt;p.Lid.localRotation=p.ClosedLid*Quaternion.Euler(p.LidAngle*Mathf.SmoothStep(0,1,age/.7f),0,0);
+                if(age>=.85f)p.Root.gameObject.SetActive(false);
+            }
             if(Time.time>=_senseAt){Sense();_senseAt=Time.time+.1f;}
         }
         public static float AlertRadius(bool crouched,bool sprinting)=>crouched?1.5f:sprinting?7f:3.5f;
@@ -145,12 +179,12 @@ namespace BoatAttack.Fishing
             }
             return true;
         }
-        private bool Visible(Vector3 target,float range,float dot)
+        private bool Visible(Vector3 target,float range,float dot,Transform owner=null)
         {
             var camera=_c.viewCamera.transform;var delta=target-camera.position;
             // 交互距离属于角色，不属于退到四米外的第三人称相机。
             return Vector3.Distance(_c.ExplorerPosition,target)<=range && Vector3.Dot(camera.forward,delta.normalized)>dot
-                && _c.Shore.ClearSight(_c.Shore.Character.EyePosition,target);
+                && _c.Shore.ClearSight(_c.Shore.Character.EyePosition,target,owner);
         }
         public void Sense()
         {
@@ -158,8 +192,9 @@ namespace BoatAttack.Fishing
             float nearest=float.MaxValue;
             foreach(var p in _pickups)
             {
+                if(_c.Career.Backpack.Collected(p.Id))continue;
                 float d=Vector3.Distance(p.Feet,_c.Shore.Position);
-                if(p.Root!=null && p.Root.gameObject.activeSelf && d<2.5f && d<nearest && Visible(p.Root.position,3.4f,.15f)){_nearby=p;nearest=d;}
+                if(p.Root!=null && p.Root.gameObject.activeSelf && d<2.5f && d<nearest && Visible(p.Root.position+(p.Cache?Vector3.up*.3f:Vector3.zero),3.4f,.15f,p.Cache?p.Root:null)){_nearby=p;nearest=d;}
             }
             nearest=float.MaxValue;float range=_c.BinocularsRaised?22:8;
             foreach(var a in _animals)
@@ -175,9 +210,9 @@ namespace BoatAttack.Fishing
             if(_c.Paused || !_c.Ashore)return false;
             Pickup pickup=null;foreach(var p in _pickups)if(p.Id==id){pickup=p;break;}
             if(pickup==null || pickup.Item!=expectedItem || pickup.Count!=expectedCount || pickup.Root==null || !pickup.Root.gameObject.activeInHierarchy
-                || Vector3.Distance(pickup.Feet,_c.Shore.Position)>=2.5f || !_c.Shore.ClearSight(_c.Shore.Character.EyePosition,pickup.Root.position))return false;
+                || Vector3.Distance(pickup.Feet,_c.Shore.Position)>=2.5f || !_c.Shore.ClearSight(_c.Shore.Character.EyePosition,pickup.Root.position+(pickup.Cache?Vector3.up*.3f:Vector3.zero),pickup.Cache?pickup.Root:null))return false;
             bool collected=_c.CollectFieldItem(id,expectedItem,expectedCount);
-            if(collected){RefreshPickups();ShowPickupPreview(expectedItem);}
+            if(collected){if(pickup.Cache){pickup.OpenedAt=Time.time;_c.WorldAudio?.Play("MechanismClick",pickup.Root.position,.4f);}RefreshPickups();ShowPickupPreview(expectedItem);}
             return collected;
         }
         public bool TryPickup()

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "HomeDesk",
+    "triangles": 2244,
+    "vertices": 1176,
+    "fbxSha256": "b59664b45c1ee42d9fb96f0e8a55fcb01451cf86f112006682dd9f3187fc4b15"
+  },
+  {
+    "name": "HomeCabinet",
+    "triangles": 1280,
+    "vertices": 688,
+    "fbxSha256": "8c203ca39016a9d096568f72cf839d5df9e83ae85e6842a89f3891e39ac68508"
+  }
+]

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Rendering;
 using UnityEngine.XR;
 
 namespace BoatAttack.Fishing
@@ -104,27 +105,14 @@ namespace BoatAttack.Fishing
             _fade=fade.GetComponent<Image>();_fade.color=Color.black;_fade.raycastTarget=false;root.SetActive(false);
             _music=gameObject.AddComponent<AudioSource>();_music.spatialBlend=0;_music.volume=.20f;_music.playOnAwake=false;
             _c.RegisterAudioSource(_music,FishingAudioCategory.Music,.20f);
+            RenderPipelineManager.beginCameraRendering+=BeginFilmRender;RenderPipelineManager.endCameraRendering+=EndFilmRender;
         }
         private AudioClip Score(Sequence sequence)
         {
             if(_scores.TryGetValue(sequence,out var clip))return clip;
-            // 原创合成配乐：每个镜头一组和弦，柔和包络；终章转入大调上行。
-            float[][] chords=sequence==Sequence.Finale?new[]{new[]{196f,246.94f,293.66f},new[]{220f,261.63f,329.63f},new[]{174.61f,220f,261.63f},new[]{196f,246.94f,293.66f,392f}}
-                :sequence==Sequence.Prologue?new[]{new[]{146.83f,220f,293.66f},new[]{130.81f,196f,261.63f},new[]{116.54f,174.61f,233.08f},new[]{146.83f,220f,277.18f},new[]{164.81f,246.94f,329.63f},new[]{146.83f,220f,293.66f}}
-                :new[]{new[]{164.81f,207.65f,246.94f},new[]{196f,246.94f,293.66f},new[]{220f,277.18f,329.63f}};
-            int shots=Films[sequence].Length;const int rate=22050;var samples=new float[(int)(rate*shots*ShotSeconds)];
-            for(int i=0;i<samples.Length;i++)
-            {
-                float t=(float)i/rate;int shot=Mathf.Min(shots-1,(int)(t/ShotSeconds));float local=t-shot*ShotSeconds;
-                float envelope=Mathf.Clamp01(local/1.4f)*Mathf.Clamp01((ShotSeconds-local)/1.6f);
-                var chord=chords[shot%chords.Length];float v=0;
-                for(int n=0;n<chord.Length;n++)v+=Mathf.Sin(t*chord[n]*Mathf.PI*2+n)*(n==0?.09f:.05f)*(1+.25f*Mathf.Sin(t*.7f+n));
-                // 轻柔分解和弦的拨弦点缀。
-                float pluckT=local%.75f;int pluck=(int)(local/.75f)%chord.Length;
-                v+=Mathf.Sin(t*chord[pluck]*2*Mathf.PI*2)*Mathf.Exp(-pluckT*5)*.04f;
-                samples[i]=v*envelope;
-            }
-            clip=AudioClip.Create("Tidebound story score "+sequence,samples.Length,1,rate,false);clip.SetData(samples,0);_scores[sequence]=clip;return clip;
+            clip=Resources.Load<AudioClip>("FishingV042/Story/"+sequence);
+            if(clip==null)throw new System.InvalidOperationException("Missing baked story score: "+sequence);
+            _scores[sequence]=clip;return clip;
         }
         private void Update()
         {
@@ -242,13 +230,13 @@ namespace BoatAttack.Fishing
             switch(camera)
             {
                 case 0:focus=harbor+Vector3.up*1.2f;from=harbor+new Vector3(-32,23,-28);to=harbor+new Vector3(-22,12,-18);break;
-                case 1:focus=_c.Home.InteractionPoint(2)+Vector3.up*.05f;from=focus+new Vector3(2.6f,2.0f,-2.4f);to=focus+new Vector3(1.6f,1.3f,-1.5f);break;
+                case 1:focus=_c.Home.InteractionPoint(2)+Vector3.up*.05f;from=focus+new Vector3(-1.8f,1.1f,1.6f);to=focus+new Vector3(-.9f,.75f,.85f);break;
                 case 2:focus=_c.fishingSpots[0];from=focus+new Vector3(-8,3.6f,-12);to=focus+new Vector3(7,2.8f,-10);break;
                 case 3:focus=actor+Vector3.up*1.1f;from=focus+facing*new Vector3(-3.2f,1.6f,3.6f);to=focus+facing*new Vector3(2.2f,.9f,2.6f);break;
                 case 4:focus=home+new Vector3(0,2,-1);from=home+new Vector3(12,7,-18);to=home+new Vector3(8,5,-14);break;
                 case 6:case 7:
                     var chest=_c.Voyage!=null && _c.Voyage.TreasureChest!=null?_c.Voyage.TreasureChest.position:actor;
-                    focus=chest+Vector3.up*.3f;
+                    focus=_c.Voyage!=null?_c.Voyage.TreasureFocus:chest+Vector3.up;
                     if(camera==6){from=focus+new Vector3(-6,4,-6);to=focus+new Vector3(-2.4f,1.6f,-2.6f);}
                     else{from=focus+new Vector3(2.6f,2.2f,-2.4f);to=focus+new Vector3(1.7f,1.5f,-1.6f);}
                     break;
@@ -283,6 +271,13 @@ namespace BoatAttack.Fishing
         public void Suspend()
         {if(!Open)return;Open=false;_camera.enabled=false;_canvas.gameObject.SetActive(false);_music.Stop();if(Current!=Sequence.Prologue && !_pending.Contains(Current))_pending.Enqueue(Current);_c.StoryModalChanged();}
         private void OnDisable()=>Suspend();
-        private void OnDestroy(){if(_film!=null){_film.Release();Destroy(_film);}foreach(var clip in _scores.Values)if(clip!=null)Destroy(clip);}
+        private void BeginFilmRender(ScriptableRenderContext context,Camera camera){if(camera==_camera && _c!=null && _c.Shore!=null)_c.Shore.Character.SetFilmPresentation(true);}
+        private void EndFilmRender(ScriptableRenderContext context,Camera camera){if(camera==_camera && _c!=null && _c.Shore!=null)_c.Shore.Character.SetFilmPresentation(false);}
+        private void OnDestroy()
+        {
+            RenderPipelineManager.beginCameraRendering-=BeginFilmRender;RenderPipelineManager.endCameraRendering-=EndFilmRender;
+            if(_c!=null && _c.Shore!=null)_c.Shore.Character.SetFilmPresentation(false);
+            if(_film!=null){_film.Release();Destroy(_film);}_scores.Clear();
+        }
     }
 }

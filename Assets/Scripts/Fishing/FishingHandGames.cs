@@ -354,6 +354,7 @@ namespace BoatAttack.Fishing
             PresentGrip(true,_leftGrip,_index==1?_tools[1]:_tools[_index],_index==0?Vector3.forward:Vector3.right);
             PresentGrip(false,_rightGrip,_index==1?_crank:_tools[_index],Vector3.forward);
             _c.Hands.Left.SetForearmRoll(.65f);_c.Hands.Right.SetForearmRoll(.65f);
+            _c.Hands.Left.FollowAuthoredMotion();_c.Hands.Right.FollowAuthoredMotion();
         }
         private void PresentGrip(bool left,Transform grip,Transform tool,Vector3 localAxis)
         {
