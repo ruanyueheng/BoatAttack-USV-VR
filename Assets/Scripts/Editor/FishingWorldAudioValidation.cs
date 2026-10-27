@@ -282,11 +282,38 @@ namespace BoatAttack.EditorTools
             c.SetSetting("Effects", 0);
             Check(!a.Play("PortalPass", position) && !a.Play("UIReject", position), "Effects zero rejects both world and interface playback");
             c.SetSetting("Effects", .7f); c.SetSetting("Ambient", 0);
-            int loops = a.LoopStarts("WaterPourLoop"), birds = a.PlayCount("SeagullCall");
-            a.MaintainLoop("validation-muted", "WaterPourLoop", position, .04f);
-            Check(a.LoopStarts("WaterPourLoop") == loops && a.LoopSource("validation-muted") == null
+            int loops = a.LoopStarts("FurnaceLoop"), birds = a.PlayCount("SeagullCall");
+            a.MaintainLoop("validation-muted", "FurnaceLoop", position, .04f);
+            Check(a.LoopStarts("FurnaceLoop") == loops && a.LoopSource("validation-muted") == null
                 && !a.Play("SeagullCall", position, .3f, FishingAudioCategory.Ambient) && a.PlayCount("SeagullCall") == birds,
                 "Ambient zero rejects new ambience requests and loop leases");
+            // EditorApplication.update can run after the player's LateUpdate.
+            // Drive the real gain step explicitly for the isolated routing probe;
+            // the separate farm test below observes normal production timing.
+            a.MaintainLoop("validation-action", "WaterPourLoop", position, .10f, category: FishingAudioCategory.Effects);
+            var actionLoop = a.LoopSource("validation-action");
+            typeof(FishingWorldAudio).GetMethod("TickLoops", Fields).Invoke(a, new object[] { .08f });
+            Check(actionLoop != null && actionLoop.isPlaying && !actionLoop.mute && actionLoop.volume >= .10f * c.EffectsVolume * .8f
+                && (FishingAudioCategory)Field(registry[actionLoop], "Category") == FishingAudioCategory.Effects,
+                "Recorded water action reaches audible gain promptly through Effects even with Ambient at zero");
+            c.SetSetting("Effects", 0);
+            Check(actionLoop.volume == 0, "Effects zero immediately silences an already playing water action");
+            c.SetSetting("Ambient", .5f);
+            a.MaintainLoop("validation-action", "WaterPourLoop", position, .04f, category: FishingAudioCategory.Ambient);
+            Check(a.LoopSource("validation-action") == actionLoop
+                && (FishingAudioCategory)Field(registry[actionLoop], "Category") == FishingAudioCategory.Ambient,
+                "Reusing the same lease for another category rebinds the pooled source exactly at that boundary");
+            typeof(FishingWorldAudio).GetMethod("TickLoops", Fields).Invoke(a, new object[] { .10f });
+            Check(actionLoop.isPlaying && actionLoop.volume > .001f,
+                "Effects zero does not suppress a reused Ambient source or multiply its channel volume twice");
+            foreach (var step in Wait(.4)) yield return step;
+            Check(a.LoopSource("validation-action") == null, "An omitted ambience lease still uses its original fade and releases");
+            c.SetSetting("Effects", .7f);
+            a.MaintainLoop("validation-action", "WaterPourLoop", position, .10f, category: FishingAudioCategory.Effects);
+            typeof(FishingWorldAudio).GetMethod("TickLoops", Fields).Invoke(a, new object[] { .08f });
+            foreach (var step in Wait(.2)) yield return step;
+            Check(a.LoopSource("validation-action") == null,
+                "A reused Effects water loop stops within a short release rather than an ambience-length tail");
             c.SetSetting("Ambient", .5f); c.ToggleQuiet();
             Check(!a.Play("MechanismClick", position) && !a.Play("UIConfirm", position), "Quiet mode rejects new world and interface cues");
             yield return null;
@@ -385,7 +412,8 @@ namespace BoatAttack.EditorTools
         {
             ClosePanels(c); c.ReturnToHarbor(); yield return null;
             var fixture = new FishingCareer(); fixture.Farm.ClaimStarter(fixture.Backpack);
-            Check(fixture.Farm.Till(0) && fixture.Farm.Plant(0, fixture.Backpack), "Prepare one unwatered crop in pure isolated career state");
+            Check(fixture.Farm.Till(0) && fixture.Farm.Plant(0, fixture.Backpack)
+                && fixture.Farm.Till(1) && fixture.Farm.Plant(1, fixture.Backpack), "Prepare two unwatered crops in pure isolated career state");
             var snapshot = fixture.Snapshot(); snapshot.prologueSeen = true; snapshot.calendar.timeFixed = true;
             c.RestoreShopTestProfile(snapshot);
             typeof(FishingPrototype).GetMethod("PrepareAcceptanceHome", Fields).Invoke(c, new object[] { FishingAcceptanceCase.HomeInterior });
@@ -426,24 +454,45 @@ namespace BoatAttack.EditorTools
             Check(c.Career.Farm.Water == FishingFarm.WaterCapacity && c.WorldAudio.PlayCount("WaterFinish") == finish + 1,
                 "Only a completed actual well refill fills the saved reservoir and plays one water-finish contact");
             foreach (var step in ApproachFarm(c, 0)) yield return step;
+            c.SetSetting("Ambient", 0); c.SetSetting("Effects", .7f);
             water = c.Career.Farm.Water; finish = c.WorldAudio.PlayCount("WaterFinish");
-            poured = c.WorldAudio.LoopStarts("WaterPourLoop"); int legacyWater = c.ActionAudio.DetailCount("FarmWater");
+            string soilCue = c.WorldAudio.HasCue("WaterSprinkleLoop") ? "WaterSprinkleLoop" : "WaterPourLoop";
+            poured = c.WorldAudio.LoopStarts(soilCue); int legacyWater = c.ActionAudio.DetailCount("FarmWater");
             Check(c.RequestWorldInteraction() && !c.RequestWorldInteraction(), "Actual crop watering starts once and refuses overlapping input");
-            actualStream = false; deadline = EditorApplication.timeSinceStartup + 12;
+            actualStream = false; float peakWaterGain = 0; deadline = EditorApplication.timeSinceStartup + 12;
             while (c.Farm.Busy && EditorApplication.timeSinceStartup < deadline)
             {
                 c.PresentCharacterFrame(); var source = c.WorldAudio.LoopSource("farm-water");
-                actualStream |= c.Farm.WaterStreamVisible && source != null && source.isPlaying && source.clip == FishingWorldAudio.Clip("WaterPourLoop");
+                actualStream |= c.Farm.WaterStreamVisible && source != null && source.isPlaying && source.clip == FishingWorldAudio.Clip(soilCue);
+                if (c.Farm.WaterStreamVisible && source != null && !source.mute) peakWaterGain = Mathf.Max(peakWaterGain, source.volume);
                 yield return null;
             }
-            Check(!c.Farm.Busy && actualStream && c.WorldAudio.LoopStarts("WaterPourLoop") > poured
+            Check(!c.Farm.Busy && actualStream && c.WorldAudio.LoopStarts(soilCue) > poured
                 && c.Career.Farm.Water == water - 1 && c.Career.Farm.Plot(0).wateredDay == c.Career.Farm.Day
                 && c.WorldAudio.PlayCount("WaterFinish") == finish + 1 && c.ActionAudio.DetailCount("FarmWater") == legacyWater,
                 "Real crop pouring sounds during its visible stream, consumes one charge, finishes once, and does not stack the old completion recording");
+            Check(c.AmbientVolume == 0 && peakWaterGain >= .11f * c.EffectsVolume * .8f,
+                "Real crop water remains clearly above zero during its short stream window when environmental wind/waves are muted");
             Check(!c.RequestWorldInteraction() && c.Career.Farm.Water == water - 1 && c.WorldAudio.PlayCount("WaterFinish") == finish + 1,
                 "An already watered plot cannot consume another charge or repeat its finish sound");
             foreach (var step in Wait(.8)) yield return step;
             Check(c.WorldAudio.LoopSource("farm-water") == null, "Completed watering leaves no continuing pouring sound");
+            foreach (var step in ApproachFarm(c, 1)) yield return step;
+            c.SetSetting("Effects", 0); c.SetSetting("Ambient", .5f);
+            water = c.Career.Farm.Water; finish = c.WorldAudio.PlayCount("WaterFinish");
+            poured = c.WorldAudio.LoopStarts(soilCue); bool mutedStream = false, unexpectedLease = false;
+            Check(c.RequestWorldInteraction(), "A second actual crop accepts watering while only Effects is muted");
+            deadline = EditorApplication.timeSinceStartup + 12;
+            while (c.Farm.Busy && EditorApplication.timeSinceStartup < deadline)
+            {
+                c.PresentCharacterFrame(); mutedStream |= c.Farm.WaterStreamVisible;
+                unexpectedLease |= c.WorldAudio.LoopSource("farm-water") != null; yield return null;
+            }
+            Check(!c.Farm.Busy && mutedStream && !unexpectedLease && c.WorldAudio.LoopStarts(soilCue) == poured
+                && c.WorldAudio.PlayCount("WaterFinish") == finish && c.Career.Farm.Water == water - 1
+                && c.Career.Farm.Plot(1).wateredDay == c.Career.Farm.Day,
+                "Effects mute suppresses actual water flow and finish recordings without suppressing the successful farming transaction");
+            c.SetSetting("Effects", .7f);
         }
 
         private static IEnumerable ApproachFarm(FishingPrototype c, int id)

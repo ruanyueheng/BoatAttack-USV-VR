@@ -163,7 +163,7 @@ namespace BoatAttack.Fishing
             }
             finally{_canCommit=false;}
             if(ok && (_canWork==FarmWork.TakeCan || _canWork==FarmWork.ReturnCan))_c.WorldAudio?.Play("CanHandle",_can.position,.5f);
-            if(ok && (_canWork==FarmWork.Refill || _canWork==FarmWork.Water))_c.WorldAudio?.Play("WaterFinish",_can.position,.35f);
+            if(ok && (_canWork==FarmWork.Refill || _canWork==FarmWork.Water))_c.WorldAudio?.Play("WaterFinish",_can.position,.6f);
             _c.ReportFarmContact(_canClock.ActionId,ok);_canClock.Cancel();ResetBucket();_waterStream.enabled=false;RestoreCanLean();
         }
         public void CancelWork()
@@ -278,7 +278,15 @@ namespace BoatAttack.Fishing
         private void PresentStream(Vector3 from,Vector3 to,bool soil)
         {
             _waterStream.enabled=true;
-            _c.WorldAudio?.MaintainLoop("farm-water","WaterPourLoop",Vector3.Lerp(from,to,.6f),soil?.05f:.04f,true,10);
+            var audio=_c.WorldAudio;
+            if(audio!=null)
+            {
+                // A separately supplied soil-sprinkling recording can replace the
+                // existing real Meowa pour. Until it exists, reuse that actual clip;
+                // never claim a missing/new synthetic asset was generated.
+                string cue=soil && audio.HasCue("WaterSprinkleLoop")?"WaterSprinkleLoop":"WaterPourLoop";
+                audio.MaintainLoop("farm-water",cue,Vector3.Lerp(from,to,.6f),soil?.11f:.08f,true,10,FishingAudioCategory.Effects);
+            }
             for(int i=0;i<12;i++){float u=i/11f;_waterStream.SetPosition(i,Vector3.Lerp(from,to,u)+Vector3.up*(Mathf.Sin(u*Mathf.PI)*.035f));}
             if(Time.time<_nextDrop)return;_nextDrop=Time.time+(_c.Weather.ReducedEffects?.10f:.045f);
             var velocity=(to-from)/.42f+Vector3.up*.5f;
