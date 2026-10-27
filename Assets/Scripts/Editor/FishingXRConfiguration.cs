@@ -51,7 +51,7 @@ namespace BoatAttack.EditorTools
             }
             xr.renderMode=OpenXRSettings.RenderMode.SinglePassInstanced;EditorUtility.SetDirty(xr);
             PlayerSettings.bundleVersion=FishingPrototype.Version;
-            PlayerSettings.Android.bundleVersionCode=39;
+            PlayerSettings.Android.bundleVersionCode=40;
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android,ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures=AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion=AndroidSdkVersions.AndroidApiLevel29;

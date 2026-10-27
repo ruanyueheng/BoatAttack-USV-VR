@@ -25,11 +25,12 @@ namespace BoatAttack.Fishing
         {
             var region=Controller.Regions;if(!RegionTitleVisible)return;
             float previous=_fade;_fade=region.Alpha;
-            float y=Mathf.Max(174,_height*.16f)+(1-Mathf.SmoothStep(0,1,Mathf.Clamp01(region.Age/1.1f)))*8;
-            ReadingVeil(new Rect(542,y-20,516,174),true);
-            WorldLabel(new Rect(600,y-12,400,62),region.Title,40,CreamInk,true,TextAnchor.MiddleCenter,onPaper:true);
-            GiltRule(700,y+46,200);
-            WorldLabel(new Rect(580,y+60,440,80),region.Subtitle.Replace("，","\n").TrimEnd('。'),16,CreamInk,false,TextAnchor.UpperCenter,onPaper:true);
+            // [Claude v0.41] 紧凑标题条：位于顶部提示下方，避免遮挡画面中心与准星。
+            float y=116+(1-Mathf.SmoothStep(0,1,Mathf.Clamp01(region.Age/1.1f)))*6;
+            ReadingVeil(new Rect(590,y-8,420,88),true);
+            WorldLabel(new Rect(600,y-6,400,44),region.Title,30,CreamInk,true,TextAnchor.MiddleCenter,onPaper:true);
+            GiltRule(720,y+42,160);
+            WorldLabel(new Rect(600,y+50,400,26),region.Subtitle.Replace("，"," · ").TrimEnd('。'),14,CreamInk,false,TextAnchor.UpperCenter,onPaper:true);
             _fade=previous;
         }
         private void DrawDialogue()

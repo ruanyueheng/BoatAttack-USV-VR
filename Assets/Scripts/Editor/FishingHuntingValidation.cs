@@ -31,6 +31,7 @@ namespace BoatAttack.EditorTools
         {
             Check(c.RifleHunting!=null && c.RifleHunting.Rifle!=null,"supplied rifle prefab resolves");
             ValidateNewAK(c);
+            ValidateEyeBounds();
             var trace=(LineRenderer)typeof(FishingRifleHunting).GetField("_trace",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(c.RifleHunting);
             Check(trace.sharedMaterial.shader==c.PaletteShader,"Shot trace reuses the packaged palette shader instead of a stripped string-only shader");
             ValidateIcons();
@@ -212,11 +213,22 @@ namespace BoatAttack.EditorTools
             c.FieldWorld.enabled=true;
             ValidateNotebookIcons(c);
         }
+        private static void ValidateEyeBounds()
+        {
+            var method=typeof(FishingRifleHunting).GetMethod("MayReachEye",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic);
+            bool Test(Matrix4x4 transform,Bounds bounds)=>(bool)method.Invoke(null,new object[]{transform,bounds,.05f});
+            Check(!Test(Matrix4x4.Translate(new Vector3(.25f,-.25f,-.6f)),new Bounds(Vector3.zero,new Vector3(.08f,.2f,.66f))),
+                "Normal chest-height rifle skips the full eye-clearance vertex scan");
+            Check(Test(Matrix4x4.identity,new Bounds(new Vector3(0,0,-.03f),new Vector3(.08f,.1f,.08f))),
+                "A stock entering the near-eye region still requires exact mesh validation");
+            Check(Test(Matrix4x4.TRS(new Vector3(0,0,-.2f),Quaternion.Euler(0,90,0),Vector3.one),new Bounds(Vector3.zero,new Vector3(.5f,.1f,.08f))),
+                "Rotated bounds preserve the near-eye safety check");
+        }
         private static void ValidateNewAK(FishingPrototype c)
         {
             var filter=c.RifleHunting.Rifle.GetComponentInChildren<MeshFilter>();var mesh=filter.sharedMesh;
-            Check(mesh.vertexCount>=30000 && mesh.vertexCount<50000 && mesh.triangles.Length==150000,
-                "new supplied AK has its original 50000 triangles, not the previous mesh");
+            Check(mesh.vertexCount>0 && mesh.vertexCount<20000 && mesh.triangles.Length>=30000 && mesh.triangles.Length<=37500,
+                "supplied AK retains its appearance within the 12500-triangle runtime budget");
             Check(Mathf.Abs(mesh.bounds.size.z-.66f)<.002f && mesh.bounds.size.y>.19f && mesh.bounds.size.x<.09f,
                 "new AK is uniformly scaled to 66 cm with muzzle along +Z and top along +Y");
             Check(Mathf.Abs(FishingRifleHunting.HeldScale-1.18f)<.0001f

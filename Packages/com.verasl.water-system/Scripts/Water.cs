@@ -32,6 +32,7 @@ namespace WaterSystem
         [SerializeField] RenderTexture _depthTex;
         public Texture bakedDepthTex;
         private Camera _depthCam;
+        private Rect? _runtimeDepthBounds;
         private Texture2D _rampTexture;
         [SerializeField]
         public Wave[] _waves;
@@ -61,6 +62,7 @@ namespace WaterSystem
         private static readonly int WaveData = Shader.PropertyToID("waveData");
         private static readonly int AbsorptionScatteringRamp = Shader.PropertyToID("_AbsorptionScatteringRamp");
         private static readonly int DepthCamZParams = Shader.PropertyToID("_VeraslWater_DepthCamParams");
+        private static readonly int WaterDepthBounds = Shader.PropertyToID("_WaterDepthBounds");
 
         private void OnEnable()
         {
@@ -85,7 +87,7 @@ namespace WaterSystem
 
         private void OnApplicationQuit()
         {
-            GerstnerWavesJobs.Cleanup();
+            Cleanup();
         }
 
         void Cleanup()
@@ -95,13 +97,22 @@ namespace WaterSystem
             {
                 _depthCam.targetTexture = null;
                 SafeDestroy(_depthCam.gameObject);
+                _depthCam = null;
             }
             if (_depthTex)
             {
+                _depthTex.Release();
                 SafeDestroy(_depthTex);
+                _depthTex = null;
             }
-
+            if (_rampTexture) { SafeDestroy(_rampTexture); _rampTexture = null; }
             waveBuffer?.Dispose();
+            waveBuffer = null;
+            if (_instance == this)
+            {
+                GerstnerWavesJobs.Cleanup();
+                _instance = null;
+            }
         }
 
         private void BeginCameraRendering(ScriptableRenderContext src, Camera cam)
@@ -152,11 +163,14 @@ namespace WaterSystem
 
         public void Init()
         {
+            if (resources == null) resources = Resources.Load<WaterResources>("WaterResources");
             SetWaves();
             GenerateColorRamp();
             if (bakedDepthTex)
             {
                 Shader.SetGlobalTexture(WaterDepthMap, bakedDepthTex);
+                PublishDepthBounds(ConfiguredDepthBounds());
+                Shader.SetGlobalVector(DepthCamZParams, new Vector4(transform.position.y + 4, surfaceData._waterMaxVisibility + 4, .01f, transform.position.y));
             }
 
             if (!gameObject.TryGetComponent(out _planarReflections))
@@ -177,7 +191,7 @@ namespace WaterSystem
 
         private void LateUpdate()
         {
-            GerstnerWavesJobs.UpdateHeights();
+            if (Application.isPlaying && GerstnerWavesJobs.Initialized) GerstnerWavesJobs.UpdateHeights();
         }
 
         public void FragWaveNormals(bool toggle)
@@ -341,6 +355,7 @@ namespace WaterSystem
         [ContextMenu("Capture Depth")]
         public void CaptureDepthMap()
         {
+            Rect bounds = ConfiguredDepthBounds();
             //Generate the camera
             if(_depthCam == null)
             {
@@ -356,45 +371,78 @@ namespace WaterSystem
 
             var t = _depthCam.transform;
             var depthExtra = 4.0f;
-            t.position = Vector3.up * (transform.position.y + depthExtra);//center the camera on this water plane height
+            t.position = new Vector3(bounds.center.x, transform.position.y + depthExtra, bounds.center.y);
             t.up = Vector3.forward;//face the camera down
 
-            _depthCam.enabled = true;
+            _depthCam.enabled = false;
             _depthCam.orthographic = true;
-            _depthCam.orthographicSize = 250;//hardcoded = 1k area - TODO
+            _depthCam.orthographicSize = bounds.height * .5f;
+            _depthCam.aspect = bounds.width / bounds.height;
             _depthCam.nearClipPlane =0.01f;
             _depthCam.farClipPlane = surfaceData._waterMaxVisibility + depthExtra;
             _depthCam.allowHDR = false;
             _depthCam.allowMSAA = false;
+            _depthCam.useOcclusionCulling = false;
             _depthCam.cullingMask = (1 << 10);
-            //Generate RT
-            if (!_depthTex)
-                _depthTex = new RenderTexture(1024, 1024, 24, RenderTextureFormat.Depth, RenderTextureReadWrite.Linear);
+            // Preserve the original 1024 texels / 500 m density, within a bounded one-time depth allocation.
+            const float texelsPerMetre = 1024f / 500f;
+            int requestedWidth = Mathf.Max(16, Mathf.CeilToInt(bounds.width * texelsPerMetre));
+            int requestedHeight = Mathf.Max(16, Mathf.CeilToInt(bounds.height * texelsPerMetre));
+            int limit = Mathf.Min(4096, SystemInfo.maxTextureSize);
+            long budget = (Application.platform == RuntimePlatform.Android ? 48L : 64L) * 1024 * 1024;
+            double scale = Math.Min(1, Math.Min((double)limit / Math.Max(requestedWidth, requestedHeight),
+                Math.Sqrt((double)budget / (4L * requestedWidth * requestedHeight))));
+            int width = Math.Max(1, (int)Math.Floor(requestedWidth * scale));
+            int height = Math.Max(1, (int)Math.Floor(requestedHeight * scale));
+            if (!_depthTex || _depthTex.width != width || _depthTex.height != height)
+            {
+                if (_depthTex) { _depthTex.Release(); SafeDestroy(_depthTex); }
+                _depthTex = new RenderTexture(width, height, 24, RenderTextureFormat.Depth, RenderTextureReadWrite.Linear)
+                { name = "WaterDepthMap", useMipMap = false, autoGenerateMips = false };
+                if (!_depthTex.Create()) throw new InvalidOperationException("Cannot allocate shoreline depth texture.");
+            }
             if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.OpenGLES2 || SystemInfo.graphicsDeviceType == GraphicsDeviceType.OpenGLES3)
             {
                 _depthTex.filterMode = FilterMode.Point;
             }
             _depthTex.wrapMode = TextureWrapMode.Clamp;
-            _depthTex.name = "WaterDepthMap";
-            //do depth capture
-            _depthCam.targetTexture = _depthTex;
-            _depthCam.Render();
+            try
+            {
+                _depthCam.targetTexture = _depthTex;
+                _depthCam.Render();
+            }
+            finally { _depthCam.enabled = false; _depthCam.targetTexture = null; }
             Shader.SetGlobalTexture(WaterDepthMap, _depthTex);
-            // set depth bufferParams for depth cam(since it doesnt exist and only temporary)
-            var _params = new Vector4(t.position.y, 250, 0, 0);
-            //Vector4 zParams = new Vector4(1-f/n, f/n, (1-f/n)/f, (f/n)/f);//2015
-            Shader.SetGlobalVector(DepthCamZParams, _params);
-
-/*            #if UNITY_EDITOR
-            Texture2D tex2D = new Texture2D(1024, 1024, TextureFormat.Alpha8, false);
-            Graphics.CopyTexture(_depthTex, tex2D);
-            byte[] image = tex2D.EncodeToPNG();
-            System.IO.File.WriteAllBytes(Application.dataPath + "/WaterDepth.png", image);
-            #endif*/
-
-            _depthCam.enabled = false;
-            _depthCam.targetTexture = null;
+            PublishDepthBounds(bounds);
+            Shader.SetGlobalVector(DepthCamZParams, new Vector4(t.position.y, _depthCam.farClipPlane, _depthCam.nearClipPlane, transform.position.y));
+            Debug.Log("[WATER-DEPTH] " + bounds + "; " + width + "x" + height + "; estimated depth storage "
+                + (4d * width * height / (1024 * 1024)).ToString("F2") + " MiB; metres/texel "
+                + (bounds.width / width).ToString("F3") + " / " + (bounds.height / height).ToString("F3"));
+            if (scale < .999) Debug.LogWarning("[WATER-DEPTH] Texture/platform memory limit reduced shoreline sample density; verify coast quality on this device.");
         }
+
+        /// <summary>One runtime capture override; does not mutate the shared settings asset.</summary>
+        public void CaptureDepthMap(Rect worldXZBounds)
+        {
+            if (!Finite(worldXZBounds.x) || !Finite(worldXZBounds.y) || !Finite(worldXZBounds.width) || !Finite(worldXZBounds.height)
+                || worldXZBounds.width <= 0 || worldXZBounds.height <= 0 || worldXZBounds.width > 100000 || worldXZBounds.height > 100000)
+                throw new ArgumentException("Shoreline depth capture requires finite positive world bounds.", nameof(worldXZBounds));
+            _runtimeDepthBounds = worldXZBounds;
+            CaptureDepthMap();
+        }
+
+        private Rect ConfiguredDepthBounds()
+        {
+            if (_runtimeDepthBounds.HasValue) return _runtimeDepthBounds.Value;
+            var area = settingsData.originOffset;
+            if (!Finite(area.x) || !Finite(area.y) || !Finite(area.z) || !Finite(area.w) || area.z <= 0 || area.w <= 0 || area.z > 100000 || area.w > 100000)
+                throw new InvalidOperationException("Water settings have invalid shoreline depth bounds.");
+            return new Rect(area.x - area.z * .5f, area.y - area.w * .5f, area.z, area.w);
+        }
+
+        private static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
+        private static void PublishDepthBounds(Rect bounds)
+            => Shader.SetGlobalVector(WaterDepthBounds, new Vector4(bounds.xMin, bounds.yMin, 1 / bounds.width, 1 / bounds.height));
 
         [Serializable]
         public enum DebugMode { none, stationary, screen };

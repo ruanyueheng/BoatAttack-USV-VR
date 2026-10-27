@@ -21,12 +21,30 @@ namespace BoatAttack.Fishing
         private bool _homeChartPriorPause;
         private float _homeChartPriorTimeScale;
         private int _homeChartConsumedFrame=-1;
+        private bool _portableChartLantern;
+        private FishingCareer _portableChartCareer;
         public bool HomeChartOpen { get; private set; }
+        public FishingPortableChart PortableChart { get; private set; }
+        public bool HomeChartReady => HomeChartOpen && (PortableChart==null || !PortableChart.Active || PortableChart.Ready);
+        public Vector3 ChartPlayerPosition => Realms!=null && Realms.Inside && Realms.Portal(Realms.Island)!=null
+            ? Realms.Portal(Realms.Island).position : ExplorerPosition;
         public bool HomeChartBlocksGameplay => HomeChartOpen || _homeChartConsumedFrame==Time.frameCount;
         public Vector3 HomeChartCenter { get; private set; }
         public Vector2 HomeChartCenterXZ => new Vector2(HomeChartCenter.x,HomeChartCenter.z);
         public float HomeChartRangeMeters { get; private set; }=700;
         public IReadOnlyList<ChartWaypoint> ChartWaypoints => _homeChartWaypoints;
+
+        public bool OpenPortableChart()
+        {
+            if(HomeChartOpen || Paused || InspectingItem || !DesktopDisplay || (Shore!=null && (Shore.Swimming || Shore.Climbing)))return false;
+            bool lantern=LanternOn;
+            if(!OpenHomeChart())return false;
+            _portableChartLantern=lantern;_portableChartCareer=Career;
+            if(PortableChart==null){PortableChart=gameObject.AddComponent<FishingPortableChart>();PortableChart.Build(this);}
+            PortableChart.Open();
+            Notice("随身航海图 · M / Esc 收起，展开后可缩放、拖动和标记航点。",5);
+            return true;
+        }
 
         public bool OpenHomeChart()
         {
@@ -44,18 +62,33 @@ namespace BoatAttack.Fishing
             return true;
         }
 
-        public void CloseHomeChart()
+        public void CloseHomeChart(bool immediate=false)
         {
             if(!HomeChartOpen)return;
+            if(!immediate && PortableChart!=null && PortableChart.Active){PortableChart.Close();return;}
+            PortableChart?.Cancel();
             HomeChartOpen=false;_homeChartConsumedFrame=Time.frameCount;
             Paused=_homeChartPriorPause;Time.timeScale=_homeChartPriorTimeScale;
             StoryModalChanged();Cursor.lockState=CursorLockMode.None;Cursor.visible=true;ApplyAudioSettings();
+            if(_portableChartCareer==Career)LanternOn=_portableChartLantern;
+            _portableChartCareer=null;
         }
 
         public bool TickHomeChart(Keyboard keyboard)
         {
-            if(!HomeChartOpen)return _homeChartConsumedFrame==Time.frameCount;
-            if(XRSettings.isDeviceActive){CloseHomeChart();return true;}
+            if(!HomeChartOpen)
+            {
+                if(_homeChartConsumedFrame==Time.frameCount)return true;
+                if((Application.isFocused || Automated) && keyboard!=null && keyboard.mKey.wasPressedThisFrame && OpenPortableChart())return true;
+                return false;
+            }
+            if(_homeChartConsumedFrame==Time.frameCount)return true;
+            if(XRSettings.isDeviceActive || (!Application.isFocused && !Automated)){CloseHomeChart(true);return true;}
+            if(PortableChart!=null && PortableChart.Active)
+            {
+                PortableChart.Tick(Time.unscaledDeltaTime);
+                if(!PortableChart.Active){CloseHomeChart(true);return true;}
+            }
             if((Application.isFocused || Automated) && keyboard!=null
                 && (keyboard.escapeKey.wasPressedThisFrame || keyboard.mKey.wasPressedThisFrame))CloseHomeChart();
             return true;
@@ -72,7 +105,7 @@ namespace BoatAttack.Fishing
         }
 
         public void CenterHomeChartOnPlayer()
-        {if(HomeChartOpen)HomeChartCenter=ExplorerPosition;}
+        {if(HomeChartOpen)HomeChartCenter=ChartPlayerPosition;}
 
         public bool HomeChartWaypoint(int target,out Vector3 world,out string name,out bool available)
         {

@@ -130,7 +130,6 @@ namespace BoatAttack.Fishing
             _c.WorkshopWorld.EnsureHomeStations();
             HideProxySurfaces();
             RelocateClearedStations();
-            WaterSystem.Water.Instance?.CaptureDepthMap();
         }
 
         private void ClearOldShore()
@@ -327,7 +326,7 @@ namespace BoatAttack.Fishing
         }
         private void OnDisable(){CancelSleep();StandUp(true);ResetOrchardMotion();}
         private void UpdateLights(){bool near=(_c.viewCamera.transform.position-Origin).sqrMagnitude<90*90;foreach(var lamp in _lamps){lamp.enabled=LightsOn && near;lamp.intensity=LightsOn?(lamp.type==LightType.Spot?Mathf.Lerp(2.2f,7.5f,1-_c.Career.Calendar.Daylight):Mathf.Lerp(.9f,1.9f,1-_c.Career.Calendar.Daylight)):0;}}
-        private void Update(){if(_c!=null){UpdateLights();UpdateLeisure();UpdateOrchard();}}
+        private void Update(){if(_c!=null){UpdateLights();UpdateLeisure();UpdateOrchard();UpdateStorageAnimation();}}
         private void OnDestroy()
         {
             DisposeLeisure();

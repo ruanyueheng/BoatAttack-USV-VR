@@ -18,7 +18,7 @@ internal static class CashierConversationTests
         check(dialogue.Topic==CashierTopic.Stations && dialogue.Speech(career,false).Contains("铁镐头") && dialogue.Speech(career,false).Contains("枪械铁件"),"Cashier accurately explains current furnace/forge/workbench separation");
         dialogue.Choose(0);check(dialogue.Speech(career,false).Contains("铁镐头 ×1") && dialogue.Speech(career,false).Contains("木棍 ×2"),"Cashier tool costs derive from current production recipe data");
         dialogue.Begin(false);dialogue.Choose(2);dialogue.Choose(2);
-        check(dialogue.Topic==CashierTopic.Lantern && dialogue.Speech(career,false).Contains("煤 ×2") && dialogue.Speech(career,false).Contains("兔毛 ×1"),"Cashier lamp recipe remains aligned with coal and fur inputs");
+        check(dialogue.Topic==CashierTopic.Lantern && dialogue.Speech(career,false).Contains("铁锭 ×2") && dialogue.Speech(career,false).Contains("玻璃 ×2") && dialogue.Speech(career,false).Contains("木炭 ×1"),"Cashier lamp recipe derives its real metal, glass and charcoal inputs");
         check(dialogue.Speech(career,false).Contains("F 点亮") && dialogue.Speech(career,true).Contains("右扳机"),"Cashier controls are specific to desktop or Pico");
         check(dialogue.Speech(career,true).Contains("腰间提灯") && dialogue.Speech(career,true).Contains("右握把") && dialogue.Speech(career,true).Contains("松手挂回"),"Cashier explains lifting and returning the actual waist lantern");
         dialogue.Begin(false);dialogue.Choose(3);dialogue.Choose(1);

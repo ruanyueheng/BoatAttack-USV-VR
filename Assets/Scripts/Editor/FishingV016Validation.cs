@@ -53,6 +53,7 @@ namespace BoatAttack.EditorTools
             Check(!c.Hands.Rod.gameObject.activeInHierarchy,"Arriving without choosing fishing keeps rod stowed");
             c.Interact();for(int i=0;i<15;i++)yield return null;
             c.PresentCharacterFrame();Check(c.Anchored && c.Hands.Rod.gameObject.activeInHierarchy,"Choosing fishing equips rod");
+            FishingV037HandsValidation.InspectRod(c,"equipped");
             Capture(c,evidence,"02-equipped");
             var crank=c.Hands.Crank;var wrist=c.Hands.Left.transform.rotation;
             for(int i=0;i<12;i++)
@@ -62,6 +63,7 @@ namespace BoatAttack.EditorTools
                 Check(Vector3.Distance(c.Hands.Left.Palm.position,c.Hands.Knob.position)<.035f,"Left palm stays on knob at angle "+i*30);
                 Check(Vector3.Distance(c.Hands.Knob.position,FishingContactGeometry.ClosestPoint(crank,c.Hands.Knob.position))<.019f,"Knob attachment lies on the rendered handle at angle "+i*30);
                 Check(Quaternion.Angle(wrist,c.Hands.Left.transform.rotation)<1,"Free-spinning knob does not rotate the wrist");
+                FishingV037HandsValidation.InspectRod(c,"crank "+i*30);
                 if(i%3==0)Capture(c,evidence,"03-crank-"+i);
             }
             Check(c.Cast(),"Production cast starts landing fixture");
@@ -73,6 +75,7 @@ namespace BoatAttack.EditorTools
             c.PresentCharacterFrame();
             Capture(c,evidence,"04-landing");
             Check(c.Hands.Rod.gameObject.activeInHierarchy && c.Hands.Right.Visible,"Right hand retains rod while left hand nets");
+            FishingV037HandsValidation.InspectRod(c,"landing");
             Check(Vector3.Distance(c.Shore.Character.PalmPosition(false),c.Hands.Right.Palm.position)<.035f,"Right palm actually holds rod during landing; error="+Vector3.Distance(c.Shore.Character.PalmPosition(false),c.Hands.Right.Palm.position)+" reach="+c.Shore.Character.ArmReach(false)+" shoulderDistance="+Vector3.Distance(c.Shore.Character.ShoulderPosition(false),c.Hands.Right.Palm.position));
             Check(Vector3.Distance(c.Shore.Character.PalmPosition(true),c.Hands.Left.Palm.position)<.035f,"Left palm actually reaches net handle");
             Check(c.Hands.CanReach(true,c.Hands.Left.Palm.position,-.005f),"Net grip remains within real arm reach");

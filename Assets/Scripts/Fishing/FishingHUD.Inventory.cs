@@ -5,7 +5,7 @@ namespace BoatAttack.Fishing
     {
         private int _moveFrom=-1,_discardSlot=-1,_discardCount;
         private FieldItem _discardItem;
-        public void ClearFieldSelection(){_moveFrom=-1;_discardSlot=-1;_homeStorageOpen=false;}
+        public void ClearFieldSelection(){_moveFrom=-1;_discardSlot=-1;_homeStorageOpen=false;_ecologyPage=false;}
         private void DrawInventoryNotice()
         {
             string text=Controller.SaveWarning.Length>0?Controller.SaveWarning:Controller.VisibleMessage;
@@ -41,6 +41,7 @@ namespace BoatAttack.Fishing
         private void DrawInventory()
         {
             if(_homeStorageOpen){DrawHomeStorage();return;}
+            if(_ecologyPage){DrawHomeEcology();return;}
             Fill(-_offset/_scale,0,Screen.width/_scale,_height,new Color(.01f,.025f,.03f,.78f));
             var panel=BackpackPanel;Card(panel,Mint);
             Label(320,156,340,45,_craftPage?"海岸工坊":"随身行囊",32,Color.white,true);
@@ -69,7 +70,7 @@ namespace BoatAttack.Fishing
             }
             Label(320,634,586,50,_moveFrom<0?"点击物品，再点击目标格：移动 / 合并 / 交换\nShift + 点击：快捷栏与储物区之间快速转移":"已选中 "+FishingBackpack.Name(Controller.Career.Backpack.At(_moveFrom).item)+"：点击目标格转移；右键目标格分出一半。",15,Muted);
             var selected=Controller.Career.Backpack.At(_moveFrom);
-            bool disposable=selected.count>0 && selected.item!=FieldItem.FieldGuide;
+            bool disposable=selected.count>0 && selected.item!=FieldItem.FieldGuide && !FishingBackpack.IsQuestItem(selected.item);
             bool confirming=_discardSlot==_moveFrom && _discardItem==selected.item && _discardCount==selected.count;
             if(Button(new Rect(320,697,210,35),confirming?"确认永久销毁 ×"+selected.count:"销毁选中物品…",disposable,false,14))
             {
@@ -77,7 +78,7 @@ namespace BoatAttack.Fishing
                 else{_discardSlot=_moveFrom;_discardItem=selected.item;_discardCount=selected.count;}
             }
             if(Button(new Rect(545,697,190,35),"拿起检视",selected.count>0,false,14)){int slot=_moveFrom;ClearFieldSelection();Controller.InspectFieldItem(slot);return;}
-            Label(747,698,164,45,confirming?"不可撤销":"Z 检视快捷栏物品",13,confirming?Danger:Faint);
+            Label(747,698,164,45,FishingBackpack.IsQuestItem(selected.item)?"航海遗物 · 可存入家园箱":confirming?"不可撤销":"Z 检视快捷栏物品",13,confirming?Danger:Faint);
             Fill(933,235,1,495,Hairline);
             Label(958,239,300,30,"野外手册",23,Mint,true);
             string[] notes={"野兔掉落兔肉和兔毛。","赤狐掉落狐狸肉和狐皮。","龟类掉落海龟肉和龟壳；海鸥掉落肉和羽毛。"};
@@ -88,6 +89,7 @@ namespace BoatAttack.Fishing
                 Label(972,y+9,286,25,(seen?"已记录 · ":"待观察 · ")+FishingBackpack.AnimalName((LandAnimalKind)i),17,seen?Mint:Muted,true);
                 Label(972,y+40,286,34,notes[i],13,Faint);
             }
+            if(Button(new Rect(958,735,316,31),"家园生态 · 鱼缸 / 活捉 / 繁殖",true,false,15)){OpenHomeEcologyPage();return;}
             Label(958,595,316,30,"工具使用",20,Gold,true);
             Label(958,635,312,92,"自然手册：F 翻开 · T 观察 · 望远镜：F 举镜\n提灯：F 点亮 · 夜间照路\n猎矛：蹲下接近，F 刺击野兔 / 赤狐\n生兽肉 + 燃料 → 熔炉炭烤兽肉",14,Muted);
         }

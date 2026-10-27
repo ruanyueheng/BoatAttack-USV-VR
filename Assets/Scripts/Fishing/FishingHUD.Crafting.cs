@@ -35,11 +35,12 @@ namespace BoatAttack.Fishing
             Label(797,286,425,38,FishingBackpack.Name(r.Output)+" ×"+r.Count,25,Color.white,true);
             Label(744,335,490,24,"需要："+FishingRecipes.StationName(r.Station)+(smelt?"  ·  每份 8 秒，关背包后继续":"  ·  材料齐全后立即制作"),15,Muted);
             int quantity=smelt?_batch:1;float y=375;bool enough=true;
+            float costHeight=r.Costs.Length>4?25:33;
             foreach(var cost in r.Costs)
             {
                 int needed=cost.count*quantity,have=bag.Count(cost.item);enough &= have>=needed;
-                FieldIcon(new Rect(746,y,26,26),cost.item);
-                Label(784,y,442,28,FishingBackpack.Name(cost.item)+"   "+have+" / "+needed,19,have>=needed?Mint:Danger);y+=33;
+                FieldIcon(new Rect(746,y,costHeight-3,costHeight-3),cost.item);
+                Label(784,y,442,costHeight,FishingBackpack.Name(cost.item)+"   "+have+" / "+needed,r.Costs.Length>4?16:19,have>=needed?Mint:Danger);y+=costHeight;
             }
             if(smelt)
             {
@@ -57,7 +58,8 @@ namespace BoatAttack.Fishing
             else
             {
                 bool station=context==r.Station || r.Station==CraftStation.Hand;
-                if(Button(new Rect(746,500,522,45),station?(context==CraftStation.Forge?"锻造  ":"制作  ")+FishingBackpack.Name(r.Output):"靠近"+FishingRecipes.StationName(r.Station)+"按 E 后制作",station && enough,false,18))world.Craft(r.Id);
+                if(Button(new Rect(746,Mathf.Max(500,y+8),522,45),station?(context==CraftStation.Forge?"锻造  ":"制作  ")+FishingBackpack.Name(r.Output):"靠近"+FishingRecipes.StationName(r.Station)+"按 E 后制作",station && enough,false,18))
+                {if(r.Id=="voyage-compass")Controller.Voyage.CraftCompass();else world.Craft(r.Id);}
             }
             var current=world.State.Station(world.SelectedStation);
             if(context==CraftStation.Furnace && current!=null)
@@ -68,7 +70,7 @@ namespace BoatAttack.Fishing
                 Label(746,632,522,34,"背包打开时世界暂停；退出后继续烧制。离开岸边也会加工。",14,Muted);
                 if(current.ready>0 && !smelt && Button(new Rect(746,671,230,34),"领取炉内成品",true,false,15))world.Collect();
             }
-            else Label(746,599,514,70,"木堆 / 草丛 / 石料：靠近按 E 采集。\n山脚煤矿：手持镐按 E；煤 + 兔毛 / 狐皮可制灯笼。\n资源 90 秒恢复；铁镐提高石矿采集量。",15,Muted);
+            else Label(746,599,514,70,"漂流木加工木板与木柄，纤维绕成绳索。\n提灯用铁框、玻璃和木炭组装；皮毛用于家园织物。\n四境遗物可在工作台组装远航罗盘。",15,Muted);
             if(context!=CraftStation.Hand && current!=null && !current.permanent)
                 if(Button(new Rect(1034,681,234,34),"收回此设施",current.remaining==0 && current.ready==0,false,15))world.Remove();
             Label(320,737,950,24,"设施与炉内物品独立保存 · 满包不吞材料 · 公共工坊位于西侧初始登岸点附近",14,Faint);

@@ -20,7 +20,7 @@ namespace BoatAttack.Fishing
         public void OpenStartMenu()
         {
             if(!DesktopDisplay || Prologue.Open || Home.Sleeping || HasPendingCatch || StoryBlocksGameplay)return;
-            CloseHomeChart();Save();SaveSettings();
+            CloseHomeChart(true);Save();SaveSettings();
             if(InventoryOpen)ToggleInventory();
             if(JournalOpen)ToggleJournal();
             if(!Paused)TogglePause();

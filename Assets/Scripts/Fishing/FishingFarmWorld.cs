@@ -13,7 +13,8 @@ namespace BoatAttack.Fishing
         private readonly GameObject[] _soil=new GameObject[FishingFarm.PlotCount];
         private readonly Renderer[][] _soilSurfaces=new Renderer[FishingFarm.PlotCount][];
         private Material _dry,_wet;
-        private Transform _hoe,_can;
+        private Transform _hoe,_can,_rake;
+        private Material _rakeMaterial;
         private int _actionPlot=-1;
         private FarmWork _actionWork;
         public Transform Root {get;private set;}
@@ -41,6 +42,7 @@ namespace BoatAttack.Fishing
             }
             FishingV019Art.Sign("回潮菜园\n翻土播种 → 井边拿壶打水 → 提壶浇灌\n每天浇水 · 三夜成熟 · 空壶放回井边",Root,new Vector3(9,1.7f,-11.3f),.021f,new Color(.98f,.91f,.72f));
             _hoe=Model("GardenHoe",Root,Vector3.zero,false);_hoe.gameObject.SetActive(false);
+            _rake=Instantiate(Resources.Load<GameObject>("FishingFeedbackTools/Rake"),Root).transform;_rake.name="Garden player rake";_rakeMaterial=new Material(c.PaletteShader);foreach(var r in _rake.GetComponentsInChildren<Renderer>())r.sharedMaterial=_rakeMaterial;_rake.gameObject.SetActive(false);
             BuildWateringCan(fixtures);
             Refresh();
         }
@@ -136,18 +138,19 @@ namespace BoatAttack.Fishing
         {
             if(_c==null)return;
             bool active=!Busy && _c.WorldActionBusy && _c.Actions.TargetId=="farm:"+_actionPlot && !_c.Paused && _c.Hands.Right.Visible;
-            _hoe.gameObject.SetActive(active && _actionWork==FarmWork.Till);
+            bool rake=_c.Career.Backpack.Equipped==FieldItem.Rake;var tool=rake?_rake:_hoe;
+            _hoe.gameObject.SetActive(active && _actionWork==FarmWork.Till && !rake);_rake.gameObject.SetActive(active && _actionWork==FarmWork.Till && rake);
             if(active && _actionWork==FarmWork.Till)
             {
                 var palm=_c.Hands.Right.Palm.position;
-                var rotation=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0)*Quaternion.Euler(35,0,-12);
-                var grip=new Vector3(.036f,0,0);var handRotation=Quaternion.LookRotation(Vector3.forward,Vector3.right);
-                _hoe.SetPositionAndRotation(palm-rotation*grip,rotation);
-                _c.Hands.SetToolTarget(false,_hoe,grip,handRotation,.8f,fingers:new FishingFingerPose(.7f,.8f,.82f,.85f,.7f));
-                _c.Hands.Right.SetGripSurface(_hoe.TransformPoint(Vector3.down*.12f),_hoe.TransformPoint(Vector3.up*.14f),.018f);
+                var rotation=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0)*Quaternion.Euler(rake?145:35,0,-12);
+                var grip=rake?new Vector3(0,.1f,0):new Vector3(.036f,0,0);var handRotation=Quaternion.LookRotation(Vector3.forward,Vector3.right);
+                tool.SetPositionAndRotation(palm-rotation*grip,rotation);
+                _c.Hands.SetToolTarget(false,tool,grip,handRotation,.8f,fingers:new FishingFingerPose(.7f,.8f,.82f,.85f,.7f));
+                _c.Hands.Right.SetGripSurface(tool.TransformPoint(rake?new Vector3(0,.02f,0):Vector3.down*.12f),tool.TransformPoint(Vector3.up*.18f),.018f);
                 _c.Hands.Right.SetForearmRoll(.65f);
             }
         }
-        private void OnDestroy(){if(_dry!=null)Destroy(_dry);if(_wet!=null)Destroy(_wet);DestroyCanPresentation();}
+        private void OnDestroy(){if(_rakeMaterial!=null)Destroy(_rakeMaterial);if(_dry!=null)Destroy(_dry);if(_wet!=null)Destroy(_wet);DestroyCanPresentation();}
     }
 }

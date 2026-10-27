@@ -82,7 +82,13 @@ float2 AdjustedDepth(half2 uvs, half4 additionalData)
 
 float WaterTextureDepth(float3 posWS)
 {
-    return (1 - SAMPLE_TEXTURE2D_LOD(_WaterDepthMap, sampler_WaterDepthMap_linear_clamp, posWS.xz * 0.002 + 0.5, 1).r) * (_MaxDepth + _VeraslWater_DepthCamParams.x) - _VeraslWater_DepthCamParams.x;
+    float2 uv = (posWS.xz - _WaterDepthBounds.xy) * _WaterDepthBounds.zw;
+    if (any(uv < 0) || any(uv > 1)) return _MaxDepth;
+    float rawDepth = SAMPLE_TEXTURE2D_LOD(_WaterDepthMap, sampler_WaterDepthMap_linear_clamp, uv, 0).r;
+#if UNITY_REVERSED_Z
+    rawDepth = 1 - rawDepth;
+#endif
+    return lerp(_VeraslWater_DepthCamParams.z, _VeraslWater_DepthCamParams.y, rawDepth) - _VeraslWater_DepthCamParams.x;
 }
 
 float3 WaterDepth(float3 posWS, half4 additionalData, half2 screenUVs)// x = seafloor depth, y = water depth

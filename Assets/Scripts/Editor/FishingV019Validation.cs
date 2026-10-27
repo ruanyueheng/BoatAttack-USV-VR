@@ -52,7 +52,7 @@ namespace BoatAttack.EditorTools
             FishingV016Validation.Capture(c,evidence,"shop-interior");
             var display=c.TackleShop.transform.Find("V018 stocked chandlery");Check(display.childCount>70 && display.GetComponents<BoxCollider>().Length==2,"Store has distinct 3D goods and retained clear aisle colliders");
             var saved=FishingSaveStore.Load(c.SavePath,out string warning);
-            Check(warning=="" && saved.Snapshot().version==15 && saved.Lore.Finale && saved.Lore.ClearCount==4,"Real Unity JSON story save round trip");
+            Check(warning=="" && saved.Snapshot().version==FishingSaveData.CurrentVersion && saved.Lore.Finale && saved.Lore.ClearCount==4,"Real Unity JSON story save round trip");
             c.ReturnToHarbor();yield return null;yield return null;
             var traversal=Traversal(c,evidence);while(traversal.MoveNext())yield return null;
             c.ReturnToHarbor();yield return null;yield return null;

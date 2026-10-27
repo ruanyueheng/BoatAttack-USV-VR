@@ -11,11 +11,14 @@ namespace BoatAttack.Fishing
     public sealed class FishingHandGames : MonoBehaviour
     {
         private FishingPrototype _c;
-        private readonly Transform[] _stations=new Transform[2],_tools=new Transform[2];
-        private readonly TextMesh[] _signs=new TextMesh[2];
-        private readonly Light[] _lamps=new Light[2];
+        private readonly Transform[] _stations=new Transform[4],_tools=new Transform[4];
+        private readonly TextMesh[] _signs=new TextMesh[4];
+        private readonly Light[] _lamps=new Light[4];
         private readonly Dictionary<Renderer,bool> _homeLabels=new Dictionary<Renderer,bool>();
+        private Material _toolMaterial;
         private Material _material,_sandMaterial,_shellMaterial,_grainMaterial;
+        private readonly Transform[] _workLeft=new Transform[2],_workRight=new Transform[2];
+        private Quaternion _toolRest;
         private Transform _crank,_coil,_sand,_tray,_caughtSand,_feedCoil;
         private readonly Transform[] _shells=new Transform[6],_grains=new Transform[32];
         private readonly float[] _grainAge=new float[32];
@@ -33,6 +36,8 @@ namespace BoatAttack.Fishing
         private Vector2 _mouse,_origin,_motion;
         private Vector3 _toolHome,_cameraPosition,_nativeCenter;
         private Quaternion _frame,_cameraRotation,_nativeMotionFrame;
+        private bool _recipeHeld=true;
+        public bool ForgeGunParts {get;private set;}
         private bool _ready,_calibrated,_exitHeld,_desktopLabels;
         private int _index,_lastPercent=-1;
         private float _started;
@@ -44,23 +49,24 @@ namespace BoatAttack.Fishing
         public FishingHandTask Task=>_task;
         public Transform Station(int index)=>_stations[index];
         public Vector3 Approach(int index)=>_stations[index].TransformPoint(new Vector3(0,0,.60f));
-        public Transform ActiveTool=>!Active?null:_index==0?_tools[0]:_crank;
+        public Transform ActiveTool=>!Active?null:_index==1?_crank:_tools[_index];
         public Vector3 HandlePoint=>!Active?Vector3.zero:_rightGrip.position;
-        public static string Name(int index)=>index==0?"潮汐摇筛":"手摇绕绳";
+        public static string Name(int index)=>index==0?"潮汐摇筛":index==1?"手摇绕绳":index==2?"往复锯木":"锻锤塑形";
         public static string StartHint(bool desktop)=>desktop?"E 动手试试":"右手柄 A 动手试试";
-        public string Instruction=>_index==0?"按住鼠标左键，轻轻左右摇筛":"按住鼠标左键，沿摇柄画圈绕线";
-        public int Count=>_task==null?0:_index==0?_task.Strokes:Mathf.FloorToInt(_task.Progress*3);
+        public string Instruction=>_index==1?"按住鼠标左键，沿摇柄画圈绕线":_index==3?"按住鼠标左键，上下挥动锻锤":"按住鼠标左键，左右往复";
+        public int Count=>_task==null?0:_index==1?Mathf.FloorToInt(_task.Progress*3):_task.Strokes;
         public void Build(FishingPrototype c)
         {
             _c=c;_material=Resources.Load<Material>("FishingV034/Handcraft");
             if(_material==null)throw new System.InvalidOperationException("Prepare V034 handcraft art before opening the scene.");
+            _toolMaterial=new Material(c.PaletteShader){name="Handcraft tool vertex colours"};
             _sandMaterial=new Material(_material);_sandMaterial.SetColor("_BaseColor",new Color(.90f,.79f,.60f));_sandMaterial.SetFloat("_Smoothness",.25f);
             _shellMaterial=new Material(Resources.Load<Material>("FishingV035/Coastal"));_shellMaterial.SetColor("_BaseColor",new Color(1,.87f,.82f));
             _grainMaterial=new Material(c.PaletteShader){name="Warm sifted sand"};_grainMaterial.SetColor("_BaseColor",new Color(.67f,.45f,.23f));_grainMaterial.SetFloat("_Shadows",1);
-            for(int i=0;i<2;i++)
+            for(int i=0;i<4;i++)
             {
                 var root=new GameObject(Name(i)).transform;root.SetParent(transform,false);
-                var seed=c.Home.Origin+new Vector3(i==0?-3.5f:3.5f,.2f,-6.2f);
+                var seed=c.Home.Origin+(i<2?new Vector3(i==0?-3.5f:3.5f,.2f,-6.2f):new Vector3(-10,.2f,i==2?-4:0));
                 if(!c.Shore.Ground(seed,out var floor) || !c.Shore.Clearance(floor+Vector3.back*.6f))
                     throw new System.InvalidOperationException("Handcraft needs a supported, reachable porch footing.");
                 root.SetPositionAndRotation(floor,Quaternion.Euler(0,180,0));_stations[i]=root;
@@ -86,7 +92,7 @@ namespace BoatAttack.Fishing
                     BuildGrains(root);
                     _sieveGripA=Marker(_tools[0],"SieveGripA");_sieveGripB=Marker(_tools[0],"SieveGripB");
                 }
-                else
+                else if(i==1)
                 {
                     _tools[1]=Model("WinderBody",root);_tools[1].localPosition=new Vector3(0,.958f,0);
                     _tools[1].localScale=Vector3.one*1.6f;_tools[1].localRotation=Quaternion.identity;
@@ -96,6 +102,20 @@ namespace BoatAttack.Fishing
                     _supportA=Marker(_tools[1],"WinderSupportA");_supportB=Marker(_tools[1],"WinderSupportB");_winderHandle=Marker(_crank,"WinderHandle");
                     _feedCoil=Model("WinderCoil",root);_feedCoil.localPosition=new Vector3(-.25f,.99f,-.07f);_feedCoil.localScale=Vector3.one*.65f;
                     _thread=FishingArt.Line("Flax feeding into spindle",root,c.cream,.002f,false);_thread.positionCount=12;_thread.useWorldSpace=true;
+                }
+                if(i>=2)
+                {
+                    _tools[i]=Model(i==2?"Saw":"Hammer",root,"FishingFeedbackTools/");
+                    _tools[i].localPosition=i==2?new Vector3(-.325f,1.08f,-.02f):new Vector3(-.30f,1.34f,-.02f);
+                    _tools[i].localRotation=Quaternion.Euler(0,0,i==2?-90:-130);
+                    _workRight[i-2]=new GameObject("Tool grip").transform;_workRight[i-2].SetParent(_tools[i],false);_workRight[i-2].localPosition=new Vector3(0,.1f,0);
+                    _workLeft[i-2]=new GameObject("Work support").transform;_workLeft[i-2].SetParent(root,false);_workLeft[i-2].localPosition=new Vector3(.22f,1.02f,.2f);
+                    var piece=Model(i==2?"Plank":"IronIngot",root,"FishingV023/Items/");piece.localPosition=new Vector3(0,1.0f,0);
+                    var surfaces=piece.GetComponentsInChildren<Renderer>();var bounds=surfaces[0].bounds;foreach(var r in surfaces)bounds.Encapsulate(r.bounds);
+                    var size=i==2?new Vector3(.6f,.05f,.18f):new Vector3(.2f,.07f,.12f);
+                    piece.localScale=Vector3.Scale(piece.localScale,new Vector3(size.x/bounds.size.x,size.y/bounds.size.y,size.z/bounds.size.z));
+                    bounds=surfaces[0].bounds;foreach(var r in surfaces)bounds.Encapsulate(r.bounds);piece.position+=root.TransformPoint(new Vector3(0,1,0))-bounds.center;
+                    if(i==2)foreach(var r in surfaces)r.sharedMaterial=_c.wood;
                 }
                 var sign=new GameObject("Small handcraft label",typeof(TextMesh));sign.transform.SetParent(root,false);sign.transform.localPosition=new Vector3(0,1.19f,-.10f);
                 var label=sign.GetComponent<TextMesh>();label.font=FishingUIFont.Font;label.fontSize=32;label.characterSize=.0045f;
@@ -120,7 +140,7 @@ namespace BoatAttack.Fishing
             var source=Resources.Load<GameObject>(folder+name);
             if(source==null)throw new System.InvalidOperationException("Missing V034 handcraft model "+name);
             var root=new GameObject(name).transform;root.SetParent(parent,false);var go=Instantiate(source,root,false);
-            foreach(var renderer in go.GetComponentsInChildren<Renderer>())renderer.sharedMaterial=folder=="FishingV034/"?_material:Resources.Load<Material>(folder+"Coastal");
+            foreach(var renderer in go.GetComponentsInChildren<Renderer>())renderer.sharedMaterial=folder=="FishingV034/"?_material:(folder=="FishingFeedbackTools/" || folder=="FishingV023/Items/")?_toolMaterial:Resources.Load<Material>(folder+"Coastal");
             return root;
         }
         private void BuildGrains(Transform parent)
@@ -153,7 +173,7 @@ namespace BoatAttack.Fishing
         {
             index=-1;root=null;if(_c==null || !_c.Ashore || _c.Shore.Swimming || _c.Shore.Climbing)return false;
             float best=1.8f;
-            for(int i=0;i<2;i++)
+            for(int i=0;i<4;i++)
             {
                 float distance=Vector3.Distance(_c.Shore.Position,_stations[i].position);var target=_tools[i].position;
                 if(distance<best && Vector3.Dot(_c.viewCamera.transform.forward,(target-_c.viewCamera.transform.position).normalized)>.2f
@@ -164,26 +184,26 @@ namespace BoatAttack.Fishing
         }
         public bool Begin(int index)
         {
-            if(Active || index<0 || index>1 || _c.Paused || _c.StoryBlocksGameplay || _c.ShopBlocksGameplay || _c.HasPendingCatch || _c.WorldActionBusy
+            if(Active || index<0 || index>3 || _c.Paused || _c.StoryBlocksGameplay || _c.ShopBlocksGameplay || _c.HasPendingCatch || _c.WorldActionBusy
                 || _c.InventoryOpen || _c.JournalOpen || _c.XRNotebook.BlocksGameplay || !TryTarget(out int nearby,out _) || nearby!=index)return false;
             if(FishingPrototype.FlatDistance(_c.Shore.Position,_stations[index].position)>.67f)
             {_c.Notice("再靠近一点，站到桌沿旁就能动手了。",4);return false;}
-            var task=new FishingHandTask((FishingHandTaskKind)index);
-            if(!task.HasMaterials(_c.Career.Backpack)){_c.Notice(Name(index)+"需要"+(index==0?"砂×2":"植物纤维×3")+"，完成前不会扣除材料。",5);return false;}
+            var task=new FishingHandTask((FishingHandTaskKind)index,index==3 && ForgeGunParts,_c.Career.Lore);
+            if(!task.HasMaterials(_c.Career.Backpack)){_c.Notice(Name(index)+"需要"+(index==0?"砂×2":index==1?"植物纤维×3":index==2?"漂流木×1":ForgeGunParts?"铁锭×6":"铁锭×3")+"，完成前不会扣除材料。",5);return false;}
             if(_c.DesktopDisplay)
             {
                 _c.Shore.SetCrouch(false);
                 if(_c.Shore.Crouched){_c.Notice("站起身后再开始桌边手作。",4);return false;}
             }
-            _index=index;_task=task;_career=_c.Career;_ready=_calibrated=false;_exitHeld=true;_mouse=_motion=new Vector2(.1f,0);
+            _index=index;_task=task;_career=_c.Career;_ready=_calibrated=false;_exitHeld=_recipeHeld=true;_mouse=_motion=new Vector2(.1f,0);
             _motionSpeed=_visualSpeed=_shakePhase=_emission=0;
-            _frame=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0);_toolHome=_tools[index].localPosition;
+            _frame=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0);_toolHome=_tools[index].localPosition;_toolRest=_tools[index].localRotation;
             if(index==0)
             {
                 bool aIsRight=Vector3.Dot(_sieveGripA.position-_sieveGripB.position,_frame*Vector3.right)>0;
                 _leftGrip=aIsRight?_sieveGripB:_sieveGripA;_rightGrip=aIsRight?_sieveGripA:_sieveGripB;
             }
-            else
+            else if(index==1)
             {
                 var facing=Vector3.ProjectOnPlane(_c.Shore.Character.EyePosition-_tools[1].position,Vector3.up);
                 if(facing.sqrMagnitude>.01f)_tools[1].rotation=Quaternion.LookRotation(facing);
@@ -193,6 +213,7 @@ namespace BoatAttack.Fishing
                 _crank.localRotation=Quaternion.Euler(0,0,_crankStart+5);_crankSign=Vector3.Dot(_winderHandle.position-before,Vector3.up)>0?1:-1;
                 _crank.localRotation=Quaternion.Euler(0,0,_crankStart);
             }
+            else {_leftGrip=_workLeft[index-2];_rightGrip=_workRight[index-2];}
             _cameraPosition=_c.DesktopDisplay?_c.Shore.Character.EyePosition:_c.viewCamera.transform.position;_cameraRotation=_c.viewCamera.transform.rotation;_started=Time.unscaledTime;_lastPercent=-1;
             _c.StoryModalChanged();_c.FieldWorld.ClearToolPresentation();
             _c.Shore.Character.SetTabletopView(true);
@@ -207,6 +228,13 @@ namespace BoatAttack.Fishing
             _canvas.gameObject.SetActive(!_c.DesktopDisplay);_title.text=Name(index);
             Cursor.lockState=CursorLockMode.None;Cursor.visible=true;return true;
         }
+        public void SwitchForgeOutput()
+        {
+            if(!Active || _index!=3)return;
+            var next=new FishingHandTask(FishingHandTaskKind.Forge,!ForgeGunParts);
+            if(!next.HasMaterials(_c.Career.Backpack)){_c.Notice("切换配方需备齐铁锭：镐头3个，枪械铁件6个；本次材料未扣除。",5);return;}
+            ForgeGunParts=!ForgeGunParts;_task=next;_ready=_calibrated=false;_lastPercent=-1;
+        }
         public bool Tick(Keyboard keyboard,Mouse mouse,bool focused,bool xr)
         {
             if(!Active)return false;
@@ -217,6 +245,7 @@ namespace BoatAttack.Fishing
             if(xr)
             {
                 device=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);held=Grip(device);device.TryGetFeatureValue(CommonUsages.secondaryButton,out exit);
+                device.TryGetFeatureValue(CommonUsages.primaryButton,out bool recipe);if(recipe && !_recipeHeld && _index==3)SwitchForgeOutput();_recipeHeld=recipe;
                 var head=InputDevices.GetDeviceAtXRNode(XRNode.Head);
                 bool nativePositionTracked=device.TryGetFeatureValue(CommonUsages.devicePosition,out var nativePosition);
                 bool native=head.TryGetFeatureValue(CommonUsages.deviceRotation,out var nativeHeadRotation) && nativePositionTracked;
@@ -240,7 +269,7 @@ namespace BoatAttack.Fishing
                             point=SieveMotionPoint(nativePosition,_nativeCenter,_nativeMotionFrame);
                         }
                     }
-                    if(_index==0)
+                    if(_index!=1)
                     {
                         if(!_calibrated)_nativeMotionFrame=Quaternion.Euler(0,nativeHeadRotation.eulerAngles.y,0);
                         point=SieveMotionPoint(nativePosition,Vector3.zero,_nativeMotionFrame);
@@ -262,19 +291,19 @@ namespace BoatAttack.Fishing
                 _motionSpeed=Mathf.Clamp01((point-_motion).magnitude/Mathf.Max(.001f,Time.unscaledDeltaTime)*2);
                 _motion=point;bool step=_task.Sample(point.x,point.y,Time.unscaledDeltaTime);
                 if(step && Time.unscaledTime>=_audioAt)
-                {_audioAt=Time.unscaledTime+.9f;_c.WorldAudio?.Play("HandcraftRub",_rightGrip.position,.28f);}
+                {_audioAt=Time.unscaledTime+.9f;_c.WorldAudio?.Play(_index==3?"ForgeStrike":"HandcraftRub",_rightGrip.position,.28f);}
                 if(step && Time.unscaledTime>=_hapticAt && device.isValid && device.TryGetHapticCapabilities(out var cap) && cap.supportsImpulse)
                 {device.SendHapticImpulse(0,Mathf.Clamp(.12f+_motionSpeed*.12f,.12f,.24f),.035f);_hapticAt=Time.unscaledTime+.16f;}
             }
             int percent=Mathf.RoundToInt(_task.Progress*100);
             if(percent!=_lastPercent || !tracked)
             {
-                _lastPercent=percent;_status.text=(!tracked?"松开握把，靠近桌上握柄后再握住。":_index==0?"右握把 · 小幅左右轻摇":"左握把扶稳 · 右握把画圈")
-                    +"\n"+(_index==0?_task.Strokes+" / 12 次":Count+" / 3 圈")+"    B 收起";
+                _lastPercent=percent;_status.text=(!tracked?"松开握把，靠近桌上握柄后再握住。":_index==1?"左握把扶稳 · 右握把画圈":_index==3?"右握把 · 上下敲锤":"右握把 · 左右往复")
+                    +"\n"+(_index==3?FishingBackpack.Name(_task.Output)+" · A切换配方\n":_index==1?"纤维×3 → 绳索×"+_task.OutputCount+"\n":"")+(_index==1?Count+" / 3 圈":_task.Strokes+" / "+_task.StrokeTarget+" 次")+"    B 收起";
             }
             if(_task.Complete && held && _ready && tracked)
             {
-                if(_task.Claim(_c.Career.Backpack)){_c.WorldAudio?.Play("CraftFinish",_rightGrip.position,.45f);_c.Save();_c.Notice(Name(_index)+"完成 · "+(_index==0?"海贝":"绳索")+"×1已收入背包。",6);Cancel();}
+                if(_task.Claim(_c.Career.Backpack)){_c.WorldAudio?.Play("CraftFinish",_rightGrip.position,.45f);_c.Save();_c.Notice(Name(_index)+"完成 · "+FishingBackpack.Name(_task.Output)+"×"+_task.OutputCount+"已收入背包。",6);Cancel();}
                 else {_c.WorldAudio?.Play("UIReject",_c.ExplorerPosition,.3f);_c.Notice("背包空间或材料不足，本次没有扣除材料。",5);Cancel();}
             }
             return true;
@@ -302,23 +331,28 @@ namespace BoatAttack.Fishing
                 }
                 PresentSand(dt);
             }
-            else
+            else if(_index==1)
             {
                 _crank.localRotation=Quaternion.AngleAxis(_crankStart+_crankSign*Mathf.Atan2(_motion.y,_motion.x)*Mathf.Rad2Deg,Vector3.forward);_coil.localScale=Vector3.one*Mathf.Lerp(.76f,1.08f,_task.Progress);
                 _feedCoil.localScale=Vector3.one*Mathf.Lerp(.65f,.38f,_task.Progress);PresentThread();
             }
+            else
+            {
+                var offset=_index==2?new Vector3(Mathf.Clamp(_motion.x-.1f,-.1f,.1f),0,0):new Vector3(0,Mathf.Clamp(_motion.y,-.1f,.1f),0);
+                _tools[_index].localPosition=_toolHome+offset;
+            }
             if(XRSettings.isDeviceActive)
             {
-                GripSurface(_c.Hands.Left,_leftGrip,_index==0?_tools[0]:_tools[1],_index==0?Vector3.forward:Vector3.right);
-                GripSurface(_c.Hands.Right,_rightGrip,_index==0?_tools[0]:_crank,Vector3.forward);
+                GripSurface(_c.Hands.Left,_leftGrip,_index==1?_tools[1]:_tools[_index],_index==0?Vector3.forward:Vector3.right);
+                GripSurface(_c.Hands.Right,_rightGrip,_index==1?_crank:_tools[_index],Vector3.forward);
                 return;
             }
             // 开始时可能仍处于坐起或蹲起过渡，镜头必须继续跟随同源眼位。
             _cameraPosition=_c.Shore.Character.EyePosition;
             var target=_stations[_index].TransformPoint(new Vector3(0,1.08f,0));
             _c.viewCamera.transform.SetPositionAndRotation(_cameraPosition,Quaternion.Slerp(_cameraRotation,Quaternion.LookRotation(target-_cameraPosition),Mathf.SmoothStep(0,1,(Time.unscaledTime-_started)/.25f)));
-            PresentGrip(true,_leftGrip,_index==0?_tools[0]:_tools[1],_index==0?Vector3.forward:Vector3.right);
-            PresentGrip(false,_rightGrip,_index==0?_tools[0]:_crank,Vector3.forward);
+            PresentGrip(true,_leftGrip,_index==1?_tools[1]:_tools[_index],_index==0?Vector3.forward:Vector3.right);
+            PresentGrip(false,_rightGrip,_index==1?_crank:_tools[_index],Vector3.forward);
             _c.Hands.Left.SetForearmRoll(.65f);_c.Hands.Right.SetForearmRoll(.65f);
         }
         private void PresentGrip(bool left,Transform grip,Transform tool,Vector3 localAxis)
@@ -329,7 +363,7 @@ namespace BoatAttack.Fishing
             if(_index==1)inward=_c.Shore.Actor.forward;
             else inward=(inward+_c.Shore.Actor.forward).normalized;
             var rotation=Quaternion.LookRotation(inward,Vector3.up);var target=left?_c.Hands.Left:_c.Hands.Right;
-            target.SetPose(grip.position+rotation*new Vector3(0,.029f,-.055f),rotation,.8f);
+            target.SetPose(grip.position+rotation*(_index>=2?new Vector3(0,.012f,-.022f):new Vector3(0,.029f,-.055f)),rotation,.8f);
             target.SetFingers(new FishingFingerPose(.70f,.78f,.82f,.88f,.65f));GripSurface(target,grip,tool,localAxis);
         }
         private static void GripSurface(FishingHandTarget target,Transform grip,Transform tool,Vector3 localAxis)
@@ -367,7 +401,7 @@ namespace BoatAttack.Fishing
         public void Cancel()
         {
             if(!Active)return;
-            _tools[_index].localPosition=_toolHome;_tools[_index].localRotation=Quaternion.identity;
+            _tools[_index].localPosition=_toolHome;_tools[_index].localRotation=_toolRest;
             _task=null;_career=null;_canvas.gameObject.SetActive(false);_sand.localScale=Vector3.one;_sand.localPosition=Vector3.zero;_coil.localScale=Vector3.one;_crank.localRotation=Quaternion.Euler(0,0,180);
             ResetShells();_caughtSand.gameObject.SetActive(false);_feedCoil.localScale=Vector3.one*.65f;_visualSpeed=_motionSpeed=0;
             for(int i=0;i<_grains.Length;i++){_grainAge[i]=-1;_grains[i].gameObject.SetActive(false);}
@@ -383,9 +417,9 @@ namespace BoatAttack.Fishing
             if(_desktopLabels!=desktop)
             {
                 _desktopLabels=desktop;
-                for(int i=0;i<2;i++)_signs[i].text=Name(i)+"\n"+StartHint(desktop);
+                for(int i=0;i<4;i++)_signs[i].text=Name(i)+"\n"+StartHint(desktop);
             }
-            for(int i=0;i<2;i++)
+            for(int i=0;i<4;i++)
             {
                 bool visible=(_c.ExplorerPosition-_stations[i].position).sqrMagnitude<9*9;
                 _signs[i].gameObject.SetActive(visible && !Active);
@@ -396,7 +430,7 @@ namespace BoatAttack.Fishing
         private void OnDisable()=>Cancel();
         private void OnDestroy()
         {
-            if(_grainMesh!=null)Destroy(_grainMesh);
+            if(_grainMesh!=null)Destroy(_grainMesh);if(_toolMaterial!=null)Destroy(_toolMaterial);
             if(_sandMaterial!=null)Destroy(_sandMaterial);if(_shellMaterial!=null)Destroy(_shellMaterial);if(_grainMaterial!=null)Destroy(_grainMaterial);
         }
     }

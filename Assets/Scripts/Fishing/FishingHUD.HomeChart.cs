@@ -18,14 +18,20 @@ namespace BoatAttack.Fishing
         {
             var c = Controller;
             if (c == null || !c.HomeChartOpen) return;
+            if(!c.HomeChartReady)
+            {
+                _homeChartDragging=false;
+                WorldLabel(new Rect(500,_height-66,600,30),c.PortableChart.Closing?"收起航海图……":"取出并展开航海图……  /  M · Esc 收起",19,CreamInk,true,TextAnchor.MiddleCenter);
+                return;
+            }
             if(Time.frameCount>_homeChartPaintFrame+1)_homeChartDragging=false;
             _homeChartPaintFrame=Time.frameCount;
             Fill(-_offset / _scale, 0, Screen.width / _scale, _height, new Color(.015f, .035f, .045f, .88f));
             var panel = new Rect(52, 38, 1496, _height - 76);
             Card(panel, Gold);
-            Label(panel.x + 28, panel.y + 18, 600, 34, "航线书桌 · 回潮海航海图", 27, InkText, true);
+            Label(panel.x + 28, panel.y + 18, 850, 34, (c.PortableChart!=null && c.PortableChart.Active?"随身航海图":"航线书桌")+" · 回潮海全域", 27, InkText, true);
             Label(panel.x + 28, panel.y + 58, 1000, 24, "独立阅读窗口  /  滚轮缩放  /  拖动底图  /  点击航点标记目的地", 14, Muted);
-            if (Button(new Rect(panel.xMax - 178, panel.y + 20, 150, 42), "Esc 关闭海图", true, false, 16))
+            if (Button(new Rect(panel.xMax - 178, panel.y + 20, 150, 42), "M / Esc 收起", true, false, 16))
             { c.CloseHomeChart(); _homeChartDragging = false; return; }
 
             var map = new Rect(panel.x + 28, panel.y + 142, 1086, panel.height - 228);
@@ -92,7 +98,7 @@ namespace BoatAttack.Fishing
         private void DrawHomeChartWaypoints(Rect area)
         {
             var c = Controller;
-            var player = HomeChartProject(c.ExplorerPosition, c.HomeChartCenterXZ, c.HomeChartRangeMeters, area);
+            var player = HomeChartProject(c.ChartPlayerPosition, c.HomeChartCenterXZ, c.HomeChartRangeMeters, area);
             var boat = HomeChartProject(c.Player.transform.position, c.HomeChartCenterXZ, c.HomeChartRangeMeters, area);
             if (c.HomeChartWaypoint(c.NavigationTarget, out var destination, out _, out _))
             {
@@ -150,7 +156,7 @@ namespace BoatAttack.Fishing
             for (int i = 0; i < c.NavigationCount; i++)
             {
                 if (!c.HomeChartWaypoint(i, out var world, out var name, out var available)) continue;
-                string distance = FishingPrototype.FlatDistance(c.ExplorerPosition, world).ToString("0") + " m";
+                string distance = FishingPrototype.FlatDistance(c.ChartPlayerPosition, world).ToString("0") + " m";
                 string text = (i == c.NavigationTarget ? "● " : "") + name + "  ·  " + (available ? distance : "尚未开放");
                 if (Button(new Rect(0, i * 52, area.width - 24, 44), text, available, i == c.NavigationTarget, 14))
                     c.SelectHomeChartNavigation(i);

@@ -32,6 +32,11 @@ namespace BoatAttack.EditorTools
             Check(c.Realms.Enter(2),"Re-enter completed shipwreck using production transition");
             while(c.Realms.Transitioning)yield return null;yield return null;yield return null;
             var r=c.Realms;
+            var completedBridge=r.Room.Find("FloatGangway");var completedDeck=completedBridge.GetComponent<BoxCollider>();
+            Check(c.Career.Lore.Cleared(2) && !r.Trial.Ready && completedDeck.enabled
+                && r.TryWater(completedBridge.position,out float completedWater,out _)
+                && completedBridge.TransformPoint(completedDeck.center+Vector3.up*completedDeck.size.y*.5f).y>=completedWater,
+                "A previously completed save intentionally reopens the bridge above water before repeating the trial");
             for(float x=-.9f;x<1;x+=.9f)for(float z=6.6f;z<15;z+=.1f)
             {
                 var seed=r.Room.TransformPoint(new Vector3(x,1.8f,z));
@@ -139,7 +144,7 @@ namespace BoatAttack.EditorTools
         {
             var land=c.Home.transform.Find("V035 Home HomeLand").GetComponentInChildren<MeshCollider>();
             var scenery=c.Home.transform.Find("V035 Home HomeLandscaping").GetComponentInChildren<MeshFilter>();
-            foreach(var local in new[]{new Vector3(29,0,-9.4f),new Vector3(30.468f,0,-10.7841f)})
+            foreach(var local in new[]{new Vector3(29,0,-9.4f),new Vector3(29,0,10)})
             {
                 var seed=c.Home.Origin+local;
                 Check(land.Raycast(new Ray(seed+Vector3.up*30,Vector3.down),out var floor,60),"Grounding fixture hits actual home terrain: "+local);
@@ -150,7 +155,7 @@ namespace BoatAttack.EditorTools
                     if(Mathf.Abs(p.x-seed.x)>.13f || Mathf.Abs(p.z-seed.z)>.13f)continue;
                     vertices++;bottom=Mathf.Min(bottom,p.y);
                 }
-                Check(vertices>3 && bottom<=floor.point.y+.035f && bottom>floor.point.y-.24f,"Actual fence/stone mesh intersects its ground: "+local+" bottom="+bottom+" terrain="+floor.point.y);
+                Check(vertices>3 && bottom<=floor.point.y+.035f && bottom>floor.point.y-.24f,"Actual fence mesh intersects its ground: "+local+" bottom="+bottom+" terrain="+floor.point.y);
             }
             foreach(Transform plant in c.Home.transform.Find("V035 Home flowers and orchard"))
                 Check(land.Raycast(new Ray(plant.position+Vector3.up*30,Vector3.down),out var hit,60) && Mathf.Abs(plant.position.y-hit.point.y)<.025f,"Plant root follows actual terrain: "+plant.name);

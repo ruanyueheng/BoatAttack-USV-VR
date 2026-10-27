@@ -20,12 +20,14 @@ namespace BoatAttack.Fishing
         private FieldItem _canTool;
         private Vector3 _canStartActor,_startCanPosition,_startRightPalm,_canLean;
         private Quaternion _startCanRotation;
-        private bool _canCommit,_canTracked,_restoreCanStance,_ownsCanLean,_wellSoundContact;
+        private bool _canCommit,_canTracked,_canCrouched,_ownsCanLean,_wellSoundContact;
         private float _nextDrop;
+        private bool _mapCanHidden;
         // Gameplay coordinates follow the imported FBX, whose depth axis is reversed from the Blender authoring script.
         public static readonly Vector3 CanHandle=new Vector3(-.025f,.120f,-.12f);
-        public static readonly Vector3 CanPalm=CanHandle+new Vector3(0,.035f,-.045f);
-        public static readonly Quaternion CanPalmRotation=Quaternion.identity;
+        public static readonly Quaternion CanPalmRotation=Quaternion.LookRotation(Vector3.back,Vector3.up);
+        public static readonly Vector3 CanPalm=CanHandle+CanPalmRotation*new Vector3(0,.035f,-.045f);
+        public static readonly Vector3 CanSpout=new Vector3(.33f,-.015f,-.25f);
         private static readonly Quaternion CanDockRotation=Quaternion.Euler(0,130,0);
         public bool CarryingCan {get;private set;}
         public bool Busy=>_canClock.Active || _canClock.ContactPending;
@@ -38,9 +40,10 @@ namespace BoatAttack.Fishing
 
         private void BuildWateringCan(Transform fixtures)
         {
-            var dock=new GameObject("井边水壶木架 · 拿起 / 放回").transform;dock.SetParent(Root,false);dock.localPosition=new Vector3(11.7f,.76f,-9.1f);_targets[15]=dock;
-            FishingArt.Shape("Watering can stand",PrimitiveType.Cube,Root,new Vector3(11.7f,.49f,-9.1f),new Vector3(.68f,.08f,.62f),_c.wood,true);
-            foreach(float x in new[]{-.25f,.25f})foreach(float z in new[]{-.22f,.22f})FishingArt.Shape("Can stand leg",PrimitiveType.Cube,Root,new Vector3(11.7f+x,.245f,-9.1f+z),new Vector3(.06f,.49f,.06f),_c.wood,true);
+            // A desk-height stand keeps the handle within arm reach while the player stands beside it.
+            var dock=new GameObject("井边水壶木架 · 拿起 / 放回").transform;dock.SetParent(Root,false);dock.localPosition=new Vector3(11.7f,1.01f,-9.1f);_targets[15]=dock;
+            FishingArt.Shape("Watering can stand",PrimitiveType.Cube,Root,new Vector3(11.7f,.74f,-9.1f),new Vector3(.68f,.08f,.62f),_c.wood,true);
+            foreach(float x in new[]{-.25f,.25f})foreach(float z in new[]{-.22f,.22f})FishingArt.Shape("Can stand leg",PrimitiveType.Cube,Root,new Vector3(11.7f+x,.37f,-9.1f+z),new Vector3(.06f,.74f,.06f),_c.wood,true);
             _can=Instantiate(Resources.Load<GameObject>("FishingV036/StarlightWateringCanView"),Root,false).transform;_can.name="V036 persistent watering can";
             _canProfile=_c.Career;DockCan();
             _bucket=new GameObject("V036 working well bucket").transform;_bucket.SetParent(Root,false);_bucket.localPosition=new Vector3(10.2f,.29f,-8);
@@ -57,7 +60,7 @@ namespace BoatAttack.Fishing
             var fade=_waterDrops.colorOverLifetime;fade.enabled=true;var gradient=new Gradient();gradient.SetKeys(new[]{new GradientColorKey(new Color(.65f,.9f,1),0),new GradientColorKey(Color.white,1)},new[]{new GradientAlphaKey(.8f,0),new GradientAlphaKey(0,1)});fade.color=gradient;
             var renderer=drops.GetComponent<ParticleSystemRenderer>();renderer.sharedMaterial=_dropMaterial;renderer.shadowCastingMode=ShadowCastingMode.Off;renderer.receiveShadows=false;
             ResetBucket();
-            FishingV019Art.Sign("井边水壶\n拿起 → 水井打水 → 提去浇灌 → 放回",Root,new Vector3(11.7f,1.26f,-9.1f),.012f,new Color(.94f,.86f,.61f));
+            FishingV019Art.Sign("井边水壶\n拿起 → 水井打水 → 提去浇灌 → 放回",Root,new Vector3(11.7f,1.51f,-9.1f),.012f,new Color(.94f,.86f,.61f));
         }
 
         private void ExtractWellBucket(Transform fixtures)
@@ -133,7 +136,7 @@ namespace BoatAttack.Fishing
             _canWork=work;_canTarget=id;_canProfile=_c.Career;_canStartActor=_c.Shore.Position;_canSlot=_c.Career.Backpack.Selected;_canTool=_c.Career.Backpack.Equipped;_canTracked=XRSettings.isDeviceActive;
             _wellSoundContact=false;
             _startCanPosition=_can.position;_startCanRotation=_can.rotation;_startRightPalm=_c.Shore.Character.PalmPosition(false);_nextDrop=0;
-            _restoreCanStance=!tracked && handling && !_c.Shore.Crouched;if(_restoreCanStance)_c.Shore.SetCrouch(true);
+            _canCrouched=_c.Shore.Crouched;
             _ownsCanLean=!tracked && handling;
             _c.Shore.ResetMoveInput();return true;
         }
@@ -143,9 +146,10 @@ namespace BoatAttack.Fishing
             {CancelWork();CarryingCan=false;_canProfile=_c.Career;DockCan();}
             if(!Busy)return;
             if(!CanUseWateringCan || _canTracked!=XRSettings.isDeviceActive || _c.Career.Backpack.Selected!=_canSlot || _c.Career.Backpack.Equipped!=_canTool
-                || Vector3.Distance(_canStartActor,_c.Shore.Position)>.4f || Work(_canTarget)!=_canWork || (_canTracked && !_c.Hands.TryControllerPalm(false,out _,out _)))
+                || Vector3.Distance(_canStartActor,_c.Shore.Position)>.4f || Work(_canTarget)!=_canWork || (_ownsCanLean && _c.Shore.Crouched!=_canCrouched)
+                || (_canTracked && !_c.Hands.TryControllerPalm(false,out _,out _)))
             {CancelWork();return;}
-            if(_ownsCanLean && !_c.Shore.Character.IsStanceSettled(true,true))return;
+            if(_ownsCanLean && !_c.Shore.Character.IsStanceSettled(true,_canCrouched))return;
             if(_c.Acceptance!=null && _c.Acceptance.FreezeFarmAnimation)return;
             _canClock.Tick(Time.deltaTime);
             if(_ownsCanLean)_c.Shore.Character.InteractionLean=_canLean*Ease(0,.20f,WorkProgress);
@@ -160,20 +164,19 @@ namespace BoatAttack.Fishing
             finally{_canCommit=false;}
             if(ok && (_canWork==FarmWork.TakeCan || _canWork==FarmWork.ReturnCan))_c.WorldAudio?.Play("CanHandle",_can.position,.5f);
             if(ok && (_canWork==FarmWork.Refill || _canWork==FarmWork.Water))_c.WorldAudio?.Play("WaterFinish",_can.position,.35f);
-            _c.ReportFarmContact(_canClock.ActionId,ok);_canClock.Cancel();ResetBucket();_waterStream.enabled=false;RestoreCanStance();
+            _c.ReportFarmContact(_canClock.ActionId,ok);_canClock.Cancel();ResetBucket();_waterStream.enabled=false;RestoreCanLean();
         }
         public void CancelWork()
         {
             _canClock.Cancel();_canCommit=false;
-            RestoreCanStance();
+            RestoreCanLean();
             if(_waterStream!=null)_waterStream.enabled=false;
             if(_waterDrops!=null)_waterDrops.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);
             ResetBucket();if(!CarryingCan && _can!=null)DockCan();
         }
-        private void RestoreCanStance()
+        private void RestoreCanLean()
         {
             if(_ownsCanLean){_ownsCanLean=false;if(_c!=null && _c.Shore!=null && _c.Shore.Character!=null)_c.Shore.Character.InteractionLean=Vector3.zero;}
-            if(_restoreCanStance){_restoreCanStance=false;_c?.Shore?.SetCrouch(false);}
         }
         private void DockCan()=>_can.SetPositionAndRotation(_targets[15].position,Root.rotation*CanDockRotation);
         private void ResetBucket()
@@ -187,12 +190,14 @@ namespace BoatAttack.Fishing
         public void ApplyPresentation()
         {
             if(_c==null || _can==null)return;
+            bool hideCan=CarryingCan && _c.PortableChart!=null && _c.PortableChart.Active;
+            if(hideCan!=_mapCanHidden){_can.gameObject.SetActive(!hideCan);_mapCanHidden=hideCan;}
             PresentSoilTool();
             if(!CarryingCan && !Busy){DockCan();UpdateCanWater();return;}
             if(!_c.Hands.CanPresentTools)return;
             bool tracked=XRSettings.isDeviceActive;float p=WorkProgress;
             _c.Hands.GetToolFrame(out var origin,out _);var frame=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0);
-            var rotation=frame*Quaternion.Euler(0,-45,0);var palm=origin+frame*new Vector3(_c.Shore.Character.HandSide(false)*.14f,-.14f,.42f);
+            var rotation=frame*Quaternion.Inverse(CanPalmRotation);var palm=origin+frame*new Vector3(_c.Shore.Character.HandSide(false)*.14f,-.14f,.42f);
             if(!tracked && Busy && _canWork==FarmWork.Refill)
             {
                 float lower=Ease(.04f,.25f,p)*(1-Ease(.80f,1,p));
@@ -233,7 +238,7 @@ namespace BoatAttack.Fishing
             if(_canWork==FarmWork.Water && p>.25f && p<.79f)
             {
                 var landing=_targets[_canTarget].position+new Vector3(Mathf.Sin(p*11)*.30f,.13f,Mathf.Cos(p*11)*.22f);
-                PresentStream(_can.TransformPoint(new Vector3(.33f,-.015f,-.25f)),landing,true);
+                PresentStream(_can.TransformPoint(CanSpout),landing,true);
             }
         }
         private void PresentRefill(float p,bool tracked,Quaternion frame)

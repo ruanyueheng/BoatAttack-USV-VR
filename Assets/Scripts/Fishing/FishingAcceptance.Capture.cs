@@ -31,7 +31,7 @@ namespace BoatAttack.Fishing
         public string CaptureDirectory { get; private set; }
         private CaptureManifest _manifest;
 
-        private IEnumerator CaptureFrame()
+        internal IEnumerator CaptureFrame()
         {
             if (IsCapturing || Failure != null) yield break;
             if (Application.isBatchMode || SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)

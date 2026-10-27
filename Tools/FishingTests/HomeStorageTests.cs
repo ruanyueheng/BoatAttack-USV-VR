@@ -16,7 +16,7 @@ internal static class HomeStorageTests
         check(career.TryHarvestHomeFruit(0) && !career.TryHarvestHomeFruit(0) && !career.TryHarvestHomeFruit(-1) && !career.TryHarvestHomeFruit(5),"Orchard: one pickup per tree and day, with bounded tree ids");
         var data=career.Snapshot();
         bool restored=FishingCareer.TryRestore(data,out var loaded);
-        check(data.version==15 && restored && loaded.HomeStorage.Count(FieldItem.Shell)==127 && !loaded.CanHarvestHomeFruit(0) && loaded.Backpack.Count(FieldItem.IslandFruit)==1,"Storage: v15 career round trip preserves chest and fruit pickup receipt");
+        check(data.version==FishingSaveData.CurrentVersion && restored && loaded.HomeStorage.Count(FieldItem.Shell)==127 && !loaded.CanHarvestHomeFruit(0) && loaded.Backpack.Count(FieldItem.IslandFruit)==1,"Storage: v15 career round trip preserves chest and fruit pickup receipt");
         data.homeStorage[0].count=1;data.homeFruitDays[0]=-1;
         check(career.HomeStorage.Count(FieldItem.Shell)==127 && !career.CanHarvestHomeFruit(0) && loaded.HomeStorage.Count(FieldItem.Shell)==127 && !loaded.CanHarvestHomeFruit(0),"Storage: save and restored storage never alias the live inventory or receipts");
         career.Calendar.RestUntilMorning();

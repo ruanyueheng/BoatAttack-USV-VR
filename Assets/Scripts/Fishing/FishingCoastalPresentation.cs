@@ -37,39 +37,21 @@ namespace BoatAttack.Fishing
                     _pipeline.shadowDistance=100;_pipeline.shadowCascadeCount=2;_pipeline.maxAdditionalLightsCount=4;QualitySettings.renderPipeline=_pipeline;
                 }
             }
-            var palette=new Material(c.PaletteShader){name="V032 coast · soft shaded sand and sage"};palette.SetFloat("_Shadows",1);palette.SetFloat("_Rim",.18f);_owned.Add(palette);
-            var limestone=new Material(palette){name="V032 pale coastal stone"};limestone.SetColor("_BaseColor",new Color(1.35f,1.3f,1.15f));_owned.Add(limestone);
+            var ground=Resources.Load<Material>("FishingV035/CoastGround");
+            if(ground==null)throw new System.InvalidOperationException("Islets need the shared detailed coastal ground material.");
+            var palette=new Material(c.PaletteShader){name="Ivory arch · coastal shading"};palette.SetFloat("_Shadows",1);palette.SetFloat("_Rim",.08f);_owned.Add(palette);
+            var islands=new List<GameObject>();
             for(int id=0;id<2;id++)
             {
-                var island=new GameObject(IsletName(id)).transform;island.SetParent(transform,false);island.position=Islets[id];
+                var island=new GameObject(IsletName(id)).transform;island.SetParent(transform,false);island.position=Islets[id];islands.Add(island.gameObject);
                 var mesh=IslandMesh(id);_owned.Add(mesh);
                 var land=new GameObject("Walkable sculpted shoreline",typeof(MeshFilter),typeof(MeshRenderer),typeof(MeshCollider));land.transform.SetParent(island,false);
-                land.GetComponent<MeshFilter>().sharedMesh=mesh;land.GetComponent<MeshCollider>().sharedMesh=mesh;land.GetComponent<MeshRenderer>().sharedMaterial=palette;
-                for(int j=0;j<11;j++)
-                {
-                    float a=j*2.399963f;float radius=8+(j%4)*2.4f;float x=Mathf.Cos(a)*radius,z=Mathf.Sin(a)*radius*.7f-4;
-                    if(Mathf.Abs(x)<5 && z>0)continue;
-                    var tree=FishingV019Art.Spawn(id==0?"tree_palmDetailedTall":"tree_oak",island,new Vector3(x,Height(x,z,id),z),4.5f+(j%4),j*61);
-                    foreach(var renderer in tree.GetComponentsInChildren<Renderer>())renderer.sharedMaterial=palette;
-                }
-                for(int j=0;j<12;j++)
-                {
-                    float a=j*2.399963f;float x=Mathf.Cos(a)*19,z=Mathf.Sin(a)*16;
-                    var rock=FishingV019Art.Spawn("CoastalRock",island,new Vector3(x,Height(x,z,id)-.4f,z),2.5f+j%4,j*41,"FishingV020");
-                    rock.localRotation=Quaternion.Euler(58+j%3*12,j*41,13);rock.localScale=new Vector3(1.35f,.8f,1.1f);
-                    foreach(var renderer in rock.GetComponentsInChildren<Renderer>())renderer.sharedMaterial=limestone;
-                }
-                var camp=FishingV019Art.Spawn("tent_detailedOpen",island,new Vector3(-7,Height(-7,-5,id),-5),3.8f,140);
-                FishingV019Art.Spawn("campfire_logs",island,new Vector3(-4,Height(-4,0,id),0),1.2f);
-                for(int j=0;j<44;j++)
-                {
-                    float a=j*2.399963f;float x=Mathf.Cos(a)*(6+j%15),z=Mathf.Sin(a)*(5+j%12)-2;
-                    if(Mathf.Abs(x)<3 && z>0)continue;
-                    var bush=FishingV019Art.Spawn(j%5==0?"flower_purpleA":"plant_bush",island,new Vector3(x,Height(x,z,id),z),.5f+(j%4)*.18f,j*31);
-                    foreach(var renderer in bush.GetComponentsInChildren<Renderer>())renderer.sharedMaterial=palette;
-                }
-                FishingV019Art.Spawn("Lantern",island,new Vector3(-4,Height(-4,-2,id),-2),.8f,0,"FishingV023/Items");
-                var lamp=new GameObject("Camp lantern warm pool",typeof(Light));lamp.transform.SetParent(island,false);lamp.transform.localPosition=new Vector3(-4,Height(-4,-2,id)+.8f,-2);
+                land.layer=10;
+                land.GetComponent<MeshFilter>().sharedMesh=mesh;land.GetComponent<MeshCollider>().sharedMesh=mesh;land.GetComponent<MeshRenderer>().sharedMaterial=ground;
+                DressIslet(island,id);
+                var campLight=new Vector2(-16.7f,-14.5f);
+                FishingV019Art.Spawn("Lantern",island,new Vector3(campLight.x,Height(campLight.x,campLight.y,id)+.04f,campLight.y),.6f,0,"FishingV023/Items");
+                var lamp=new GameObject("Camp lantern warm pool",typeof(Light));lamp.transform.SetParent(island,false);lamp.transform.localPosition=new Vector3(campLight.x,Height(campLight.x,campLight.y,id)+.65f,campLight.y);
                 _campLights[id]=lamp.GetComponent<Light>();_campLights[id].type=LightType.Point;_campLights[id].range=6;_campLights[id].color=new Color(1,.65f,.28f);_campLights[id].shadows=LightShadows.None;
                 var arch=Resources.Load<GameObject>("FishingV032/CoastalArch");
                 if(id==0 && arch!=null)
@@ -82,7 +64,63 @@ namespace BoatAttack.Fishing
                 }
             }
             EnableWorldShading(c);
+            foreach(var island in islands)StaticBatchingUtility.Combine(island);
             Physics.SyncTransforms();Debug.Log("[V032] Removed "+RemovedCards+" collidable background cards; built two solid, walkable islets.");
+        }
+        private static bool ProtectedFooting(Vector2 point,int id,float margin)
+            =>(Mathf.Abs(point.x)<5+margin && point.y>13-margin)
+                || (id==0 && Vector2.Distance(point,new Vector2(11,19))<5+margin)
+                || (id==1 && point.magnitude<21.2f+margin);
+        private Transform CoastalProp(string name,Transform island,Vector2 point,int id,float span,float yaw,bool foliage=false,bool solid=false)
+        {
+            var root=FishingV019Art.Spawn(name,island,new Vector3(point.x,Height(point.x,point.y,id)-.06f,point.y),span,yaw,"FishingV035");
+            FishingV035Materials.Apply(root,foliage);
+            if(solid)foreach(var filter in root.GetComponentsInChildren<MeshFilter>())
+            {
+                var source=filter.sharedMesh;var collision=source;
+                if(name=="CoastalPine" || name=="DunePalm")
+                {
+                    collision=new Mesh{name=name+" solid trunk and branches"};collision.vertices=source.vertices;
+                    collision.SetTriangles(source.GetTriangles(0),0);collision.RecalculateBounds();_owned.Add(collision);
+                }
+                filter.gameObject.AddComponent<MeshCollider>().sharedMesh=collision;
+            }
+            return root;
+        }
+        private void DressIslet(Transform island,int id)
+        {
+            var trees=id==0?new[]{new Vector2(-17,-5),new Vector2(-19,4),new Vector2(-10,-17),new Vector2(-3,-19),new Vector2(14,-14),new Vector2(19,-4),new Vector2(16,11),new Vector2(-16,14)}
+                :new[]{new Vector2(-24.5f,4),new Vector2(-24,-3),new Vector2(-22.3f,-10.5f),new Vector2(18.6f,14.6f),new Vector2(-22,8.5f),new Vector2(21,11),new Vector2(20.4f,12.5f),new Vector2(-20.5f,13.5f)};
+            for(int i=0;i<trees.Length;i++)
+            {
+                var p=trees[i];if(Height(p.x,p.y,id)<.7f || ProtectedFooting(p,id,1.8f))continue;
+                CoastalProp((i+id)%3==0?"DunePalm":"CoastalPine",island,p,id,6.2f+(i%3)*.8f,i*83+id*37,solid:true);
+            }
+            var rocks=new[]{new Vector2(-25,-8),new Vector2(-26,3),new Vector2(-22,14),new Vector2(-16,-20),new Vector2(-3,-24),new Vector2(14,-20),new Vector2(25,-6),new Vector2(24,9),new Vector2(18,19),new Vector2(8,22),new Vector2(-14,20)};
+            for(int i=0;i<rocks.Length;i++)
+            {
+                var p=rocks[i];float span=2.4f+(i%3)*.45f;
+                if(Height(p.x,p.y,id)<-.8f || ProtectedFooting(p,id,span*.5f))continue;
+                CoastalProp("ShoreRock",island,p,id,span,i*71,solid:true);
+            }
+            // Uneven clumps follow sheltered pockets; the approach and arena remain readable.
+            var pockets=new[]{new Vector2(-18,1),new Vector2(-12,13),new Vector2(12,-15),new Vector2(16,7),new Vector2(-11,-14)};
+            for(int i=0;i<20;i++)
+            {
+                var pocket=pockets[(i+id)%pockets.Length];float a=i*2.13f;
+                var p=pocket+new Vector2(Mathf.Sin(a)*2.8f,Mathf.Cos(a*1.37f)*2.1f);
+                if(Height(p.x,p.y,id)<1.1f || (Mathf.Abs(p.x)<5 && p.y>10) || (id==0 && Vector2.Distance(p,new Vector2(11,19))<5))continue;
+                CoastalProp(i%4==0?"FernClump":"DuneGrass",island,p,id,i%4==0?1.05f:1.15f+(i%3)*.15f,i*137,true);
+            }
+            var campPoint=new Vector2(-18.5f,-15.5f);
+            var source=Resources.Load<GameObject>("FishingV040/IsletCamp");
+            if(source==null)throw new System.InvalidOperationException("Missing the textured coastal shelter.");
+            var camp=new GameObject("Weathered timber shelter").transform;camp.SetParent(island,false);
+            Instantiate(source,camp,false);
+            camp.localPosition=new Vector3(campPoint.x,Height(campPoint.x,campPoint.y,id),campPoint.y);
+            camp.localRotation=Quaternion.LookRotation(new Vector3(campPoint.y,0,-campPoint.x));
+            FishingV035Materials.Apply(camp);
+            foreach(var filter in camp.GetComponentsInChildren<MeshFilter>())filter.gameObject.AddComponent<MeshCollider>().sharedMesh=filter.sharedMesh;
         }
         public void SetQuality(int level)
         {
@@ -125,9 +163,14 @@ namespace BoatAttack.Fishing
             {
                 float a=j*Mathf.PI*2/sides;float radius=ring/(float)rings*(1+.085f*Mathf.Sin(a*3+id)+.045f*Mathf.Cos(a*5));
                 float x=Mathf.Cos(a)*radius*32,z=Mathf.Sin(a)*radius*26;float y=Height(x,z,id);int n=ring*sides+j;vertices[n]=new Vector3(x,y,z);
-                bool trail=Mathf.Abs(x-Mathf.Sin(z*.17f)*2)<1.6f && z>0;
-                var grass=Color.Lerp(new Color(.27f,.36f,.21f),new Color(.48f,.54f,.30f),Mathf.PerlinNoise(x*.18f,z*.18f));
-                colors[n]=trail?new Color(.76f,.67f,.46f):Color.Lerp(new Color(.86f,.76f,.56f),grass,Mathf.SmoothStep(0,1,Mathf.InverseLerp(1.6f,2.7f,y)));
+                float path=1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(1.1f,3.2f,Mathf.Abs(x-Mathf.Sin(z*.17f)*2)));
+                path*=Mathf.SmoothStep(0,1,Mathf.InverseLerp(-4,5,z));
+                float pocket=Mathf.PerlinNoise(x*.13f+id*7,z*.13f+17);
+                float cover=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.8f,2.2f,y))*Mathf.SmoothStep(0,1,Mathf.InverseLerp(.24f,.54f,pocket))*(1-path*.94f);
+                var sand=Color.Lerp(new Color(.70f,.65f,.51f),new Color(.82f,.75f,.59f),Mathf.PerlinNoise(x*.31f+4,z*.31f));
+                // GroundDetail selects the grass atlas from green-minus-red after the sRGB conversion.
+                var grass=Color.Lerp(new Color(.29f,.51f,.19f),new Color(.39f,.59f,.25f),pocket);
+                colors[n]=Color.Lerp(sand,grass,cover);
                 if(ring==0)continue;int p=n-sides,next=ring*sides+(j+1)%sides,previous=next-sides;
                 indices.Add(p);indices.Add(next);indices.Add(n);indices.Add(p);indices.Add(previous);indices.Add(next);
             }

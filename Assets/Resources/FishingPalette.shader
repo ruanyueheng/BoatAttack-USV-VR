@@ -159,5 +159,47 @@
             half4 ShadowFrag():SV_Target { clip(_Shadows-.5h);return 0; }
             ENDHLSL
         }
+        Pass
+        {
+            Name "DepthOnly"
+            Tags { "LightMode"="DepthOnly" }
+            ZWrite On
+            ColorMask 0
+            Cull [_Cull]
+            HLSLPROGRAM
+            #pragma vertex DepthVert
+            #pragma fragment DepthFrag
+            #pragma multi_compile_instancing
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            CBUFFER_START(UnityPerMaterial)
+            half4 _BaseColor;
+            half _Textured;
+            half _GroundDetail;
+            half _DoubleSidedLighting;
+            float4 _FinMotion;
+            float4 _TailMotion;
+            half _Unlit;
+            half _Gloss;
+            half _Rim;
+            half _Shadows;
+            float _TitleBreeze;
+            CBUFFER_END
+            float _FishingVisualTimeOffset;
+            struct DepthInput { float3 positionOS:POSITION; half4 color:COLOR; UNITY_VERTEX_INPUT_INSTANCE_ID };
+            struct DepthOutput { float4 positionCS:SV_POSITION; UNITY_VERTEX_OUTPUT_STEREO };
+            DepthOutput DepthVert(DepthInput input)
+            {
+                DepthOutput output=(DepthOutput)0; UNITY_SETUP_INSTANCE_ID(input); UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+                float3 p=input.positionOS;
+                p.y+=sin((_Time.y+_FishingVisualTimeOffset)*_FinMotion.y+abs(p.x)*2+_FinMotion.w)*max(0,abs(p.x)-_FinMotion.z)*_FinMotion.x;
+                p.x+=sin((_Time.y+_FishingVisualTimeOffset)*_TailMotion.y+p.z*18+_TailMotion.w)*max(0,-p.z-_TailMotion.z)*_TailMotion.x;
+                p=TransformObjectToWorld(p);
+                float leaf=_Textured>.5h?input.color.a:saturate((input.color.g-input.color.r)*8)*saturate((input.color.g-input.color.b)*8);
+                p.xz+=leaf*_TitleBreeze*sin((_Time.y+_FishingVisualTimeOffset)*1.2+p.x*.19+p.z*.13)*float2(1,.35);
+                output.positionCS=TransformWorldToHClip(p);return output;
+            }
+            half4 DepthFrag(DepthOutput input):SV_Target { UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);return 0; }
+            ENDHLSL
+        }
     }
 }

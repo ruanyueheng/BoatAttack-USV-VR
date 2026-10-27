@@ -152,23 +152,17 @@ def cottage_shell():
             a=j*math.tau/8;tube([(math.cos(a)*.14,2.53,z+math.sin(a)*.14),(math.cos(a)*.14,2.84,z+math.sin(a)*.14)],.009,4,7)
         rock((0,2.68,z),(.075,.13,.075),10,2)
 
-def path(points,width=2.5):
-    for a,b in zip(points,points[1:]):
-        a,b=Vector(a),Vector(b);d=b-a;n=max(1,math.ceil(d.length/.45));side=Vector((-d.z,0,d.x)).normalized()
-        for i in range(n):
-            p=a+d*(i+.5)/n
-            # Gravel is part of HomeLand; only edge stones are added here to avoid overlapping coplanar crossings.
-        for i in range(max(1,int(d.length/.6))):
-            p=a+d*(i+.5)/max(1,int(d.length/.6))
-            for s in [-1,1]:
-                q=p+side*s*(width*.5+.05);q.y=land_height(q.x,q.z)+.015
-                rock(tuple(q),(.15,.065,.11),1,1)
-
 def fence(a,b):
     a,b=Vector(a),Vector(b);delta=b-a;n=max(1,math.ceil(delta.length/1.8));side=Vector((-delta.z,0,delta.x)).normalized()
     for i in range(n+1):
         p=a+delta*i/n;p.y=land_height(p.x,p.z)-.10
-        profile(tuple(p),[(0,.065),(1.15,.065),(1.22,.095),(1.31,0)],3,8)
+        # A single pointed vertex avoids the collapsed zero-radius cap rejected by Unity.
+        rows=[(0,.065),(1.15,.065),(1.22,.095)];sides=8
+        verts=[(p.x+r*math.cos(k*math.tau/sides),p.y+h,p.z+r*math.sin(k*math.tau/sides)) for h,r in rows for k in range(sides)]
+        tip=len(verts);verts.append((p.x,p.y+1.31,p.z))
+        faces=[(j*sides+k,j*sides+(k+1)%sides,(j+1)*sides+(k+1)%sides,(j+1)*sides+k) for j in range(2) for k in range(sides)]
+        faces += [(2*sides+k,2*sides+(k+1)%sides,tip) for k in range(sides)]+[tuple(reversed(range(sides)))]
+        mesh(verts,faces,3,True)
     for h in [.38,.85]:
         points=[]
         for i in range(n*4+1):
@@ -179,14 +173,8 @@ def fence(a,b):
         tube([tuple(p-Vector((0,.04,0))),tuple(p+Vector((0,1.0,0)))],.027,3,6)
 
 def home_details():
-    path([(0,0,-8.3),(7.6,0,-9),(10.2,0,-11),(29.2,0,-11),(30.8,0,12),(7.6,0,12),(7.6,0,5.8)],2.4)
-    for z in [-7.5,-2.5,2.5,7.5]:path([(12.3,0,z),(27,0,z)],1.5)
-    for x in [12.2,15.8,19.4,23,26.6]:path([(x,0,-7.5),(x,0,7.8)],1.25)
+    # Gravel paths belong to HomeLand; leave their edges clear for the garden.
     for a,b in [((13.8,0,-9.4),(29,0,-9.4)),((29,0,-9.4),(29,0,10)),((29,0,10),(11.2,0,10)),((11.2,0,10),(11.2,0,7.6)),((11.2,0,-1.8),(11.2,0,2))]:fence(a,b)
-    for j in range(36):
-        a=j*math.tau/36; x=5+math.cos(a)*37;z=3+math.sin(a)*26
-        if z< -14 and abs(x)<6:continue
-        y=land_height(x,z);rock((x,y-.15,z),(1.6+(j%3)*.4,1.0+(j%4)*.35,1.3),0 if j%3 else 1)
     # Fine slate-roofed potting shelter behind the vegetable garden.
     for x in [19,25]:
         for z in [14,17]:profile((x,0,z),[(0,.16),(.15,.18),(2.5,.13)],3,10)
@@ -208,7 +196,6 @@ def home_details():
     ring((x,9.35,z),2.2,.055,4,n=64)
     for j in range(18):
         a=j*math.tau/18;tube([(x+math.cos(a)*2.2,8.7,z+math.sin(a)*2.2),(x+math.cos(a)*2.2,9.35,z+math.sin(a)*2.2)],.025,4)
-    path([(-7,0,-9),(-11,0,-7),(-18,0,0),(-19,0,8.8)],2)
 
 def well():
     # Inward-facing masonry continues 5.4 metres below the ground; no cap or grass under the opening.
@@ -290,17 +277,50 @@ def farm_soil():
     for row in range(6):
         z=-.84+row*.335;flow([(-.96,.105,z),(-.5,.12,z+.02),(0,.10,z),(.5,.12,z-.02),(.96,.105,z)],.045,12,7)
 
+_RADISH_PARTS=None
+
+def radish_parts():
+    global _RADISH_PARTS
+    if _RADISH_PARTS is not None:return _RADISH_PARTS
+    import bpy
+    source=API['ROOT']/'ArtSource/Feedback-20261026/Sources/radish.glb'
+    before=set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=str(source))
+    imported=set(bpy.data.objects)-before
+    try:
+        objects=[o for o in imported if o.type=='MESH'];assert len(objects)==1
+        obj=objects[0];image=next(n.image for n in obj.data.materials[0].node_tree.nodes if n.type=='TEX_IMAGE' and n.image)
+        pixels=list(image.pixels);width,height=image.size;uvs=obj.data.uv_layers.active.data
+        parts=[];leaf_y=[];all_y=[]
+        for poly in obj.data.polygons:
+            uv=sum((uvs[i].uv for i in poly.loop_indices),Vector((0,0)))/len(poly.loop_indices)
+            x=min(width-1,max(0,int(uv.x*width)));y=min(height-1,max(0,int(uv.y*height)))
+            color=pixels[(y*width+x)*4:(y*width+x)*4+3]
+            foliage=color[1]>color[0]*1.15 and color[1]>color[2]*1.10
+            points=[obj.matrix_world@obj.data.vertices[i].co for i in poly.vertices]
+            points=[(p.x,p.z,-p.y) for p in points]
+            all_y.extend(p[1] for p in points)
+            if foliage:leaf_y.extend(p[1] for p in points)
+            parts.append((points,foliage,color))
+        assert leaf_y and max(all_y)>min(all_y),'Kenney radish is missing foliage or height'
+        _RADISH_PARTS=parts,min(leaf_y),.55/(max(all_y)-min(all_y))
+    finally:
+        for obj in imported:
+            data=obj.data if obj.type=='MESH' else None
+            bpy.data.objects.remove(obj,do_unlink=True)
+            if data is not None and data.users==0:bpy.data.meshes.remove(data)
+    return _RADISH_PARTS
+
 def turnips(stage):
+    # CC0 Kenney Food Kit radish silhouette; reuse the coastal atlas in all growth stages.
+    parts,junction,scale=radish_parts();amount=(.32,.65,1)[stage]
     for x in [-.48,.48]:
         for z in [-.48,.48]:
-            h=.10+stage*.10;s=.13+stage*.075
-            if stage==2:
-                profile((x,.07,z),[(0,.025),(.07,.14),(.15,.20),(.25,.21),(.30,.17)],10,20)
-                profile((x,.25,z),[(0,.206),(.08,.17),(.11,.07)],11,20)
-            for j in range(4+stage*2):
-                a=j*2.3999;length=.17+stage*.11+(j%2)*.08
-                leaf((x,.15,z),(x+math.cos(a)*length,.15+h,z+math.sin(a)*length),s,8 if j%2 else 9)
-                tube([(x,.10,z),(x+math.cos(a)*length*.65,.15+h*.65,z+math.sin(a)*length*.65)],.008,9,5)
+            for points,foliage,color in parts:
+                if stage==0 and not foliage:continue
+                p=[(x+a*scale*amount,(b-junction)*scale*amount+.12+stage*.015,z+c*scale*amount) for a,b,c in points]
+                tile=(8 if color[1]>.35 else 9) if foliage else (11 if color[0]>color[1]*1.2 else 10)
+                mesh(p,[tuple(range(len(p)))],tile)
 
 def hoe():
     tube([(0,-.22,0),(0,.38,0)],.018,3,10)
@@ -315,7 +335,7 @@ def watering_can():
     tube([(-.10,-.01,.12),(0,.025,.12),(.10,-.01,.12)],.014,4,10)
 
 def orchard_tree():
-    flow([(0,0,0),(.16,1,0),(-.12,2.2,0),(0,3.3,0)],.20,3,12,.45)
+    profile((0,0,0),[(0,.22),(.12,.215),(.7,.20),(1.5,.165),(2.4,.12),(3.3,.065)],3,16)
     for j in range(10):
         a=j*2.3999;end=(math.cos(a)*1.9,2.5+(j%3)*.45,math.sin(a)*1.9)
         flow([(0,1.4+j*.08,0),(end[0]*.5,end[1]-.2,end[2]*.5),end],.075,3,9,.32)

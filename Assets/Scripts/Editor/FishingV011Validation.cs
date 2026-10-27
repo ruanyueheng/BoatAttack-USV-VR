@@ -121,6 +121,50 @@ namespace BoatAttack.EditorTools
         {
             Check(c.Automated && c.HasIsolatedProfile && c.SavePath.StartsWith(Application.temporaryCachePath),"仅操作临时隔离存档");
             int firstFrame=Time.frameCount;while(Time.frameCount==firstFrame)yield return null;
+            if(suite=="COAST-ART")
+            {
+                var run=FishingCoastArtValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="VOYAGE-QUEST")
+            {
+                var run=FishingVoyageValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="HOME-ECOLOGY")
+            {
+                var run=FishingHomeEcologyValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="FEEDBACK-P3")
+            {
+                var run=FishingFeedbackP3Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="FEEDBACK-TOOLS")
+            {
+                var run=FishingFeedbackToolsValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="MARINE-CAPTURE")
+            {
+                var run=FishingMarineCaptureValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="FEEDBACK-MOTION")
+            {
+                var run=FishingFeedbackP3Validation.MotionChecks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="COMBAT")
+            {
+                var run=FishingCombatValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="WATER")
+            {
+                var run=FishingWaterValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="P0-ART")
+            {
+                var run=FishingP0ArtValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="PORTABLE-CHART")
+            {
+                var run=FishingPortableChartValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
             if(suite=="WORLD-AUDIO")
             {
                 var run=FishingWorldAudioValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
@@ -704,7 +748,7 @@ namespace BoatAttack.EditorTools
             Check(c.RequestCatchResolution(true),"取消后可用新编号重新入箱");c.TickWorldAction(1,true,false);
             Check(!c.HasPendingCatch && c.Career.Count==1 && !c.RequestCatchResolution(true),"鱼获事务只结算一次");
             var reloaded=FishingSaveStore.Load(c.SavePath,out var warning);
-            Check(warning=="" && reloaded.Snapshot().version == 15 && reloaded.Count==1 && reloaded.Workshop.Initialized,"新动作保存鱼获与工坊数据");
+            Check(warning=="" && reloaded.Snapshot().version == FishingSaveData.CurrentVersion && reloaded.Count==1 && reloaded.Workshop.Initialized,"新动作保存鱼获与工坊数据");
             c.CancelWorldAction();yield return null;
             var releasedFish=new CatchRecord{id="v011-release-"+Guid.NewGuid().ToString("N"),kind=FishKind.Coral,grams=1000,value=FishingSpecies.Value(FishKind.Coral,false,1000)};
             Check(c.Career.BeginPending(releasedFish,0,c.Player.transform.position.x,c.Player.transform.position.z),"普通鱼放生夹具");c.CatchRig.ResetFixture();
@@ -732,3 +776,7 @@ namespace BoatAttack.EditorTools
         }
     }
 }
+
+
+
+

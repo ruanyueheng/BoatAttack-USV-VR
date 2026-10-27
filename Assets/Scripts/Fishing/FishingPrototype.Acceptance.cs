@@ -33,7 +33,7 @@ namespace BoatAttack.Fishing
             // Validate before changing any live state. FreePlay is intentionally never synthesized.
             FishingCareer fixture = selected == FishingAcceptanceCase.FreePlay ? null : FishingAcceptanceCases.CreateCareer(selected);
             CancelV036AcceptanceFixture();Home?.CancelSleep();Home?.StandUp(true);
-            HandGames?.Cancel();CloseHomeChart();CloseSaveMenu();
+            HandGames?.Cancel();CloseHomeChart(true);CloseSaveMenu();
             if(StartMenuOpen)TitleVoyage.Close();StartMenuOpen=false;MenuControls=false;CancelGuideOpening();
             Letter?.Close();CancelWorldAction();_workshopReceipt=false;TackleShop?.Close();Residents?.Close();Realms?.Abort();CoastWorld?.CloseMenu();
             if (InventoryOpen) ToggleInventory();
@@ -201,7 +201,8 @@ namespace BoatAttack.Fishing
                     PrepareAcceptanceHome(FishingAcceptanceCase.HomeInterior);
                     if(!Shore.Relocate(Home.WakePoint,Quaternion.identity))throw new InvalidOperationException("家中海图夹具无法到达安全落脚点。");
                     View.ResetLook();
-                    if(!OpenHomeChart())throw new InvalidOperationException("家中海图夹具无法打开独立窗口。");
+                    if(!OpenPortableChart())throw new InvalidOperationException("随身海图夹具无法取出纸图。");
+                    PortableChart.Tick(FishingPortableChart.OpenSeconds);PresentCharacterFrame();
                     break;
                 case FishingAcceptanceCase.StartMenu:OpenStartMenu();break;
                 case FishingAcceptanceCase.MenuControls:OpenStartMenu();MenuControls=true;_hud.SettingsTab=0;break;

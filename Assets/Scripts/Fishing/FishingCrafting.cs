@@ -47,9 +47,21 @@ namespace BoatAttack.Fishing
             R("iron-pick-head",CraftStation.Forge,FieldItem.IronPickHead,1,Stack(FieldItem.IronIngot,3)),
             R("gun-parts",CraftStation.Forge,FieldItem.GunParts,1,Stack(FieldItem.IronIngot,6)),
             R("hunting-rifle",CraftStation.Workbench,FieldItem.HuntingRifle,1,Stack(FieldItem.GunParts,1),Stack(FieldItem.Plank,2),Stack(FieldItem.Rope,1)),
-            R("coal-rabbit-lantern",CraftStation.Workbench,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.RabbitFur,1)),
-            R("coal-fox-lantern",CraftStation.Workbench,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.FoxFur,1)),
-            R("coal-legacy-lantern",CraftStation.Workbench,FieldItem.Lantern,1,Stack(FieldItem.Coal,2),Stack(FieldItem.Fur,1))
+            R("wood-axe",CraftStation.Workbench,FieldItem.Axe,1,Stack(FieldItem.IronIngot,2),Stack(FieldItem.Stick,2),Stack(FieldItem.Rope,1)),
+            R("soil-shovel",CraftStation.Workbench,FieldItem.Shovel,1,Stack(FieldItem.IronIngot,1),Stack(FieldItem.Stick,2),Stack(FieldItem.Rope,1)),
+            R("garden-rake",CraftStation.Workbench,FieldItem.Rake,1,Stack(FieldItem.IronIngot,2),Stack(FieldItem.Stick,3),Stack(FieldItem.Rope,1)),
+            R("capture-net",CraftStation.Workbench,FieldItem.CaptureNet,1,Stack(FieldItem.Stick,2),Stack(FieldItem.Rope,3),Stack(FieldItem.Fiber,4)),
+            R("animal-trap",CraftStation.Workbench,FieldItem.AnimalTrap,1,Stack(FieldItem.Plank,4),Stack(FieldItem.Stick,4),Stack(FieldItem.Rope,2)),
+            R("aquarium",CraftStation.Workbench,FieldItem.Aquarium,1,Stack(FieldItem.Glass,6),Stack(FieldItem.IronIngot,2),Stack(FieldItem.Plank,2)),
+            R("fish-feed",CraftStation.Hand,FieldItem.FishFeed,4,Stack(FieldItem.TurnipSeeds,2),Stack(FieldItem.RabbitMeat,1)),
+            R("rabbit-hutch",CraftStation.Workbench,FieldItem.RabbitHutch,1,Stack(FieldItem.Plank,6),Stack(FieldItem.Rope,2),Stack(FieldItem.Fiber,4)),
+            R("fox-den",CraftStation.Workbench,FieldItem.FoxDen,1,Stack(FieldItem.Plank,8),Stack(FieldItem.Rope,2),Stack(FieldItem.RabbitFur,2)),
+            R("tortoise-pen",CraftStation.Workbench,FieldItem.TortoisePen,1,Stack(FieldItem.Plank,6),Stack(FieldItem.Stone,4)),
+            R("bird-aviary",CraftStation.Workbench,FieldItem.BirdAviary,1,Stack(FieldItem.Plank,4),Stack(FieldItem.Rope,4),Stack(FieldItem.Stick,4)),
+            R("sea-turtle-pond",CraftStation.Workbench,FieldItem.SeaTurtlePond,1,Stack(FieldItem.Stone,8),Stack(FieldItem.Clay,4),Stack(FieldItem.Glass,2)),
+            R("reef-trap",CraftStation.Workbench,FieldItem.AnimalTrap,1,Stack(FieldItem.ReefChitin,2),Stack(FieldItem.Stick,4),Stack(FieldItem.Rope,2)),
+            R("guardian-trophy",CraftStation.Workbench,FieldItem.GuardianTrophy,1,Stack(FieldItem.GuardianPearl,1),Stack(FieldItem.Plank,2),Stack(FieldItem.IronIngot,1)),
+            R("voyage-compass",CraftStation.Workbench,FieldItem.VoyageCompass,1,Stack(FieldItem.WindRelic,1),Stack(FieldItem.ForestRelic,1),Stack(FieldItem.TideRelic,1),Stack(FieldItem.StarRelic,1),Stack(FieldItem.IronIngot,2),Stack(FieldItem.Glass,2))
         };
         public static readonly CraftRecipe[] HandRecipes=Array.FindAll(All,r=>r.Station==CraftStation.Hand);
         public static readonly CraftRecipe[] WorkbenchRecipes=Array.FindAll(All,r=>r.Station==CraftStation.Workbench);
@@ -70,6 +82,7 @@ namespace BoatAttack.Fishing
             if(id=="forge-stone-pick")id="stone-pick";
             else if(id=="forge-iron-pick")id="iron-pick";
             else if(id=="forge-iron")id="iron";
+            else if(id=="coal-rabbit-lantern" || id=="coal-fox-lantern" || id=="coal-legacy-lantern")id="lantern";
             foreach(var r in All)if(r.Id==id)return r;return null;
         }
         public static string StationName(CraftStation s)=>s==CraftStation.Hand?"徒手":s==CraftStation.Workbench?"工作台":s==CraftStation.Forge?"锻造台":"熔炉";

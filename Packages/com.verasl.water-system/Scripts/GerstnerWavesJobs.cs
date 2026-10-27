@@ -31,6 +31,11 @@ namespace WaterSystem
 
         public static void Init()
         {
+            if (Initialized) return;
+            _firstFrame = true;
+            _processing = false;
+            _positionCount = 0;
+            Registry.Clear();
             if(Debug.isDebugBuild)
                 Debug.Log("Initializing Gerstner Waves Jobs");
             //Wave data
@@ -50,38 +55,47 @@ namespace WaterSystem
 
         public static void Cleanup()
         {
-            if(Debug.isDebugBuild)
+            if(Debug.isDebugBuild && Initialized)
                 Debug.Log("Cleaning up Gerstner Wave Jobs");
             _waterHeightHandle.Complete();
-
-            //Cleanup native arrays
-            _waveData.Dispose();
-            _positions.Dispose();
-            _wavePos.Dispose();
-            _waveNormal.Dispose();
+            // ExecuteAlways water can receive another LateUpdate while play mode is stopping.
+            Initialized = false;
+            _processing = false;
+            _firstFrame = true;
+            if (_waveData.IsCreated) _waveData.Dispose();
+            if (_positions.IsCreated) _positions.Dispose();
+            if (_wavePos.IsCreated) _wavePos.Dispose();
+            if (_waveNormal.IsCreated) _waveNormal.Dispose();
+            _waterHeightHandle = default;
+            _positionCount = 0;
+            _waveCount = 0;
+            Registry.Clear();
         }
 
         public static void UpdateSamplePoints(ref NativeArray<float3> samplePoints, int guid)
         {
+            if (!Initialized) return;
             CompleteJobs();
 
-            if (Registry.TryGetValue(guid, out var offsets))
+            if (!Registry.TryGetValue(guid, out var offsets))
             {
-                for (var i = offsets.x; i < offsets.y; i++) _positions[i] = samplePoints[i - offsets.x];
-            }
-            else
-            {
-                if (_positionCount + samplePoints.Length >= _positions.Length) return;
+                if (_positionCount + samplePoints.Length > _positions.Length) return;
                 
                 offsets = new int2(_positionCount, _positionCount + samplePoints.Length);
                 Registry.Add(guid, offsets);
                 _positionCount += samplePoints.Length;
+                for (var i = offsets.x; i < offsets.y; i++)
+                {
+                    _wavePos[i] = float3.zero;
+                    _waveNormal[i] = new float3(0, 1, 0);
+                }
             }
+            for (var i = offsets.x; i < offsets.y; i++) _positions[i] = samplePoints[i - offsets.x];
         }
 
         public static void GetData(int guid, ref float3[] outPos, ref float3[] outNorm)
         {
-            if (!Registry.TryGetValue(guid, out var offsets)) return;
+            if (!Initialized || !Registry.TryGetValue(guid, out var offsets)) return;
             
             _wavePos.Slice(offsets.x, offsets.y - offsets.x).CopyTo(outPos);
             if(outNorm != null)
@@ -123,7 +137,7 @@ namespace WaterSystem
         // Height jobs for the next frame
         public static void UpdateHeights()
         {
-            if (_processing) return;
+            if (!Initialized || _processing) return;
             
             _processing = true;
 

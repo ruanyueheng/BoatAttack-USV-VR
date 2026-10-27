@@ -41,7 +41,23 @@ namespace BoatAttack.EditorTools
             Check(c.RequestWorldInteraction() && c.Realms.Transitioning,"Production entry starts the fade "+id);before=c.Shore.Position;c.Shore.Move(Vector2.up,false,false,false,.05f);Check(c.Shore.Position==before,"Fade blocks walking "+id);
             while(c.Realms.Transitioning)yield return null;yield return null;yield return null;
             var room=c.Realms.Room;Check(c.Realms.Island==id && room.Find(FishingRealmWorld.GeometryRootName)!=null && c.Shore.Ground(c.Shore.Position,out _),"Supported authored interior entry "+id);
+            if(id==2)
+            {
+                var chart=room.Find("Device 3/CaptainChart");var boxes=chart.GetComponents<BoxCollider>();
+                Check(boxes.Length==5 && chart.GetComponentsInChildren<MeshCollider>().Length==0,"Captain's table uses one solid tabletop and four simple leg colliders");
+                foreach(var box in boxes)
+                {
+                    var from=chart.TransformPoint(box.center+Vector3.back*(box.size.z*.5f+.2f));
+                    Check(box.Raycast(new Ray(from,chart.forward),out _,.3f),"The actual table collider blocks a horizontal approach at "+box.center);
+                }
+            }
             FishingV036PortalValidation.CheckEntry(c,id);
+            if(id==0)
+            {
+                Check(c.Realms.HintLevel==0,"Puzzle entry does not reveal a solution automatically");
+                for(int hint=0;hint<3;hint++)c.Realms.RequestHint();
+                Check(c.Realms.HintLevel==3 && c.VisibleMessage.Contains("操作提示"),"Explicit repeated help progresses from environmental clue to rule and operation");
+            }
             Check(room.Find("Echo gate")==null && room.Find("Floor")==null,"Old shared rectangular room and gate removed "+id);
             c.Weather.ApplyEnvironment();c.PresentCharacterFrame();var aim=id==0?new Vector3(-2,3,5):id==1?new Vector3(-5,3,2):id==2?new Vector3(0,.5f,3):new Vector3(0,4,10);
             c.viewCamera.transform.rotation=Quaternion.LookRotation(room.TransformPoint(aim)-c.viewCamera.transform.position);FishingV016Validation.Capture(c,evidence,"sanctuary-player-"+id);CaptureViews(c,id,evidence);
@@ -61,8 +77,23 @@ namespace BoatAttack.EditorTools
             if(id==0)
             {
                 Check(!r.Room.Find("WindBridge0").gameObject.activeSelf,"Wind bridge starts absent");
-                for(int i=1;i<=10;i++){walk=Walk(c,r.Landmark("Route"+i).position);while(walk.MoveNext())yield return null;if(i==4)Check(r.Trial.Progress==2,"Walking onto two pads extends two bridges");}
-                Check(r.Trial.Progress==3 && r.Room.Find("WindBridge2").gameObject.activeSelf,"Footstep sequence completes the ascending island chain");
+                for(int i=1;i<=7;i++)
+                {
+                    walk=Walk(c,r.Landmark("Route"+i).position,i==7);while(walk.MoveNext())yield return null;
+                    if(i==1)Check(r.Room.Find("WindBridge0").gameObject.activeSelf && !r.Room.Find("WindBridge0").GetComponentsInChildren<Collider>().Any(x=>x.enabled),"A rising bridge is visible but cannot be walked before its animation finishes");
+                    var rise=Wait(1.2f);while(rise.MoveNext())yield return null;
+                    if(i==4)Check(r.Trial.Progress==2,"Walking onto two pads extends two bridges");
+                }
+                Check(r.Trial.WindRound==1 && r.Trial.Progress==0 && !r.Trial.Ready,"The first three notes begin a separate five-note round");
+                Check(FishingPrototype.FlatDistance(c.Shore.Position,r.Landmark("Entry").position)<.4f,"The next melody returns the capsule safely before retracting bridges");
+                for(int i=1;i<=7;i++)
+                {
+                    walk=Walk(c,r.Landmark("Route"+i).position);while(walk.MoveNext())yield return null;
+                    var rise=Wait(1.2f);while(rise.MoveNext())yield return null;
+                }
+                Check(r.Trial.Progress==3 && !r.Trial.Ready,"The second melody cannot be skipped by replaying only three notes");
+                foreach(int i in new[]{6,5,4,5,6,7,8,9,10}){walk=Walk(c,r.Landmark("Route"+i).position);while(walk.MoveNext())yield return null;}
+                Check(r.Trial.Progress==5 && r.Trial.Ready && r.Room.Find("WindBridge2").gameObject.activeSelf,"The five-note melody requires walking back to the middle pad and returning");
                 walk=Walk(c,r.Device(3).position+Vector3.back*1.4f);while(walk.MoveNext())yield return null;
             }
             if(id==1)
@@ -73,6 +104,21 @@ namespace BoatAttack.EditorTools
                 {
                     var stance=r.Device(i).position+(i==1?Vector3.back:Vector3.left)*1.4f;walk=Walk(c,stance);while(walk.MoveNext())yield return null;
                     for(int turn=0;turn<=i;turn++){Check(c.RequestWorldInteraction(),"Rotate connected mirror "+i+" turn "+turn);var w=Wait(.5f);while(w.MoveNext())yield return null;}
+                    walk=Walk(c,r.Device(i).position);while(walk.MoveNext())yield return null;
+                }
+                var firstCharge=Wait(5.4f);while(firstCharge.MoveNext())yield return null;
+                Check(r.Trial.LightStage==1 && !r.Trial.Ready && r.SideLightPathOpen && !r.Room.Find("RootBridge").GetComponentsInChildren<Collider>().Any(x=>x.enabled),"First sunlight opens only the side island path");
+                walk=Walk(c,r.Device(1).position);while(walk.MoveNext())yield return null;
+                var sideStance=r.Device(5).position+(r.Device(1).position-r.Device(5).position).normalized*1.3f;
+                walk=Walk(c,sideStance);while(walk.MoveNext())yield return null;
+                c.viewCamera.transform.LookAt(r.Device(5).position+Vector3.up*1.2f);FishingV016Validation.Capture(c,evidence,"forest-side-island-shutter");
+                Check(c.RequestWorldInteraction() && r.Trial.ShutterOpen,"Walk the new side bridge and open its real copper shutter control");
+                walk=Walk(c,r.Device(1).position);while(walk.MoveNext())yield return null;
+                for(int i=0;i<3;i++)
+                {
+                    var stance=r.Device(i).position+(i==1?Vector3.back:Vector3.left)*1.4f;walk=Walk(c,stance);while(walk.MoveNext())yield return null;
+                    for(int turn=0;turn<4 && r.Trial.State(i)!=r.Trial.MirrorTarget(i);turn++)
+                    {Check(c.RequestWorldInteraction(),"Reorganize the second folded light route at mirror "+i);var pause=Wait(.5f);while(pause.MoveNext())yield return null;}
                     walk=Walk(c,r.Device(i).position);while(walk.MoveNext())yield return null;
                 }
                 var growth=Wait(5.4f);while(growth.MoveNext())yield return null;
@@ -189,17 +235,17 @@ namespace BoatAttack.EditorTools
             }
             finally{camera.transform.SetPositionAndRotation(position,rotation);camera.fieldOfView=fov;c.Shore.Character.SetOpticalView(false);}
         }
-        public static IEnumerator Walk(FishingPrototype c,Vector3 target)
+        public static IEnumerator Walk(FishingPrototype c,Vector3 target,bool stopOnWindRound=false)
         {
-            float stuck=0;Vector3 previous=c.Shore.Position;
-            for(int i=0;i<1500 && FishingPrototype.FlatDistance(c.Shore.Position,target)>.14f;i++)
+            float stuck=0;Vector3 previous=c.Shore.Position;int round=c.Realms.Trial?.WindRound??0;
+            for(int i=0;i<1500 && FishingPrototype.FlatDistance(c.Shore.Position,target)>.14f && !(stopOnWindRound && c.Realms.Trial.WindRound!=round);i++)
             {
                 var delta=Vector3.ProjectOnPlane(target-c.Shore.Position,Vector3.up);c.viewCamera.transform.rotation=Quaternion.LookRotation(delta.normalized);
                 c.Shore.Move(Vector2.up,false,false,false,Mathf.Min(.05f,delta.magnitude/2.6f));yield return null;
                 stuck=Vector3.Distance(previous,c.Shore.Position)<.003f?stuck+Time.deltaTime:0;previous=c.Shore.Position;
                 if(stuck>2)break;
             }
-            bool reached=FishingPrototype.FlatDistance(c.Shore.Position,target)<.4f && Mathf.Abs(c.Shore.Position.y-target.y)<.45f;
+            bool reached=(stopOnWindRound && c.Realms.Trial.WindRound!=round) || (FishingPrototype.FlatDistance(c.Shore.Position,target)<.4f && Mathf.Abs(c.Shore.Position.y-target.y)<.45f);
             if(!reached)foreach(var collider in Physics.OverlapCapsule(c.Shore.Position+Vector3.up*.35f,c.Shore.Position+Vector3.up*1.4f,1.1f))Debug.Log("[V035-LEVELS] Nearby collision: "+collider.name+" parent="+collider.transform.parent?.name+" bounds="+collider.bounds);
             Check(reached,"Continuous supported walking to "+target+" actual="+c.Shore.Position);
         }

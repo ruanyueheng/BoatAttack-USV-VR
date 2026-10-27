@@ -223,10 +223,13 @@ namespace BoatAttack.Fishing
     public sealed class FishingSaveData
     {
         public List<HuntedAnimalData> huntedAnimals=new List<HuntedAnimalData>();
-        public int version = 15;
+        public const int CurrentVersion = 18;
+        public int version = CurrentVersion;
         public List<FieldStack> homeStorage;
         public int[] homeFruitDays;
         public FarmData farm = new FishingFarm().Snapshot();
+        public HomeEcologyData homeEcology = new HomeEcologyData();
+        public CombatData combat = new CombatData();
         public FishingBarbecueData barbecue = new FishingBarbecueData();
         public bool prologueSeen;
 
@@ -475,7 +478,7 @@ namespace BoatAttack.Fishing
         {
             var result = new FishingSaveData
             {
-                prologueSeen = PrologueSeen, barbecue = _barbecue.Copy(),
+                prologueSeen = PrologueSeen, barbecue = _barbecue.Copy(), homeEcology = _ecology.Copy(), combat = _combat.Copy(),
                 calendar = Calendar.Snapshot(), hunting = Hunting.Snapshot(), lore = Lore.Snapshot(), farm=Farm.Snapshot(),
                 engineLevel = EngineLevel, rudderLevel = RudderLevel, cabinLevel = CabinLevel, adventure = Adventure.Snapshot(),
                 hasPendingCatch = HasPendingCatch, pendingCatch = _pending?.Copy(), releasedCatches = ReleasedCatches, orderMarked = OrderMarked,
@@ -496,8 +499,9 @@ namespace BoatAttack.Fishing
         public static bool TryRestore(FishingSaveData data, out FishingCareer career)
         {
             career = null;
-            if (data == null || data.version < 1 || data.version > 15 || (data.version < 12 && data.prologueSeen)) return false;
+            if (data == null || data.version < 1 || data.version > FishingSaveData.CurrentVersion || (data.version < 12 && data.prologueSeen)) return false;
             if(data.version<14 && !FishingFarm.Pristine(data.farm))return false;
+            if(data.version<16 && !FishingLore.QuestPristine(data.lore))return false;
             if (data.version < 11 && data.lore != null && (data.lore.residents != 0 || data.lore.shrines != 0 || data.lore.finale)) return false;
             if (data.engineLevel < 0 || data.engineLevel > MaxLevel || data.rudderLevel < 0 || data.rudderLevel > MaxLevel
                 || data.cabinLevel < 0 || data.cabinLevel > MaxLevel
@@ -587,7 +591,7 @@ namespace BoatAttack.Fishing
             }
             if (data.version >= 11)
             {
-                if (!FishingLore.TryRestore(data.lore, out var lore)) return false;
+                if (!FishingLore.TryRestore(data.lore, out var lore, data.version)) return false;
                 result.Lore = lore;
             }
             if(data.huntedAnimals!=null)
@@ -612,7 +616,10 @@ namespace BoatAttack.Fishing
             else result.Farm=new FishingFarm(result.Calendar.Day);
             if(!result.RestoreBarbecue(data.barbecue,data.version))return false;
             if(!result.RestoreHomeStorage(data))return false;
+            if(!result.RestoreHomeEcology(data))return false;
+            if(!result.RestoreCombat(data))return false;
             result.PrologueSeen = data.prologueSeen;
+            if(!result.RestoreVoyageQuest(data.version))return false;
 
             career = result;
             return true;
@@ -642,6 +649,7 @@ namespace BoatAttack.Fishing
 
         private bool IsAboard(string id)
         {
+            if(AquariumContains(id))return true;
             if(_barbecue.fish!=null && _barbecue.fish.id==id)return true;
             foreach (var fish in _inventory) if (fish.id == id) return true;
             return false;

@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.39.0";
+        public const string Version = "0.41.0";
         public FishingHandGames HandGames { get; private set; }
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
@@ -126,7 +126,7 @@ namespace BoatAttack.Fishing
             _previousTargetFrameRate=Application.targetFrameRate;
             _xrActive=UnityEngine.XR.XRSettings.isDeviceActive;Application.targetFrameRate=_xrActive?-1:60;
             ReadAcceptanceOptions();
-            Automated = Application.isBatchMode || HasArgument("-fishing-field-capture") || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
+            Automated = Application.isBatchMode || HasArgument("-fishing-field-capture") || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || HasArgument(FishingPerformanceVoyage.EnableFlag) || HasArgument(FishingFeedbackCapture.EnableFlag) || HasArgument(FishingStoryCapture.EnableFlag) || HasArgument(FishingFrameProbe.EnableFlag) || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
             SavePath = AcceptanceOptions != null ? AcceptanceOptions.ProfilePath(Application.temporaryCachePath, false)
                 : Path.Combine(Automated ? Application.temporaryCachePath : Application.persistentDataPath,
                 Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v13.json");
@@ -201,7 +201,7 @@ namespace BoatAttack.Fishing
             CoastWorld=gameObject.AddComponent<FishingV028CoastWorld>();CoastWorld.Build(this);
             HandGames=gameObject.AddComponent<FishingHandGames>();HandGames.Build(this);
             Nightscape=gameObject.AddComponent<FishingNightscape>();Nightscape.Build(this);
-            Prologue=gameObject.AddComponent<FishingPrologue>();Prologue.Build(this);
+            Prologue=gameObject.AddComponent<FishingPrologue>();Prologue.Build(this);FishingStoryCapture.Attach(this);FishingFrameProbe.Attach(this);
             Shore.RefreshClimbRoutes();
             ConfigurePresentation();
             _feedback=gameObject.AddComponent<AudioSource>();_feedback.spatialBlend=0f;_feedback.volume=0.45f;
@@ -216,6 +216,9 @@ namespace BoatAttack.Fishing
                 :"潮汐回响：N选择岛屿，低速G下船，E与居民交谈 / 进入潮纹秘境。J查看世界航记；店员可介绍商品，离岸可游泳。"):warning,10f);
             _initialized=true;
             InitializeSettings();
+            BuildVoyageWorld();
+            HomeEcology=gameObject.AddComponent<FishingHomeEcologyWorld>();HomeEcology.Build(this);
+            Combat=gameObject.AddComponent<FishingCombatWorld>();Combat.Build(this);
             ActionAudio=gameObject.AddComponent<FishingActionAudio>();ActionAudio.Build(this);
             WorldAudio=gameObject.AddComponent<FishingWorldAudio>();WorldAudio.Build(this);
             RegionalMusic=gameObject.AddComponent<FishingRegionalMusic>();RegionalMusic.Build(this);
@@ -223,6 +226,7 @@ namespace BoatAttack.Fishing
             InitializeStartMenu();
             if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }
             else if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
+            if(HasArgument(FishingFeedbackCapture.EnableFlag))gameObject.AddComponent<FishingFeedbackCapture>().Begin(this);
             Debug.Log("[FISHING] Prototype v"+Version+" initialized. Procedural and Hunyuan fish; desktop/XR input.");
         }
 
@@ -313,7 +317,6 @@ namespace BoatAttack.Fishing
                 if(k!=null && k.cKey.wasPressedThisFrame)ToggleView();
                 if(k!=null && k.vKey.wasPressedThisFrame)View.ResetLook();
                 if(k!=null && k.hKey.wasPressedThisFrame)ToggleDetails();
-                if(k!=null && k.mKey.wasPressedThisFrame)ToggleChart();
                 if(k!=null && k.tabKey.wasPressedThisFrame)ToggleHarborDesk();
                 if(k!=null && k.bKey.wasPressedThisFrame)CycleBait();
                 if(k!=null && k.nKey.wasPressedThisFrame)CycleNavigation();
@@ -331,7 +334,7 @@ namespace BoatAttack.Fishing
                 bool press=(pointerReady && !overTools && !rightHeld && m!=null && m.leftButton.wasPressedThisFrame) || (gamepadReady && g!=null && g.rightShoulder.wasPressedThisFrame);
                 TickDesktopCast(press,pointerReady,overTools,rightHeld,m);
 
-                if(press && Ashore && (k==null || (!k.leftAltKey.isPressed && !k.rightAltKey.isPressed)))RifleHunting.TryFire();
+                if(Ashore && (k==null || (!k.leftAltKey.isPressed && !k.rightAltKey.isPressed)))RifleHunting.ReadDesktopInput((pointerReady && !overTools && leftHeld) || (gamepadReady && g!=null && g.rightShoulder.isPressed),(pointerReady && !overTools && rightHeld) || (gamepadReady && g!=null && g.leftTrigger.ReadValue()>.5f));
             }
             Shore.Tick(focused && !Automated && !Expedition.Aligning);
             UpdateNearestSpot();
@@ -428,7 +431,8 @@ namespace BoatAttack.Fishing
             XRSeat.Apply();Shore.SyncRider();Home.PresentSleepPose();Shore.ApplyTraversalPose();View.ApplyView();Hands.Apply();FieldWorld.ApplyHeldTool();XRNotebook.SampleTool();ApplyWorldActionPose();CatchRig.Apply(deltaTime);
             RifleHunting.Present();HandGames.Present();Realms.PresentObservation();Farm.ApplyPresentation();Home.ApplyOrchardPresentation();
             // 全部工具和掌心目标落位后才解同源骨架；随后只读取竿尖画线，不再次采样。
-            Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right,UnityEngine.XR.XRSettings.isDeviceActive);
+            PortableChart?.Present();
+            Shore.Character.ApplyHandTargets(Hands.Left,Hands.Right,UnityEngine.XR.XRSettings.isDeviceActive,PortableChart!=null && PortableChart.Active);
             if(Acceptance!=null && Acceptance.FreezeScenario && (Acceptance.CurrentCase==FishingAcceptanceCase.ArchIslet || Acceptance.CurrentCase==FishingAcceptanceCase.FireflyIslet))
             {
                 var island=FishingCoastalPresentation.Islets[Acceptance.CurrentCase==FishingAcceptanceCase.ArchIslet?0:1];
@@ -823,6 +827,7 @@ namespace BoatAttack.Fishing
         }
         private void OnDestroy()
         {
+            CloseHomeChart(true);
             RestoreAudioSettings();
             if(Paused)Time.timeScale=_resumeTimeScale;
             Application.targetFrameRate=_previousTargetFrameRate;

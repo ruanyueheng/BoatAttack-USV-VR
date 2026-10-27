@@ -12,7 +12,7 @@ namespace BoatAttack.Fishing
         public const string RootName="V019 Tide sanctuaries";
         public const string GeometryRootName="V035 authored level";
         private FishingPrototype _c;
-        private readonly Transform[] _portals=new Transform[4],_rooms=new Transform[4],_entries=new Transform[4],_exits=new Transform[4],_devices=new Transform[5];
+        private readonly Transform[] _portals=new Transform[4],_rooms=new Transform[4],_entries=new Transform[4],_exits=new Transform[4],_devices=new Transform[7];
         private readonly Transform[] _windBridges=new Transform[3],_mirrors=new Transform[3];
         private readonly LineRenderer[] _forestLight=new LineRenderer[4];
         private Vector3 _returnFeet,_cargoStart,_cargoEnd,_gangwayHome;
@@ -38,7 +38,7 @@ namespace BoatAttack.Fishing
         public Transform Portal(int island)=>island>=0 && island<4?_portals[island]:null;
         public Transform ExitPortal(int island)=>island>=0 && island<4?_exits[island]:null;
         public Vector3 PortalApproach(int island)=>_portals[island].Find("Approach").position;
-        public Transform Device(int id)=>id>=0 && id<5?_devices[id]:null;
+        public Transform Device(int id)=>id>=0 && id<_devices.Length?_devices[id]:null;
         public bool TryWater(Vector3 position,out float surface,out float bottom)
         {
             surface=bottom=0;
@@ -99,7 +99,7 @@ namespace BoatAttack.Fishing
             id=-1;target=null;
             if(_c==null || !_c.Ashore || _c.Shore.Swimming || _c.Shore.Climbing)return false;
             float best=2.75f;
-            for(int i=0;i<(Inside?5:4);i++)
+            for(int i=0;i<(Inside?_devices.Length:4);i++)
             {
                 var t=Inside?_devices[i]:_portals[i];if(t==null || !t.gameObject.activeInHierarchy)continue;
                 float distance=Vector3.Distance(_c.ExplorerPosition,t.position);
@@ -115,13 +115,15 @@ namespace BoatAttack.Fishing
                 if(!TryTarget(out int id,out _))
                 {
                     if(!Inside || Island!=2 || _gangwayDeck.enabled || FishingPrototype.FlatDistance(_c.Shore.Position,_cargoBridge.position)>=5)return null;
-                    return Trial.CargoProgress>=1 || _c.Career.Lore.Cleared(2)?"浮桥尚未接平 · 回到水阀注满船舱":"浮桥仍锁在水下 · 先排水，将货箱推上铜台，再注满水";
+                    return "缆绳仍绷在旧水线上 · 船腹传来空洞的回响";
                 }
                 if(id>=8)return "E 穿过星光门 · 进入 "+FishingLore.ShrineName(id-8);
                 if(id==4)return "E 穿过归航门 · 返回岛屿";
+                if(id==6)return "E 阅读旧刻痕 · 再读可逐级求助";
+                if(id==5)return "E 转动侧岛铜闸 · "+(Trial.ShutterOpen?"光缝敞开":"光缝闭合");
                 if(id==3)return "E 读取潮汐回响";
                 if(Island==0)return "走入「"+(id==0?"风":id==1?"潮":"星")+"」共鸣台 · 循声登高";
-                if(Island==1)return "E 转动反光镜 · 将光接向下一面镜 / 种池";
+                if(Island==1)return "E 转动反光镜 · 观察折光落点";
                 if(Island==2)return id==0?(_c.DesktopDisplay?"按住 E 随货箱前进":"按住右手柄 A 随货箱前进")+" · "+Mathf.FloorToInt(Trial.CargoProgress*100)+"%":"E 水阀："+new[]{"关闭","排水","注水"}[Trial.State(1)];
                 return id==0?"E 操作望远镜 · 观测 "+Trial.StarStage+" / 3":"E 阅读星图线索";
             }
@@ -131,12 +133,13 @@ namespace BoatAttack.Fishing
             if(_c.Paused || _c.InventoryOpen || _c.JournalOpen || _c.ShopBlocksGameplay || _c.StoryBlocksGameplay || _c.WorldActionBusy || !TryTarget(out int id,out _))return false;
             if(id>=8)return Enter(id-8);
             if(id==4)return Exit();
+            if(id==6){RequestHint();return true;}
             if(id==3)
             {
-                if(!Trial.Ready && !_c.Career.Lore.Cleared(Island)){_c.Notice(FishingLore.TrialHint(Island),8);return false;}
-                int pay=_c.Career.CompleteShrine(Island);
+                if(!Trial.Ready && !_c.Career.Lore.Cleared(Island)){RequestHint();return false;}
+                bool firstEcho=!_c.Career.Lore.Cleared(Island);int pay=_c.Career.CompleteShrine(Island);
                 if(pay==0 && !_c.Career.Lore.Cleared(Island)){_c.Notice("金币已达上限；回响保留，腾出余额后可再领取。",5);return false;}
-                _c.Save();Refresh();_exits[Island].GetComponentInChildren<FishingPortalVisual>().Pulse();_c.Regions.Show(FishingLore.ShrineName(Island)+" · 回响重现",pay>0?"+90 金币 · 航记已收录":"航记已收录",Island);_c.Notice(FishingLore.Echo(Island)+" 身旁的星光归航门可直接返回岛屿。",12);return true;
+                _c.Save();Refresh();_exits[Island].GetComponentInChildren<FishingPortalVisual>().Pulse();_c.Regions.Show(FishingLore.ShrineName(Island)+" · 回响重现",pay>0?"+90 金币 · 航记已收录":"航记已收录",Island);_c.Notice(FishingLore.Echo(Island)+" 身旁的星光归航门可直接返回岛屿。",12);_c.Voyage?.ClaimRealmReward(Island);if(firstEcho && _c.Career.Lore.Cleared(Island))_c.Prologue.Queue(FishingPrologue.Relic(Island));return true;
             }
             if(Island==0){_c.Notice("让脚步踩入共鸣台，听风桥回应。",4);return false;}
             if(Island==3)
@@ -145,7 +148,7 @@ namespace BoatAttack.Fishing
                 _c.Notice(id==1?"第一幅星图展开双翼，第二幅像垂落的船锚。":"最后一幅是归航星：三角帆下，一颗星指向回家的海。",9);return true;
             }
             if(Time.time<_nextUse)return false;_nextUse=Time.time+.4f;
-            bool ok=Trial.Use(id);
+            bool ok=Trial.Use(id==5?3:id);
             if(ok && _devices[id]!=null)_c.WorldAudio?.Play("MechanismClick",_devices[id].position,.42f);
             if(Island==2 && id==0)
             {
@@ -180,6 +183,8 @@ namespace BoatAttack.Fishing
                 {
                     Island=destination;Trial=new FishingShrineTrial(destination);_nextUse=0;_demoAge=0;_demoNote=0;_padInside=-1;_windBridgeStage=0;
                     for(int i=0;i<5;i++)_devices[i]=Room.Find("Device "+i);
+                    _devices[5]=destination==1?_shutterControl:null;_devices[6]=_helpPlaques[destination];_hintLevel=0;_windRecovery=false;
+                    ResetBridgePresentation();
                     Refresh();PresentTrial();
                 }
                 else _rooms[destination].gameObject.SetActive(false);
@@ -205,17 +210,21 @@ namespace BoatAttack.Fishing
         public void Tick()
         {
             if(!Inside || Transitioning || _c.Paused)return;
-            bool ready=Trial.Ready;int progress=Trial.Progress;Trial.Tick(Time.deltaTime);
+            bool ready=Trial.Ready;int progress=Trial.Progress,round=Trial.WindRound,lightStage=Trial.LightStage;Trial.Tick(Time.deltaTime);
             _demoAge+=Time.deltaTime;
             if(Island==0)
             {
-                if(_demoNote<3 && _demoAge>=.7f+_demoNote*1.25f){_c.Regions.Chime(new[]{2,0,1}[_demoNote]);_demoNote++;}
+                if(_demoNote<Trial.WindLength && _demoAge>=.7f+_demoNote*1.25f){_c.Regions.Chime(FishingShrineTrial.WindNote(Trial.WindRound,_demoNote));_demoNote++;}
+                if(progress>0 && Trial.Progress==0)ResetWindCrossing();
                 int pad=-1;
                 for(int i=0;i<3;i++)if(FishingPrototype.FlatDistance(_c.Shore.Position,_devices[i].position)<.95f && Mathf.Abs(_c.Shore.Position.y-_devices[i].position.y)<.35f)pad=i;
-                if(pad>=0 && pad!=_padInside && !Trial.Ready)
+                if(pad>=0 && pad!=_padInside && !Trial.Ready && !_c.Career.Lore.Cleared(0))
                 {
-                    bool ok=Trial.Use(pad);_windBridgeStage=Mathf.Max(_windBridgeStage,Trial.Progress);_c.Regions.Chime(pad);
-                    _c.Notice(ok?"共鸣回应 · "+Trial.Progress+" / 3 · 风桥展开":"这一音未合，循星、风、潮重新寻找。",4);Refresh();
+                    bool ok=Trial.Use(pad);_c.Regions.Chime(pad);
+                    if(!ok)ResetWindCrossing();
+                    else if(round!=Trial.WindRound)ResetWindCrossing();
+                    _windBridgeStage=Trial.WindRound>0 && !_windRecovery?3:Mathf.Min(3,Trial.Progress);
+                    _c.Notice(!ok?"回声散去，风将你送回入口；本轮重新聆听。":round!=Trial.WindRound?"巨钟应和，另一段更长的回声从入口传来。":"共鸣回应 · "+Trial.Progress+" / "+Trial.WindLength,4);Refresh();
                 }
                 _padInside=pad;
             }
@@ -229,7 +238,7 @@ namespace BoatAttack.Fishing
                     else Trial.PushCargo(Time.deltaTime);
                 }
             }
-            if(ready!=Trial.Ready || progress!=Trial.Progress)
+            if(ready!=Trial.Ready || progress!=Trial.Progress || round!=Trial.WindRound || lightStage!=Trial.LightStage)
             {
                 if(Trial.Ready && !ready)_c.WorldAudio?.Play("MechanismClick",_devices[3].position,.45f);
                 Refresh();
@@ -249,9 +258,9 @@ namespace BoatAttack.Fishing
             for(int i=0;i<3;i++)
             {
                 var t=_devices[i];if(t==null)continue;var signal=t.Find("Signal");
-                if(signal!=null)signal.gameObject.SetActive(Island==3?Trial.StarStage>i:Island==1?Trial.State(i)==i+1:Trial.State(i)>0);
+                if(signal!=null)signal.gameObject.SetActive(Island==3?Trial.StarStage>i:Island==1?Trial.State(i)==Trial.MirrorTarget(i):Trial.State(i)>0);
             }
-            if(Island==0)for(int i=0;i<3;i++)_windBridges[i].gameObject.SetActive(open || _windBridgeStage>i);
+            if(Island==0)for(int i=0;i<3;i++)_windBridgeWanted[i]=open || _windBridgeStage>i;
             if(Island==1)foreach(var collider in _rootBridge.GetComponentsInChildren<Collider>())collider.enabled=open;
             if(Island==2)
             {
@@ -282,6 +291,12 @@ namespace BoatAttack.Fishing
             }
             if(island==2)
             {
+                var chart=room.Find("Device 3/CaptainChart");
+                var top=chart.gameObject.AddComponent<BoxCollider>();top.center=new Vector3(0,.96f,0);top.size=new Vector3(1.7f,.10f,1);
+                foreach(float x in new[]{-.75f,.75f})foreach(float z in new[]{-.4f,.4f})
+                {
+                    var leg=chart.gameObject.AddComponent<BoxCollider>();leg.center=new Vector3(x,.45f,z);leg.size=new Vector3(.08f,.90f,.08f);
+                }
                 _valveWheel=Model("ValveWheel",room.Find("Device 1"),new Vector3(0,1.15f,-.2f));
                 _cargoStart=room.InverseTransformPoint(Marker(room,"CargoStart").position);_cargoEnd=room.InverseTransformPoint(Marker(room,"CargoEnd").position);
                 _gangwayHome=room.InverseTransformPoint(Marker(room,"FloatGangway").position);_cargoBridge=Model("FloatGangway",room,_gangwayHome);
@@ -300,22 +315,27 @@ namespace BoatAttack.Fishing
                 _holdWater.Build(new Vector2(9.3f,28),-2.5f,Resources.Load<Material>("FishingV035/RealmWater"));
             }
             if(island==3)BuildObservation(room);
+            BuildPuzzleExtensions(island,room);
         }
         private void PresentTrial()
         {
+            PresentPuzzleExtensions();
             if(Island==1)
             {
-                var source=_sunWell.position;var receiver=_seedReceiver.position+Vector3.up*.6f;
+                var source=_sunWell.position;var receiver=Trial.LightStage==0?_sideReceiver.position:_seedReceiver.position+Vector3.up*.6f;
                 var first=_devices[0].position+Vector3.up*1.5f;_forestLight[0].enabled=true;_forestLight[0].SetPosition(0,source);_forestLight[0].SetPosition(1,first);
                 bool connected=true;
-                for(int i=0;i<3;i++)
+                for(int order=0;order<3;order++)
                 {
-                    var start=_devices[i].position+Vector3.up*1.5f;var previous=i==0?source:_devices[i-1].position+Vector3.up*1.5f;
-                    var next=i==2?receiver:_devices[i+1].position+Vector3.up*1.5f;var correct=(next-start).normalized;
-                    var outgoing=Quaternion.AngleAxis((Trial.State(i)-(i+1))*90,Vector3.up)*correct;var normal=((start-previous).normalized-outgoing).normalized;
+                    int i=LightMirror(order),prior=LightMirror(Mathf.Max(0,order-1)),following=LightMirror(Mathf.Min(2,order+1));
+                    var start=_devices[i].position+Vector3.up*1.5f;var previous=order==0?source:_devices[prior].position+Vector3.up*1.5f;
+                    var next=order==2?receiver:_devices[following].position+Vector3.up*1.5f;var correct=(next-start).normalized;
+                    var outgoing=Quaternion.AngleAxis((Trial.State(i)-Trial.MirrorTarget(i))*90,Vector3.up)*correct;var normal=((start-previous).normalized-outgoing).normalized;
                     if(normal.sqrMagnitude>.01f)_mirrors[i].rotation=Quaternion.LookRotation(normal,Vector3.up);
-                    var line=_forestLight[i+1];line.enabled=connected;line.SetPosition(0,start);line.SetPosition(1,Trial.State(i)==i+1?next:start+outgoing*8);
-                    line.startColor=line.endColor=new Color(1,.85f,.48f);connected&=Trial.State(i)==i+1;
+                    var line=_forestLight[order+1];line.enabled=connected;line.SetPosition(0,start);
+                    bool aligned=Trial.State(i)==Trial.MirrorTarget(i);var end=aligned?next:start+outgoing*8;
+                    if(Trial.LightStage>0 && order==1 && aligned && !Trial.ShutterOpen)end=Vector3.Lerp(start,next,.5f);
+                    line.SetPosition(1,end);line.startColor=line.endColor=new Color(1,.85f,.48f);connected&=aligned && !(Trial.LightStage>0 && order==1 && !Trial.ShutterOpen);
                 }
                 _rootBridge.gameObject.SetActive(Trial.Growth>.001f || _c.Career.Lore.Cleared(Island));float growth=_c.Career.Lore.Cleared(Island)?1:Trial.Growth;
                 _rootBridge.localScale=new Vector3(1,1,Mathf.Max(.02f,growth));_seedling.localScale=Vector3.one*Mathf.Lerp(.15f,.55f,growth);

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace BoatAttack.Fishing
 {
     // Mainline IDs 0..25 are stable; local v8 gun IDs are migrated when loading.
-    public enum FieldItem { Empty, FieldGuide, Binoculars, Lantern, Shell, Driftwood, Stone, Fiber, Clay, IronOre, Coal, Sand, Plank, Stick, Rope, Charcoal, IronIngot, Brick, Glass, Workbench, Furnace, StonePickaxe, IronPickaxe, HuntingSpear, RawMeat, CookedMeat, HuntingRifle, Meat, Fur, RabbitMeat, RabbitFur, FoxMeat, FoxFur, TurtleMeat, TurtleShell, GullMeat, GullFeather, Forge, IronPickHead, GunParts, OldBoot, RustyCan, SeaTreasure, GrilledFish, TurnipSeeds, Turnip, IslandFruit }
+    public enum FieldItem { Empty, FieldGuide, Binoculars, Lantern, Shell, Driftwood, Stone, Fiber, Clay, IronOre, Coal, Sand, Plank, Stick, Rope, Charcoal, IronIngot, Brick, Glass, Workbench, Furnace, StonePickaxe, IronPickaxe, HuntingSpear, RawMeat, CookedMeat, HuntingRifle, Meat, Fur, RabbitMeat, RabbitFur, FoxMeat, FoxFur, TurtleMeat, TurtleShell, GullMeat, GullFeather, Forge, IronPickHead, GunParts, OldBoot, RustyCan, SeaTreasure, GrilledFish, TurnipSeeds, Turnip, IslandFruit, WindRelic, ForestRelic, TideRelic, StarRelic, VoyageCompass, CaptureNet, AnimalTrap, Aquarium, FishFeed, RabbitHutch, FoxDen, TortoisePen, BirdAviary, SeaTurtlePond, ReefChitin, GuardianPearl, GuardianTrophy, Axe, Shovel, Rake }
     public enum LandAnimalKind { Rabbit, Fox, Tortoise, Gull, SeaTurtle }
     [Serializable]
     public sealed class FieldStack
@@ -28,8 +28,11 @@ namespace BoatAttack.Fishing
             for(int i=0;i<SlotCount;i++)_slots[i]=new FieldStack();
             if(starter)_slots[0]=new FieldStack {item=FieldItem.FieldGuide,count=1};
         }
-        public static bool Defined(FieldItem item) => item>=FieldItem.Empty && item<=FieldItem.IslandFruit;
-        public static int Limit(FieldItem item) => !Defined(item) || item==FieldItem.Empty?0:item==FieldItem.Forge || item==FieldItem.HuntingRifle || item==FieldItem.HuntingSpear || item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe || item==FieldItem.Workbench || item==FieldItem.Furnace?1:item>=FieldItem.Shell?64:1;
+        public static bool Defined(FieldItem item) => item>=FieldItem.Empty && item<=FieldItem.Rake;
+        public static bool IsGatherTool(FieldItem item)=>item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe || item==FieldItem.Axe || item==FieldItem.Shovel;
+        public static bool ToolMatchesResource(FieldItem tool,FieldItem resource)=>tool==FieldItem.Axe?resource==FieldItem.Driftwood:tool==FieldItem.Shovel?resource==FieldItem.Sand || resource==FieldItem.Clay:true;
+        public static bool IsQuestItem(FieldItem item) => item>=FieldItem.WindRelic && item<=FieldItem.VoyageCompass;
+        public static int Limit(FieldItem item) => !Defined(item) || item==FieldItem.Empty?0:IsQuestItem(item)?1:item==FieldItem.CaptureNet || item==FieldItem.Aquarium || (item>=FieldItem.RabbitHutch && item<=FieldItem.SeaTurtlePond) || item==FieldItem.GuardianTrophy || IsGatherTool(item) || item==FieldItem.Rake || item==FieldItem.Forge || item==FieldItem.HuntingRifle || item==FieldItem.HuntingSpear || item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe || item==FieldItem.Workbench || item==FieldItem.Furnace?1:item>=FieldItem.Shell?64:1;
         public static string Name(FieldItem item)
         {
             switch(item)
@@ -38,6 +41,16 @@ namespace BoatAttack.Fishing
                 case FieldItem.SeaTreasure:return "沉海宝匣";case FieldItem.GrilledFish:return "香烤海鱼";
                 case FieldItem.TurnipSeeds:return "海风萝卜种子";case FieldItem.Turnip:return "海风萝卜";
                 case FieldItem.IslandFruit:return "海岛甜果";
+                case FieldItem.WindRelic:return "风纹铜环";case FieldItem.ForestRelic:return "潮林琥珀";
+                case FieldItem.TideRelic:return "古船航芯";case FieldItem.StarRelic:return "星砂晶体";
+                case FieldItem.VoyageCompass:return "远航罗盘";
+                case FieldItem.CaptureNet:return "活捉网";case FieldItem.AnimalTrap:return "诱捕笼";
+                case FieldItem.Aquarium:return "家园水族箱";case FieldItem.FishFeed:return "鱼食";
+                case FieldItem.RabbitHutch:return "兔舍套件";case FieldItem.FoxDen:return "狐舍套件";
+                case FieldItem.TortoisePen:return "陆龟围栏套件";case FieldItem.BirdAviary:return "海鸟栖架套件";
+                case FieldItem.SeaTurtlePond:return "海龟池套件";
+                case FieldItem.ReefChitin:return "礁甲碎片";case FieldItem.GuardianPearl:return "守卫珠";case FieldItem.GuardianTrophy:return "守卫纪念像";
+                case FieldItem.Axe:return "伐木斧";case FieldItem.Shovel:return "采土铲";case FieldItem.Rake:return "园艺耙";
                 case FieldItem.HuntingRifle:return "猎枪";
                 case FieldItem.Forge:return "锻造台";
                 case FieldItem.IronPickHead:return "铁镐头";
@@ -141,7 +154,7 @@ namespace BoatAttack.Fishing
         }
         public bool Discard(int slot,FieldItem expected,int count)
         {
-            if(slot<0 || slot>=SlotCount || expected==FieldItem.Empty || expected==FieldItem.FieldGuide || count<=0)return false;
+            if(slot<0 || slot>=SlotCount || expected==FieldItem.Empty || expected==FieldItem.FieldGuide || IsQuestItem(expected) || count<=0)return false;
             var stack=_slots[slot];if(stack.item!=expected || stack.count!=count)return false;
             stack.item=FieldItem.Empty;stack.count=0;return true;
         }

@@ -128,6 +128,7 @@ namespace BoatAttack.Fishing
                 _c.Hands.ResetInteraction();_c.FieldWorld.ClearToolPresentation();_trigger.Reset();
             }
             IsOpen=true;_page=page;_offset=0;
+            if(page==21)_ecologyMode=-1;
             if(page==11){_guideLesson=0;ResetGuidePractice();}
             _canvas.gameObject.SetActive(true);_c.WorkshopWorld.SelectNearby();Refresh();
         }
@@ -156,7 +157,8 @@ namespace BoatAttack.Fishing
             var day=_c.Career.Calendar;var bag=_c.Career.Backpack;
             _status.text=BayClimate.Name(_c.Weather.Climate.Current)+"\n金币 "+_c.Career.Coins+"\n行囊 "+bag.UsedSlots+" / 36\n装备："+FishingBackpack.Name(bag.Equipped)+"\n"+_c.VisibleMessage;
             for(int i=0;i<9;i++)Set(i,"—",null);
-            if(_page==0)
+            if(_page==21)RefreshHomeEcology();
+            else if(_page==0)
             {
                 Set(0,"背包 / 装备",()=>Open(1));Set(1,"制作 / 熔炉 / 锻造",()=>Open(2));Set(2,"航海图 / 航点",()=>Open(12));
                 Set(3,"日历 / 图鉴 / 观察",()=>Open(3));Set(4,"港口事务 / 委托",()=>Open(7));Set(5,"百货 / 装备升级",()=>Open(4));
@@ -172,6 +174,7 @@ namespace BoatAttack.Fishing
                     Photo(i,FishingV023Art.Icon(item.item) ?? FishingItemIcons.Get(item.item));
                 }
                 Pager(FishingBackpack.SlotCount);
+                Set(7,"家园生态 / 饲养",()=>{_ecologyMode=-1;Open(21);});
             }
             else if(_page==2)
             {
@@ -223,22 +226,23 @@ namespace BoatAttack.Fishing
             else if(_page==9)
             {
                 _status.fontSize=21;
-                _status.text="潮汐回响 · "+_c.Career.Lore.ClearCount+" / 4\n"+(_c.Realms.Inside?FishingLore.ShrineName(_c.Realms.Island)+"\n"+FishingLore.TrialHint(_c.Realms.Island):"向岛上居民询问故事与机关线索\n刻着潮纹的石门通向独立秘境")+"\n完成四处后向港口林舟汇报。";
-                for(int i=0;i<4;i++){int island=i;Set(i,FishingAdventure.Name(i)+"\n"+(_c.Career.Lore.Cleared(i)?"回响已取回":"秘境尚待探索"),()=>{Close();_c.SelectNavigation(_c.IslandNavigationIndex(island));});}
-                Set(4,"群岛来信 / 航标",()=>Open(6));
-                Set(5,"附近互动",()=>{Close();if(_c.Realms.TryTarget(out _,out _))_c.Realms.Interact();else if(_c.Residents.TryNearby(out int npc))_c.Residents.Talk(npc);else _c.Shore.TryClimb();});
+                _status.text=_c.Career.PlayerTitle+" · 四境图页 "+_c.Career.Lore.ClearCount+" / 4\n"+_c.Career.MainObjective+"\n"+(_c.Realms.Inside?FishingLore.ShrineName(_c.Realms.Island):"守望者保存遗物、材料与永久设施蓝图");
+                for(int i=0;i<4;i++){int island=i;Set(i,FishingAdventure.Name(i)+"\n"+(_c.Career.Lore.RewardClaimed(i)?"遗物与蓝图已领":_c.Career.Lore.Cleared(i)?"遗物与蓝图待领":"秘境尚待探索"),()=>{Close();_c.SelectNavigation(_c.IslandNavigationIndex(island));});}
+                if(_c.Career.Backpack.Count(FieldItem.VoyageCompass)>0 && !_c.Career.PirateKing)Set(4,"白帆拱湾\n前往宝藏航点",()=>{Close();_c.SelectNavigation(_c.HomeNavigationIndex+1);});
+                else Set(4,"群岛来信 / 航标",()=>Open(6));
+                Set(5,"附近互动 / 补领遗物",()=>{Close();_c.RequestWorldInteraction();});
                 Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
             }
             else if(_page==5)
             {
-                _status.text="海湾百货 · 金币 "+_c.Career.Coins+"\n港口或店内柜台可购买\n用品进入背包；船舶升级立即生效\n"+_c.Message;
+                _status.text="海湾百货 · "+FishingSupplies.CategoryName(_offset/FishingSupplies.CategorySize)+" · 金币 "+_c.Career.Coins+"\n港口或店内柜台可购买\n用品进入背包；船舶升级立即生效\n"+_c.Message;
                 for(int i=0;i<6;i++)
                 {
                     int product=_offset+i;if(product>=FishingSupplies.Items.Length)break;
                     Set(i,FishingBackpack.Name(FishingSupplies.Items[product])+" ×"+FishingSupplies.Quantity(product)+"\n"+FishingSupplies.Price(product)+" 金币",()=>{_c.BuySupply(product);Refresh();});
                     Photo(i,FishingV023Art.Icon(FishingSupplies.Items[product]));
                 }
-                Set(6,_offset==0?"下一页":"上一页",()=>{_offset=_offset==0?6:0;Refresh();});Set(7,"船舶 / 钓具升级",()=>Open(4));Set(8,"关闭",Close);
+                Set(6,_offset+FishingSupplies.CategorySize<FishingSupplies.Items.Length?"下一类物资":"返回探索工具",()=>{_offset=(_offset+FishingSupplies.CategorySize)%FishingSupplies.Items.Length;Refresh();});Set(7,"船舶 / 钓具升级",()=>Open(4));Set(8,"关闭",Close);
             }
             else if(_page==6)
             {
@@ -396,6 +400,7 @@ namespace BoatAttack.Fishing
         }
         private void Craft(CraftRecipe recipe)
         {
+            if(recipe.Id=="voyage-compass"){_c.Voyage.CraftCompass();return;}
             if(recipe.Station!=CraftStation.Furnace){_c.WorkshopWorld.Craft(recipe.Id);return;}
             var bag=_c.Career.Backpack;
             foreach(var fuel in new[]{FieldItem.Coal,FieldItem.Charcoal,FieldItem.Driftwood,FieldItem.Plank})
@@ -455,16 +460,23 @@ namespace BoatAttack.Fishing
         {
             if(_c.InspectingItem){_c.EndItemInspection();return;}
             var item=_c.Career.Backpack.Equipped;
+            if(item==FieldItem.Rake)
+            {
+                var tool=_c.FieldWorld.HeldTool;
+                if(tool==null || !_c.Farm.TryTarget(out int plot,out var soil) || plot>=12 || _c.Farm.Work(plot)!=FarmWork.Till
+                    || Vector3.Distance(tool.TransformPoint(FishingFieldWorld.WorkToolTip(item)),soil.position+Vector3.up*.2f)>.3f)
+                {_c.Notice("把耙齿放到未整地的菜畦上，再按右扳机。",4);return;}
+            }
             if(FishingRecipes.IsStation(item)){_c.WorkshopWorld.PlaceEquipped();return;}
-            if(item==FieldItem.StonePickaxe || item==FieldItem.IronPickaxe){TryStrike(true);return;}
+            if(FishingBackpack.IsGatherTool(item)){TryStrike(true);return;}
             _c.UseFieldItem();
         }
         public void SampleTool()
         {
             if(!XRSettings.isDeviceActive || BlocksGameplay || _c.Paused || _c.StoryBlocksGameplay || _c.XRSeat.HeadBlocked || _c.FieldWorld.HeldTool==null){_tipSample=false;return;}
             var item=_c.FieldWorld.PresentedItem;
-            if(item!=FieldItem.StonePickaxe && item!=FieldItem.IronPickaxe){_tipSample=false;return;}
-            var tip=_c.XRSeat.Origin.transform.InverseTransformPoint(_c.FieldWorld.HeldTool.TransformPoint(FishingFieldWorld.PickTip));float dt=Time.deltaTime;
+            if(!FishingBackpack.IsGatherTool(item)){_tipSample=false;return;}
+            var tip=_c.XRSeat.Origin.transform.InverseTransformPoint(_c.FieldWorld.HeldTool.TransformPoint(FishingFieldWorld.WorkToolTip(item)));float dt=Time.deltaTime;
             if(_tipSample && dt>.001f && dt<.1f && (tip-_lastTip).magnitude<.4f && (tip-_lastTip).magnitude/dt>.85f)TryStrike();
             _lastTip=tip;_tipSample=true;
         }
@@ -475,7 +487,7 @@ namespace BoatAttack.Fishing
             {if(manual)_c.Notice("先靠近可采资源，再把镐尖贴到目标后按 A 或右扳机。",4);return false;}
             var tool=_c.FieldWorld.HeldTool;if(tool==null || !tool.gameObject.activeSelf)
             {if(manual)_c.Notice("请恢复手柄追踪并用 Y 选中石镐或铁镐，再靠近资源。",4);return false;}
-            var tip=tool.TransformPoint(FishingFieldWorld.PickTip);
+            var tip=tool.TransformPoint(FishingFieldWorld.WorkToolTip(_c.Career.Backpack.Equipped));
             if(Vector3.Distance(tip,FishingContactGeometry.ClosestPoint(node.Root,tip))>.10f || !_c.Shore.ClearSight(tool.position,tip))
             {if(manual)_c.Notice("把镐尖贴近资源后按 A / 右扳机，或挥动采集；未接触不会消耗材料。",4);return false;}
             _nextStrike=Time.time+.65f;return _c.WorkshopWorld.HarvestNode(node.Id,node.Item,_c.Career.Backpack.Equipped);
@@ -483,6 +495,7 @@ namespace BoatAttack.Fishing
         private void InteractTracked()
         {
             if(!_c.Ashore){_c.Interact();return;}
+            if(_c.Combat?.NearbyHint!=null || _c.Voyage?.NearbyHint!=null || _c.HomeEcology?.NearbyHint!=null){_c.RequestWorldInteraction();return;}
             if(_c.HomeInteractionTargetSelected){_c.RequestWorldInteraction();return;}
             if(_c.Realms.TryTarget(out _,out _)){_c.Realms.Interact();return;}
             if(_c.Residents.TryNearby(out int npc)){_c.Residents.Talk(npc);return;}
@@ -499,7 +512,7 @@ namespace BoatAttack.Fishing
             {_c.FieldWorld.PickupById(pickup.Id,pickup.Item,pickup.Count);return;}
             if(resource!=null)
             {
-                if(_c.Career.Backpack.Equipped==FieldItem.StonePickaxe || _c.Career.Backpack.Equipped==FieldItem.IronPickaxe){TryStrike(true);return;}
+                if(FishingBackpack.IsGatherTool(_c.Career.Backpack.Equipped)){TryStrike(true);return;}
                 if(Vector3.Distance(palm,FishingContactGeometry.ClosestPoint(resource.Root,palm))<.24f)_c.WorkshopWorld.HarvestNode(resource.Id,resource.Item,_c.Career.Backpack.Equipped);return;
             }
             int target=_c.Expedition.Resolve();var root=_c.Expedition.InteractionRoot(target);
