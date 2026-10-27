@@ -1,0 +1,8 @@
+{
+  "source": "ArtSource/V030/9s-adapted.blend",
+  "repaired_cloth_vertices": 482,
+  "gloves_unchanged": true,
+  "fitted_cuff_vertices": 679,
+  "vertices": 7341,
+  "runtime_sha256": "12a62183f4e400ebfd0ebccd903d0898d574e8adbd1fb75afefae487fcbbf03e"
+}

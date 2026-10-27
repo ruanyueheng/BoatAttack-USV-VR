@@ -24,16 +24,17 @@ namespace BoatAttack.Fishing
         public bool BlocksPointer(Vector2 screen, int width, int height)
             => Controller.StartMenuOpen || Controller.JournalOpen || Controller.Paused || Controller.GuideOpening || Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || Controller.InventoryOpen || BlocksToolPointer(screen, width, height, Controller.ChartExpanded, Controller.ShowDetails,
                 Controller.HarborDeskOpen && Controller.AtHarbor, Controller.AtHarbor,
-                Controller.Ecology.Candidate.HasValue && !CatchVisible, Controller.Acceptance != null);
+                Controller.Ecology.Candidate.HasValue && !CatchVisible, Controller.Acceptance != null, CompactObjectiveVisible);
 
         public static bool BlocksToolPointer(Vector2 screen, int width, int height, bool chartExpanded = true,
-            bool details = false, bool harbor = false, bool atHarbor = false, bool observe = false, bool acceptance = false)
+            bool details = false, bool harbor = false, bool atHarbor = false, bool observe = false, bool acceptance = false, bool objective = true)
         {
             float scale = LayoutScale(width, height), offset = (width - 1600 * scale) * .5f;
             var point = new Vector2((screen.x - offset) / scale, (height - screen.y) / scale);
             var layout = new FocusLayout(height / scale, false, CatchPhase.Idle);
             return HotbarRect(height/scale).Contains(point) || layout.Toolbar.Contains(point) || (chartExpanded ? layout.Chart : layout.ChartTab).Contains(point)
                 || (observe && layout.Observe.Contains(point)) || (atHarbor && layout.HarborButton.Contains(point))
+                || (objective && layout.Objective.Contains(point))
                 || (details && new Rect(1242, 130, 330, 422).Contains(point))
                 || (harbor && new HarborLayout(3).Panel.Contains(point))
                 || (acceptance && AcceptanceBanner.Contains(point));
@@ -86,6 +87,7 @@ namespace BoatAttack.Fishing
                     DrawCompactHeading();
                     DrawPocket();
                     DrawCompactToolbar();
+                    DrawCompactObjective();
                     DrawChart();
                     if (c.HarborDeskOpen && c.AtHarbor) DrawHarborDesk();
                     else if (c.ShowDetails) DrawLegendCard(DrawOrderCard(130) + 14);

@@ -49,6 +49,10 @@ namespace BoatAttack.EditorTools
             {
                 var target=go.AddComponent<FishingHandTarget>();target.Build(true);
                 target.SetPose(Vector3.zero,Quaternion.identity,.8f);Check(target.Visible,"fresh goal participates this frame");
+                target.FollowAuthoredMotion();Check(target.AuthoredMotion,"An authored reach owns its existing interpolation");
+                target.SetPose(Vector3.zero,Quaternion.identity,.8f);Check(!target.AuthoredMotion,"A replacement goal cannot inherit the previous owner's motion mode");
+                target.FollowAuthoredMotion();target.BeginFrame();Check(!target.AuthoredMotion,"Beginning a new frame releases authored motion ownership");
+                target.SetPose(Vector3.zero,Quaternion.identity,.8f);
                 yield return null;
                 Check(!target.Visible,"unsupplied goal expires on the next real frame");
                 target.Pose(1);Check(!target.Visible,"grip-only update cannot resurrect expired tracking");
@@ -83,7 +87,7 @@ namespace BoatAttack.EditorTools
             var baked=new Mesh();
             try
             {
-                character.Pose(true,0,false,true,true,false);
+                character.Pose(true,0,false,true,true,true);
                 var before=new List<Pose>();foreach(var bone in character.LeftWrist.parent.parent.parent.GetComponentsInChildren<Transform>())before.Add(new Pose(bone));
                 foreach(var bone in character.RightWrist.parent.parent.parent.GetComponentsInChildren<Transform>())before.Add(new Pose(bone));
                 var leg=new Pose(Bone(character,"UpperLeg.L"));var footParent=Bone(character,"Foot.L").parent;
@@ -92,29 +96,29 @@ namespace BoatAttack.EditorTools
                 var leftPosition=character.ShoulderPosition(true)+character.transform.TransformDirection(new Vector3(character.HandSide(true)*.06f,-.2f,.22f));
                 var rightPosition=character.ShoulderPosition(false)+character.transform.TransformDirection(new Vector3(character.HandSide(false)*.06f,-.2f,.22f));
                 left.SetPose(leftPosition,character.transform.rotation,0);right.SetPose(rightPosition,character.transform.rotation,0);
-                character.ApplyHandTargets(left,right);
+                character.ApplyHandTargets(left,right,allowPaused:true);
                 Check(Vector3.Distance(character.PalmPosition(true),leftPosition)<.025f && Vector3.Distance(character.PalmPosition(false),rightPosition)<.025f,"both palms reach independent goals");
                 Check(Quaternion.Angle(character.PalmRotation(true),left.transform.rotation)<.1f && Quaternion.Angle(character.PalmRotation(false),right.transform.rotation)<.1f,"both source wrists use calibrated palm orientation");
                 var indexOpen=Bone(character,"Index2.L").localRotation;var ringOpen=Bone(character,"Ring2.L").localRotation;
                 character.BodySkin.BakeMesh(baked);var open=baked.vertices;
-                left.Pose(1);right.Pose(.6f);character.ApplyHandTargets(left,right);character.BodySkin.BakeMesh(baked);var closed=baked.vertices;
+                left.Pose(1);right.Pose(.6f);character.ApplyHandTargets(left,right,allowPaused:true);character.BodySkin.BakeMesh(baked);var closed=baked.vertices;
                 int changed=0;for(int i=0;i<open.Length;i++)if(character.BodySkin.transform.TransformVector(open[i]-closed[i]).sqrMagnitude>.000001f)changed++;
                 Check(changed>100,"grip deforms actual same-source skinned vertices");
                 var solved=new List<Pose>();foreach(var pose in before)solved.Add(new Pose(pose.Bone));
-                character.ApplyHandTargets(left,right);foreach(var pose in solved)Check(pose.Same(),"repeat final solve is idempotent: "+pose.Bone.name);
+                character.ApplyHandTargets(left,right,allowPaused:true);foreach(var pose in solved)Check(pose.Same(),"repeat final solve is idempotent: "+pose.Bone.name);
                 Check(Vector3.Distance(left.transform.position,leftPosition)<.00001f && Vector3.Distance(right.transform.position,rightPosition)<.00001f,"IK never moves tool goals");
                 Check(leg.Same() && head.Same() && Bone(character,"Foot.L").parent==footParent && footParent.name=="Root"
                     && Bone(character,"Ankle.L").parent==ankleParent && ankleParent.name=="LowerLeg.L","arm overlay leaves head, leg IK and independent Foot hierarchy untouched");
-                left.Pose(1,true);character.ApplyHandTargets(left,right);
+                left.Pose(1,true);character.ApplyHandTargets(left,right,allowPaused:true);
                 Check(Quaternion.Angle(Bone(character,"Index2.L").localRotation,indexOpen)<.05f
                     && Quaternion.Angle(Bone(character,"Ring2.L").localRotation,ringOpen)>10,"point leaves index open while other source fingers grip");
                 float reach=character.ArmReach(false);var wristScale=character.RightWrist.localScale;
                 var rootPosition=character.transform.position;
                 right.SetPose(character.ShoulderPosition(false)+character.transform.forward*20,character.transform.rotation,1);
-                character.ApplyHandTargets(left,right);
+                character.ApplyHandTargets(left,right,allowPaused:true);
                 Check(Vector3.Distance(character.RightWrist.position,character.ShoulderPosition(false))<=reach+.002f
                     && Vector3.Distance(character.RightWrist.localScale,wristScale)<.00001f && character.transform.position==rootPosition,"unreachable goal cannot stretch bones or move avatar root");
-                left.Disable();right.Disable();character.ApplyHandTargets(left,right);
+                left.Disable();right.Disable();character.ApplyHandTargets(left,right,allowPaused:true);
                 foreach(var pose in before)Check(pose.Same(),"tracking loss restores sampled TRS: "+pose.Bone.name);
                 // Repeated stance transitions must not accumulate changes on finger bones lacking curves.
                 character.Pose(false,0,false,true,false,false);character.Pose(true,0,true,true,false,false);character.Pose(true,0,false,true,true,false);

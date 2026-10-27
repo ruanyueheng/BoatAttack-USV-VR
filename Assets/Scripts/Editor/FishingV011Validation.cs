@@ -119,6 +119,10 @@ namespace BoatAttack.EditorTools
         }
         private static IEnumerator Checks(FishingPrototype c,string suite)
         {
+            if(suite=="V042")
+            {
+                var run=FishingV042Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
             Check(c.Automated && c.HasIsolatedProfile && c.SavePath.StartsWith(Application.temporaryCachePath),"仅操作临时隔离存档");
             int firstFrame=Time.frameCount;while(Time.frameCount==firstFrame)yield return null;
             if(suite=="COAST-ART")

@@ -27,6 +27,10 @@ namespace BoatAttack.EditorTools
             int grams=FishingSpecies.Grams(FishKind.Coral,.45f);var fish=new CatchRecord{id="ecology-world-fish",kind=FishKind.Coral,grams=grams,value=FishingSpecies.Value(FishKind.Coral,false,grams)};
             Check(c.Career.Store(fish),"A caught fish fixture is in the actual hold");world.Choices(1)[0].Run();
             Check(c.Career.AquariumCount==1 && c.Career.Count==0,"The shared display action moves the unique fish out of the sale hold");
+            var displayed=(IList)typeof(FishingHomeEcologyWorld).GetField("_fish",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(world);
+            var fishBounds=((Transform)displayed[0]).GetComponentInChildren<Renderer>().bounds;
+            float displayLength=Mathf.Max(fishBounds.size.x,fishBounds.size.y,fishBounds.size.z);
+            Check(displayLength>=.14f && displayLength<=.39f,"Aquarium fish are readable at tank scale without altering catch records");
             Check(c.Career.Backpack.TryAdd(FieldItem.FishFeed,3),"Feed fixture added");world.Choices(2)[0].Run();
             Check(c.Career.Backpack.Count(FieldItem.FishFeed)==2,"The first daily feeding consumes exactly one feed");world.Choices(2)[0].Run();Check(c.Career.Backpack.Count(FieldItem.FishFeed)==2,"Repeated daily feeding consumes nothing");
             Check(c.RequestWorldInteraction() && c.InventoryOpen,"The real E interaction opens home ecology management");yield return null;

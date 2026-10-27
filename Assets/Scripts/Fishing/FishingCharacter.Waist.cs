@@ -19,7 +19,7 @@ namespace BoatAttack.Fishing
             foreach(var renderer in _renderers)
                 if(renderer.name=="Beach_Legs")legs=renderer as SkinnedMeshRenderer;
             if(legs==null)throw new InvalidOperationException("源人物缺少下肢网格，无法封闭本地腰口");
-            var baked=new Mesh();var points=new List<Vector3>();
+            var baked=new Mesh();var points=new List<Vector3>();int fabricMaterial=0;Vector2 fabricUV=Vector2.zero;
             try
             {
                 legs.BakeMesh(baked);var vertices=baked.vertices;float top=float.MinValue;
@@ -29,6 +29,16 @@ namespace BoatAttack.Fishing
                     top=Mathf.Max(top,vertices[i].y);
                 }
                 foreach(var p in vertices)if(p.y>=top-.012f)points.Add(p);
+                int most=0;var uv=legs.sharedMesh.uv;
+                for(int sub=0;sub<legs.sharedMesh.subMeshCount;sub++)
+                {
+                    int count=0;float side=-1;Vector2 sample=Vector2.zero;
+                    foreach(int index in legs.sharedMesh.GetTriangles(sub))if(vertices[index].y>=top-.012f)
+                    {
+                        count++;if(uv.Length==vertices.Length && Mathf.Abs(vertices[index].x)>side){side=Mathf.Abs(vertices[index].x);sample=uv[index];}
+                    }
+                    if(count>most){most=count;fabricMaterial=sub;fabricUV=sample;}
+                }
             }
             finally{Destroy(baked);}
             points.Sort((a,b)=>a.x==b.x?a.z.CompareTo(b.z):a.x.CompareTo(b.x));
@@ -62,10 +72,11 @@ namespace BoatAttack.Fishing
                 triangles[i*3]=0;triangles[i*3+1]=(i+1)%hull.Count+1;triangles[i*3+2]=i+1;
             }
             _waistMesh=new Mesh{name="Local waist closure"};_waistMesh.vertices=cap;_waistMesh.triangles=triangles;
+            var capUV=new Vector2[cap.Length];for(int i=0;i<capUV.Length;i++)capUV[i]=fabricUV;_waistMesh.uv=capUV;
             _waistMesh.RecalculateNormals();_waistMesh.RecalculateBounds();
             var go=new GameObject("First-person waist closure",typeof(MeshFilter),typeof(MeshRenderer));
             go.transform.SetParent(_body,false);go.GetComponent<MeshFilter>().sharedMesh=_waistMesh;
-            WaistCover=go.GetComponent<MeshRenderer>();WaistCover.sharedMaterial=legs.sharedMaterial;
+            WaistCover=go.GetComponent<MeshRenderer>();WaistCover.sharedMaterial=legs.sharedMaterials[fabricMaterial];
             WaistCover.shadowCastingMode=ShadowCastingMode.Off;WaistCover.enabled=false;
             Vector3 ToHip(Vector3 p)=>_body.InverseTransformPoint(transform.TransformPoint(p));
         }

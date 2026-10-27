@@ -6,7 +6,8 @@ namespace BoatAttack.Fishing
     /// <summary>One combined display mesh, a clear central aisle and two collidable display islands.</summary>
     public sealed class FishingShopDisplay : MonoBehaviour
     {
-        private Mesh _mesh;private Material _material;
+        private Mesh _mesh,_counterMesh;private Material _material;
+        public bool DetailedCounter=>_counterMesh!=null;
         public static void Ensure(FishingTackleShop shop)
         {
             if(shop.transform.Find("V018 stocked chandlery")!=null)return;
@@ -66,6 +67,7 @@ namespace BoatAttack.Fishing
             _mesh=b.Finish("Stocked tackle, tools and marine supplies");
             _material=new Material(Resources.Load<Shader>("FishingPalette")){name="Chandlery merchandise palette"};
             gameObject.AddComponent<MeshFilter>().sharedMesh=_mesh;var renderer=gameObject.AddComponent<MeshRenderer>();renderer.sharedMaterial=_material;renderer.shadowCastingMode=ShadowCastingMode.Off;
+            DressCounter();
             Sign("航海设备  /  船只升级",new Vector3(-2.9f,2.22f,-2.28f));Sign("探索工具  /  制作补给",new Vector3(2.9f,2.22f,-2.28f));
             Sign("TIDE & TACKLE  ·  海湾用品",new Vector3(0,2.9f,4.75f));
             FishingV019Art.Spawn("Telescope",transform,new Vector3(-4.55f,.53f,-3.65f),.64f);
@@ -73,12 +75,30 @@ namespace BoatAttack.Fishing
             var light=new GameObject("Chandlery warm pendant").AddComponent<Light>();light.transform.SetParent(transform,false);light.transform.localPosition=new Vector3(0,2.7f,-.3f);
             light.type=LightType.Point;light.color=new Color(1,.84f,.65f);light.range=7;light.intensity=3.2f;light.shadows=LightShadows.None;
         }
+        private void DressCounter()
+        {
+            Transform counter=null;
+            foreach(var part in transform.parent.GetComponentsInChildren<Transform>())if(part.name=="Countertop"){counter=part;break;}
+            if(counter==null)throw new System.InvalidOperationException("The shop counter surface is missing");
+            var boards=new FishingMeshBuilder();
+            for(int i=0;i<6;i++)
+            {
+                float z=(i+.5f)/6-.5f;
+                boards.Box(new Vector3(0,0,z),new Vector3(1,.98f,1f/6-.003f),i%2==0?new Color(.57f,.37f,.20f):new Color(.62f,.42f,.24f));
+                for(int grain=0;grain<3;grain++)boards.Tube(new Vector3(-.47f,.4905f,z-.05f+grain*.045f),new Vector3(.47f,.4905f,z-.047f+grain*.045f),.0014f,.0008f,new Color(.36f,.24f,.14f),5);
+                foreach(float x in new[]{-.47f,.47f})boards.Ellipsoid(new Vector3(x,.494f,z),new Vector3(.0014f,.012f,.006f),new Color(.35f,.27f,.16f),8,4);
+            }
+            _counterMesh=boards.Finish("Cedar counter boards and inlaid grain");
+            var surface=new GameObject("Planked cedar counter",typeof(MeshFilter),typeof(MeshRenderer));surface.transform.SetParent(counter,false);
+            surface.GetComponent<MeshFilter>().sharedMesh=_counterMesh;surface.GetComponent<MeshRenderer>().sharedMaterial=_material;
+            counter.GetComponent<Renderer>().enabled=false;
+        }
         private void Sign(string text,Vector3 point)
         {
             var label=new GameObject(text).AddComponent<TextMesh>();label.transform.SetParent(transform,false);label.transform.localPosition=point;
             label.text=text;label.font=FishingUIFont.Font;label.fontSize=64;label.characterSize=.026f;label.anchor=TextAnchor.MiddleCenter;label.color=new Color(.93f,.82f,.53f);
             label.GetComponent<MeshRenderer>().sharedMaterial=label.font.material;
         }
-        private void OnDestroy(){if(_mesh!=null)Destroy(_mesh);if(_material!=null)Destroy(_material);}
+        private void OnDestroy(){if(_mesh!=null)Destroy(_mesh);if(_counterMesh!=null)Destroy(_counterMesh);if(_material!=null)Destroy(_material);}
     }
 }

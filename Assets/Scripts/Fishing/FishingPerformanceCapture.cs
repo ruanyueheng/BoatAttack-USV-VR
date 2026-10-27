@@ -34,7 +34,7 @@ namespace BoatAttack.Fishing
         private double _started,_previous,_nextMemory;
         private long _allocated,_managed,_native,_graphics;
         private ulong _lastTimingStamp;
-        private bool _timingsEnabled,_stopped;
+        private bool _timingsEnabled,_stopped,_allocationCounterAvailable;
         private string _metadata;
         public string OutputPath { get; private set; }
         public int Segment { get; set; }
@@ -69,6 +69,8 @@ namespace BoatAttack.Fishing
             Debug.Log("[PERFORMANCE] Explicit capture started: 600 seconds or 131072 frames; writes once on completion/exit. Frame timings enabled="+_timingsEnabled);
             _gc0=GC.CollectionCount(0);_gc1=GC.CollectionCount(1);_gc2=GC.CollectionCount(2);
             _allocated=GC.GetAllocatedBytesForCurrentThread();
+            _allocationCounterAvailable=_allocated>0;
+            _metadata+="Main-thread allocation counter available: "+_allocationCounterAvailable+"; unavailable values are NA, never zero.\n";
         }
 
         private void LateUpdate()
@@ -99,7 +101,7 @@ namespace BoatAttack.Fishing
             _samples[_count++]=new Sample{Frame=Time.frameCount,CameraFrame=_lastWorldRenderFrame,Seconds=now-_started,Wall=(now-_previous)*1000,
                 Cpu=cpu,Main=main,Render=render,Gpu=gpu,TimingStamp=stamp,Position=_c.ExplorerPosition,
                 State=state,Segment=Segment,Quality=_c.GraphicsQuality,Target=_c.NavigationTarget,Daylight=_c.Weather!=null?_c.Weather.Daylight:float.NaN,
-                Gc0=gc0-_gc0,Gc1=gc1-_gc1,Gc2=gc2-_gc2,Allocated=Math.Max(0,allocated-_allocated),Managed=_managed,Native=_native,Graphics=_graphics};
+                Gc0=gc0-_gc0,Gc1=gc1-_gc1,Gc2=gc2-_gc2,Allocated=_allocationCounterAvailable?Math.Max(0,allocated-_allocated):-1,Managed=_managed,Native=_native,Graphics=_graphics};
             _previous=now;_gc0=gc0;_gc1=gc1;_gc2=gc2;_allocated=allocated;
             if(_count==Capacity || now-_started>=Duration)StopAndWrite();
         }
@@ -125,7 +127,7 @@ namespace BoatAttack.Fishing
                         var s=_samples[i];
                         writer.WriteLine(string.Join(",",s.Frame.ToString(Invariant),Number(s.Seconds),Number(s.Wall),Number(s.Cpu),Number(s.Main),Number(s.Render),Number(s.Gpu),s.TimingStamp.ToString(Invariant),
                             Number(s.Position.x),Number(s.Position.y),Number(s.Position.z),s.State.ToString(Invariant),s.Quality.ToString(Invariant),s.Target.ToString(Invariant),Number(s.Daylight),
-                            s.Allocated.ToString(Invariant),s.Gc0.ToString(Invariant),s.Gc1.ToString(Invariant),s.Gc2.ToString(Invariant),Memory(s.Managed),Memory(s.Native),Memory(s.Graphics),s.Segment.ToString(Invariant),s.CameraFrame.ToString(Invariant)));
+                            s.Allocated>=0?s.Allocated.ToString(Invariant):"NA",s.Gc0.ToString(Invariant),s.Gc1.ToString(Invariant),s.Gc2.ToString(Invariant),Memory(s.Managed),Memory(s.Native),Memory(s.Graphics),s.Segment.ToString(Invariant),s.CameraFrame.ToString(Invariant)));
                     }
                 }
                 var report=new StringBuilder(_metadata).Append("State bits: 1 ashore, 2 rifle visible, 4 paused, 8 start menu, 16 realm, 32 anchored.\nCollected frames: ").Append(_count).Append('\n');

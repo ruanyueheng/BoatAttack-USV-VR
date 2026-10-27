@@ -24,6 +24,7 @@ namespace BoatAttack.EditorTools
             Directory.CreateDirectory(_evidence);
             c.MoveToSpotForAutomation(0);c.Interact();
             for(int i=0;i<12;i++)yield return null;
+            for(float until=Time.realtimeSinceStartup+.6f;Time.realtimeSinceStartup<until;)yield return null;
             c.PresentCharacterFrame();Describe(c,"rod");Capture(c,"01-rod");
             CheckLocalMesh(c.Shore.Character);
             c.ReturnToHarbor();
@@ -36,16 +37,25 @@ namespace BoatAttack.EditorTools
             foreach(var item in new[]{FieldItem.StonePickaxe,FieldItem.IronPickaxe,FieldItem.Binoculars,FieldItem.FieldGuide,FieldItem.Lantern})
             {
                 Equip(c,item);c.View.ResetLook();
-                for(int i=0;i<3;i++)yield return null;
+                for(float until=Time.realtimeSinceStartup+.6f;Time.realtimeSinceStartup<until;)yield return null;
                 c.PresentCharacterFrame();Describe(c,item.ToString());Capture(c,(shot++).ToString("D2")+"-"+item);
                 Check(c.FieldWorld.PresentedItem==item && c.FieldWorld.HeldToolRenderer.enabled,"平视持物可见 "+item);
-                CheckPalm(c,false,item.ToString());
-                if(item==FieldItem.Binoculars || item==FieldItem.FieldGuide)CheckPalm(c,true,item.ToString());
+                if(item==FieldItem.FieldGuide)
+                {
+                    foreach(bool left in new[]{true,false})
+                        Check(Vector3.Distance(c.Shore.Character.PalmPosition(left),(left?c.Hands.Left:c.Hands.Right).Palm.position)<.025f,"放低手册时双手保持实际接触");
+                    Check(c.FieldWorld.HeldTool.position.y<c.Shore.Character.EyePosition.y-.25f,"未阅读的手册放在视野中心下方");
+                }
+                else
+                {
+                    CheckPalm(c,false,item.ToString());
+                    if(item==FieldItem.Binoculars)CheckPalm(c,true,item.ToString());
+                }
                 CheckGrasp(c,item);
                 foreach(float pitch in new[]{-50f,45f,65f})
                 {
                     c.View.ResetLook();c.View.ApplyShoreLookDelta(new Vector2(0,-pitch/.12f));
-                    for(int frame=0;frame<3;frame++)yield return null;
+                    for(float until=Time.realtimeSinceStartup+.6f;Time.realtimeSinceStartup<until;)yield return null;
                     c.PresentCharacterFrame();
                     float palmError=Vector3.Distance(c.Shore.Character.PalmPosition(false),c.Hands.Right.Palm.position);
                     Check(palmError<.035f,"俯仰不拉断握持 "+item+" / "+pitch+" error="+palmError);
@@ -72,7 +82,9 @@ namespace BoatAttack.EditorTools
             }
             Equip(c,FieldItem.StonePickaxe);c.Shore.SetCrouch(true);
             for(int i=0;i<20;i++)yield return null;
-            c.View.ResetLook();c.View.ApplyShoreLookDelta(new Vector2(0,-65/.12f));c.PresentCharacterFrame();
+            c.View.ResetLook();c.View.ApplyShoreLookDelta(new Vector2(0,-65/.12f));
+            for(float until=Time.realtimeSinceStartup+.6f;Time.realtimeSinceStartup<until;)yield return null;
+            c.PresentCharacterFrame();
             Capture(c,"11-look-down-crouching");CheckLocalMesh(c.Shore.Character);
             c.Shore.SetCrouch(false);c.View.ResetLook();
             for(int i=0;i<20;i++)yield return null;
@@ -121,8 +133,8 @@ namespace BoatAttack.EditorTools
             Check(source!=local && local.vertexCount==source.vertexCount && character.HiddenNeckTriangles>0,"本地调整头颈/近眼躯干的绘制，不缩骨、不换手部顶点");
             Check(character.BodySkin.shadowCastingMode==ShadowCastingMode.ShadowsOnly && character.FirstPersonSkin.enabled
                 && character.FirstPersonSkin.shadowCastingMode==ShadowCastingMode.Off,"完整身体保留阴影，本地身体不重复投影");
-            Check(character.WaistCover!=null && character.WaistCover.enabled && character.WaistCover.shadowCastingMode==ShadowCastingMode.Off,
-                "本地裤腰封口存在且不重复投影");
+            Check(character.WaistCover!=null && !character.WaistCover.enabled && character.WaistCover.shadowCastingMode==ShadowCastingMode.Off,
+                "桌面双臂视图不绘制近眼躯干，保留原腰封供XR显示");
             var visible=new HashSet<int>(local.triangles);var weights=source.boneWeights;var bones=character.BodySkin.bones;
             int handVertices=0,missingHands=0,visibleNeck=0;
             for(int i=0;i<weights.Length;i++)

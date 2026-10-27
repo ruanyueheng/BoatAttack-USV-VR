@@ -229,6 +229,7 @@ namespace BoatAttack.Fishing
                     _c.Hands.Right.SetGripSurface(_can.TransformPoint(CanHandle+Vector3.left*.065f),_can.TransformPoint(CanHandle+Vector3.right*.085f),.010f);
                 }
                 _c.Hands.Right.SetForearmRoll(.65f);
+                _c.Hands.Right.FollowAuthoredMotion();
                 if(!tracked)_c.Hands.RestHand(true);
             }
             UpdateCanWater();

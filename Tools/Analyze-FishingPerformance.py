@@ -17,6 +17,13 @@ def timings(values):
     return {"valid":len(values),**{f"p{p}":values[math.ceil(len(values)*p/100)-1] for p in (50,95,99)},
             "over50":sum(x>50 for x in values),"over100":sum(x>100 for x in values)}
 
+def allocated_bytes(rows):
+    try:
+        values=[int(row["main_thread_allocated_bytes"]) for row in rows]
+        return sum(values) if all(value>=0 for value in values) else None
+    except (ValueError,KeyError):
+        return None
+
 def analyze(folder):
     folder=Path(folder)
     tours=list(folder.glob("*.tour.json"))
@@ -56,12 +63,12 @@ def analyze(folder):
         all_rows.extend(selected)
         phases.append({"name":phase["name"],"continuous":continuous,"frames":len(selected),"renderedCameraFrames":rendered,"travelledMetres":phase["travelledMetres"],
             **{name:timings(row[column] for row in selected) for name,column in (("wall","wall_ms"),("cpu","cpu_frame_ms"),("main","cpu_main_ms"),("render","cpu_render_ms"),("gpu","gpu_ms"))},
-            "allocatedBytes":sum(int(row["main_thread_allocated_bytes"]) for row in selected),
+            "allocatedBytes":allocated_bytes(selected),
             "gc":[sum(int(row[f"gc{n}"]) for row in selected) for n in range(3)]})
     result={"version":tour["version"],"description":tour["description"],"runtimeSceneReadySeconds":tour["runtimeSceneReadySeconds"],"processLaunchToReadySeconds":launch.get("processLaunchToReadySeconds"),"phases":phases,
         "measuredFrames":len(all_rows),"wall":timings(row["wall_ms"] for row in all_rows),"gpu":timings(row["gpu_ms"] for row in all_rows),
         "continuousWall":timings(row["wall_ms"] for row in continuous_rows),"steadyWall":timings(row["wall_ms"] for row in steady_rows),
-        "allocatedBytes":sum(int(row["main_thread_allocated_bytes"]) for row in all_rows),
+        "allocatedBytes":allocated_bytes(all_rows),
         "gc":[sum(int(row[f"gc{n}"]) for row in all_rows) for n in range(3)],
         "largestWallFrames":[{key:row[key] for key in ("segment_id","frame","wall_ms","cpu_main_ms","gpu_ms","main_thread_allocated_bytes","gc0","x","z")}
             for row in sorted(all_rows,key=lambda row:float(row["wall_ms"]),reverse=True)[:20]]}
@@ -72,11 +79,14 @@ def analyze(folder):
         "|---|---:|---|---|---:|---|---:|"]
     for phase in phases:
         wall=phase["wall"]
-        lines.append(f"| {phase['name']} | {phase['frames']} / {phase['renderedCameraFrames']} | {' / '.join(number(wall[f'p{p}']) for p in (50,95,99))} | {wall['over50']} / {wall['over100']} | {number(phase['gpu']['p95'])} | {' / '.join(map(str,phase['gc']))} | {phase['allocatedBytes']/phase['frames']:.1f} |")
+        lines.append(f"| {phase['name']} | {phase['frames']} / {phase['renderedCameraFrames']} | {' / '.join(number(wall[f'p{p}']) for p in (50,95,99))} | {wall['over50']} / {wall['over100']} | {number(phase['gpu']['p95'])} | {' / '.join(map(str,phase['gc']))} | {number(phase['allocatedBytes']/phase['frames'] if phase['allocatedBytes'] is not None else None)} |")
     (folder/"summary.md").write_text("\n".join(lines)+"\n",encoding="utf8")
     print("\n".join(lines))
 
 def self_test():
+    assert allocated_bytes([{"main_thread_allocated_bytes":"NA"}]) is None
+    assert allocated_bytes([{"main_thread_allocated_bytes":"0"},{"main_thread_allocated_bytes":"8"}])==8
+
     assert valid("NA") is None and valid("nan") is None and valid("0") is None
     assert timings(["NA",0,2,4,40,60,120])=={"valid":5,"p50":40.0,"p95":120.0,"p99":120.0,"over50":2,"over100":1}
     assert timings(["NA",0])["p95"] is None

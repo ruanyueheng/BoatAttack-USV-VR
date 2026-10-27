@@ -19,7 +19,7 @@ namespace BoatAttack.Fishing
 
         private void BuildFirstPersonSkin()
         {
-            // 本地保留同源手臂、腰部与腿；完整世界身体继续投影，不通过缩头骨规避穿模。
+            // 桌面复用同源双臂，XR保留手与下肢；完整世界身体继续投影。
             var source=BodySkin.sharedMesh;var weights=source.boneWeights;var bones=BodySkin.bones;
             var neckBones=new bool[bones.Length];var armBones=new bool[bones.Length];
             for(int i=0;i<bones.Length;i++)
@@ -100,12 +100,12 @@ namespace BoatAttack.Fishing
         {
             // 同源近眼躯干遮罩也用于 XR；HMD 投影与实际手柄位置保持独立。
             bool local=firstPerson || _tabletopView;bool tracked=XRSettings.isDeviceActive;
-            FirstPersonSkin.sharedMesh=tracked?_xrFirstPersonMesh:_tabletopView?_tabletopMesh:_firstPersonMesh;BodySkin.forceRenderingOff=tracked;
-            foreach(var renderer in _renderers)renderer.shadowCastingMode=local && _tabletopView && renderer!=BodySkin && renderer!=HeadSkin?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
+            FirstPersonSkin.sharedMesh=tracked?_xrFirstPersonMesh:_tabletopMesh;BodySkin.forceRenderingOff=tracked;
+            foreach(var renderer in _renderers)renderer.shadowCastingMode=local && (_tabletopView || !tracked) && renderer!=BodySkin && renderer!=HeadSkin?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
             HeadSkin.shadowCastingMode=local?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
             BodySkin.shadowCastingMode=local?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
             FirstPersonSkin.enabled=local;FirstPersonSkin.forceRenderingOff=false;
-            WaistCover.enabled=local && !_tabletopView;WaistCover.forceRenderingOff=false;
+            WaistCover.enabled=local && tracked && !_tabletopView;WaistCover.forceRenderingOff=false;
         }
         public void SetOpticalView(bool observing)
         {
@@ -114,7 +114,7 @@ namespace BoatAttack.Fishing
             bool local=observing && FirstPersonSkin.enabled;
             FirstPersonSkin.forceRenderingOff=local;WaistCover.forceRenderingOff=local;
             foreach(var renderer in _renderers)
-                if(renderer!=BodySkin && renderer!=HeadSkin)renderer.shadowCastingMode=local || (_tabletopView && FirstPersonSkin.enabled)?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
+                if(renderer!=BodySkin && renderer!=HeadSkin)renderer.shadowCastingMode=local || (FirstPersonSkin.enabled && (_tabletopView || !XRSettings.isDeviceActive))?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
         }
         private void OnDestroy()
         {

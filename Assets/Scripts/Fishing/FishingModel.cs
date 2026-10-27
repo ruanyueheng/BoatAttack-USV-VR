@@ -223,7 +223,7 @@ namespace BoatAttack.Fishing
     public sealed class FishingSaveData
     {
         public List<HuntedAnimalData> huntedAnimals=new List<HuntedAnimalData>();
-        public const int CurrentVersion = 18;
+        public const int CurrentVersion = 19;
         public int version = CurrentVersion;
         public List<FieldStack> homeStorage;
         public int[] homeFruitDays;
@@ -500,6 +500,7 @@ namespace BoatAttack.Fishing
         {
             career = null;
             if (data == null || data.version < 1 || data.version > FishingSaveData.CurrentVersion || (data.version < 12 && data.prologueSeen)) return false;
+            if(data.version<19 && data.collectedPickupMask>255)return false;
             if(data.version<14 && !FishingFarm.Pristine(data.farm))return false;
             if(data.version<16 && !FishingLore.QuestPristine(data.lore))return false;
             if (data.version < 11 && data.lore != null && (data.lore.residents != 0 || data.lore.shrines != 0 || data.lore.finale)) return false;

@@ -11,10 +11,11 @@ if(Get-Process FishingPrototype -ErrorAction SilentlyContinue){throw 'Close the 
 $output=Join-Path $repo ('Logs/Performance/'+$Label+'-'+[Guid]::NewGuid().ToString('N'))
 [IO.Directory]::CreateDirectory($output)|Out-Null
 $log=Join-Path $output 'player.log'
-$arguments='-fishing-performance-voyage -force-d3d11 -screen-fullscreen 0 -screen-width 1920 -screen-height 1080 -logFile "'+$log+'"'
+$arguments='-fishing-performance-voyage -force-d3d11 -popupwindow -screen-fullscreen 0 -screen-width 1920 -screen-height 1080 -logFile "'+$log+'"'
 $watch=[Diagnostics.Stopwatch]::StartNew()
 $taskLaunchUtc=[DateTime]::UtcNow
-$process=Start-Process -FilePath $Player -ArgumentList $arguments -WorkingDirectory $repo -WindowStyle Hidden -PassThru
+# This rendered game test needs a visible window; a hidden player may never draw the first shoreline frame.
+$process=Start-Process -FilePath $Player -ArgumentList $arguments -WorkingDirectory $repo -WindowStyle Normal -PassThru
 Write-Output "Fixed 1080p performance tour: $output"
 try {
     if(-not $process.WaitForExit($TimeoutSeconds*1000)){$process.Kill();$process.WaitForExit();throw "Benchmark timed out: $log"}

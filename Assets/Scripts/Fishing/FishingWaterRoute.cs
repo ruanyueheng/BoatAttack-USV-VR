@@ -21,7 +21,9 @@ namespace BoatAttack.Fishing
         private Vector3 _goal, _origin;
         private int _target = -1, _width, _depth;
         private byte[] _water;
-        private float _nextPlan;
+        private float _nextPlan,_nextDraw;
+        private Vector3 _drawnGoal;
+        private bool _destinationDrawn;
         public IReadOnlyList<Vector3> Points => _route;
         public bool Visible => _root != null && _root.gameObject.activeSelf;
         public string Failure { get; private set; } = "";
@@ -113,7 +115,7 @@ namespace BoatAttack.Fishing
         {
             if (_c == null || _c.Player == null) return;
             bool show = !_c.Ashore && !_c.Anchored && !_c.StoryBlocksGameplay;
-            _root.gameObject.SetActive(show); if (!show) { CancelPlanning(); return; }
+            _root.gameObject.SetActive(show); if (!show) { CancelPlanning();_nextDraw=0;return; }
             if (Planning && _planningTarget != _c.NavigationTarget) CancelPlanning();
             var boat = _c.Player.transform.position; boat.y = 0;
             int segment = 0; float nearest = float.MaxValue; Vector3 projection = boat;
@@ -128,9 +130,11 @@ namespace BoatAttack.Fishing
             if (!_c.Paused && Planning)
             {
                 bool committed=AdvancePlanning();
-                if(committed){segment=0;projection=boat;}
+                if(committed){segment=0;projection=boat;_nextDraw=0;}
             }
-            if (_route.Count < 2 || _routeTarget != _c.NavigationTarget) { _root.gameObject.SetActive(false); return; }
+            if (_route.Count < 2 || _routeTarget != _c.NavigationTarget) { _root.gameObject.SetActive(false);_nextDraw=0;return; }
+            if(Time.time<_nextDraw)return;
+            _nextDraw=Time.time+1f/15; // Flow remains smooth in the shader; the route's geometry changes more slowly.
             _draw.Clear();
             if (!Arrived)
             {
@@ -165,8 +169,11 @@ namespace BoatAttack.Fishing
                 length += step;
             }
             for (; arrow < _arrows.Length; arrow++) _arrows[arrow].enabled = false;
-            _destination.positionCount = 64;
-            for (int i = 0; i < 64; i++) { float a = i * Mathf.PI / 32; _destination.SetPosition(i, _goal + new Vector3(Mathf.Cos(a) * 2.8f, .20f, Mathf.Sin(a) * 2.8f)); }
+            if(!_destinationDrawn || _drawnGoal!=_goal)
+            {
+                _destinationDrawn=true;_drawnGoal=_goal;_destination.positionCount=64;
+                for(int i=0;i<64;i++){float a=i*Mathf.PI/32;_destination.SetPosition(i,_goal+new Vector3(Mathf.Cos(a)*2.8f,.20f,Mathf.Sin(a)*2.8f));}
+            }
         }
         private void OnDisable()=>CancelPlanning();
         private void OnDestroy() { CancelPlanning();foreach (var material in _materials) if (material != null) Destroy(material); }

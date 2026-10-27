@@ -16,7 +16,7 @@ namespace BoatAttack.Fishing
     /// <summary>36 bounded slots. Mutations are transactional; world pickups cannot be duplicated by reloading.</summary>
     public sealed class FishingBackpack
     {
-        public const int HotbarCount=9, SlotCount=36, PickupCount=8;
+        public const int HotbarCount=9, SlotCount=36, PickupCount=16;
         private readonly FieldStack[] _slots=new FieldStack[SlotCount];
         public int Selected { get; private set; }
         public int CollectedMask { get; private set; }
@@ -174,7 +174,7 @@ namespace BoatAttack.Fishing
         public List<FieldStack> Snapshot(){var result=new List<FieldStack>();foreach(var s in _slots)result.Add(s.Copy());return result;}
         public static bool TryRestore(List<FieldStack> slots,int selected,int pickups,int animals,out FishingBackpack bag)
         {
-            bag=null;if(slots==null || slots.Count!=SlotCount || selected<0 || selected>=HotbarCount || pickups<0 || pickups>255 || animals<0 || animals>7)return false;
+            bag=null;if(slots==null || slots.Count!=SlotCount || selected<0 || selected>=HotbarCount || pickups<0 || pickups>=(1<<PickupCount) || animals<0 || animals>7)return false;
             var next=new FishingBackpack(false);
             for(int i=0;i<SlotCount;i++)
             {

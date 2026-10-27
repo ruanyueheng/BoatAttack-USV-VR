@@ -6,12 +6,13 @@ namespace BoatAttack.Fishing
     {
         public readonly struct FocusLayout
         {
-            public readonly Rect Heading, Pocket, Toolbar, Chart, ChartTab, Action, Notice, Catch, Observe, HarborButton;
+            public readonly Rect Heading, Pocket, Toolbar, Objective, Chart, ChartTab, Action, Notice, Catch, Observe, HarborButton;
             public FocusLayout(float height, bool anchored, CatchPhase phase)
             {
                 Heading = new Rect(24, 24, 328, 62);
                 Pocket = new Rect(1272, 24, 304, 36);
                 Toolbar = new Rect(1240, 68, 336, 30);
+                Objective = new Rect(1242, 112, 330, 118);
                 // 圆下保留 36 逻辑像素图例；绘制和 BlocksPointer 共用此矩形。
                 Chart = new Rect(24, height - 310, 248, 282);
                 ChartTab = new Rect(24, height - 62, 248, 34);
