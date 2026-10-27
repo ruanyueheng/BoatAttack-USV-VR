@@ -47,7 +47,9 @@ internal static class ForgeTests
         {
             var fur=(FieldItem)Enum.Parse(typeof(FieldItem),pair[1]);var lamps=new FishingBackpack(false);lamps.TryAdd(FieldItem.Coal,2);lamps.TryAdd(fur,1);
             check(!FishingRecipes.Craft(lamps,pair[0],CraftStation.Forge) && lamps.Count(FieldItem.Coal)==2,"Lantern is no longer made at forge: "+fur);
-            check(FishingRecipes.Craft(lamps,pair[0],CraftStation.Workbench) && lamps.Count(FieldItem.Lantern)==1 && lamps.Count(FieldItem.Coal)==0,"Workbench assembles coal/fur lantern: "+fur);
+            check(!FishingRecipes.Craft(lamps,pair[0],CraftStation.Workbench) && lamps.Count(FieldItem.Coal)==2 && lamps.Count(fur)==1,"Coal and fur cannot become a complete lantern: "+fur);
+            lamps.TryAdd(FieldItem.IronIngot,2);lamps.TryAdd(FieldItem.Glass,2);lamps.TryAdd(FieldItem.Charcoal,1);
+            check(FishingRecipes.Craft(lamps,pair[0],CraftStation.Workbench) && lamps.Count(FieldItem.Lantern)==1 && lamps.Count(FieldItem.IronIngot)==0 && lamps.Count(FieldItem.Glass)==0 && lamps.Count(FieldItem.Charcoal)==0 && lamps.Count(fur)==1,"Legacy lantern id uses real frame, glass and fuel: "+fur);
         }
         var fullLamp=new FishingBackpack(false);fullLamp.TryAdd(FieldItem.Coal,3);fullLamp.TryAdd(FieldItem.RabbitFur,2);fullLamp.TryAdd(FieldItem.Shell,34*64);
         check(!FishingRecipes.Craft(fullLamp,"coal-rabbit-lantern",CraftStation.Workbench) && fullLamp.Count(FieldItem.Coal)==3 && fullLamp.Count(FieldItem.RabbitFur)==2,"Full lantern bag returns inputs");

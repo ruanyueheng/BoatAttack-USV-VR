@@ -67,6 +67,7 @@ namespace BoatAttack.Fishing
                     }
                 }
             }
+            InitializeMarineShoreVisits();
             InitializeSeaSurprises();
             Debug.Log("[FISHING] Living bay: "+CreatureCount+" wildlife renderers, 3 habitat meshes; "+MeshVertices+" unique vertices.");
         }
@@ -126,12 +127,13 @@ namespace BoatAttack.Fishing
             var climate=Controller.Weather.Climate;
             foreach(var c in _creatures)
             {
-                if(Controller.RifleHunting!=null && Controller.RifleHunting.DeadWildlife(c.transform))continue;
+                if(Controller.RifleHunting!=null && Controller.RifleHunting.DeadWildlife(c.transform)){ResetMarineShoreVisit(c);continue;}
                 // Integrate speed rather than multiplying absolute time: weather changes cannot teleport animals.
                 float activity=Mathf.Lerp(BayClimate.Activity(c.kind,climate.Previous),BayClimate.Activity(c.kind,climate.Current),climate.Blend);
                 float speed=c.kind==MarineKind.Dolphin?2.1f:c.kind==MarineKind.Gull?2.8f:c.kind==MarineKind.School?1.2f:.48f;
                 c.phase+=Time.deltaTime;float a=c.phase;
                 if(SeaBeatActive(c.transform))continue;
+                if(TickMarineShoreVisit(c,Time.deltaTime))continue;
                 TickWander(c.motion,c.home,c.radius,speed*activity,Time.deltaTime,c.kind==MarineKind.Gull);
                 Vector3 pos=c.motion.position;
                 float roll=0,pitch=0;
@@ -164,7 +166,8 @@ namespace BoatAttack.Fishing
             foreach(var c in _creatures)
             {
                 if(Controller.RifleHunting!=null && Controller.RifleHunting.DeadWildlife(c.transform))continue;
-                bool visible=(Controller.ExplorerPosition-c.home).sqrMagnitude<160*160;
+                bool visible=(Controller.ExplorerPosition-c.home).sqrMagnitude<160*160
+                    || (Controller.ExplorerPosition-c.transform.position).sqrMagnitude<100*100;
                 c.transform.gameObject.SetActive(visible);if(!visible)continue;VisibleCount++;
                 if(Controller.Career.Seen(c.kind))continue;
                 var delta=c.transform.position-Controller.viewCamera.transform.position;float distance=delta.magnitude;

@@ -7,6 +7,8 @@ namespace BoatAttack.Fishing
     {
         public int residents, shrines;
         public bool finale;
+        public bool mayorAccepted, chartFound, grandTreasureFound;
+        public int rewardedShrines;
     }
 
     public sealed class FishingLore
@@ -22,14 +24,14 @@ namespace BoatAttack.Fishing
             : island == 1 ? "林之回响：守望者留出一片阴影，让幼苗和归来的渔人都有地方歇脚。"
             : island == 2 ? "潮之回响：风暴之夜，旧船长放下货物，把最后的舱位留给岛上的孩子。"
             : "星之回响：四灯从未为了寻找财宝而建。它们只为回答一句话：回家的人，走哪条路？";
-        public static string TrialHint(int island) => island == 0 ? "听清星、风、潮的示范，依次走入对应的共鸣台。风桥会回应脚步；每段可停留30秒。"
-            : island == 1 ? "沿栈道转动反光镜，把日井的光一段段接到种池。保持照亮5秒，活根便会跨过水隙。"
-            : island == 2 ? "先沿侧舷开阀排水，再下船腹按住E推货并随货箱前进。箱到铜台后返回注水，浮桥将接上船长室。"
-            : "登上螺旋台阶操作望远镜，移动鼠标或方向键寻找星图轮廓，按住左键对焦。完成海鸥、船锚与归航星三次观测。";
-        public static string TrialObjective(int island) => island == 0 ? "循声踩响共鸣台，跨越风桥，登上巨钟瞭望台。"
-            : island == 1 ? "接通折线光路，让种池长出通往秘林的活根桥。"
-            : island == 2 ? "排水、下舱推货、返回注水，经浮桥进入船长室。"
-            : "在望远镜中寻找三幅星图，并保持对焦完成观测。";
+        public static string TrialHint(int island) => island == 0 ? "钟声在石台间来回，第二段回声比第一段更长。"
+            : island == 1 ? "林中有两处渴光的印记，旧铜闸后还藏着另一条光路。"
+            : island == 2 ? "船腹的旧吃水线下，铜台压痕与浮桥缆绳遥相呼应。"
+            : "残页上的轮廓，仍在夜空中等待归航人。";
+        public static string TrialObjective(int island) => island == 0 ? "听巨钟留下的两段回声。"
+            : island == 1 ? "寻找林中失落的两束光。"
+            : island == 2 ? "唤醒沉船里不再升降的通路。"
+            : "找回守望者记录的三幅星图。";
         public static string Inscription(int island) => island == 0 ? "星落脚下，风送前路\n循潮而上，巨钟归航"
             : island == 1 ? "日井入镜，折光穿林\n五息不散，活根成桥"
             : island == 2 ? "先退潮，再下舱\n推货上铜台，回阀迎归潮"
@@ -38,6 +40,29 @@ namespace BoatAttack.Fishing
         public bool Cleared(int island) => island >= 0 && island < 4 && (_data.shrines & (1 << island)) != 0;
         public int ClearCount { get { int n = 0; for (int i = 0; i < 4; i++) if (Cleared(i)) n++; return n; } }
         public bool Finale => _data.finale;
+        public bool MayorAccepted => _data.mayorAccepted;
+        public bool ChartFound => _data.chartFound;
+        public bool GrandTreasureFound => _data.grandTreasureFound;
+        public int RewardedShrines => _data.rewardedShrines;
+        public bool CanOpenGrandTreasure => ChartFound && _data.shrines == 15 && RewardedShrines == 15 && !GrandTreasureFound;
+        public static FieldItem Relic(int island) => island >= 0 && island < 4 ? (FieldItem)((int)FieldItem.WindRelic + island) : FieldItem.Empty;
+        public static string BlueprintName(int island) => island == 0 ? "精纺工艺蓝图" : island == 1 ? "兔舍蓝图" : island == 2 ? "水族箱蓝图" : island == 3 ? "水族饲育蓝图" : "";
+        public static string BlueprintEffect(int island) => island == 0 ? "绕绳每轮纤维×3 → 绳索×2" : island == 1 ? "住所可扩建至8格，需250币" : island == 2 ? "水族箱可扩建至8格，需300币" : island == 3 ? "展示鱼成熟改为2日与2次喂养" : "";
+        public bool RewardClaimed(int island) => island >= 0 && island < 4 && (RewardedShrines & (1 << island)) != 0;
+        public bool BlueprintUnlocked(int island) => RewardClaimed(island);
+        public bool AcceptMayorship()
+        {
+            if (MayorAccepted) return false;
+            _data.mayorAccepted = true; return true;
+        }
+        public bool DiscoverChart()
+        {
+            if (!MayorAccepted || ChartFound) return false;
+            _data.chartFound = true; return true;
+        }
+        internal void MarkRewardClaimed(int island) => _data.rewardedShrines |= 1 << island;
+        internal void OpenGrandTreasure() => _data.grandTreasureFound = true;
+        internal static bool QuestPristine(LoreData data) => data == null || (!data.mayorAccepted && !data.chartFound && !data.grandTreasureFound && data.rewardedShrines == 0);
         public bool Meet(int id)
         {
             if (id < 0 || id >= ResidentCount || Met(id)) return false;
@@ -53,12 +78,18 @@ namespace BoatAttack.Fishing
             if (_data.shrines != 15 || _data.finale) return 0;
             _data.finale = true; return 180;
         }
-        public LoreData Snapshot() => new LoreData { residents = _data.residents, shrines = _data.shrines, finale = _data.finale };
-        public static bool TryRestore(LoreData data, out FishingLore lore)
+        public LoreData Snapshot() => new LoreData { residents = _data.residents, shrines = _data.shrines, finale = _data.finale,
+            mayorAccepted = MayorAccepted, chartFound = ChartFound, grandTreasureFound = GrandTreasureFound, rewardedShrines = RewardedShrines };
+        public static bool TryRestore(LoreData data, out FishingLore lore, int version = FishingSaveData.CurrentVersion)
         {
             lore = null;
-            if (data == null || data.residents < 0 || data.residents > 63 || data.shrines < 0 || data.shrines > 15 || (data.finale && data.shrines != 15)) return false;
-            lore = new FishingLore { _data = new LoreData { residents = data.residents, shrines = data.shrines, finale = data.finale } }; return true;
+            if (data == null || data.residents < 0 || data.residents > 63 || data.shrines < 0 || data.shrines > 15 || (data.finale && data.shrines != 15)
+                || data.rewardedShrines < 0 || data.rewardedShrines > 15 || (data.rewardedShrines & ~data.shrines) != 0
+                || (data.chartFound && !data.mayorAccepted) || (data.rewardedShrines != 0 && !data.chartFound)
+                || (data.grandTreasureFound && (!data.chartFound || data.shrines != 15 || data.rewardedShrines != 15))
+                || (version < 16 && !QuestPristine(data))) return false;
+            lore = new FishingLore { _data = new LoreData { residents = data.residents, shrines = data.shrines, finale = data.finale,
+                mayorAccepted = data.mayorAccepted, chartFound = data.chartFound, grandTreasureFound = data.grandTreasureFound, rewardedShrines = data.rewardedShrines } }; return true;
         }
     }
 
@@ -70,6 +101,13 @@ namespace BoatAttack.Fishing
         public int Progress { get; private set; }
         private float _clock,_lastBell=-100;
         private float _cargo,_starFocus;
+        private int _windRound,_lightStage,_shutter;
+        public int WindRound=>_windRound;
+        public int WindLength=>_windRound==0?3:5;
+        public int LightStage=>_lightStage;
+        public bool ShutterOpen=>_shutter==1;
+        public static int WindNote(int round,int step)=>round==0?(step==0?2:step==1?0:1):(step==0?2:step==1?0:step==2?1:step==3?0:1);
+        public int MirrorTarget(int device)=>_lightStage==0?device+1:(device==0?3:device==1?1:2);
         private int _starStage;
         public float Growth { get; private set; }
         public float WaterLevel { get; private set; }=1;
@@ -80,13 +118,17 @@ namespace BoatAttack.Fishing
         public float StarPitch { get; private set; }=25;
         public static float StarTargetYaw(int stage)=>stage==0?-50:stage==1?12:47;
         public static float StarTargetPitch(int stage)=>stage==0?27:stage==1?52:34;
-        public bool LightAligned=>_states[0]==1 && _states[1]==2 && _states[2]==3;
+        public bool LightAligned=>_states[0]==MirrorTarget(0) && _states[1]==MirrorTarget(1) && _states[2]==MirrorTarget(2) && (_lightStage==0 || ShutterOpen);
         public void Tick(float delta)
         {
             if(float.IsNaN(delta) || float.IsInfinity(delta) || delta<=0)return;
             _clock+=delta;
             if(Island==0 && Progress>0 && !Ready && _clock-_lastBell>30){Progress=0;Array.Clear(_states,0,3);}
-            if(Island==1)Growth=Math.Max(0,Math.Min(1,Growth+(LightAligned?delta/5:-delta/3)));
+            if(Island==1 && _lightStage<2)
+            {
+                Growth=Math.Max(0,Math.Min(1,Growth+(LightAligned?delta/5:-delta/3)));
+                if(Growth>=1){_lightStage++;if(_lightStage==1)Growth=0;}
+            }
             if(Island==2 && _states[1]!=0)WaterLevel=Math.Max(0,Math.Min(1,WaterLevel+(_states[1]==1?-delta:delta)/4));
         }
         public FishingShrineTrial(int island)
@@ -95,17 +137,19 @@ namespace BoatAttack.Fishing
             Island = island;
         }
         public int State(int device) => device >= 0 && device < 3 ? _states[device] : 0;
-        public bool Ready => Island == 0 ? Progress == 3 : Island == 1 ? Growth>=1
+        public bool Ready => Island == 0 ? _windRound==1 && Progress==5 : Island == 1 ? _lightStage>=2
             : Island == 2 ? _cargo>=1 && WaterLevel>=.95f : _starStage>=3;
         public bool Use(int device)
         {
-            if (device < 0 || device >= (Island == 2 ? 2 : 3)) return false;
+            if (device < 0 || device >= (Island == 2 ? 2 : Island==1?4:3)) return false;
             if (Island == 0)
             {
                 if (Ready) return false;
-                int expected = Progress == 0 ? 2 : Progress == 1 ? 0 : 1;
+                int expected = WindNote(_windRound,Progress);
                 if (device != expected || (Progress>0 && (_clock-_lastBell<.4f || _clock-_lastBell>30))) { Progress = 0; Array.Clear(_states, 0, 3); return false; }
-                _states[device] = 1; Progress++;_lastBell=_clock;return true;
+                _states[device] = 1; Progress++;_lastBell=_clock;
+                if(_windRound==0 && Progress==3){_windRound=1;Progress=0;Array.Clear(_states,0,3);}
+                return true;
             }
             if(Island==2)
             {
@@ -114,6 +158,8 @@ namespace BoatAttack.Fishing
             }
             else if(Island==1)
             {
+                if(Ready || (device==3 && _lightStage==0))return false;
+                if(device==3){_shutter=1-_shutter;return true;}
                 _states[device]=(_states[device]+1)%4;
             }
             else return false;

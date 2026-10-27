@@ -124,7 +124,7 @@ namespace BoatAttack.Fishing
                     throw new InvalidOperationException("读取窗口夹具保留了上一场景的确认弹窗。");
             }
             if(CurrentCase==FishingAcceptanceCase.HomeChart
-                && (!c.HomeChartOpen || !c.Paused || !c.Ashore || c.Shore.Swimming
+                && (!c.HomeChartReady || c.PortableChart==null || !c.PortableChart.Ready || !c.Paused || !c.Ashore || c.Shore.Swimming
                     || FishingPrototype.FlatDistance(c.Shore.Position,c.Home.WakePoint)>.5f
                     || c.NavigationCount==0 || !c.HomeChartWaypoint(c.HomeNavigationIndex,out _,out _,out _)
                     || c.StartMenuOpen || c.SaveMenuOpen))

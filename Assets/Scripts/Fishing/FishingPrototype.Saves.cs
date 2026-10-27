@@ -196,7 +196,7 @@ namespace BoatAttack.Fishing
         }
         private void ApplySavedCareer(FishingCareer career,FishingResumeData resume)
         {
-            HandGames?.Cancel();CloseHomeChart();Prologue.Suspend();Home.CancelSleep();Home.StandUp(true);Letter.Close();Residents.Close();Realms.Abort();
+            HandGames?.Cancel();CloseHomeChart(true);Prologue.Suspend();Home.CancelSleep();Home.StandUp(true);Letter.Close();Residents.Close();Realms.Abort();
             if(InventoryOpen)ToggleInventory();if(JournalOpen)ToggleJournal();
             CancelGuideOpening();ResetToolInput();CoastWorld.CloseMenu();
             if(Ashore)Shore.BoardImmediately();

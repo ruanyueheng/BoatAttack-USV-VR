@@ -22,6 +22,8 @@ namespace BoatAttack.Fishing
         public int GraphicsQuality { get; private set; }=2;
         public FishingTitleVoyage TitleVoyage { get; private set; }
         public FishingCoastalPresentation CoastPresentation { get; private set; }
+        public bool CoastalDepthReady { get; private set; }
+        private bool _coastalWorldRendered;
         private sealed class AudioSetting
         {
             public AudioSource Source;
@@ -134,6 +136,28 @@ namespace BoatAttack.Fishing
                     SetFullscreen(PlayerPrefs.GetInt(SettingsKey+"Fullscreen",0)==1);
             }
             TitleVoyage=gameObject.AddComponent<FishingTitleVoyage>();TitleVoyage.Build(this);
+            var water=WaterSystem.Water.Instance;
+            if(water!=null)
+            {
+                var map=Resources.Load<FishingMapDefinition>("FishingMap");
+                if(map==null || !map.Bounds.Valid)throw new System.InvalidOperationException("Missing world coverage for shoreline depth capture.");
+                var bounds=map.Bounds;
+                UnityEngine.Rendering.RenderPipelineManager.endCameraRendering+=CoastalWorldRendered;
+                StartCoroutine(CaptureCoastalDepth(water,Rect.MinMaxRect((float)bounds.MinX-32,(float)bounds.MinZ-32,(float)bounds.MaxX+32,(float)bounds.MaxZ+32)));
+            }
+            FishingPerformanceCapture.AttachIfRequested(this);
+        }
+        private void CoastalWorldRendered(UnityEngine.Rendering.ScriptableRenderContext context,Camera camera)
+        {
+            if(camera!=viewCamera)return;
+            _coastalWorldRendered=true;
+            UnityEngine.Rendering.RenderPipelineManager.endCameraRendering-=CoastalWorldRendered;
+        }
+        private System.Collections.IEnumerator CaptureCoastalDepth(WaterSystem.Water water,Rect bounds)
+        {
+            // The first real world render uploads new shores and establishes the cloned URP renderer.
+            while(!_coastalWorldRendered)yield return null;
+            if(water!=null && water.isActiveAndEnabled){water.CaptureDepthMap(bounds);CoastalDepthReady=true;}
         }
         private void RegisterEnvironmentLoop(AudioSource source,float scale,float maximum)
         {
@@ -170,6 +194,7 @@ namespace BoatAttack.Fishing
         }
         private void OnDisable()
         {
+            UnityEngine.Rendering.RenderPipelineManager.endCameraRendering-=CoastalWorldRendered;
             RestoreAudioSettings();
             if(!_graphicsCaptured)return;
             QualitySettings.shadows=_originalShadows;QualitySettings.shadowResolution=_originalShadowResolution;QualitySettings.lodBias=_originalLodBias;

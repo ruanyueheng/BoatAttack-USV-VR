@@ -187,7 +187,8 @@ namespace BoatAttack.Fishing
             // Unity 的 fieldOfView 是垂直角；只放大第一人称世界，不放大第三人称或实体双手。
             float zoom=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.72f,1,BinocularBlend));
             float opticalFov=2*Mathf.Atan(Mathf.Tan(c.FieldOfView*Mathf.Deg2Rad*.5f)/BinocularMagnification)*Mathf.Rad2Deg;
-            c.viewCamera.fieldOfView=FirstPerson?Mathf.Lerp(c.FieldOfView,opticalFov,zoom):58;
+            float rifleZoom=c.RifleHunting!=null?c.RifleHunting.AimBlend:0;
+            c.viewCamera.fieldOfView=FirstPerson?Mathf.Lerp(Mathf.Lerp(c.FieldOfView,c.FieldOfView*.76f,rifleZoom),opticalFov,zoom):58;
             _reset=true; // Boarding must not interpolate the boat camera from an inland position.
         }
         private Vector3 ConstrainToVisibleSegment(Vector3 pivot,Vector3 position,Transform boat)

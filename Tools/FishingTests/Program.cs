@@ -19,6 +19,7 @@ internal static class Program
             HomeStorageTests.Run(Check);
             FarmTests.Run(Check);
             HandTaskTests.Run(Check);
+            FeedbackToolsTests.Run(Check);
             FightControlTests.Run(Check);
             CoastRulesTests.Run(Check);
             CashierConversationTests.Run(Check);
@@ -27,6 +28,10 @@ internal static class Program
             ForgeTests.Run(Check);
             AdventureTests.Run(Check);
             LoreTests.Run(Check);
+            VoyageQuestTests.Run(Check);
+            HomeEcologyTests.Run(Check);
+            CombatTests.Run(Check);
+            RifleBallisticsTests.Run(Check);
             ActionClockTests.Run(Check);
             MapTests.Run(Check);
             CraftingTests.Run(Check);

@@ -17,6 +17,20 @@ namespace BoatAttack.Fishing
         private readonly Dictionary<string,float> _fadeStart=new Dictionary<string,float>();
         private string _activeClip;
         private float _fadeAge=.15f;
+        private float _interactionRemaining;
+        private string _interactionKey="Interact";
+        public bool InteractionAnimationReady=>_clips.ContainsKey("Interact") && _clips.ContainsKey("HitRecieve");
+        public void PlayToolInteraction()
+        {
+            if(!_clips.TryGetValue("Punch_Right",out string clip))return;
+            _interactionKey="Punch_Right";_interactionRemaining=Mathf.Max(.2f,_animation[clip].length);_animation[clip].time=0;
+        }
+        public void PlayInteraction(bool impact=false)
+        {
+            string key=impact?"HitRecieve":"Interact";
+            if(!_clips.TryGetValue(key,out string clip))return;
+            _interactionKey=key;_interactionRemaining=Mathf.Max(.2f,_animation[clip].length);_animation[clip].time=0;
+        }
         private Vector3 _leftAnkleRest,_rightAnkleRest;
         public bool Ready=>_model!=null && _clips.Count>=3 && HandRigReady;
         private float _eyeHeight=1.58f,_eyeForward=.12f,_seatWeight,_crouchWeight;
@@ -76,6 +90,13 @@ namespace BoatAttack.Fishing
                 foreach(var key in new[]{"Idle","Walk","Run"})
                     if(state.name.EndsWith(key,StringComparison.OrdinalIgnoreCase)){_clips[key]=state.name;state.wrapMode=WrapMode.Loop;}
             }
+            foreach(var clip in Resources.LoadAll<AnimationClip>("FishingCharacter/CompatibleInteractions"))
+                foreach(var key in new[]{"Interact","Punch_Right","HitRecieve"})
+                    if(clip.name.EndsWith(key,StringComparison.OrdinalIgnoreCase))
+                    {
+                        _animation.AddClip(clip,clip.name);_clips[key]=clip.name;
+                        _animation[clip.name].wrapMode=WrapMode.ClampForever;
+                    }
             _renderers=_model.GetComponentsInChildren<Renderer>();
             if(_renderers.Length==0 || _clips.Count<3)throw new InvalidOperationException("Beach Character rig/locomotion import incomplete");
             // FBX animation bounds include exporter unit-conversion transforms and are not
@@ -142,11 +163,22 @@ namespace BoatAttack.Fishing
             _modelRest.Apply(_model);
             SetBodyPresentation(hidden);
             string clip=_clips[ashore && grounded && !swimming && !climbing && speed>.1f?(speed>3?"Run":"Walk"):"Idle"];
+            if(dt>0)_interactionRemaining=Mathf.Max(0,_interactionRemaining-dt);
+            bool interaction=ashore && grounded && !swimming && !climbing && speed<.1f
+                && (_interactionRemaining>0 || InteractionLean.sqrMagnitude>.0001f) && InteractionAnimationReady;
+            if(interaction)clip=_clips[_interactionRemaining>0?_interactionKey:"Interact"];
             if(!paused || initial)SelectClip(clip);
             // 每次先恢复完整局部 TRS，再采样；所有程序化层只能叠加在本帧基础上。
             foreach(var bone in _rigPose)bone.Rest.Apply(bone.Bone);
+            var leftAnchor=_leftAnkle.position;var rightAnchor=_rightAnkle.position;
             SampleLocomotion(dt);
             _leftAnkle.localPosition=_leftAnkleRest;_rightAnkle.localPosition=_rightAnkleRest;
+            if(interaction)
+            {
+                var leftOffset=_leftFoot.position-_leftAnkle.position;var rightOffset=_rightFoot.position-_rightAnkle.position;
+                SolveLeg(_leftThigh,_leftShin,_leftAnkle,leftAnchor);SolveLeg(_rightThigh,_rightShin,_rightAnkle,rightAnchor);
+                _leftFoot.position=_leftAnkle.position+leftOffset;_rightFoot.position=_rightAnkle.position+rightOffset;
+            }
             // 初始化允许直接摆好坐姿；暂停中只重画，不推进动画或站姿过渡。
             float amount=initial?1:Mathf.Min(1,dt*8);
             _seatWeight=Mathf.MoveTowards(_seatWeight,ashore?0:1,amount);
@@ -179,6 +211,7 @@ namespace BoatAttack.Fishing
         {
             if(_activeClip==clip)return;
             _activeClip=clip;_fadeAge=0;_fadeStart.Clear();
+            if(_animation[clip].wrapMode==WrapMode.ClampForever)_animation[clip].time=0;
             foreach(AnimationState state in _animation)_fadeStart[state.name]=state.weight;
         }
         private void SampleLocomotion(float dt)
@@ -191,7 +224,7 @@ namespace BoatAttack.Fishing
                 state.weight=Mathf.Lerp(start,state.name==_activeClip?1:0,fade);
                 state.enabled=state.weight>0 || state.name==_activeClip;
                 state.speed=0;
-                if(state.enabled && state.length>0)state.time=Mathf.Repeat(state.time+dt,state.length);
+                if(state.enabled && state.length>0)state.time=state.wrapMode==WrapMode.ClampForever?Mathf.Min(state.time+dt,state.length):Mathf.Repeat(state.time+dt,state.length);
             }
             _animation.Sample();
         }

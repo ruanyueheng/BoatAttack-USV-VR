@@ -95,7 +95,7 @@ namespace BoatAttack.Fishing
             go.GetComponent<MeshRenderer>().sharedMaterial=material; go.GetComponent<MeshRenderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
         }
         public void ShowIsland(int island) => Show(FishingAdventure.Name(island)+"的来信",FishingLore.ResidentName(island),
-            "致新来的领航员：\n\n"+FishingAdventure.Clue(island)+"\n\n愿这盏灯重新连起回家的航路。\n海风会替我们记住你的到来。",_c.Islands.WorldRoot.GetChild(island).Find("Voyage letter"));
+            "致回潮村的新村长：\n\n"+FishingAdventure.Clue(island)+"\n\n守望者仍保存着这座岛的失落图页、遗物与设施蓝图。家中的秘密旧海图，会把四段航路连起来。\n\n愿你带着远航的收获，也带着家园新的生活归来。",_c.Islands.WorldRoot.GetChild(island).Find("Voyage letter"));
         internal void Show(string title, string sender, string body, Transform source=null)
         {
             if (!CanRead || _c.Paused) return;

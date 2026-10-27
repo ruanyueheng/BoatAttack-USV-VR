@@ -50,7 +50,14 @@ namespace BoatAttack.Fishing
             public FishingFingerPose GripFingers;
             public float GripRadius;
             public bool GripCached,GripPointing;
+            // [Claude v0.41] IK 过渡状态（角色本地空间）：权重渐变 + 目标跳变惯性偏移。
+            public float Weight;
+            public bool HasLast;
+            public int BlendFrame=-1;
+            public Vector3 LastWrist,Offset;
+            public Quaternion LastRotation=Quaternion.identity,RotationOffset=Quaternion.identity;
         }
+        private static readonly bool NoIkBlend=System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"-fishing-no-ik-blend")>=0;
         private Arm _leftArm,_rightArm;
         private int _armBaseFrame=-1;
         private bool _armsPaused;
@@ -235,21 +242,55 @@ namespace BoatAttack.Fishing
         /// catch goals -> this method -> rod-tip line. Never Sample after this call.
         /// Repeated calls restore the same sampled TRS, and expired goals restore animation.
         /// </summary>
-        public void ApplyHandTargets(FishingHandTarget left,FishingHandTarget right,bool tracked=false)
+        public void ApplyHandTargets(FishingHandTarget left,FishingHandTarget right,bool tracked=false,bool allowPaused=false)
         {
             if(!HandRigReady)return;
-            ApplyArm(_leftArm,left,true,tracked);ApplyArm(_rightArm,right,false,tracked);
+            ApplyArm(_leftArm,left,true,tracked,allowPaused);ApplyArm(_rightArm,right,false,tracked,allowPaused);
+            // Modal IK must refresh GPU skinning even while the animation clock is paused.
+            BodySkin.forceMatrixRecalculationPerRender=allowPaused;
+            if(FirstPersonSkin!=null)FirstPersonSkin.forceMatrixRecalculationPerRender=allowPaused;
             BodySkin.localBounds=_bodyPresentationBounds;
             if(FirstPersonSkin!=null)FirstPersonSkin.localBounds=_bodyPresentationBounds;
         }
-        private void ApplyArm(Arm arm,FishingHandTarget target,bool left,bool tracked)
+        private void ApplyArm(Arm arm,FishingHandTarget target,bool left,bool tracked,bool allowPaused)
         {
             foreach(var bone in arm.Overlay)bone.Sample.Apply(bone.Bone);
-            if(_armsPaused || _armBaseFrame!=Time.frameCount || target==null || !target.Visible || target.IsLeft!=left){arm.GripCached=false;return;}
+            bool valid=!((_armsPaused && !allowPaused) || _armBaseFrame!=Time.frameCount || target==null || !target.Visible || target.IsLeft!=left);
+            // [Claude v0.41] 原实现按帧开关 IK：目标出现瞬间吸附、消失瞬间弹回，是动作僵直的主因。
+            // 现在桌面模式用权重渐入(≈0.16s)/渐出(≈0.24s)，并对目标跳变做衰减偏移；XR 追踪保持 1:1。
+            float dt=arm.BlendFrame==Time.frameCount?0:Mathf.Clamp(Time.unscaledDeltaTime,0,.05f);arm.BlendFrame=Time.frameCount;
+            if(!valid)
+            {
+                arm.GripCached=false;
+                if(tracked || NoIkBlend || !arm.HasLast || _armBaseFrame!=Time.frameCount){arm.Weight=0;arm.HasLast=false;return;}
+                arm.Weight=Mathf.MoveTowards(arm.Weight,0,dt/.24f);
+                if(arm.Weight<=0){arm.HasLast=false;return;}
+                BlendSolve(arm,transform.TransformPoint(arm.LastWrist),transform.rotation*arm.LastRotation,Mathf.SmoothStep(0,1,arm.Weight));
+                return;
+            }
             arm.Wrist.localScale=arm.WristScale;
             var desiredRotation=target.Palm.rotation*Quaternion.Inverse(arm.WristToPalm);
             // Preserve the sampled rig's actual segment scales; only rotations are solved.
             var wristTarget=WristForPalm(left,target.Palm.position,target.Palm.rotation);
+            if(!tracked && !NoIkBlend)
+            {
+                var localWrist=transform.InverseTransformPoint(wristTarget);var localRotation=Quaternion.Inverse(transform.rotation)*desiredRotation;
+                if(arm.HasLast && arm.Weight>.5f && (localWrist-arm.LastWrist).sqrMagnitude>.06f*.06f)
+                {
+                    // 目标一帧跳变超过 6cm：保留当前可见位置，偏移按约 0.1s 半衰期衰减。
+                    arm.Offset+=arm.LastWrist-localWrist;arm.RotationOffset=arm.RotationOffset*(arm.LastRotation*Quaternion.Inverse(localRotation));
+                }
+                float decay=Mathf.Exp(-dt/.1f);
+                arm.Offset=Vector3.ClampMagnitude(arm.Offset*decay,.5f);arm.RotationOffset=Quaternion.Slerp(Quaternion.identity,arm.RotationOffset,decay);
+                arm.LastWrist=localWrist;arm.LastRotation=localRotation;
+                arm.Weight=allowPaused && _armsPaused?1:Mathf.MoveTowards(arm.HasLast?arm.Weight:0,1,dt/.16f);arm.HasLast=true;
+                if(arm.Weight<.999f || arm.Offset.sqrMagnitude>1e-6f || Quaternion.Angle(arm.RotationOffset,Quaternion.identity)>.5f)
+                {
+                    BlendSolve(arm,transform.TransformPoint(localWrist+arm.Offset),transform.rotation*(arm.RotationOffset*localRotation),Mathf.SmoothStep(0,1,arm.Weight));
+                    arm.GripCached=false;ApplyFingers(arm,target);return;
+                }
+            }
+            else{arm.Weight=1;arm.HasLast=false;arm.Offset=Vector3.zero;arm.RotationOffset=Quaternion.identity;}
             var outward=arm.Upper.position-HandReferencePosition;
             var pole=outward.normalized*.65f-transform.up*.8f-transform.forward*.15f;
             SolveArm(arm,wristTarget,pole);
@@ -266,6 +307,21 @@ namespace BoatAttack.Fishing
             arm.Wrist.rotation=desiredRotation;
             // Tracked hands use the hand-only source mesh: controller reach cannot stretch a visible forearm.
             if(tracked)arm.Wrist.position=wristTarget;
+            ApplyFingers(arm,target);
+        }
+        /// <summary>[Claude v0.41] 按权重在动画姿势与 IK 解之间插值上臂/前臂/腕部旋转。</summary>
+        private void BlendSolve(Arm arm,Vector3 wrist,Quaternion rotation,float weight)
+        {
+            arm.Wrist.localScale=arm.WristScale;
+            var upper=arm.Upper.localRotation;var lower=arm.Lower.localRotation;var hand=arm.Wrist.rotation;
+            var outward=arm.Upper.position-HandReferencePosition;
+            SolveArm(arm,wrist,outward.normalized*.65f-transform.up*.8f-transform.forward*.15f);
+            arm.Upper.localRotation=Quaternion.Slerp(upper,arm.Upper.localRotation,weight);
+            arm.Lower.localRotation=Quaternion.Slerp(lower,arm.Lower.localRotation,weight);
+            arm.Wrist.rotation=Quaternion.Slerp(hand,rotation,weight);
+        }
+        private void ApplyFingers(Arm arm,FishingHandTarget target)
+        {
             var gripStart=target.HasGripSurface?arm.Wrist.InverseTransformPoint(target.GripStart):Vector3.zero;
             var gripEnd=target.HasGripSurface?arm.Wrist.InverseTransformPoint(target.GripEnd):Vector3.zero;
             var gripScale=arm.Wrist.lossyScale;

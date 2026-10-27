@@ -28,7 +28,7 @@ namespace BoatAttack.Fishing
         [SerializeField] private Vector3 _leftControllerPalmEuler=new Vector3(0,0,90);
         [SerializeField] private Vector3 _rightControllerPalmEuler=new Vector3(0,0,-90);
         private static readonly Vector3 RodPalm=new Vector3(.058f,.012f,-.045f);
-        private static readonly Quaternion RodPalmRotation=Quaternion.LookRotation(Vector3.up,Vector3.right);
+        private static readonly Quaternion RodPalmRotation=Quaternion.LookRotation(Vector3.down,Vector3.right);
         public static readonly Vector3 XRRestRodPosition=new Vector3(.32f,1.1f,.4f);
         public bool HoldingRod=>_input.Holding;
         public bool XRReeling=>_input.Reeling;
@@ -59,6 +59,7 @@ namespace BoatAttack.Fishing
         }
         public void PresentPickup()
         {
+            _c.Shore.Character.PlayInteraction();
             // The item owns its pose, never follows an IK output wrist.
             if(_pickup==null)_pickup=FishingProps.Spawn("RepairCoil",transform,Vector3.zero);
             _pickup.transform.localScale=Vector3.one*.55f;_pickup.SetActive(true);_pickupTime=1.1f;
@@ -252,7 +253,11 @@ namespace BoatAttack.Fishing
                 _right.SetFromGrip(_pickup.transform,new Vector3(.02f,-.045f,-.045f),Quaternion.identity,.65f);
             }
         }
-        private void RodGripSurface()=>_right.SetGripSurface(_rod.TransformPoint(new Vector3(0,0,-.10f)),_rod.TransformPoint(new Vector3(0,0,.04f)),.025f*_rod.lossyScale.x);
+        private void RodGripSurface()
+        {
+            _right.SetGripSurface(_rod.TransformPoint(new Vector3(0,0,-.10f)),_rod.TransformPoint(new Vector3(0,0,.04f)),.025f*_rod.lossyScale.x);
+            _right.SetForearmRoll(.65f);
+        }
         private void StowRod()
         {
             bool xr=XRSettings.isDeviceActive;

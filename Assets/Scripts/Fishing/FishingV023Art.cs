@@ -9,6 +9,9 @@ namespace BoatAttack.Fishing
         private static readonly Dictionary<FieldItem,Texture2D> Icons=new Dictionary<FieldItem,Texture2D>();
         public static Mesh ItemMesh(FieldItem item)
         {
+            if(item==FieldItem.Axe || item==FieldItem.Shovel || item==FieldItem.Rake)
+            {var tool=Resources.Load<GameObject>("FishingFeedbackTools/"+item);return tool==null?null:tool.GetComponentInChildren<MeshFilter>().sharedMesh;}
+            if(FishingBackpack.IsQuestItem(item))return FishingVoyageArt.ItemMesh(item);
             if(item==FieldItem.HuntingRifle)
             {
                 var rifle=Resources.Load<GameObject>("FishingHunting/HuntingRifle");
@@ -21,6 +24,7 @@ namespace BoatAttack.Fishing
         }
         public static Texture2D Icon(FieldItem item)
         {
+            if(item==FieldItem.Axe || item==FieldItem.Shovel || item==FieldItem.Rake)return Resources.Load<Texture2D>("FishingFeedbackTools/"+item+"Thumbnail");
             var supplied=FishingUserTools.Icon(item);if(supplied!=null)return supplied;
             if(!Icons.TryGetValue(item,out var texture))
             {texture=(item==FieldItem.FieldGuide?Resources.Load<Texture2D>("FishingV031/FieldGuideThumbnail"):null) ?? Resources.Load<Texture2D>("FishingV029/"+item+"Thumbnail") ?? Resources.Load<Texture2D>("FishingV028/Coast/"+item+"Thumbnail") ?? Resources.Load<Texture2D>("FishingV026/Items/"+item+"Thumbnail") ?? Resources.Load<Texture2D>("FishingV023/Items/"+item+"Thumbnail");Icons.Add(item,texture);}

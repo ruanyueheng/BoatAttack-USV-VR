@@ -96,7 +96,7 @@ namespace BoatAttack.Fishing
                 bag.Select(i);break;
             }
             Controller.Save();Controller.ActionAudio?.Detail("ShopPurchase",Controller.ExplorerPosition+Vector3.up*.7f);
-            Controller.Notice(XRSettings.isDeviceActive?"已购买猎枪 · 右扳机单发；命中后靠近，将右手伸到猎物旁按 A 收取材料。":"已购买猎枪 · 左键 / F 单发 · 命中动物后一枪击倒，靠近 E 收取兽肉和毛皮。",7);return true;
+            Controller.Notice(XRSettings.isDeviceActive?"已购买猎枪 · 右扳机长按连射；命中后靠近，将右手伸到猎物旁按 A 收取材料。":"已购买猎枪 · 左键长按连射 / 右键瞄准 / F 单发 · 命中动物后一枪击倒，靠近 E 收取兽肉和毛皮。",7);return true;
         }
         // Called by the controller BEFORE world input. No independent Update ordering race.
         public bool BuySupply(int product)

@@ -14,9 +14,12 @@ namespace BoatAttack.Fishing
     {
         public const double RecoveryMinutes = 480; // Five active real minutes at the 15-minute day rate.
         private HuntingData _data = new HuntingData { availableMinutes = new List<double>(new double[FishingBackpack.PickupCount]) };
+        private readonly HashSet<int> _liveCaptures=new HashSet<int>();
         public int Harvests => _data.harvests;
-        public bool Available(int id, double now) => id >= 0 && id < _data.availableMinutes.Count && !double.IsNaN(now)
+        public bool Available(int id, double now) => id >= 0 && id < _data.availableMinutes.Count && !_liveCaptures.Contains(id) && !double.IsNaN(now)
             && !double.IsInfinity(now) && now >= _data.availableMinutes[id];
+        internal void SetLiveCapture(int id,bool captured)
+        {if(captured)_liveCaptures.Add(id);else _liveCaptures.Remove(id);}
         public static bool Huntable(LandAnimalKind kind) => kind == LandAnimalKind.Rabbit || kind == LandAnimalKind.Fox;
         public bool Harvest(FishingBackpack bag, int id, LandAnimalKind kind, double now)
         {

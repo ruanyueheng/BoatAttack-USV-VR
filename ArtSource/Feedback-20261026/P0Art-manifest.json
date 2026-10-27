@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-26",
+  "sourceLicense": "Kenney Food Kit 2.0 CC0",
+  "radishSource": "ArtSource/Feedback-20261026/Sources/radish.glb",
+  "radishSourceSha256": "9cad692ec80a03d726a9ff7e284e99407ebc91e54102ebbadebcbcdcbca922e3",
+  "mainTrunkRadii": [
+    [
+      0,
+      0.22
+    ],
+    [
+      0.12,
+      0.215
+    ],
+    [
+      0.7,
+      0.2
+    ],
+    [
+      1.5,
+      0.165
+    ],
+    [
+      2.4,
+      0.12
+    ],
+    [
+      3.3,
+      0.065
+    ]
+  ],
+  "removed": "Garden path edging stones and entire outer stone ring; terrain, fences and lighthouse retained",
+  "models": [
+    {
+      "name": "OrchardTree",
+      "triangles": 24208,
+      "vertices": 20886,
+      "fbxSha256": "5590d6b66e0dcbcb50d8a144e84e6ed2f39eb20a84639efda6f397aecca6f022"
+    },
+    {
+      "name": "Turnip0",
+      "triangles": 416,
+      "vertices": 1248,
+      "fbxSha256": "3f3e03913264b9f5b8e5a7f9a480949c8f353d4b89395f383a7bd91defa3d143"
+    },
+    {
+      "name": "Turnip1",
+      "triangles": 664,
+      "vertices": 1992,
+      "fbxSha256": "7f091438a92ffd3f8a7845dfb67166f7fcda3c6861fff52c537a05f781d0626b"
+    },
+    {
+      "name": "Turnip2",
+      "triangles": 664,
+      "vertices": 1992,
+      "fbxSha256": "9c9a6eabde2dfa6b740597a3943828bb3fb412bf9980dd6c75e4a5d19d29695c"
+    },
+    {
+      "name": "HomeLandscaping",
+      "triangles": 36880,
+      "vertices": 20358,
+      "fbxSha256": "8d781416c2a945a2e551efb376680aa43bfa639b3e820b74279e86886f32c4d8"
+    }
+  ],
+  "metaHashesPreserved": {
+    "Assets\\Resources\\FishingV035\\OrchardTree.fbx": "859EC6FF609D64BA3522CA3DCA014B24B99D089A71EA287E8E3DB0910CFBCA6B",
+    "Assets\\Resources\\FishingV035\\HomeLandscaping.fbx": "09A903F697773CB72B62B4AB108449D1E714C6B5BB56E83853C08C96EC3A5478",
+    "Assets\\Resources\\FishingV035\\Turnip1.fbx": "0389BDF73DF76374E1C3FDFF68A4582172354C7BC1AE0DAE34FD62D987A56AC4",
+    "Assets\\Resources\\FishingV035\\Turnip2.fbx": "36D2AD32FC42F3A6BF352F0160B7F87302DD3CD07C36AB3E4AB544BE43881F4C",
+    "Assets\\Resources\\FishingV035\\Turnip0.fbx": "A014C9D66D2717591274C2ED7A045BF12C6A9A316B7E6A0547A847B5987950AB",
+    "Assets\\Resources\\FishingHunting\\Rifle.fbx": "676A5DFE53DAD01899BEDA6DEEDF3C983ADA887BF5371ED6A42C5E03E302AC36"
+  },
+  "akSourceSha256": "475d45ae14c309cc5590c00550b9ee8e70a892347007aa37c78ece5bc06743cb",
+  "akTriangles": 12000,
+  "akMaxBoundsDeviationMeters": 0.0005947649478912354,
+  "validation": "Logs/P0Art/roundtrip-validation.json; Logs/P0Art/HomeTipFix/roundtrip-validation.json; source generator checks",
+  "pending": "Unity P0-ART, hunting, farm and V039 home acceptance",
+  "originalRadishSource": "ArtSource/V019/Kenney/food-kit/Models/GLB format/radish.glb",
+  "akFbxSha256": "aadd06a13925a1925fc7db0eadea1fcd70c0add32e6c8be067151427c1122460",
+  "homeTipRepair": "Forty fence posts now use one apex with a triangle fan; 560 zero-area triangles removed without changing silhouette."
+}

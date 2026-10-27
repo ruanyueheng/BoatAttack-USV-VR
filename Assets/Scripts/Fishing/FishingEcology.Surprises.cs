@@ -67,7 +67,7 @@ namespace BoatAttack.Fishing
             foreach(var beat in _dives)
             {
                 if(Controller.RifleHunting!=null && Controller.RifleHunting.DeadWildlife(beat.root)){beat.prey.gameObject.SetActive(false);continue;}
-                if(!beat.root.gameObject.activeSelf)continue;
+                if(!beat.root.gameObject.activeSelf || MarineShoreVisiting(beat.root))continue;
                 if(beat.age<0)
                 {
                     beat.wait-=dt;

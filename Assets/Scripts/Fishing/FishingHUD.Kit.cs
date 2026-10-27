@@ -75,7 +75,11 @@ namespace BoatAttack.Fishing
         }
         private void ReadingVeil(Rect r,bool ornament=false)
         {
-            var previous=GUI.color;GUI.color=Faded(FishingUITheme.Paper);GUI.DrawTexture(new Rect(r.x-22,r.y-8,r.width+44,r.height+16),ReadingMask(),ScaleMode.StretchToFill,true);GUI.color=previous;
+            // [Claude v0.41] 清晰圆角纸卡替代羽化遮罩：投影 + 纸面 + 内描金线，边缘不再发糊。
+            var card=new Rect(r.x-14,r.y-4,r.width+28,r.height+8);
+            Rounded(new Rect(card.x+1,card.y+3,card.width,card.height),new Color(.01f,.03f,.05f,.22f),10);
+            var paper=FishingUITheme.Paper;Rounded(card,new Color(paper.r,paper.g,paper.b,.94f),9);
+            Outline(new Rect(card.x+3,card.y+3,card.width-6,card.height-6),AmberInk*new Color(1,1,1,.55f),7,1);
             if(ornament)foreach(float x in new[]{r.x+5,r.xMax-5})foreach(float y in new[]{r.y+5,r.yMax-5})
             {
                 float sx=x<r.center.x?1:-1,sy=y<r.center.y?1:-1;var gilt=AmberInk*new Color(1,1,1,.65f);

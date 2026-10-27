@@ -54,7 +54,7 @@ namespace BoatAttack.Fishing
         public bool KillLandAnimal(int id,LandAnimalKind kind,float x,float y,float z,float yaw)
         {
             var entry=new HuntedAnimalData{id=id,kind=kind,x=x,y=y,z=z,yaw=yaw,respawnAt=Calendar.TotalMinutes+FishingHunting.RecoveryMinutes};
-            if(Backpack.Equipped!=FieldItem.HuntingRifle || !ValidHuntedAnimal(entry) || HuntedAnimal(id)!=null
+            if(Backpack.Equipped!=FieldItem.HuntingRifle || !ValidHuntedAnimal(entry) || HuntedAnimal(id)!=null || IsWildAnimalCaptured(id)
                 || (id<8 && !Hunting.Available(id,Calendar.TotalMinutes)))return false;
             _huntedAnimals.RemoveAll(a=>a.id==id);_huntedAnimals.Add(entry);return true;
         }

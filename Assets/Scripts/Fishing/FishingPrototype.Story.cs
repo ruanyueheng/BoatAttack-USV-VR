@@ -31,7 +31,7 @@ namespace BoatAttack.Fishing
             {
                 if(!focused || Paused){Prologue.Suspend();return true;}
                 Prologue.Tick(Time.unscaledDeltaTime,xr);
-                if(!xr && !Automated && keyboard!=null && (keyboard.eKey.wasPressedThisFrame || keyboard.spaceKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame))Prologue.Finish();
+                if(!xr && !Automated && keyboard!=null && (keyboard.eKey.wasPressedThisFrame || keyboard.spaceKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame))Prologue.Advance(keyboard.escapeKey.wasPressedThisFrame);
                 return true;
             }
             if(Home.Sleeping)

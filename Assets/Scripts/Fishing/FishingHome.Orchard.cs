@@ -43,7 +43,7 @@ namespace BoatAttack.Fishing
         private FishingCareer _orchardProfile;
         private AudioSource _orchardAudio;
         private AudioClip _orchardOuch;
-        private float _orchardHapticAt,_orchardOuchAt=-10;
+        private float _orchardHapticAt,_orchardOuchAt=-10,_orchardVoiceAt=-10;
         private Image _orchardEdge;
         private Sprite _orchardEdgeSprite;
         private Texture2D _orchardEdgeTexture;
@@ -160,8 +160,9 @@ namespace BoatAttack.Fishing
         }
         private void OrchardBonk()
         {
+            _c.Shore.Character.PlayInteraction(true);
             _orchardOuchAt=Time.unscaledTime;_c.Notice("哎哟！小果子也想打个招呼……果子已落到脚边，可继续拾取。",5);
-            if(_orchardOuch!=null && !_c.QuietMode){_c.ApplyAudioSettings();_orchardAudio.PlayOneShot(_orchardOuch);}
+            if(_orchardOuch!=null && !_c.QuietMode && Time.unscaledTime-_orchardVoiceAt>=2.5f){_orchardVoiceAt=Time.unscaledTime;_c.ApplyAudioSettings();_orchardAudio.PlayOneShot(_orchardOuch,.70f);}
             if(XRSettings.isDeviceActive && Application.isFocused && !_c.XRSeat.HeadBlocked)OrchardHaptic(InputDevices.GetDeviceAtXRNode(XRNode.RightHand),.26f,.06f);
         }
         public void ApplyOrchardPresentation()

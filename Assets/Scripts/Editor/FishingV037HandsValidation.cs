@@ -76,6 +76,45 @@ namespace BoatAttack.EditorTools
             }
             finally{camera.SetPositionAndRotation(position,rotation);}
         }
+        internal static void InspectRod(FishingPrototype c,string phase)
+        {
+            var character=c.Shore.Character;var rod=c.Hands.Rod;var hand=c.Hands.Right;
+            Check(hand.Visible && hand.HasGripSurface && Vector3.Distance(character.PalmPosition(false),hand.Palm.position)<.035f,
+                "The visible right palm reaches the actual rod grip: "+phase);
+            var palmRotation=character.PalmRotation(false);
+            Check(Vector3.Dot(palmRotation*Vector3.forward,-rod.up)>.98f && Vector3.Dot(palmRotation*Vector3.up,rod.right)>.98f,
+                "Rod knuckles point down with the back of the hand outside the handle: "+phase);
+            var skin=character.BodySkin;var mesh=new Mesh();var nearest=new[]{float.MaxValue,float.MaxValue,float.MaxValue,float.MaxValue,float.MaxValue};
+            try
+            {
+                var bones=skin.bones;
+                foreach(string digit in new[]{"Index","Middle","Ring","Pinky"})
+                {
+                    var knuckle=Array.Find(bones,b=>b.name==digit+"2.R");var tip=Array.Find(bones,b=>b.name==digit+"4.R");
+                    Check(Vector3.Dot(tip.position-knuckle.position,-rod.up)>.005f,"Actual "+digit+" joints wrap down around the rod: "+phase);
+                }
+                skin.BakeMesh(mesh,true);var vertices=mesh.vertices;var weights=skin.sharedMesh.boneWeights;
+                var shaft=hand.GripEnd-hand.GripStart;int tested=0,inside=0;
+                for(int i=0;i<vertices.Length;i++)
+                {
+                    var weight=weights[i];var p=skin.transform.TransformPoint(vertices[i]);
+                    var closest=hand.GripStart+shaft*Mathf.Clamp01(Vector3.Dot(p-hand.GripStart,shaft)/shaft.sqrMagnitude);
+                    float distance=Vector3.Distance(p,closest);bool finger=false;
+                    for(int digit=0;digit<5;digit++)
+                    {
+                        string name=digit==0?"Index":digit==1?"Middle":digit==2?"Ring":digit==3?"Pinky":"Thumb";
+                        bool belongs=(weight.weight0>.2f && bones[weight.boneIndex0].name.StartsWith(name,StringComparison.Ordinal) && bones[weight.boneIndex0].name.EndsWith(".R",StringComparison.Ordinal))
+                            || (weight.weight1>.2f && bones[weight.boneIndex1].name.StartsWith(name,StringComparison.Ordinal) && bones[weight.boneIndex1].name.EndsWith(".R",StringComparison.Ordinal));
+                        if(!belongs)continue;finger=true;nearest[digit]=Mathf.Min(nearest[digit],distance);
+                    }
+                    if(finger){tested++;if(distance<hand.GripRadius-.004f)inside++;}
+                }
+                Debug.Log("[V037-HANDS] ROD "+phase+" digitDistances="+string.Join(",",nearest)+" radius="+hand.GripRadius+" inside="+inside);
+                Check(tested>20 && inside==0,"Actual rod finger skin clears the solid handle core: "+phase);
+                for(int digit=0;digit<5;digit++)Check(nearest[digit]<hand.GripRadius+.022f,"Every digit contacts the rod rather than closing in empty air: "+digit+" "+phase);
+            }
+            finally{UnityEngine.Object.Destroy(mesh);}
+        }
         private static void InspectCan(FishingPrototype c,string phase)
         {
             var character=c.Shore.Character;var can=c.Farm.WateringCan;var hand=c.Hands.Right;

@@ -13,8 +13,8 @@ internal static class LoreTests
         {
             var trial = new FishingShrineTrial(island);
             check(!trial.Ready && !trial.Use(-1) && !trial.Use(3), "V19: trial starts unsolved and rejects invalid devices " + island);
-            if (island == 0) { check(!trial.Use(0) && trial.Progress == 0, "V19: wrong bell resets"); trial.Use(2);trial.Tick(1);trial.Use(0);trial.Tick(1);trial.Use(1); }
-            if (island == 1) { trial.Use(0);trial.Use(1);trial.Use(1);trial.Use(2);trial.Use(2);trial.Use(2);check(!trial.Ready,"V032: light needs sustained growth");trial.Tick(5); }
+            if (island == 0) { check(!trial.Use(0) && trial.Progress == 0, "V19: wrong bell resets");foreach(int note in new[]{2,0,1,2,0,1,0,1}){trial.Tick(1);trial.Use(note);} }
+            if (island == 1) { Align(trial,1,2,3);check(!trial.Ready,"V032: light needs sustained growth");trial.Tick(5);trial.Use(3);Align(trial,3,1,2);trial.Tick(5); }
             if (island == 2) {check(!trial.Use(0),"V035: submerged cargo cannot be pushed");trial.Use(1);trial.Tick(4);trial.Use(0);check(trial.CargoProgress==0,"V035: a tap cannot teleport cargo");for(int i=0;i<72;i++)trial.PushCargo(.1f);trial.Use(1);trial.Tick(4);}
             if (island == 3) for(int stage=0;stage<3;stage++)for(int frame=0;frame<16;frame++)trial.Observe(FishingShrineTrial.StarTargetYaw(stage),FishingShrineTrial.StarTargetPitch(stage),.1f,true);
             check(trial.Ready, "V19: each distinct puzzle has a reachable solution " + island);
@@ -46,6 +46,21 @@ internal static class LoreTests
         rhythm.Tick(22);check(rhythm.Progress==0,"V035: an abandoned traversal melody still resets");
         var growth=new FishingShrineTrial(1);growth.Use(0);growth.Use(1);growth.Use(1);for(int i=0;i<3;i++)growth.Use(2);growth.Tick(2.5f);
         check(Math.Abs(growth.Growth-.5f)<.001f,"V032: seedlings grow with time, not button counts");growth.Use(0);growth.Tick(1.5f);check(growth.Growth==0,"V032: misdirected light loses growth");
+        var twoRounds=new FishingShrineTrial(0);
+        foreach(int note in new[]{2,0,1}){twoRounds.Tick(1);twoRounds.Use(note);}
+        check(twoRounds.WindRound==1 && twoRounds.Progress==0 && !twoRounds.Ready,"Feedback: first three-note melody unlocks the five-note round without completing the shrine");
+        foreach(int note in new[]{2,0,1}){twoRounds.Tick(1);twoRounds.Use(note);}
+        twoRounds.Tick(1);check(!twoRounds.Use(2) && twoRounds.Progress==0 && twoRounds.WindRound==1,"Feedback: wrong second melody clears its progress while retaining the first round checkpoint");
+        foreach(int note in new[]{2,0,1,0,1}){twoRounds.Tick(1);twoRounds.Use(note);}
+        check(twoRounds.Ready && !twoRounds.Use(0),"Feedback: all five ordered steps are required and solved melody cannot advance again");
+        var twoLights=new FishingShrineTrial(1);check(!twoLights.Use(3),"Feedback: inaccessible shutter cannot be used before its side path opens");
+        Align(twoLights,1,2,3);twoLights.Tick(5);
+        check(twoLights.LightStage==1 && twoLights.Growth==0 && !twoLights.Ready,"Feedback: first receiver opens a checkpoint side path, not the final crossing");
+        twoLights.Tick(10);check(twoLights.LightStage==1 && twoLights.Growth==0,"Feedback: leaving the old light arrangement cannot complete the second receiver");
+        Align(twoLights,3,1,2);twoLights.Tick(5);check(twoLights.Growth==0,"Feedback: the second optical path is blocked by the closed shutter");
+        twoLights.Use(3);twoLights.Tick(2.5f);check(Math.Abs(twoLights.Growth-.5f)<.001f,"Feedback: opened shutter and rearranged mirrors illuminate the second receiver continuously");
+        twoLights.Use(3);twoLights.Tick(1.5f);check(twoLights.Growth==0 && twoLights.LightStage==1,"Feedback: closing the shutter resets only the current light charge");
+        twoLights.Use(3);twoLights.Tick(5);check(twoLights.Ready && !twoLights.Use(3),"Feedback: second sustained receiver completes exactly once");
         var hydraulic=new FishingShrineTrial(2);hydraulic.Use(1);hydraulic.Tick(4);
         check(!hydraulic.PushCargo(float.PositiveInfinity) && !hydraulic.PushCargo(5) && hydraulic.CargoProgress==0,"V035: invalid or unobserved cargo movement is rejected");
         for(int i=0;i<35;i++)hydraulic.PushCargo(.1f);
@@ -59,4 +74,6 @@ internal static class LoreTests
         hydraulic.Use(1);hydraulic.Tick(1);
         check(!hydraulic.Ready && hydraulic.WaterLevel<.95f,"V038: actually draining the hold lowers the crossing");
     }
+    private static void Align(FishingShrineTrial trial,int first,int second,int third)
+    {int[] targets={first,second,third};for(int device=0;device<3;device++)for(int turns=0;turns<4 && trial.State(device)!=targets[device];turns++)trial.Use(device);}
 }

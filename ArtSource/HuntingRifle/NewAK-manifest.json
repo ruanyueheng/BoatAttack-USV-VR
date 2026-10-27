@@ -2,7 +2,7 @@
   "source": "NewAK.glb",
   "sourceSha256": "475d45ae14c309cc5590c00550b9ee8e70a892347007aa37c78ece5bc06743cb",
   "sourceVertices": 34687,
-  "triangles": 50000,
+  "triangles": 12000,
   "sourceGripOrigin": [
     0.07999999821186066,
     -0.014999999664723873,
@@ -30,9 +30,13 @@
   "textureSize": 2048,
   "metallicSmoothnessPacking": "RGB=glTF B, A=1-glTF G; linear",
   "outputs": {
-    "Rifle.fbx": "d10efd67f7a57f4511a1fd00a8b6f7e90638af4fb56975d9f14908572ec21edf",
+    "Rifle.fbx": "aadd06a13925a1925fc7db0eadea1fcd70c0add32e6c8be067151427c1122460",
     "Diffuse.png": "3b90a00468f57e48932b8406b9660ef328ab16d6faf2be90775ead2c1f052e3f",
     "RifleNormal.png": "d96b1f34b555c8155f0edf1c34cd58174cfbb43828320341851f75c200f750d3",
     "RifleMetallicSmoothness.png": "bff7285fd0758d14c0664fe04103669bb68a6795b2b151474f25fa5134cceeb7"
-  }
+  },
+  "sourceTriangles": 50000,
+  "runtimeVertices": 12920,
+  "decimationRatio": 0.24,
+  "maxBoundsDeviationMeters": 0.0005947649478912354
 }

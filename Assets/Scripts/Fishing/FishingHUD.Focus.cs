@@ -15,6 +15,7 @@ namespace BoatAttack.Fishing
             string title = c.Ashore ? c.Shore.LocationName : c.Anchored ? FishingGrounds.Name(c.Spot) : c.NavigationName + "  " + FishingPrototype.FlatDistance(c.ExplorerPosition, c.NavigationPosition).ToString("0") + " m";
             WorldLabel(r.x + 56, r.y + 9, 262, 27, title, 19, Color.white, true);
             WorldLabel(r.x + 56, r.y + 36, 262, 20, c.Career.Calendar.SeasonName+" "+c.Career.Calendar.Date+"日  "+c.Career.Calendar.TimeLabel+" · "+BayClimate.Name(c.Weather.Climate.Current), 13, Muted);
+            if(!CatchVisible && !c.HasPendingCatch)WorldLabel(24,90,680,24,FishingVoyageWorld.CompactObjective(c.Career),14,Gold,true);
             if (c.Ecology.Candidate.HasValue && !CatchVisible && Button(Layout.Observe, "T 观察 · " + BayClimate.MarineName(c.Ecology.Candidate.Value), true, false, 14)) c.Ecology.Observe();
         }
 

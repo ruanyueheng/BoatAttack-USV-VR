@@ -14,6 +14,46 @@ namespace BoatAttack.Fishing
             var p=new Painter();
             switch(item)
             {
+                case FieldItem.CaptureNet:
+                    p.Line(12,57,31,32,6,Wood);p.Ring(41,22,18,4,Steel);for(int i=0;i<4;i++){p.Line(28+i*8,9,28+i*8,35,1,Light);p.Line(25,12+i*8,56,12+i*8,1,Light);}break;
+                case FieldItem.AnimalTrap:
+                    p.Rect(9,19,46,35,Wood);p.Rect(14,24,36,25,Ink);for(int i=0;i<5;i++)p.Line(15+i*8,22,15+i*8,51,3,Steel);p.Line(9,18,25,8,3,Wood);p.Line(25,8,55,18,3,Wood);break;
+                case FieldItem.Aquarium:
+                    p.Rect(7,10,50,45,Steel);p.Rect(12,16,40,34,Ink);p.Rect(14,29,36,19,new Color(.24f,.63f,.72f));p.Poly(Light,22,34,32,28,41,34,32,40);p.Poly(Light,40,34,48,28,48,40);p.Line(7,55,57,55,5,Wood);break;
+                case FieldItem.FishFeed:
+                    p.Poly(Light,15,15,49,15,55,53,9,53);p.Line(16,14,48,14,5,Green);p.Poly(Steel,21,34,32,27,42,34,32,41);p.Poly(Steel,39,34,48,28,48,41);break;
+                case FieldItem.RabbitHutch:
+                    p.Poly(Wood,6,28,32,8,58,28);p.Rect(11,28,42,27,Light);p.Rect(22,33,20,22,Ink);
+                    p.Circle(32,44,7,Light);p.Line(28,40,27,31,4,Light);p.Line(35,40,37,31,4,Light);p.Line(8,56,56,56,4,Green);break;
+                case FieldItem.FoxDen:
+                    p.Circle(32,32,25,Green);p.Rect(7,36,50,20,Wood);p.Circle(32,36,16,Ink);p.Rect(16,36,32,20,Ink);
+                    p.Poly(Red,22,31,23,21,31,28,41,21,43,37,33,46,23,38);p.Poly(Light,25,37,33,41,41,36,33,46);break;
+                case FieldItem.TortoisePen:
+                    p.Rect(7,37,50,17,Green);p.Line(8,29,8,55,4,Wood);p.Line(56,29,56,55,4,Wood);p.Line(8,34,56,34,4,Wood);
+                    p.Circle(31,40,15,Light);p.Poly(Wood,19,43,21,32,33,26,43,35,44,46,31,51);p.Line(26,31,34,45,2,Green);p.Circle(49,43,5,Light);break;
+                case FieldItem.BirdAviary:
+                    p.Ring(32,26,22,3,Wood);p.Rect(10,26,44,30,Steel);p.Rect(14,26,36,25,Ink);
+                    for(int i=0;i<4;i++)p.Line(16+i*10,19,16+i*10,52,2,Wood);
+                    p.Line(13,43,51,43,3,Light);p.Poly(Light,23,34,31,27,40,32,36,39,29,41);p.Poly(Red,39,31,46,34,39,36);p.Line(8,56,56,56,4,Wood);break;
+                case FieldItem.SeaTurtlePond:
+                    p.Poly(Wood,5,25,17,12,45,12,59,25,57,48,43,57,18,55,6,44);p.Poly(Steel,10,27,21,18,43,18,53,28,51,44,41,50,20,49,12,41);
+                    p.Line(17,30,26,27,2,Light);p.Line(38,43,47,40,2,Light);p.Circle(32,34,11,Green);p.Poly(Wood,25,29,35,25,41,35,33,43,24,37);p.Circle(44,30,4,Green);break;
+                case FieldItem.ReefChitin:
+                    p.Poly(Red,10,45,14,21,34,9,53,24,55,47,32,55);p.Line(17,23,45,43,3,Light);p.Line(35,11,32,51,2,Wood);break;
+                case FieldItem.GuardianPearl:
+                    p.Circle(32,33,23,Steel);p.Circle(29,29,18,Light);p.Circle(23,22,6,Color.white);break;
+                case FieldItem.GuardianTrophy:
+                    p.Rect(10,49,44,9,Wood);p.Rect(24,32,16,18,Steel);p.Circle(32,22,16,Light);p.Line(12,28,20,36,4,Red);p.Line(52,28,44,36,4,Red);break;
+                case FieldItem.WindRelic:
+                    p.Ring(32,32,22,4,Wood);p.Line(32,12,32,52,3,Light);p.Line(12,32,52,32,3,Light);p.Circle(32,32,7,Steel);break;
+                case FieldItem.ForestRelic:
+                    p.Poly(Wood,15,23,27,12,42,15,51,29,42,47,29,55,18,44);p.Line(23,45,43,20,3,Green);p.Poly(Green,30,19,34,5,49,10,42,22);break;
+                case FieldItem.TideRelic:
+                    p.Rect(12,14,40,39,Steel);p.Ring(32,32,14,3,Wood);p.Poly(Light,24,39,32,20,40,39);break;
+                case FieldItem.StarRelic:
+                    p.Ring(32,32,22,3,Wood);p.Poly(Steel,32,5,39,23,55,32,39,40,32,59,24,40,9,32,24,24);break;
+                case FieldItem.VoyageCompass:
+                    p.Ring(32,34,23,5,Wood);p.Circle(32,34,18,Light);p.Poly(Red,32,14,39,43,32,37,25,43);p.Ring(32,7,6,3,Wood);break;
                 case FieldItem.IslandFruit:
                     p.Circle(25,36,18,Red);p.Circle(39,35,18,Red);p.Poly(Red,15,36,48,34,43,54,26,57);
                     p.Line(32,23,35,9,4,Wood);p.Poly(Green,34,17,40,6,54,8,46,18);p.Line(17,31,20,25,3,Light);break;

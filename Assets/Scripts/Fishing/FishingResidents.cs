@@ -76,13 +76,13 @@ namespace BoatAttack.Fishing
                 || _c.Shore.Swimming || _c.Shore.Climbing || _c.Realms.Transitioning || !InRange(id)) return false;
             if (_c.ShopOpen && id != 4) return false;
             bool first=!_c.Career.Lore.Met(id);
-            _c.TackleShop.Close(); _c.Career.Lore.Meet(id); _c.Save();
+            _c.TackleShop.Close(); _c.Career.Lore.Meet(id); if(id==5)_c.Career.AcceptMayorship(); _c.Save();
             ActiveId = id; _c.StoryModalChanged();
             if(id==4){_cashier.Begin(first);Say(_cashier.Speech(_c.Career,XRSettings.isDeviceActive));}else Say(Greeting(id));
             if (XRSettings.isDeviceActive) _c.XRNotebook.Open(8);
             return true;
         }
-        public string Choice(int choice) => ActiveId==4?_cashier.Choice(choice):choice == 0 ? "聊聊这里的故事" : choice == 1 ? (ActiveId == 5 ? "汇报四段潮汐回响" : "询问秘境线索") : "航海与探索建议";
+        public string Choice(int choice) => ActiveId==4?_cashier.Choice(choice):choice == 0 ? "聊聊这里的故事" : choice == 1 ? (ActiveId == 5 ? "汇报航记 / 补领遗物" : _c.Career.Lore.Cleared(ActiveId) && !_c.Career.Lore.RewardClaimed(ActiveId)?"领取遗物与家园蓝图":"询问秘境线索") : "航海与探索建议";
         public void Choose(int choice)
         {
             if (!Open || choice < 0 || choice >= ChoiceCount || !_c.Ashore || _c.Paused || !InRange(ActiveId)) return;
@@ -101,16 +101,19 @@ namespace BoatAttack.Fishing
                 {
                     int pay = _c.Career.CompleteEchoVoyage();
                     if (pay > 0) { _c.Save(); _c.Regions.Show("潮汐回响 · 航路重生", "四段记忆已经归港  ·  +180 金币", 3); }
-                    Say(pay > 0 ? "四段回响都回来了。风、林、潮、星，终于又连成了一条回家的路。\n\n收下这180金币，替我把灯火带到更远的海面。以后也随时欢迎回来。"
+                    string gifts=ClaimPendingGifts();
+                    string summary=pay > 0 ? "四段回响都回来了。风、林、潮、星，终于又连成了一条回家的路。\n\n收下这180金币，替我把灯火带到更远的海面。以后也随时欢迎回来。"
                         : _c.Career.Lore.Finale ? "你的航记已经记在港口的名册上。海面上还有鱼群、宝箱和旧航标。去走走吧，回家的灯会一直亮着。"
-                        : "你带回了 " + _c.Career.Lore.ClearCount + " / 4 段回响。每座探索岛都有一扇刻着潮纹的门。把四段记忆带回这里，我们再一起连起航路。");
+                        : "你带回了 " + _c.Career.Lore.ClearCount + " / 4 段回响。每座探索岛都有一扇刻着潮纹的门。把四段记忆带回这里，我们再一起连起航路。";
+                    Say(summary+"\n\n"+gifts+"\n"+_c.Career.MainObjective);
                 }
+                else if(id<4 && _c.Career.Lore.Cleared(id) && !_c.Career.Lore.RewardClaimed(id))Say(_c.Voyage.ClaimRealmReward(id));
                 else Say(id == 4 ? "这里可以买钓竿、鱼线和卷线器升级，也能升级船舱、载重和操舵。\n\n探索用品有镐、猎矛、望远镜、提灯和绳索；制作材料与远航口粮在补给分类里。船舶升级立即生效，工具购入背包后"+(xr?"用B查看，点选换入快捷位；Y换装备，右扳机使用。":"按I装备、F使用。")+"\n\n点“查看商品”可看价格。金币不足或背包满时不会扣款。" : FishingLore.TrialHint(id) + "\n\n岛上潮纹石门通向" + FishingLore.ShrineName(id) + "。机关答错不收费，随时可以从入口返回。");
             }
             else Say(id == 0 ? "风铃岛的瞭望绳梯可以攀登。"+(xr?"靠近按A，左摇杆前后控制上下，到顶或到底后离开。":"靠近绳梯按E，W/S控制上下，空格离开。")+"登高后能看见那片月牙海湾。"
                 : id == 1 ? (xr?"离岸后用左摇杆游动，靠近低岸继续向前可上岸；体力不足会变慢，停下就会恢复。":"离岸可以游泳，Shift加速会消耗体力。靠近低岸，朝岸边走并按空格就能上岸；体力不足会变慢，停下就会恢复。")
                 : id == 2 ? "打捞台的绳梯通往高处。沉潮机库里那只货箱有三处位置：起点、中间、承重台。别把它推过头。"
-                : id == 3 ? "星轨圣所的方向是绝对方位。初始朝北，每按一次"+(xr?"A":"E")+"顺时针转90度。朝向正确的星盘会亮起青光。"
+                : id == 3 ? "星轨圣所的望远镜能辨认远处轮廓。留意石台刻痕，再仔细看天边和海面；找到相应景物后稳住镜头，让模糊的轮廓慢慢清晰。"
                 : id == 4 ? (xr?"先升级操舵会让靠岸更轻松。左扳机制动，左摇杆后拉倒航；按X下船前先降至5.4公里每小时以下。B → 地图可以设置四岛航点。":"先升级操舵会让靠岸更轻松。Shift刹车，S倒航；G下船前先把航速降到5.4公里每小时以下。J日志能直接设置四岛航点。")
                 : "捕鱼、委托、旧航标与秘境共享金币。你可以按任意顺序探索；R随时救援回港，鱼获和已完成的故事会保留。");
         }
@@ -133,13 +136,23 @@ namespace BoatAttack.Fishing
             : id == 2 ? "又一个敢靠近沉船的人！我叫阿砾，今天刚从旧船里捞出一只没有生锈的罗盘。"
             : id == 3 ? "白昼也能看见星星，只是需要记住它们的位置。我是望星，记录每一条失落航路。"
             : id == 4 ? "欢迎回来，我是汐禾。你想听听用品的来历，还是准备给船和钓具添点新装备？"
-            : "新领航员，欢迎靠港。我是林舟。你修过的灯、带回的鱼，还有岛上拾到的故事，我都替你记着。";
+            : "村长，欢迎回村。我是林舟，替港口照看往来的船。你的任命函和祖父的旧航海图放在家中书桌；修好的航路、带回的收获，都会成为村庄新的生活。\n\n"+_c.Career.MainObjective;
         private string Story(int id) => id == 0 ? "过去，守望者把风铃挂在海湾最窄的岩拱间。不同的声音告诉远航的渔人，家就在前方。\n\n风暴把音序打乱了。如果你愿意，到风之回廊替我们重新奏响它们。"
             : id == 1 ? "潮林曾为四座岛提供木材。旧守望者后来立下一条规矩：采走一棵树，要为下一代留下三棵。\n\n森光庭院保存着那份约定。光与阴影缺一不可。"
             : id == 2 ? "沙洲上的旧船叫归潮号。人们只记得它在风暴里沉没，却忘了船长先让所有人上了救生艇。\n\n沉潮机库里保留着最后一次装卸的记录。那只货箱，或许能告诉我们他留下了什么。"
             : id == 3 ? "四岛的信标不是孤立的灯。风、林、潮与星曾组成一个环，把迷失的船引回渔港。\n\n星轨圣所保存着航路的最后一段记忆。你可以从任何一座岛开始。"
             : id == 4 ? "这间店以前只修渔网。风暴之后，岛上的人把各自的物资送来，才有了如今的海湾百货。\n\n每一卷绳索、每一盏提灯，都曾陪人走过一段海路。"
-            : "这片海叫回潮海。很久以前，四位守望者分别守护风、林、潮与星，把彼此的灯连成航路。\n\n风暴毁了灯，却没毁掉岛上的人。取回四段潮汐回响，新的故事就从你开始。";
+            : "村民推举返乡的你接任村长。祖父留下的秘密海图记着四座秘境，也记着大航海宝藏的所在。\n\n守望者把遗物和蓝图留给能读懂航路的人；用收获经营家园，再带着准备驶向远方。\n\n"+_c.Career.MainObjective;
+        private string ClaimPendingGifts()
+        {
+            if(!_c.Career.Lore.ChartFound)return "先回家阅读航线书桌上的秘密旧海图，守望者会为你保留遗物。";
+            int claimed=0,pending=0;
+            for(int i=0;i<4;i++)if(_c.Career.Lore.Cleared(i) && !_c.Career.Lore.RewardClaimed(i))
+            {if(_c.Career.ClaimShrineReward(i))claimed++;else pending++;}
+            if(claimed>0)_c.Save();
+            return claimed>0?"已补领 "+claimed+" 份四境遗物、材料与永久设施蓝图。"+(pending>0?"还有 "+pending+" 份礼包待领，请为背包留出空位。":"")
+                :pending>0?"背包空间不足，待领礼包完整保留。":"已领取的遗物和设施蓝图会一直保留。";
+        }
         private void LateUpdate()
         {
             if(_homeNavigationFrame>=0 && Time.frameCount>_homeNavigationFrame)

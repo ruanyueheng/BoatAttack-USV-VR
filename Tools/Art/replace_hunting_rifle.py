@@ -33,6 +33,8 @@ def save_texture(source, name, non_color=False):
 def export(obj):
     # Source: muzzle -X, top +Z. Keep proportions; align -Y in Blender
     # to +Z in Unity. The pistol-grip centre is the new origin.
+    source_vertices=len(obj.data.vertices)
+    source_triangles=sum(len(p.vertices)-2 for p in obj.data.polygons)
     length = max(v.co.x for v in obj.data.vertices) - min(v.co.x for v in obj.data.vertices)
     scale = .66 / length
     grip = Vector((.08, -.015, .165))
@@ -40,6 +42,11 @@ def export(obj):
         p = (vertex.co - grip) * scale
         vertex.co = Vector((-p.y, p.x, p.z))
     obj.data.update()
+    modifier=obj.modifiers.new('Runtime AK 12000 triangle budget','DECIMATE')
+    modifier.ratio=min(1,12000/source_triangles);modifier.use_collapse_triangulate=True
+    bpy.context.view_layer.objects.active=obj
+    bpy.ops.object.modifier_apply(modifier=modifier.name)
+    assert 0<len(obj.data.polygons)<=12500 and obj.data.uv_layers.active is not None
     obj.name = obj.data.name = 'HuntingRifle'
     OUT.mkdir(parents=True, exist_ok=True)
     images = {i.name: i for i in bpy.data.images if i.type == 'IMAGE'}
@@ -73,7 +80,8 @@ def export(obj):
     outputs = ['Rifle.fbx', 'Diffuse.png', 'RifleNormal.png', 'RifleMetallicSmoothness.png']
     manifest = {
         'source': 'NewAK.glb', 'sourceSha256': hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
-        'sourceVertices': len(obj.data.vertices), 'triangles': len(obj.data.polygons),
+        'sourceVertices': source_vertices, 'sourceTriangles': source_triangles,
+        'runtimeVertices': len(obj.data.vertices), 'triangles': len(obj.data.polygons),
         'sourceGripOrigin': list(grip), 'uniformScale': scale, 'lengthMeters': .66,
         'unityForward': '+Z', 'unityUp': '+Y',
         'unityRightPalm': [.022, 0, 0], 'unityLeftPalm': [0, .043, .184],

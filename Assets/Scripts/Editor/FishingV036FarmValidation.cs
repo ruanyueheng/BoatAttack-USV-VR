@@ -50,7 +50,10 @@ namespace BoatAttack.EditorTools
                 Check(!c.RequestWorldInteraction() && !c.WorldActionBusy && c.Career.Farm.Water==water && c.Career.Farm.Plot(0).wateredDay<0,"A plot cannot create a can or water without picking it up");
 
                 move=Approach(c,15);while(move.MoveNext())yield return null;
-                Check(c.RequestWorldInteraction() && c.WorldActionBusy && !c.Farm.CarryingCan,"Pickup reaches for the can before ownership changes");
+                Check(!c.Shore.Crouched && Mathf.Abs(c.Shore.Position.y-c.Home.Origin.y)<.08f,"The player picks up the can while standing on the garden ground beside its stand");
+                bool taking=c.RequestWorldInteraction();
+                Check(taking && c.WorldActionBusy && !c.Farm.CarryingCan,"Pickup reaches for the can before ownership changes · "+c.VisibleMessage+" · "+c.InspectWorldInteractionStart());
+                Check(!c.Shore.Crouched,"Taking the can does not force a crouch");
                 c.CancelWorldAction();yield return null;
                 Check(!c.Farm.CarryingCan && Vector3.Distance(can.position,dock.position)<.001f && c.Career.Farm.Water==water,"Cancelled pickup leaves the original can on its stand");
                 float outerAccepted=0;
@@ -61,6 +64,7 @@ namespace BoatAttack.EditorTools
                     for(int i=0;i<4;i++){c.Shore.Move(Vector2.zero,false,false,false,.05f);yield return null;}c.PresentCharacterFrame();c.viewCamera.transform.LookAt(c.Farm.Aim(15));yield return null;
                     if(!c.RequestWorldInteraction()){Check(!c.Farm.Busy && !c.Farm.CarryingCan,"Unreachable handle rejects pickup before any ownership change at "+distance);continue;}
                     var grip=WaitForProgress(c,.27f);while(grip.MoveNext())yield return null;c.PresentCharacterFrame();
+                    Check(!c.Shore.Crouched && Mathf.Abs(c.Shore.Position.y-c.Home.Origin.y)<.08f,"Pickup contact keeps both feet on the ground instead of climbing the stand at "+distance);
                     Check(c.Farm.CanGripError<.065f,"Actual palm reaches the handle at pickup contact, distance "+distance+", error "+c.Farm.CanGripError);
                     outerAccepted=distance;c.CancelWorldAction();yield return null;
                 }
@@ -71,6 +75,11 @@ namespace BoatAttack.EditorTools
                 Check(c.Farm.CarryingCan && c.Farm.WateringCan==can && can.gameObject.activeInHierarchy,"Completed pickup carries the original can instead of spawning a prop");
                 c.PresentCharacterFrame();
                 Check(Vector3.Distance(c.Shore.Character.PalmPosition(false),can.TransformPoint(FishingFarmWorld.CanPalm))<.065f,"Solved source wrist follows the watering-can handle");
+                var spout=Vector3.ProjectOnPlane(can.TransformPoint(FishingFarmWorld.CanSpout)-can.TransformPoint(FishingFarmWorld.CanHandle),Vector3.up).normalized;
+                Check(Vector3.Dot(spout,c.Shore.Actor.right)<-.3f && Vector3.Dot(spout,c.Shore.Actor.forward)>.2f,
+                    "The carried spout points left and forward relative to the player's arm");
+                Check(Vector3.Dot(c.Shore.Character.PalmRotation(false)*Vector3.forward,c.Shore.Actor.forward)>.98f,
+                    "The carried can keeps the wrist and knuckles facing along the forearm");
                 FishingV016Validation.Capture(c,evidence,"watering-can-carried");
 
                 move=Approach(c,12);while(move.MoveNext())yield return null;
@@ -118,6 +127,7 @@ namespace BoatAttack.EditorTools
                 phase=WaitForProgress(c,.88f);while(phase.MoveNext())yield return null;c.PresentCharacterFrame();Check(c.Farm.CanGripError<.065f,"Actual palm remains attached to the handle when the can contacts its stand");
                 finish=Finish(c);while(finish.MoveNext())yield return null;
                 Check(!c.Farm.CarryingCan && can==c.Farm.WateringCan && Vector3.Distance(can.position,dock.position)<.001f && c.Career.Farm.Water==11,"The same can rests on the original stand with its remaining water intact");
+                Check(!c.Shore.Crouched,"Returning the can preserves the player's standing stance");
                 FishingV016Validation.Capture(c,evidence,"watering-can-returned");
                 c.RestoreShopTestProfile(loaded.Snapshot());yield return null;
                 Check(!c.Farm.CarryingCan && c.Career.Farm.Water==11 && can==c.Farm.WateringCan,"Loading a profile safely docks the prop without duplicating or discarding saved water");

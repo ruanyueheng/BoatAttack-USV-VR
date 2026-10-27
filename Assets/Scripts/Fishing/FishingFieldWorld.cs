@@ -82,7 +82,7 @@ namespace BoatAttack.Fishing
             foreach(var animal in _animals)
             {
                 if(animal.Dead)continue;
-                bool available=_c.Career.Hunting.Available(animal.Id,_c.Career.Calendar.TotalMinutes);
+                bool available=_c.Career.WildAnimalAvailable(animal.Id,animal.Kind);
                 if(available && !animal.Root.gameObject.activeSelf)
                 {
                     animal.Feet=animal.Target=animal.Home;animal.Fleeing=false;animal.Rest=2;
@@ -111,7 +111,7 @@ namespace BoatAttack.Fishing
             {
                 if(a.Dead || !a.Root.gameObject.activeSelf)continue;
                 var away=Vector3.ProjectOnPlane(a.Feet-_c.ExplorerPosition,Vector3.up);
-                float alert=_c.Shore.Crouched && _c.Career.Backpack.Equipped==FieldItem.HuntingSpear?.85f:AlertRadius(_c.Shore.Crouched,_c.Shore.WalkSpeed>3);
+                float alert=_c.Shore.Crouched && (_c.Career.Backpack.Equipped==FieldItem.HuntingSpear || _c.Career.Backpack.Equipped==FieldItem.CaptureNet)?.85f:AlertRadius(_c.Shore.Crouched,_c.Shore.WalkSpeed>3);
                 a.Fleeing=_c.Ashore && away.magnitude<alert;
                 a.Rest-=dt;
                 if(a.Fleeing && away.sqrMagnitude>.01f)

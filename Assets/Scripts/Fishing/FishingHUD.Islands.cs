@@ -21,13 +21,14 @@ namespace BoatAttack.Fishing
             Label(d.x+26,d.y+22,488,46,lorePage?FishingLore.ShrineName(id):FishingAdventure.Name(id),31,Gold,true);
             if(lorePage)
             {
-                ArtIllustration(new Rect(d.x+26,d.y+83,100,104),"Resident"+id);
-                Label(d.x+148,d.y+100,362,34,FishingLore.ResidentName(id),25,InkText,true);
-                Label(d.x+148,d.y+145,362,28,FishingLore.ResidentRole(id),16,Muted);
-                Label(d.x+26,d.y+216,488,112,lore.Cleared(id)?FishingLore.Echo(id):FishingLore.TrialHint(id),19,InkText,true);
-                NavGlyph(new Rect(d.x+26,d.y+345,48,48),8,Gold);
-                Label(d.x+92,d.y+347,418,62,lore.Finale?"四段回响 · 航路重生":"回响收集  "+lore.ClearCount+" / 4",23,Gold,true);
-                Bar(new Rect(d.x+26,d.y+419,488,6),lore.ClearCount/4f,Mint);
+                Label(d.x+26,d.y+78,488,90,c.Career.PlayerTitle+" · "+c.Career.MainObjective,17,Gold,true);
+                ArtIllustration(new Rect(d.x+26,d.y+174,72,72),"Resident"+id);
+                Label(d.x+116,d.y+180,394,28,FishingLore.ResidentName(id),22,InkText,true);
+                Label(d.x+116,d.y+214,394,24,FishingLore.ResidentRole(id),15,Muted);
+                Label(d.x+26,d.y+258,488,90,lore.Cleared(id)?FishingLore.Echo(id):FishingLore.TrialHint(id),17,InkText,true);
+                var reward=FishingCareer.ShrineReward(id);
+                Label(d.x+26,d.y+355,488,68,(lore.RewardClaimed(id)?"已领取 · ":lore.Cleared(id)?"待领取 · ":"秘境收获 · ")+FishingBackpack.Name(reward[0].item)+" ×1、"+FishingBackpack.Name(reward[1].item)+" ×"+reward[1].count+"\n永久蓝图："+FishingLore.BlueprintName(id)+"\n"+FishingLore.BlueprintEffect(id),16,lore.RewardClaimed(id)?Mint:Gold,true);
+                Bar(new Rect(d.x+26,d.y+435,488,6),lore.ClearCount/4f,Mint);
             }
             else
             {
@@ -40,11 +41,12 @@ namespace BoatAttack.Fishing
                 }
                 Label(d.x+26,d.y+413,488,30,a.Finale?"四岛航记已完成":a.ReadyForFinale?"四灯已亮 · 返港领取150金币":"四岛顺序自由，循着自己的航线出发",15,Muted);
             }
-            if(Button(new Rect(d.x+26,d.y+465,234,42),"设为航点",true,true,16)){c.ToggleJournal();c.SelectNavigation(c.IslandNavigationIndex(id));}
+            bool treasureRoute=lorePage && lore.RewardedShrines==15 && !c.Career.PirateKing && c.Career.Backpack.Count(FieldItem.VoyageCompass)>0;
+            if(Button(new Rect(d.x+26,d.y+465,234,42),treasureRoute?"白帆拱湾宝藏航线":"设为航点",true,true,16)){c.ToggleJournal();c.SelectNavigation(treasureRoute?c.HomeNavigationIndex+1:c.IslandNavigationIndex(id));}
             if(lorePage)
             {
                 if(Button(new Rect(d.x+280,d.y+465,234,42),"阅读故事",c.Letter.CanRead,false,16))
-                {c.ToggleJournal();c.Letter.Show(FishingLore.ShrineName(id)+"航记",FishingLore.ResidentName(id),(lore.Cleared(id)?FishingLore.Echo(id):FishingLore.TrialHint(id))+"\n\n风、林、潮与星，仍在等待新的领航员。");}
+                {c.ToggleJournal();c.Letter.Show(FishingLore.ShrineName(id)+"航记",FishingLore.ResidentName(id),(lore.Cleared(id)?FishingLore.Echo(id):FishingLore.TrialHint(id))+"\n\n"+c.Career.MainObjective);}
             }
             else if(Button(new Rect(d.x+280,d.y+465,234,42),"重读来信",a.Visited(id)&&c.Letter.CanRead,false,16)){c.ToggleJournal();c.Letter.ShowIsland(id);}
         }

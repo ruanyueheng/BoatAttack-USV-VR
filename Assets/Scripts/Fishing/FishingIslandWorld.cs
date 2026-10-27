@@ -17,6 +17,8 @@ namespace BoatAttack.Fishing
         private Transform _world;
         private Material _signalMaterial;
         private readonly Transform[] _targets = new Transform[12];
+        private readonly float[] _chestOpening=new float[4];
+        private FishingCareer _chestProfile;
         public Transform WorldRoot => _world;
         public string NearbyHint => TryTarget(out int id, out _) ? id%3==0 ? "E 阅读航海来信 · 发现岛屿 +10"
             : id%3==1 ? "E 打开旧货箱 · 寻宝 +40" : "E 转动航向盘 / F 点亮信标 · " + FishingAdventure.DirectionName(_c.Career.Adventure.Direction(id/3)) : null;
@@ -27,7 +29,12 @@ namespace BoatAttack.Fishing
             foreach (var root in gameObject.scene.GetRootGameObjects()) if (root.name==WorldName) _world=root.transform;
             if (_world==null) throw new System.InvalidOperationException("Install the v18 island scene with FishingV018WorldBuilder.Install first.");
             for(int i=0;i<4;i++)
+            {
+                _world.GetChild(i).Find("Walkable beach and interior").gameObject.layer=10;
                 for(int j=0;j<3;j++)_targets[i*3+j]=_world.GetChild(i).Find(j==0?"Voyage letter":j==1?"Hidden treasure":"Compass beacon");
+                var chest=_targets[i*3+1];var body=chest.GetComponent<BoxCollider>();if(body==null)body=chest.gameObject.AddComponent<BoxCollider>();body.center=Vector3.up*.23f;body.size=new Vector3(.8f,.46f,.5f);
+                var lid=chest.Find("Lid");var cover=lid.GetComponent<BoxCollider>();if(cover==null)cover=lid.gameObject.AddComponent<BoxCollider>();cover.center=new Vector3(0,0,-.25f);cover.size=new Vector3(.84f,.12f,.52f);
+            }
             _signalMaterial=new Material(c.PaletteShader){name="Restored island signals"};_signalMaterial.SetFloat("_Unlit",1);
             for(int i=0;i<4;i++)_targets[i*3+2].Find("Lit signal").GetComponent<Renderer>().sharedMaterial=_signalMaterial;
             Refresh();
@@ -62,6 +69,7 @@ namespace BoatAttack.Fishing
             else if(id%3==1)pay=_c.Career.OpenIslandTreasure(island);
             else a.Rotate(island);
             Refresh();_c.Save();
+            if(id%3==1 && pay>0)_c.WorldAudio?.Play("MechanismClick",_targets[id].position,.45f);
             if(id%3==0)_c.Letter.ShowIsland(island);
             _c.Notice(id%3==2 ? (a.Restored(island)?"信标已经点亮，航线恢复。":"航向盘朝"+FishingAdventure.DirectionName(a.Direction(island))+" · E 转动，F 确认。"+FishingAdventure.Clue(island))
                 : FishingAdventure.Name(island)+" · "+(pay>0?"+"+pay+" 金币 · ":"")+FishingAdventure.Clue(island),9);
@@ -84,12 +92,24 @@ namespace BoatAttack.Fishing
         }
         public void Refresh()
         {
+            bool changed=_chestProfile!=_c.Career;_chestProfile=_c.Career;
             for(int i=0;i<4;i++)
             {
-                if(_targets[i*3+1]!=null)_targets[i*3+1].Find("Lid").localRotation=Quaternion.Euler(_c.Career.Adventure.TreasureFound(i)?-70:0,0,0);
+                if(changed)_chestOpening[i]=_c.Career.Adventure.TreasureFound(i)?1:0;
+                if(_targets[i*3+1]!=null)_targets[i*3+1].Find("Lid").localRotation=Quaternion.Euler(100*Mathf.SmoothStep(0,1,_chestOpening[i]),0,0);
                 if(_targets[i*3+2]==null)continue;
                 _targets[i*3+2].Find("Direction pointer").localRotation=Quaternion.Euler(0,_c.Career.Adventure.Direction(i)*90,0);
                 _targets[i*3+2].Find("Lit signal").gameObject.SetActive(_c.Career.Adventure.Restored(i));
+            }
+        }
+        private void Update()
+        {
+            if(_c==null || _c.Paused)return;
+            for(int i=0;i<4;i++)
+            {
+                float next=Mathf.MoveTowards(_chestOpening[i],_c.Career.Adventure.TreasureFound(i)?1:0,Time.deltaTime/.75f);
+                if(next==_chestOpening[i] || _targets[i*3+1]==null)continue;
+                _chestOpening[i]=next;_targets[i*3+1].Find("Lid").localRotation=Quaternion.Euler(100*Mathf.SmoothStep(0,1,next),0,0);
             }
         }
 
@@ -102,6 +122,7 @@ namespace BoatAttack.Fishing
             {
                 var t=new GameObject(FishingAdventure.Name(island)).transform;t.SetParent(root,false);t.position=Center(island);
                 Mesh terrain=TerrainMesh(island);owned.Add(terrain);var ground=MeshObject("Walkable beach and interior",t,terrain,material);
+                ground.gameObject.layer=10;
                 ground.gameObject.AddComponent<MeshCollider>().sharedMesh=terrain;
                 var art=new FishingMeshBuilder();
                 for(int k=0;k<22;k++)

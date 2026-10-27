@@ -66,7 +66,12 @@ namespace BoatAttack.Fishing
                 case FieldItem.SeaTreasure:
                     if(Career.OpenSeaTreasure()){Save();CoastWorld.ShowSeaFind(FieldItem.SeaTreasure);Notice("打开沉海宝匣 · 金币 +"+FishingCoastRules.TreasureCoins,5);}
                     break;
-                case FieldItem.HuntingSpear:FieldWorld.BeginHunt();break;
+                case FieldItem.HuntingSpear:if(Combat==null || !Combat.TrySpear())FieldWorld.BeginHunt();break;
+                case FieldItem.Axe:case FieldItem.Shovel:RequestHarvest();break;
+                case FieldItem.Rake:if(Farm.TryTarget(out int plot,out var root) && plot<12 && Farm.Work(plot)==FarmWork.Till)RequestFarmInteraction(plot,root);else Notice("靠近菜畦，F / 右扳机整地；旧默认锄头入口仍保留。",4);break;
+                case FieldItem.CaptureNet:HomeEcology.UseNet();break;
+                case FieldItem.AnimalTrap:HomeEcology.PlaceTrap();break;
+                case FieldItem.Aquarium:case FieldItem.FishFeed:case FieldItem.RabbitHutch:case FieldItem.FoxDen:case FieldItem.TortoisePen:case FieldItem.BirdAviary:case FieldItem.SeaTurtlePond:HomeEcology.Open();break;
                 case FieldItem.Workbench:case FieldItem.Furnace:case FieldItem.Forge:RequestPlaceEquipped();break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:RequestHarvest();break;
                 case FieldItem.FieldGuide: OpenFieldGuide();break;
@@ -98,7 +103,7 @@ namespace BoatAttack.Fishing
         {
             if(Paused || !Ashore)return false;
             if(!Career.Backpack.TryCollect(id,item,count)){Notice(UnityEngine.XR.XRSettings.isDeviceActive?"背包已满或物品已领取；B 查看背包后再试。":"背包已满或物品已领取；I 整理背包后再试。",4);return false;}
-            ActionAudio?.Pickup(item,ExplorerPosition+Vector3.up*.6f);
+            ActionAudio?.Pickup(item,ExplorerPosition+Vector3.up*.6f);Shore.Character.PlayInteraction();
             Save();Notice("已拾取 "+FishingBackpack.Name(item)+" ×"+count+(UnityEngine.XR.XRSettings.isDeviceActive?" · B 打开背包":" · I 打开背包"),4);return true;
         }
         public bool RecordLandAnimal(LandAnimalKind kind)

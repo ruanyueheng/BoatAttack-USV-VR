@@ -17,7 +17,7 @@ namespace WaterSystem.Data
 		public Cubemap cubemapRefType; // custom cubemap reference
 
 		public bool isInfinite; // Is the water infinite (shader incomplete)
-		public Vector4 originOffset = new Vector4(0f, 0f, 500f, 500f);
+		public Vector4 originOffset = new Vector4(0f, 0f, 500f, 500f); // Shoreline depth: centre X/Z, world width/height.
 	}
 
 	/// <summary>

@@ -78,6 +78,7 @@ namespace BoatAttack.Fishing
                 Vector3 start = site.Berth + Vector3.up * 1.05f, end = site.Landing + inland*1.2f + Vector3.up * .08f;
                 var deck = FishingArt.Shape("Walkable landing jetty",PrimitiveType.Cube,root,(start+end)*.5f,new Vector3(2.2f,.18f,Vector3.Distance(start,end)),c.wood,true);
                 deck.transform.rotation = Quaternion.LookRotation(end-start,Vector3.up);
+                BuildPlankedJetty(c,root,deck.transform,Vector3.Distance(start,end));
                 FishingArt.Shape("Landing pole",PrimitiveType.Cylinder,root,site.Berth+new Vector3(1.5f,2,0),new Vector3(.16f,2,.16f),c.cream);
                 FishingArt.Shape("Amber landing flag",PrimitiveType.Cube,root,site.Berth+new Vector3(2,3.65f,0),new Vector3(1,.55f,.1f),c.orange);
                 for (int t=0;t<2;t++)
@@ -101,6 +102,40 @@ namespace BoatAttack.Fishing
         private GameObject Part(string name,Vector3 pos,Vector3 size,Material material) => FishingArt.Shape(name,PrimitiveType.Cube,_visual,pos,size,material);
 
         // Surveyed heights keep docks below awnings from being mistaken for roofs.
+        private Material _plankLight,_plankDark;
+        /// <summary>[Claude v0.41] 原栈桥是一整块棕色长方体。保留它作为隐形碰撞体，视觉改为横向木板、纵梁与入水桩柱。</summary>
+        private void BuildPlankedJetty(FishingPrototype c,Transform root,Transform deck,float length)
+        {
+            deck.GetComponent<Renderer>().enabled=false;
+            if(_plankLight==null)
+            {
+                _plankLight=new Material(c.wood){name="Jetty plank light"};_plankDark=new Material(c.wood){name="Jetty plank weathered"};
+                var baseColor=c.wood.HasProperty("_BaseColor")?c.wood.GetColor("_BaseColor"):c.wood.color;
+                _plankLight.SetColor("_BaseColor",Color.Lerp(baseColor,new Color(.78f,.62f,.42f),.45f));
+                _plankDark.SetColor("_BaseColor",Color.Lerp(baseColor,new Color(.36f,.27f,.2f),.35f));
+            }
+            var frame=new GameObject("Planked jetty visual").transform;frame.SetParent(root,false);
+            frame.SetPositionAndRotation(deck.position,deck.rotation);
+            const float pitch=.30f;int count=Mathf.Max(2,Mathf.FloorToInt(length/pitch));
+            for(int i=0;i<count;i++)
+            {
+                float z=-length*.5f+pitch*(i+.5f);float jitter=Mathf.Sin(i*12.9898f)*.5f;
+                var plank=FishingArt.Shape("Jetty plank",PrimitiveType.Cube,frame,new Vector3(jitter*.04f,.07f+jitter*.006f,z),new Vector3(2.25f+jitter*.08f,.055f,pitch-.035f),i%3==1?_plankDark:_plankLight);
+                plank.transform.localRotation=Quaternion.Euler(0,jitter*1.6f,0);
+                plank.GetComponent<Renderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            foreach(float x in new[]{-.9f,.9f})
+            {
+                FishingArt.Shape("Jetty stringer",PrimitiveType.Cube,frame,new Vector3(x,-.03f,0),new Vector3(.14f,.16f,length),_plankDark);
+                for(float z=-length*.5f+.4f;z<=length*.5f-.2f;z+=2.2f)
+                {
+                    var top=frame.TransformPoint(new Vector3(x*1.12f,.12f,z));
+                    float depth=Mathf.Max(.6f,top.y+1.4f);
+                    var post=FishingArt.Shape("Jetty post",PrimitiveType.Cylinder,root,top-Vector3.up*depth*.5f,new Vector3(.17f,depth*.5f,.17f),c.dark);
+                    post.GetComponent<Renderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+            }
+        }
         public bool Ground(Vector3 seed,out Vector3 point) => GroundBelow(seed,seed.y>.6f?seed.y+.6f:80,seed.y>.6f?1.2f:80,out point);
         private bool GroundBelow(Vector3 seed,float originY,float distance,out Vector3 point,float minimumHeight=.6f)
         {

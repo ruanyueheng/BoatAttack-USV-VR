@@ -6,9 +6,10 @@ using UnityEngine.XR;
 namespace BoatAttack.Fishing
 {
     /// <summary>Desktop and tracked hunting use muzzle clearance and persistent per-animal receipts.</summary>
+    [DefaultExecutionOrder(150)]
     public sealed class FishingRifleHunting : MonoBehaviour
     {
-        public const float Range=45f, ShotInterval=.65f;
+        public const float Range=45f, ShotInterval=.11f;
         public const float HeldScale=1.18f, InspectionPitchLimit=25f, InspectionYawLimit=20f;
         public static readonly Vector3 RightGrip=new Vector3(.022f,0,0);
         // NewAK: support the fore-end rather than the magazine; the source grip is the origin.
@@ -47,6 +48,12 @@ namespace BoatAttack.Fishing
         private AudioClip[] _shots;
         private int _lastShot=-1;
         private float _nextShot,_flashUntil;
+        private float _lastShotAt=-100, _kick;
+        private int _burst;
+        private bool _aimRequested, _triggerReleased;
+        public bool Aiming=>Context && !XRSettings.isDeviceActive && _aimRequested;
+        public float AimBlend { get; private set; }
+        public float SpreadDegrees=>FishingRifleBallistics.Spread(_burst,Aiming,_c!=null && _c.Shore.WalkSpeed>.5f);
         private readonly Collider[] _overlaps=new Collider[32];
         private readonly RaycastHit[] _sweepHits=new RaycastHit[64];
         public int ShotsFired { get; private set; }
@@ -98,6 +105,8 @@ namespace BoatAttack.Fishing
             foreach(var animal in _targets)
             {
                 var receipt=_c.Career.HuntedAnimal(animal.Id);bool wasDead=animal.Dead;animal.Dead=receipt!=null;
+                if(receipt==null && !_c.Career.WildAnimalAvailable(animal.Id,animal.Kind))
+                {animal.Hitbox.enabled=false;animal.Root.gameObject.SetActive(false);continue;}
                 animal.Hitbox.enabled=!animal.Dead;
                 if(receipt!=null)
                 {
@@ -109,7 +118,7 @@ namespace BoatAttack.Fishing
                     if(!wasDead){var motion=new MaterialPropertyBlock();renderer.GetPropertyBlock(motion);motion.SetVector("_FinMotion",Vector4.zero);renderer.SetPropertyBlock(motion);}
                     animal.Root.gameObject.SetActive(true);
                 }
-                else if(wasDead)
+                else if(wasDead || !animal.Root.gameObject.activeSelf)
                 {animal.Feet=animal.Home;animal.Target=animal.Home;animal.Root.SetPositionAndRotation(animal.Home,Quaternion.identity);animal.Root.gameObject.SetActive(true);
                     var renderer=animal.Root.GetComponent<Renderer>();var motion=new MaterialPropertyBlock();renderer.GetPropertyBlock(motion);motion.SetVector("_FinMotion",_finMotion[animal.Root]);renderer.SetPropertyBlock(motion);}
             }
@@ -124,12 +133,30 @@ namespace BoatAttack.Fishing
         }
         private void Update()
         {
+            if(_c==null)return;
+            if(!Context){_aimRequested=false;_triggerReleased=false;}
+            AimBlend=Mathf.MoveTowards(AimBlend,Aiming?1:0,Time.unscaledDeltaTime*7);
+            _kick=Mathf.MoveTowards(_kick,0,Time.deltaTime*15);
+            if(Time.time-_lastShotAt>FishingRifleBallistics.RecoverySeconds)_burst=0;
             if(_c==null || _c.Paused || (!_c.Automated && !Application.isFocused) || _c.StoryBlocksGameplay || _c.ShopBlocksGameplay
                 || (_c.XRNotebook!=null && _c.XRNotebook.BlocksGameplay))return;
             if(XRSettings.isDeviceActive && (!Application.isFocused || _c.XRSeat.HeadBlocked
                 || !FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out _,out _)
                 || !FishingXRTracking.TryPose(_c.viewCamera,XRNode.LeftHand,out _,out _)))return;
             if(_c.Career.TickHuntedRespawns(Time.deltaTime)){RefreshAnimals();_c.Save();}
+            if(XRSettings.isDeviceActive && Context)
+            {
+                var device=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+                bool held=device.TryGetFeatureValue(CommonUsages.triggerButton,out bool trigger) && trigger;
+                if(!held)_triggerReleased=true;
+                if(held && _triggerReleased)TryFire();
+            }
+        }
+        public void ReadDesktopInput(bool fire,bool aim)
+        {
+            if(XRSettings.isDeviceActive)return;
+            _aimRequested=Context && aim;
+            if(fire)TryFire();
         }
         public void RegisterMarine(MarineKind kind,int index,Transform root)
         {
@@ -139,7 +166,7 @@ namespace BoatAttack.Fishing
             RefreshAnimals();
         }
         public bool DeadWildlife(Transform root)
-        {foreach(var a in _targets)if(a.Root==root)return a.Dead;return false;}
+        {foreach(var a in _targets)if(a.Root==root)return a.Dead || _c.Career.IsWildAnimalCaptured(a.Id);return false;}
         private Vector3 LandingFor(FishingFieldWorld.Animal animal)
         {
             if(animal.Id<8)return animal.Feet;
@@ -198,13 +225,25 @@ namespace BoatAttack.Fishing
             }
             // Inspect the actual mesh, not empty AABB corners above the stock.
             var meshToCamera=_c.viewCamera.worldToCameraMatrix*_mesh.transform.localToWorldMatrix;
-            if(_c.FirstPerson || XRSettings.isDeviceActive)foreach(var vertex in _vertices)
+            if((_c.FirstPerson || XRSettings.isDeviceActive) && MayReachEye(meshToCamera,_mesh.sharedMesh.bounds,_c.viewCamera.nearClipPlane+.008f))foreach(var vertex in _vertices)
             {
                 var p=meshToCamera.MultiplyPoint3x4(vertex);p.z=-p.z;
                 if(p.z<_c.viewCamera.nearClipPlane+.008f && Mathf.Abs(p.x)<.06f && Mathf.Abs(p.y)<.06f)
                 {ObstructionReason="eye clearance at "+p.ToString("F3")+" grip="+_c.viewCamera.transform.InverseTransformPoint(_rifle.position).ToString("F3");return false;}
             }
             return true;
+        }
+        private static bool MayReachEye(Matrix4x4 meshToCamera,Bounds bounds,float near)
+        {
+            var cameraBounds=new Bounds(meshToCamera.MultiplyPoint3x4(bounds.center),Vector3.zero);
+            for(int corner=0;corner<8;corner++)
+            {
+                var sign=new Vector3((corner&1)==0?-1:1,(corner&2)==0?-1:1,(corner&4)==0?-1:1);
+                cameraBounds.Encapsulate(meshToCamera.MultiplyPoint3x4(bounds.center+Vector3.Scale(bounds.extents,sign)));
+            }
+            // Only a possible eye-box overlap needs the exact vertex check below.
+            return cameraBounds.max.z>=-near && cameraBounds.min.x<.06f && cameraBounds.max.x>-.06f
+                && cameraBounds.min.y<.06f && cameraBounds.max.y>-.06f;
         }
         public void Present()
         {
@@ -218,7 +257,8 @@ namespace BoatAttack.Fishing
             // Keep the rear grip at chest height while aiming. Rotating the entire
             // eye-to-grip offset upward pushed the stock through the face.
             var holdFrame=Quaternion.Euler(0,frame.eulerAngles.y,0);
-            _rifle.SetPositionAndRotation(eye+holdFrame*new Vector3(.13f,-.25f,.39f),frame*Quaternion.Euler(0,-20,1));
+            var offset=Vector3.Lerp(new Vector3(.13f,-.25f,.39f),new Vector3(.10f,-.28f,.42f),AimBlend);
+            _rifle.SetPositionAndRotation(eye+holdFrame*offset,frame*Quaternion.Euler(-_kick,Mathf.Lerp(-20,-12,AimBlend),1));
             var leftRotation=LeftPalmRotation;
             var rightRotation=RightPalmRotation;
             bool leftHeld=true;
@@ -259,7 +299,7 @@ namespace BoatAttack.Fishing
             {
                 if(Ignored(hit.collider))continue;
                 bool animal=false;foreach(var a in _targets)if(!a.Dead && a.Hitbox==hit.collider){animal=true;break;}
-                if(hit.collider.isTrigger && !animal)continue;
+                if(hit.collider.isTrigger && !animal && !(_c.Combat!=null && _c.Combat.IsTarget(hit.collider)))continue;
                 if(!found || hit.distance<closest.distance){closest=hit;found=true;}
             }
             return found;
@@ -272,7 +312,12 @@ namespace BoatAttack.Fishing
             if(tracked && (!device.TryGetFeatureValue(CommonUsages.triggerButton,out bool held) || !held))return false;
             Present();
             if(!Presented || Obstructed){_c.Notice("枪口前空间不足，请离开障碍物后再射击。",2);return false;}
-            var camera=_c.viewCamera.transform;var direction=camera.forward;var aim=Muzzle+_rifle.forward*Range;
+            if(Time.time-_lastShotAt>FishingRifleBallistics.RecoverySeconds)_burst=0;
+            float spread=FishingRifleBallistics.Spread(_burst,Aiming,_c.Shore.WalkSpeed>.5f);
+            FishingRifleBallistics.Recoil(_burst,out float pitch,out float yaw);
+            var jitter=UnityEngine.Random.insideUnitCircle*spread;
+            var camera=_c.viewCamera.transform;var direction=camera.rotation*Quaternion.Euler(-pitch+jitter.y,yaw+jitter.x,0)*Vector3.forward;
+            var aim=Muzzle+_rifle.rotation*Quaternion.Euler(-pitch+jitter.y,yaw+jitter.x,0)*Vector3.forward*Range;
             if(!tracked)
             {
                 aim=camera.position+direction*Range;
@@ -281,7 +326,7 @@ namespace BoatAttack.Fishing
             // The player's body/eye must also see the target in third person.
             var eye=Eye;
             if(SolidSegment(eye,Muzzle,.035f))return false;
-            _nextShot=Time.time+ShotInterval;ShotsFired++;_flashUntil=Time.time+.06f;
+            _nextShot=Time.time+ShotInterval;_lastShotAt=Time.time;_burst++;_kick=Mathf.Min(3,.5f+pitch*.3f);ShotsFired++;_flashUntil=Time.time+.06f;
             var delta=aim-Muzzle;var end=Muzzle+delta.normalized*Mathf.Min(Range,delta.magnitude);
             bool killed=false;
             if(FirstHit(Muzzle,delta.normalized,Mathf.Min(Range,delta.magnitude+.03f),out var hit))
@@ -302,13 +347,13 @@ namespace BoatAttack.Fishing
                         }
                         break;
                     }
+                if(!killed && _c.Combat!=null)killed=_c.Combat.Hit(hit.collider,25,eye,hit.point);
                 if(!killed)_c.WorldAudio?.NotifyProjectileImpact(hit);
             }
             _trace.SetPosition(0,Muzzle);_trace.SetPosition(1,end);_trace.enabled=true;
             _lastShot=(_lastShot+1)%_shots.Length;_shot=_shots[_lastShot];
             if(!_c.QuietMode)_audio.PlayOneShot(_shot);
             if(tracked && device.TryGetHapticCapabilities(out var capabilities) && capabilities.supportsImpulse)device.SendHapticImpulse(0,.25f,.06f);
-            if(!killed)_c.Notice("未命中动物",1);
             return true;
         }
         public bool TryLootTarget(out FishingFieldWorld.Animal target)
