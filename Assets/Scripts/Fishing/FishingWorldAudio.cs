@@ -21,12 +21,12 @@ namespace BoatAttack.Fishing
             "FruitShake", "UIConfirm", "UIBack", "UIReject", "TVSwitch", "CushionCloth", "PortalPass",
             "MechanismClick", "HandcraftRub", "SeagullCall", "AnimalRustle", "BoatSlap", "WaterFinish",
             "BoatScrapeLoop", "FurnaceLoop", "CookSizzleLoop", "RainLoop", "ForestLoop", "WreckLoop",
-            "WindCorridorLoop", "StarsLoop", "WellRopeLoop", "WaterPourLoop", "TVLoop"
+            "WindCorridorLoop", "StarsLoop", "WellRopeLoop", "WaterPourLoop", "WaterSprinkleLoop", "TVLoop"
         };
         private static readonly HashSet<string> LoopKeys = new HashSet<string>(StringComparer.Ordinal)
         {
             "BoatScrapeLoop", "FurnaceLoop", "CookSizzleLoop", "RainLoop", "ForestLoop", "WreckLoop",
-            "WindCorridorLoop", "StarsLoop", "WellRopeLoop", "WaterPourLoop", "TVLoop"
+            "WindCorridorLoop", "StarsLoop", "WellRopeLoop", "WaterPourLoop", "WaterSprinkleLoop", "TVLoop"
         };
         private sealed class Shot
         {
@@ -37,6 +37,7 @@ namespace BoatAttack.Fishing
         {
             public AudioSource Source;
             public string Id, Cue;
+            public FishingAudioCategory Category;
             public int MaintainedFrame = -1;
             public float Gain, Target;
         }
@@ -80,7 +81,7 @@ namespace BoatAttack.Fishing
             BuildShots(_ui, "Successful interface action", FishingAudioCategory.Effects, .11f, true);
             BuildShots(_ambientShots, "Local environmental event", FishingAudioCategory.Ambient, .13f, false);
             for (int i = 0; i < _loops.Length; i++)
-                _loops[i] = new LoopVoice { Source = Source("Local ambience " + (i + 1), FishingAudioCategory.Ambient, 0, false, true) };
+                _loops[i] = new LoopVoice { Source = Source("Local ambience " + (i + 1), FishingAudioCategory.Ambient, 0, false, true), Category = FishingAudioCategory.Ambient };
             Sources = _sources.AsReadOnly();
             _built = true;
             BuildMotion(); BuildGameplay(); BuildEnvironment();
@@ -161,10 +162,13 @@ namespace BoatAttack.Fishing
             return true;
         }
 
-        /// <summary>Lease a quiet local loop for this frame. An omitted lease fades to silence and releases its slot.</summary>
-        public void MaintainLoop(string id, string cue, Vector3 at, float volume, bool spatial = true, float range = 24)
+        /// <summary>Lease a local loop for this frame. Action loops follow Effects; unspecified loops remain Ambient.</summary>
+        public void MaintainLoop(string id, string cue, Vector3 at, float volume, bool spatial = true, float range = 24,
+            FishingAudioCategory category = FishingAudioCategory.Ambient)
         {
-            if (!WorldContext || _c.AmbientVolume <= 0 || string.IsNullOrEmpty(id) || id.Length > 80
+            if (!WorldContext || (category != FishingAudioCategory.Effects && category != FishingAudioCategory.Ambient)
+                || (category == FishingAudioCategory.Effects ? _c.EffectsVolume : _c.AmbientVolume) <= 0
+                || string.IsNullOrEmpty(id) || id.Length > 80
                 || !LoopKeys.Contains(cue ?? "") || !Finite(at) || !Finite(volume) || volume <= 0 || !Finite(range)) return;
             var clip = LoadedClip(cue); if (clip == null) return;
             LoopVoice voice = null;
@@ -172,10 +176,13 @@ namespace BoatAttack.Fishing
             if (voice == null)
                 foreach (var candidate in _loops) if (candidate.Id == null) { voice = candidate; break; }
             if (voice == null || voice.Source == null) return;
-            if (voice.Id == null || voice.Cue != cue)
+            if (voice.Id == null || voice.Cue != cue || voice.Category != category)
             {
-                voice.Source.Stop(); voice.Source.clip = clip; voice.Gain = 0; voice.Cue = cue; voice.Id = id;
-                _c.SetAudioBaseVolume(voice.Source, 0);
+                voice.Source.Stop(); voice.Source.clip = clip; voice.Gain = 0; voice.Cue = cue; voice.Id = id; voice.Category = category;
+                // A pooled source may previously have belonged to the other channel.
+                // Rebind only at a lease/cue/category boundary, never once per maintained frame.
+                _c.RegisterAudioSource(voice.Source, category, 0);
+                voice.Source.priority = category == FishingAudioCategory.Effects ? 140 : 180;
                 voice.Source.Play(); _starts[cue] = LoopStarts(cue) + 1;
             }
             voice.Source.spatialBlend = spatial ? 1 : 0; voice.Source.transform.position = at;
@@ -190,7 +197,14 @@ namespace BoatAttack.Fishing
                 if (voice.Id == null) continue;
                 if (voice.Source == null) { ReleaseLoop(voice); continue; }
                 float target = voice.MaintainedFrame == Time.frameCount ? voice.Target : 0;
-                voice.Gain = Mathf.MoveTowards(voice.Gain, target, dt * (target > voice.Gain ? .12f : .18f));
+                // A watering stream is visible for only about 1.2 seconds. It must
+                // reach audible gain promptly instead of spending most of that time
+                // in the intentionally slow ambience fade. Volumes remain raw base
+                // gains: channel/master settings are applied once by the registry.
+                float speed = voice.Category == FishingAudioCategory.Effects
+                    ? Mathf.Max(.0001f, voice.Target) / (target > voice.Gain ? .08f : .12f)
+                    : target > voice.Gain ? .12f : .18f;
+                voice.Gain = Mathf.MoveTowards(voice.Gain, target, dt * speed);
                 _c.SetAudioBaseVolume(voice.Source, voice.Gain);
                 if (target == 0 && voice.Gain <= .0001f) ReleaseLoop(voice);
             }
