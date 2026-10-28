@@ -134,7 +134,7 @@ namespace BoatAttack.EditorTools
             Check(character.BodySkin.shadowCastingMode==ShadowCastingMode.ShadowsOnly && character.FirstPersonSkin.enabled
                 && character.FirstPersonSkin.shadowCastingMode==ShadowCastingMode.Off,"完整身体保留阴影，本地身体不重复投影");
             Check(character.WaistCover!=null && !character.WaistCover.enabled && character.WaistCover.shadowCastingMode==ShadowCastingMode.Off,
-                "桌面双臂视图不绘制近眼躯干，保留原腰封供XR显示");
+                "桌面全身视图不需腰封，保留原腰封供XR显示");
             var visible=new HashSet<int>(local.triangles);var weights=source.boneWeights;var bones=character.BodySkin.bones;
             int handVertices=0,missingHands=0,visibleNeck=0;
             for(int i=0;i<weights.Length;i++)

@@ -65,6 +65,7 @@ namespace BoatAttack.Fishing
                 var chest=Instantiate(source,transform).transform;chest.name="Shore supply cache "+(8+i);chest.position=feet;
                 chest.localScale*=1.15f;
                 foreach(var renderer in chest.GetComponentsInChildren<Renderer>())renderer.sharedMaterial=_palette;
+                FishingPaintedArt.Apply(chest,"FishingFeedbackTools/HomeChest");
                 Transform lid=null;foreach(var part in chest.GetComponentsInChildren<Transform>())if(part.name.Equals("lid",System.StringComparison.OrdinalIgnoreCase)){lid=part;break;}
                 if(lid==null)throw new System.InvalidOperationException("Wild cache lid missing");
                 var renderers=chest.GetComponentsInChildren<Renderer>();var bounds=renderers[0].bounds;foreach(var renderer in renderers)bounds.Encapsulate(renderer.bounds);
@@ -90,7 +91,34 @@ namespace BoatAttack.Fishing
             {
                 float a=(angle+i*137.5f)*Mathf.Deg2Rad,r=radius+(i/12)*.5f;
                 var candidate=seed+new Vector3(Mathf.Sin(a)*r,0,Mathf.Cos(a)*r);
-                if(_c.Shore.Ground(candidate,out feet) && Mathf.Abs(feet.y-seed.y)<.6f && _c.Shore.Clearance(feet))return true;
+                if(_c.Shore.Ground(candidate,out feet) && Mathf.Abs(feet.y-seed.y)<.6f && _c.Shore.Clearance(feet) && !OnWalkRoute(feet))return true;
+            }
+            return false;
+        }
+        private List<(Vector3 a,Vector3 b)> _routes;
+        // Spawned props must leave the jetty and the authored landing-to-portal walk clear for the capsule.
+        private bool OnWalkRoute(Vector3 feet)
+        {
+            if(_routes==null)
+            {
+                _routes=new List<(Vector3,Vector3)>();
+                for(int island=0;island<4;island++)
+                {
+                    var centre=FishingIslandWorld.Center(island);
+                    _routes.Add((centre+new Vector3(0,0,FishingIslandWorld.Radius+7),FishingIslandWorld.Landing(island)));
+                    var path=_c.Islands!=null && _c.Islands.WorldRoot!=null && _c.Islands.WorldRoot.childCount>island?_c.Islands.WorldRoot.GetChild(island).Find("V035 crafted coastal scenery/Island approach"):null;
+                    if(path==null)continue;
+                    var points=new List<Transform>();foreach(Transform t in path)points.Add(t);
+                    points.Sort((x,y)=>int.Parse(x.name.Substring(6)).CompareTo(int.Parse(y.name.Substring(6))));
+                    for(int i=1;i<points.Count;i++)_routes.Add((points[i-1].position,points[i].position));
+                }
+            }
+            const float clearance=2f;
+            foreach(var (a,b) in _routes)
+            {
+                var flatA=new Vector2(a.x,a.z);var flatB=new Vector2(b.x,b.z);var p=new Vector2(feet.x,feet.z);var ab=flatB-flatA;
+                float t=ab.sqrMagnitude<.0001f?0:Mathf.Clamp01(Vector2.Dot(p-flatA,ab)/ab.sqrMagnitude);
+                if(Vector2.Distance(p,flatA+ab*t)<clearance)return true;
             }
             return false;
         }

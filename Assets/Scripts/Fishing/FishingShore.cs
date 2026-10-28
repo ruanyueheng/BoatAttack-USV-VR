@@ -28,6 +28,7 @@ namespace BoatAttack.Fishing
         public float BerthDistance { get; private set; }
         public int NearbyTask { get; private set; } = -1;
         public float WalkSpeed { get; private set; }
+        private Vector2 _xrStick;
         private FishingCharacter _character;
 
         private readonly Renderer[] _taskMarkers = new Renderer[8];
@@ -45,7 +46,7 @@ namespace BoatAttack.Fishing
         public bool Crouched { get; private set; }
         public float EyeHeight => (Crouched?FishingLocomotion.CrouchingHeight:FishingLocomotion.StandingHeight)-.2f;
         public bool Grounded => Body!=null && Body.isGrounded;
-        public void ResetMoveInput() => _motion.ResetInput();
+        public void ResetMoveInput() { _motion.ResetInput(); _xrStick = Vector2.zero; }
 
         private static readonly Vector3[] LandSeeds = { new Vector3(-66,0,-14), new Vector3(42,0,70), new Vector3(94,0,-66), new Vector3(66,0,-94) };
         private static readonly Vector3[] Berths = { new Vector3(-78,0,-14), new Vector3(42,0,84), new Vector3(108,0,-66), new Vector3(66,0,-78) };
@@ -272,6 +273,7 @@ namespace BoatAttack.Fishing
                 {WalkSpeed=0;ResetMoveInput();return;}
                 left.TryGetFeatureValue(UnityEngine.XR.CommonUsages.primary2DAxis,out input);
                 if(input.magnitude<.18f)input=Vector2.zero;
+                input=_xrStick=FishingXRComfort.Ramp(_xrStick,input,dt,!Climbing && !Swimming);
                 sprint=jump=false;crouch=Controller.XRSeat.PhysicallyCrouched;
             }
             Move(input,sprint,jump,crouch,dt);UpdateProximity();
@@ -307,7 +309,7 @@ namespace BoatAttack.Fishing
             if(Swimming){Swim(axes,heading,sprint,jump,dt);return;}
             _motion.Exert(sprint && axes.sqrMagnitude>.01f && !Crouched,axes.sqrMagnitude<.01f,dt);
             sprint &= Stamina>.08f;
-            var velocity=heading*new Vector3(axes.x,0,axes.y)*(XRSettings.isDeviceActive?(Crouched?.9f:1.6f):Crouched?1.25f:sprint?4.4f:2.6f);
+            var velocity=heading*new Vector3(axes.x,0,axes.y)*(XRSettings.isDeviceActive?(Crouched?.9f:FishingXRComfort.WalkSpeed):Crouched?1.25f:sprint?4.4f:2.6f);
             var next=Actor.position+velocity*dt;
             // Dry land below permits a gravity-driven descent; walls and slopes still use real collision geometry.
             bool support=WalkingGroundBelow(next,Actor.position.y+.45f,80f,out var floor);
@@ -395,6 +397,6 @@ namespace BoatAttack.Fishing
         }
         public string LocationName => Controller.Home!=null && FishingPrototype.FlatDistance(Position,Controller.Home.Origin)<55 ? Controller.Home.Inside?"回潮渔屋":Controller.Farm!=null && Controller.Farm.Nearby?"回潮菜园":"回潮家岛" : Controller.Realms!=null && Controller.Realms.Inside ? FishingLore.ShrineName(Controller.Realms.Island) : ShopLanding ? FishingTackleShop.Name : Controller.Islands!=null && Controller.Islands.NearIsland(out int island) ? FishingAdventure.Name(island) : FreeLanding ? "自由海岸" : FishingExploration.SiteName(CurrentSite);
         public string ActionTitle => !Ashore ? "G 靠岸下船 · 自动寻找安全岸面 / 码头" : NearbyTask>=0 ? "E "+FishingExploration.TaskName(NearbyTask)
-            : CanBoard() ? "G 返回船上" : "靠近船边 G 上船 · 船体距离 "+BoatEdgeDistance().ToString("0.0")+" m";
+            : CanBoard() ? "G 返回船上" : BoatEdgeDistance()<25 ? "靠近船边 G 上船 · 船体距离 "+BoatEdgeDistance().ToString("0.0")+" m" : "自由探索 · 回到船边按 G 上船";
     }
 }

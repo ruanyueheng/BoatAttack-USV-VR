@@ -73,9 +73,13 @@ namespace BoatAttack.Fishing
             _position=new InputAction("Fishing HMD position",InputActionType.Value,"<XRHMD>/centerEyePosition");
             _rotation=new InputAction("Fishing HMD rotation",InputActionType.Value,"<XRHMD>/centerEyeRotation");
             _tracking=new InputAction("Fishing HMD tracking",InputActionType.Value,"<XRHMD>/trackingState");
+            // Runtimes that expose only centre-eye or only device pose still drive the head.
+            _position.AddBinding("<XRHMD>/devicePosition");_rotation.AddBinding("<XRHMD>/deviceRotation");
             _driver=c.viewCamera.gameObject.AddComponent<TrackedPoseDriver>();_driver.enabled=false;
             _driver.positionInput=new InputActionProperty(_position);_driver.rotationInput=new InputActionProperty(_rotation);_driver.trackingStateInput=new InputActionProperty(_tracking);
-            _driver.trackingType=TrackedPoseDriver.TrackingType.RotationAndPosition;_driver.updateType=TrackedPoseDriver.UpdateType.UpdateAndBeforeRender;
+            _driver.trackingType=TrackedPoseDriver.TrackingType.RotationAndPosition;
+            // PICO OpenXR can report trackingState without the Rotation bit; honouring it froze head rotation on device (v0.43 report).
+            _driver.ignoreTrackingState=true;_driver.updateType=TrackedPoseDriver.UpdateType.UpdateAndBeforeRender;
             Origin.enabled=false;
         }
         public void Apply()
@@ -91,14 +95,17 @@ namespace BoatAttack.Fishing
                     _c.viewCamera.nearClipPlane=.04f;
                     _c.viewCamera.transform.SetParent(_offset,false);_c.viewCamera.transform.localPosition=Vector3.zero;_c.viewCamera.transform.localRotation=Quaternion.identity;
                     Origin.enabled=true;_position.Enable();_rotation.Enable();_tracking.Enable();_driver.enabled=true;
+                    Application.onBeforeRender-=HeadFallback;Application.onBeforeRender+=HeadFallback; // after the driver's own hook
                 }
                 else
                 {
+                    Application.onBeforeRender-=HeadFallback;
                     _driver.enabled=false;_position.Disable();_rotation.Disable();_tracking.Disable();Origin.enabled=false;
                     _c.viewCamera.transform.SetParent(_originalParent,true);_c.View.ResetLook();
                 }
             }
             if(!active){if(_headFade!=null)_headFade.gameObject.SetActive(false);HeadBlocked=false;return;}
+            HeadFallback();
             if(_trackingOrigin!=Origin.CurrentTrackingOriginMode){_trackingOrigin=Origin.CurrentTrackingOriginMode;_eyeCalibrated=false;}
             if(!_eyeCalibrated && _trackingOrigin!=TrackingOriginModeFlags.Unknown)CalibrateEye();
             _offset.localPosition=Vector3.up*_eyeOffset;
@@ -126,6 +133,25 @@ namespace BoatAttack.Fishing
             // Spawn and rescue lift the hull before buoyancy settles; use the ocean's rest plane.
             _boatHeight=WaterlineHeight;_height=_c.ComfortMode?_boatHeight:_c.Player.transform.position.y;_velocity=0;
         }
-        private void OnDestroy(){if(_driver!=null)_driver.enabled=false;_position?.Dispose();_rotation?.Dispose();_tracking?.Dispose();}
+        /// <summary>
+        /// Safety net for the v0.43 device report (head turns did not turn the view): the XR SDK head pose, already used
+        /// for eye calibration on PICO, wins whenever the Input System driver leaves the camera clearly off it.
+        /// </summary>
+        public static bool HeadDisagrees(Quaternion camera,Quaternion head)=>Quaternion.Angle(camera,head)>2f;
+        /// <summary>Batch validation only: the mock runtime renders no frames, so its SDK head is a stale identity.</summary>
+        public static bool ValidationHoldHead;
+        private void HeadFallback()
+        {
+            if(!_active || _c==null || ValidationHoldHead)return;
+            var head=InputDevices.GetDeviceAtXRNode(XRNode.CenterEye);if(!head.isValid)head=InputDevices.GetDeviceAtXRNode(XRNode.Head);
+            if(!head.isValid || !(head.TryGetFeatureValue(CommonUsages.centerEyeRotation,out var rotation) || head.TryGetFeatureValue(CommonUsages.deviceRotation,out rotation))
+                || float.IsNaN(rotation.x) || Mathf.Abs(Quaternion.Dot(rotation,rotation)-1)>.01f)return;
+            var camera=_c.viewCamera.transform;
+            if(!HeadDisagrees(camera.localRotation,rotation))return;
+            camera.localRotation=rotation;
+            if(head.TryGetFeatureValue(CommonUsages.centerEyePosition,out var position) || head.TryGetFeatureValue(CommonUsages.devicePosition,out position))
+                if(!float.IsNaN(position.x))camera.localPosition=position;
+        }
+        private void OnDestroy(){Application.onBeforeRender-=HeadFallback;if(_driver!=null)_driver.enabled=false;_position?.Dispose();_rotation?.Dispose();_tracking?.Dispose();}
     }
 }

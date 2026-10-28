@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -139,7 +139,7 @@ namespace BoatAttack.Fishing
                 if(!Trial.Ready && !_c.Career.Lore.Cleared(Island)){RequestHint();return false;}
                 bool firstEcho=!_c.Career.Lore.Cleared(Island);int pay=_c.Career.CompleteShrine(Island);
                 if(pay==0 && !_c.Career.Lore.Cleared(Island)){_c.Notice("金币已达上限；回响保留，腾出余额后可再领取。",5);return false;}
-                _c.Save();Refresh();_exits[Island].GetComponentInChildren<FishingPortalVisual>().Pulse();_c.Regions.Show(FishingLore.ShrineName(Island)+" · 回响重现",pay>0?"+90 金币 · 航记已收录":"航记已收录",Island);_c.Notice(FishingLore.Echo(Island)+" 身旁的星光归航门可直接返回岛屿。",12);_c.Voyage?.ClaimRealmReward(Island);if(firstEcho && _c.Career.Lore.Cleared(Island))_c.Prologue.Queue(FishingPrologue.Relic(Island));return true;
+                _c.Save();Refresh();_exits[Island].GetComponentInChildren<FishingPortalVisual>().Pulse();_c.Effects?.Celebrate(_c.ExplorerPosition+Vector3.up*.3f);_c.WorldAudio?.PlayRealm(Island,"Echo",_devices[3]!=null?_devices[3].position:_c.ExplorerPosition,.6f);_c.Regions.Show(FishingLore.ShrineName(Island)+" · 回响重现",pay>0?"+90 金币 · 航记已收录":"航记已收录",Island);_c.Notice(FishingLore.Echo(Island)+" 身旁的星光归航门可直接返回岛屿。",12);_c.Voyage?.ClaimRealmReward(Island);if(firstEcho && _c.Career.Lore.Cleared(Island))_c.Prologue.Queue(FishingPrologue.Relic(Island));return true;
             }
             if(Island==0){_c.Notice("让脚步踩入共鸣台，听风桥回应。",4);return false;}
             if(Island==3)
@@ -147,9 +147,14 @@ namespace BoatAttack.Fishing
                 if(id==0)return BeginObservation();
                 _c.Notice(id==1?"第一幅星图展开双翼，第二幅像垂落的船锚。":"最后一幅是归航星：三角帆下，一颗星指向回家的海。",9);return true;
             }
+            return Operate(id);
+        }
+        /// <summary>Shared by E / A interaction and the VR grab-and-twist crank.</summary>
+        private bool Operate(int id)
+        {
             if(Time.time<_nextUse)return false;_nextUse=Time.time+.4f;
             bool ok=Trial.Use(id==5?3:id);
-            if(ok && _devices[id]!=null)_c.WorldAudio?.Play("MechanismClick",_devices[id].position,.42f);
+            if(ok && _devices[id]!=null)_c.WorldAudio?.PlayRealm(Island,"Step",_devices[id].position,.42f);
             if(Island==2 && id==0)
             {
                 _pushing=ok;
@@ -173,6 +178,7 @@ namespace BoatAttack.Fishing
         {
             CancelObservation();_pushing=false;Transitioning=true;_c.StoryModalChanged();_c.TackleShop.Close();_c.XRNotebook.Close();
             (destination>=0?_portals[destination]:_exits[Island]).GetComponentInChildren<FishingPortalVisual>().Pulse();_c.Regions.Chime(destination>=0?destination:Island);
+            _c.WorldAudio?.Play("PortalEnter",_c.ExplorerPosition+Vector3.up,.5f);
             for(float t=0;t<.28f;t+=Time.unscaledDeltaTime){Blackout=Mathf.Clamp01(t/.28f);yield return null;}
             Blackout=1;int old=Island;bool moved;
             if(destination>=0)
@@ -181,10 +187,12 @@ namespace BoatAttack.Fishing
                 moved=_c.Shore.Relocate(_entries[destination].position,Quaternion.identity);
                 if(moved)
                 {
-                    Island=destination;Trial=new FishingShrineTrial(destination);_nextUse=0;_demoAge=0;_demoNote=0;_padInside=-1;_windBridgeStage=0;
+                    var lore=_c.Career.Lore;bool replay=lore.Cleared(destination);
+                    // Cleared realms replay from the start; unfinished ones resume at their saved stage.
+                    Island=destination;Trial=new FishingShrineTrial(destination,lore.RealmVariant(destination,()=>_c.Automated?0:UnityEngine.Random.Range(0,3)),replay?0:lore.RealmStage(destination));_nextUse=0;_demoAge=0;_demoNote=0;_padInside=-1;_windBridgeStage=0;
                     for(int i=0;i<5;i++)_devices[i]=Room.Find("Device "+i);
                     _devices[5]=destination==1?_shutterControl:null;_devices[6]=_helpPlaques[destination];_hintLevel=0;_windRecovery=false;
-                    ResetBridgePresentation();
+                    ResetBridgePresentation();EnterV044();
                     Refresh();PresentTrial();
                 }
                 else _rooms[destination].gameObject.SetActive(false);
@@ -226,7 +234,7 @@ namespace BoatAttack.Fishing
                     _windBridgeStage=Trial.WindRound>0 && !_windRecovery?3:Mathf.Min(3,Trial.Progress);
                     _c.Notice(!ok?"回声散去，风将你送回入口；本轮重新聆听。":round!=Trial.WindRound?"巨钟应和，另一段更长的回声从入口传来。":"共鸣回应 · "+Trial.Progress+" / "+Trial.WindLength,4);Refresh();
                 }
-                _padInside=pad;
+                _padInside=pad;if(pad>=0)_safeFeet=_devices[pad].position;
             }
             if(Island==2)
             {
@@ -240,18 +248,19 @@ namespace BoatAttack.Fishing
             }
             if(ready!=Trial.Ready || progress!=Trial.Progress || round!=Trial.WindRound || lightStage!=Trial.LightStage)
             {
-                if(Trial.Ready && !ready)_c.WorldAudio?.Play("MechanismClick",_devices[3].position,.45f);
+                if(Trial.Ready && !ready)_c.WorldAudio?.PlayRealm(Island,"Solve",_devices[3].position,.55f);
                 Refresh();
             }
+            TickV044();
             if(_c.Shore.Position.y<Room.position.y-4)
             {
                 CancelObservation();_pushing=false;
-                if(_c.Shore.Relocate(_entries[Island].position,Quaternion.identity))_c.Notice("海风把你送回了入口，已保留本次机关进度。",5);
+                if(_c.Shore.Relocate(_safeFeet,Quaternion.identity) || _c.Shore.Relocate(_entries[Island].position,Quaternion.identity))_c.Notice("海风把你送回最近的落脚点，机关进度都还在。",5);
             }
             PresentTrial();
         }
         private static bool HeldAction()
-        {var d=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);d.TryGetFeatureValue(CommonUsages.primaryButton,out bool held);return held;}
+        {var d=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);d.TryGetFeatureValue(CommonUsages.primaryButton,out bool held);d.TryGetFeatureValue(CommonUsages.gripButton,out bool grip);return held || grip;}
         private void Refresh()
         {
             bool open=Trial.Ready || _c.Career.Lore.Cleared(Island);
@@ -315,7 +324,7 @@ namespace BoatAttack.Fishing
                 _holdWater.Build(new Vector2(9.3f,28),-2.5f,Resources.Load<Material>("FishingV035/RealmWater"));
             }
             if(island==3)BuildObservation(room);
-            BuildPuzzleExtensions(island,room);
+            BuildPuzzleExtensions(island,room);BuildV044(island,room);
         }
         private void PresentTrial()
         {

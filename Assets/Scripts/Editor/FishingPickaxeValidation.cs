@@ -46,20 +46,24 @@ namespace BoatAttack.EditorTools
                     foreach(float pitch in new[]{-30f,0f,30f})
                     {
                         c.View.ResetLook();c.View.ApplyShoreLookDelta(new Vector2(0,-pitch/.12f));
-                        for(int i=0;i<4;i++){c.PresentCharacterFrame();yield return null;}
+                        // Looking down lowers the tool; let the v0.41 IK jump-smoothing (0.1 s half-life) settle before measuring.
+                        for(int i=0;i<30;i++){c.PresentCharacterFrame();yield return null;}
                         Check(c.FieldWorld.PresentedItem==item && c.FieldWorld.HeldTool.gameObject.activeInHierarchy,"supplied pick is held "+item+" crouch="+crouch+" pitch="+pitch);
                         Check(c.FieldWorld.HeldTool.GetComponent<MeshFilter>().sharedMesh.vertexCount==mesh.vertexCount && c.FieldWorld.HeldToolRenderer.sharedMaterial==material,"held model and material are the supplied asset");
                         var forearm=character.RightWrist.position-character.ElbowPosition(false);
                         float wristBend=Vector3.Angle(forearm,character.PalmRotation(false)*Vector3.forward);
                         float elbow=Vector3.Angle(character.ShoulderPosition(false)-character.ElbowPosition(false),forearm);
-                        Debug.Log("[PICKAXE] POSE: "+item+" crouch="+crouch+" pitch="+pitch+" wristBend="+wristBend+" elbow="+elbow+" palm="+c.viewCamera.WorldToViewportPoint(c.Hands.Right.Palm.position));
+                        Debug.Log("[PICKAXE] POSE: "+item+" crouch="+crouch+" pitch="+pitch+" wristBend="+wristBend+" elbow="+elbow+" palm="+c.viewCamera.WorldToViewportPoint(c.Hands.Right.Palm.position)
+                            +" targetBend="+Vector3.Angle(forearm,c.Hands.Right.Palm.rotation*Vector3.forward)+" targetError="+Quaternion.Angle(c.Hands.Right.Palm.rotation,character.PalmRotation(false))
+                            +" shoulder="+(character.ShoulderPosition(false)-c.Shore.Actor.position).ToString("F3")+" palmLocal="+(c.Hands.Right.Palm.position-c.Shore.Actor.position).ToString("F3")+" lean="+character.AppliedInteractionLean.ToString("F3")
+                            +" forearmLocal="+c.Shore.Actor.InverseTransformDirection(forearm.normalized).ToString("F3")+" palmFwdLocal="+c.Shore.Actor.InverseTransformDirection(character.PalmRotation(false)*Vector3.forward).ToString("F3")+" palmUpLocal="+c.Shore.Actor.InverseTransformDirection(character.PalmRotation(false)*Vector3.up).ToString("F3"));
                         Check(wristBend<40 && elbow>35 && elbow<170,"wrist/hinged elbow retain neutral resting range without sharp wrist bend");
                         if(pitch==0)
                         {
                             var palm=c.viewCamera.WorldToViewportPoint(character.PalmPosition(false));
                             Check(palm.z>.18f && palm.x>.04f && palm.x<.96f && palm.y>.025f && palm.y<.56f,"supplied pick grip remains in the lower visible screen area when looking level");
                         }
-                        Check(Mathf.Abs(character.ArmReach(false)-reach)<.003f && Vector3.Distance(character.PalmPosition(false),c.Hands.Right.Palm.position)<.03f,"source arm lengths preserved and palm reaches the calibrated wooden grip");
+                        Check(Mathf.Abs(character.ArmReach(false)-reach)<.003f && Vector3.Distance(character.PalmPosition(false),c.Hands.Right.Palm.position)<.03f,"source arm lengths preserved and palm reaches the calibrated wooden grip · reachDelta="+Mathf.Abs(character.ArmReach(false)-reach)+" palmError="+Vector3.Distance(character.PalmPosition(false),c.Hands.Right.Palm.position)+" target="+(c.Hands.Right.Palm.position-character.ShoulderPosition(false)).magnitude);
                         FishingV016Validation.Capture(c,output,item+"-grip-"+(crouch?"crouched":"standing")+"-"+pitch);
                         FishingV038Validation.InspectGrip(c,"pick "+item+" crouch="+crouch+" pitch="+pitch);
                         foreach(var vertex in mesh.vertices)

@@ -23,6 +23,7 @@
 			#pragma shader_feature _REFLECTION_CUBEMAP _REFLECTION_PROBES _REFLECTION_PLANARREFLECTION
 			#pragma multi_compile _ USE_STRUCTURED_BUFFER
 			#pragma multi_compile _ _STATIC_SHADER
+			#pragma multi_compile _ _WATER_NO_SCENE_TEXTURES
 			#pragma shader_feature _DEBUG_OFF _DEBUG_SSS _DEBUG_REFRACTION _DEBUG_REFLECTION _DEBUG_NORMAL _DEBUG_FRESNEL _DEBUG_WATEREFFECTS _DEBUG_FOAM _DEBUG_WATERDEPTH
 						
 			// -------------------------------------

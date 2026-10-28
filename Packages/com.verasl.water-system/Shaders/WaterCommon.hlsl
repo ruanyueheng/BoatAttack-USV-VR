@@ -94,15 +94,25 @@ float WaterTextureDepth(float3 posWS)
 float3 WaterDepth(float3 posWS, half4 additionalData, half2 screenUVs)// x = seafloor depth, y = water depth
 {
 	float3 outDepth = 0;
-	outDepth.xz = AdjustedDepth(screenUVs, additionalData);
 	float wd = WaterTextureDepth(posWS);
+#if defined(_WATER_NO_SCENE_TEXTURES)
+	// PICO: no camera depth prepass; the baked coastal depth map stands in for the seafloor distance.
+	outDepth.x = max(0, wd + posWS.y);
+#else
+	outDepth.xz = AdjustedDepth(screenUVs, additionalData);
+#endif
 	outDepth.y = wd + posWS.y;
 	return outDepth;
 }
 
 half3 Refraction(half2 distortion, half depth, real depthMulti)
 {
+#if defined(_WATER_NO_SCENE_TEXTURES)
+	// Shallow sand tint instead of the opaque-texture copy, lit like the seabed would be so it darkens at night.
+	half3 output = half3(0.55h, 0.62h, 0.55h) * (GetMainLight().color * 0.6h + SampleSH(half3(0, 1, 0)));
+#else
 	half3 output = SAMPLE_TEXTURE2D_X_LOD(_CameraOpaqueTexture, sampler_CameraOpaqueTexture_linear_clamp, UnityStereoTransformScreenSpaceTex(distortion), depth * 0.25).rgb;
+#endif
 	output *= Absorption((depth) * depthMulti);
 	return output;
 }

@@ -27,7 +27,7 @@ namespace BoatAttack.Fishing
                 var cards=root.transform.Find("Environment Objects/Env_BushCards");
                 if(cards!=null){RemovedCards=cards.childCount;cards.gameObject.SetActive(false);}
             }
-            if(c.DesktopDisplay)
+            if(c.DesktopDisplay && !FishingMobileQuality.Requested) // PICO preview keeps its mobile pipeline
             {
                 _previous=QualitySettings.renderPipeline;
                 var source=GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
@@ -74,7 +74,7 @@ namespace BoatAttack.Fishing
         private Transform CoastalProp(string name,Transform island,Vector2 point,int id,float span,float yaw,bool foliage=false,bool solid=false)
         {
             var root=FishingV019Art.Spawn(name,island,new Vector3(point.x,Height(point.x,point.y,id)-.06f,point.y),span,yaw,"FishingV035");
-            FishingV035Materials.Apply(root,foliage);
+            FishingV035Materials.Apply(root,foliage,lod:false);  // islet props are static-batched; a LOD1 copy would double their batched geometry (COAST-ART budget)
             if(solid)foreach(var filter in root.GetComponentsInChildren<MeshFilter>())
             {
                 var source=filter.sharedMesh;var collision=source;

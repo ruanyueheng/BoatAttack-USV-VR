@@ -41,7 +41,7 @@ namespace BoatAttack.EditorTools
                 && Path.GetFullPath(c.SavePath).StartsWith(temporary, StringComparison.OrdinalIgnoreCase),
                 "Audio mix checks use only the actual scene and its temporary isolated career");
             var original = c.Career.Snapshot();
-            float master = c.MasterVolume, music = c.MusicVolume, ambient = c.AmbientVolume, effects = c.EffectsVolume;
+            float master = c.MasterVolume, music = c.MusicVolume, ambient = c.AmbientVolume, effects = c.EffectsVolume, voice = c.VoiceVolume;
             bool quiet = c.QuietMode, paused = c.Paused;
             var hud = c.GetComponent<FishingHUD>(); int tab = hud.SettingsTab;
             var prefs = CapturePreferences();
@@ -92,6 +92,7 @@ namespace BoatAttack.EditorTools
                     "Ambient zero mutes the actual engine, water, coast, wind and thunder sources independently of effects and BGM");
                 Check(thunder.volume == 0 && !thunder.mute && Near(Base(c, thunder), .12f),
                     "The real thunder source is silent through Ambient zero, not through an unrelated mute flag or disabled storm mechanism");
+                ValidateVoiceRoute(c);
                 AssertRegisteredMix(c);
                 c.SetSetting("Ambient", .45f); c.ToggleQuiet();
                 bool allMuted = true;
@@ -166,7 +167,7 @@ namespace BoatAttack.EditorTools
                 foreach (var pair in climateState) pair.Key.SetValue(climate, pair.Value);
                 c.Weather.ApplyEnvironment();
                 if (wind != null) c.SetAudioBaseVolume(wind, windBase);
-                c.SetSetting("Master", master); c.SetSetting("Music", music); c.SetSetting("Ambient", ambient); c.SetSetting("Effects", effects);
+                c.SetSetting("Master", master); c.SetSetting("Music", music); c.SetSetting("Ambient", ambient); c.SetSetting("Effects", effects); c.SetSetting("Voice", voice);
                 if (c.QuietMode != quiet) c.ToggleQuiet();
                 hud.SettingsTab = tab;
                 if (paused && !c.Paused) c.TogglePause();
@@ -265,13 +266,30 @@ namespace BoatAttack.EditorTools
                     "The actual built XR audio page exposes separate music, environment and effects controls");
                 actions[2](); Check(Levels(c, .5f, .5f, .4f, .7f), "The real XR BGM-decrease callback changes only Music");
                 actions[3](); actions[4](); Check(Levels(c, .5f, .6f, .3f, .7f), "The real XR environment-decrease callback changes only Ambient");
-                actions[5](); actions[6](); Check(Levels(c, .5f, .6f, .4f, .6f), "The real XR effects-decrease callback changes only Effects");
-                actions[7](); actions[0](); Check(Levels(c, .75f, .6f, .4f, .7f), "The XR master control changes the listener route while keeping all three mix levels");
+                c.SetSetting("Voice", 1);
+                actions[5](); actions[6](); Check(Levels(c, .5f, .6f, .4f, .75f) && Near(c.VoiceVolume, 1), "The real XR effects button steps only Effects to the next 25% level");
+                actions[7](); Check(Levels(c, .5f, .6f, .4f, .75f) && Near(c.VoiceVolume, 0), "The real XR voice button cycles only Voice (100% wraps to 0%)");
+                c.SetSetting("Effects", .7f); actions[0](); Check(Levels(c, .75f, .6f, .4f, .7f), "The XR master control changes the listener route while keeping all four mix levels");
                 actions[1](); Check(c.QuietMode, "The XR page's actual mute callback enables the common Quiet setting");
                 actions[1](); Check(!c.QuietMode && Levels(c, .75f, .6f, .4f, .7f), "The XR unmute callback preserves all independent volumes");
                 AssertRegisteredMix(c);
             }
             finally { page.SetValue(notebook, oldPage); refresh.Invoke(notebook, null); }
+        }
+        private static void ValidateVoiceRoute(FishingPrototype c)
+        {
+            var go = new GameObject("Audio mix voice probe"); var probe = go.AddComponent<AudioSource>();
+            try
+            {
+                c.RegisterAudioSource(probe, FishingAudioCategory.Voice, .5f);
+                c.SetSetting("Ambient", .45f); c.SetSetting("Effects", 0); c.SetSetting("Voice", .8f); c.ApplyAudioSettings();
+                Check(Near(probe.volume, .4f) && CategorySilent(c, FishingAudioCategory.Effects),
+                    "Voice keeps its own route: effects at zero do not silence resident dialogue");
+                c.SetSetting("Effects", .6f); c.SetSetting("Voice", 0); c.ApplyAudioSettings();
+                Check(probe.volume == 0 && c.ActionAudio.ItemSource.volume > 0, "Voice zero silences dialogue without touching effects");
+                c.SetSetting("Voice", 1);
+            }
+            finally { Registry(c).Remove(probe); Object.DestroyImmediate(go); }
         }
         private static void AssertRegisteredMix(FishingPrototype c)
         {
@@ -280,7 +298,7 @@ namespace BoatAttack.EditorTools
             {
                 var source = pair.Key as AudioSource; if (source == null) continue;
                 var category = (FishingAudioCategory)Field(pair.Value, "Category");
-                float route = category == FishingAudioCategory.Music ? c.MusicVolume : category == FishingAudioCategory.Ambient ? c.AmbientVolume : c.EffectsVolume;
+                float route = c.CategoryVolume(category);
                 float gain = (float)Field(pair.Value, "BaseVolume");
                 valid &= Finite(source.volume) && Near(source.volume, gain * route) && source.volume >= 0 && source.volume <= 1;
                 count++;
@@ -306,7 +324,7 @@ namespace BoatAttack.EditorTools
         private static Preference[] CapturePreferences()
         {
             var result = new List<Preference>();
-            foreach (string key in new[] { "Master", "Music", "Ambient", "Effects" })
+            foreach (string key in new[] { "Master", "Music", "Ambient", "Effects", "Voice" })
                 result.Add(new Preference { Key = SettingsPrefix + key, Exists = PlayerPrefs.HasKey(SettingsPrefix + key), Value = PlayerPrefs.GetFloat(SettingsPrefix + key, -913) });
             result.Add(new Preference { Key = "Fishing.V3.Quiet", Integer = true, Exists = PlayerPrefs.HasKey("Fishing.V3.Quiet"), Value = PlayerPrefs.GetInt("Fishing.V3.Quiet", -913) });
             return result.ToArray();

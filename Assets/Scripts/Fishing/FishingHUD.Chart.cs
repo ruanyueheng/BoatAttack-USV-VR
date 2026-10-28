@@ -17,7 +17,7 @@ namespace BoatAttack.Fishing
                 return;
             }
             var r = Layout.Chart;
-            if (SeaButton(new Rect(r.x, r.y, 156, 28), "M 全域航海图",false,true,14)) c.OpenPortableChart();
+            if (SeaButton(new Rect(r.x, r.y, 156, 28), "M 航海图",false,true,16)) c.OpenPortableChart();
             if (SeaButton(new Rect(r.x+158,r.y,26,28), "－",false,true,13)) c.ToggleChart();
             if (SeaButton(new Rect(r.xMax - 60, r.y, 60, 28), c.ChartRangeMeters + "m",false,true,13)) c.CycleChartRange();
             var center = new Vector2(r.center.x, r.y + 130);
@@ -32,7 +32,7 @@ namespace BoatAttack.Fishing
                 float a=i*Mathf.PI/12; var dir=new Vector2(Mathf.Sin(a),-Mathf.Cos(a));
                 Segment(center+dir*(i%6==0?89:93),center+dir*96,i%6==0?Muted:Faint*new Color(1,1,1,.45f));
             }
-            Label(new Rect(center.x-10,center.y-88,20,20),"N",13,Color.white,true,TextAnchor.MiddleCenter);
+            GiltStar(new Vector2(center.x,center.y-96),5,AmberInk);Label(new Rect(center.x-12,center.y-90,24,22),"N",16,Color.white,true,TextAnchor.MiddleCenter);
             var bearing=ChartPoint(c.NavigationPosition,center)-center;
             for(float d=16;d<bearing.magnitude-13;d+=10)
                 Segment(center+bearing.normalized*d,center+bearing.normalized*Mathf.Min(d+4,bearing.magnitude-13),new Color(1,.77f,.42f,.65f),1.5f);
@@ -97,14 +97,16 @@ namespace BoatAttack.Fishing
         private void DrawWorkshopMarkers(Vector2 center)
         {
             var c=Controller;if(c.WorkshopWorld==null)return;
-            foreach(var station in c.WorkshopWorld.State.Stations)
+            var state=c.WorkshopWorld.State;
+            for(int i=0;i<state.StationCount;i++)
             {
-                var world=new Vector3(station.x,station.y,station.z);
+                var kind=state.StationAt(i,out var x,out var y,out var z);
+                var world=new Vector3(x,y,z);
                 if(FishingPrototype.FlatDistance(c.ExplorerPosition,world)>c.ChartRangeMeters)continue;
                 var p=ChartPoint(world,center);
                 Rounded(new Rect(p.x-9,p.y-9,18,18),MapSurface,3);
                 Outline(new Rect(p.x-9,p.y-9,18,18),MapShoreColor,3,1.5f);
-                Label(new Rect(p.x-9,p.y-10,18,20),station.kind==CraftStation.Furnace?"炉":"工",12,Color.white,true,TextAnchor.MiddleCenter);
+                Label(new Rect(p.x-9,p.y-10,18,20),kind==CraftStation.Furnace?"炉":"工",12,Color.white,true,TextAnchor.MiddleCenter);
             }
             // 只在步行近景显示少量可采资源，不把 64 个节点挤满整张海图。
             if(!c.Ashore || c.ChartRangeMeters>40)return;
@@ -131,10 +133,13 @@ namespace BoatAttack.Fishing
             if(selected)Outline(new Rect(p.x-17,p.y-17,34,34),Gold,17,2);
             Disc(p,12,MapSurface);Outline(new Rect(p.x-12,p.y-12,24,24),color,12,1.5f);
             Label(new Rect(p.x-12,p.y-12,24,24),text,14,Color.white,true,TextAnchor.MiddleCenter);
+            var hit=new Rect(p.x-16,p.y-16,32,32);
+            if(!hit.Contains(Event.current.mousePosition)){if(GUI.Button(hit,GUIContent.none,GUIStyle.none))c.SelectNavigation(target);return;}
+            // Tooltip text is only built for the hovered marker.
             string name=target>c.HomeNavigationIndex?FishingCoastalPresentation.IsletName(target-c.HomeNavigationIndex-1):target==c.HomeNavigationIndex?"回潮渔屋":target==c.ShopNavigationIndex?c.ShopName:target==0?"潮汐渔港":target<=c.fishingSpots.Length
                 ?FishingGrounds.Name(target-1):target>c.ShopNavigationIndex?FishingAdventure.Name(target-c.ShopNavigationIndex-1):FishingExploration.SiteName(target-c.fishingSpots.Length-1);
             string tip=name+" · "+metres.ToString("0")+" m"+(offRange?"（屏外方位）":"");
-            if(GUI.Button(new Rect(p.x-16,p.y-16,32,32),new GUIContent("",tip),GUIStyle.none))c.SelectNavigation(target);
+            if(GUI.Button(new Rect(p.x-16,p.y-16,32,32),Content("",tip),GUIStyle.none))c.SelectNavigation(target);
         }
         private void Segment(Vector2 from,Vector2 to,Color color,float width=1f)
         {

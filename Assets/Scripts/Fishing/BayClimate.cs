@@ -39,7 +39,13 @@ namespace BoatAttack.Fishing
             switch (weather) { case BayWeather.Cloudy: return "海风多云"; case BayWeather.Rain: return "雷雨潮汐"; case BayWeather.Mist: return "薄雾海湾"; case BayWeather.Sunset: return "金色夕照"; default: return "晴朗海湾"; }
         }
         public static FishKind Favored(BayWeather weather) => weather == BayWeather.Rain || weather == BayWeather.Cloudy ? FishKind.Dart : weather == BayWeather.Mist ? FishKind.Puffer : FishKind.Coral;
-        public static float BiteScale(BayWeather weather, FishKind fish) => fish == Favored(weather) ? 0.75f : 1f;
+        // Rain stirs the shallows: every fish bites sooner; the favoured fish sooner still.
+        public static float BiteScale(BayWeather weather, FishKind fish) => (fish == Favored(weather) ? 0.75f : 1f) * (weather == BayWeather.Rain ? 0.7f : 1f);
+        /// <summary>One-line forecast note on how the weather changes fishing and sailing (HUD / notebook).</summary>
+        public static string FishingEffect(BayWeather weather)
+        {
+            switch (weather) { case BayWeather.Rain: return "雨天鱼更爱咬钩，但浪大船晃"; case BayWeather.Cloudy: return "海风强劲：顺风航速更快，逆风更慢"; case BayWeather.Mist: return "雾中可能看到灯语"; case BayWeather.Sunset: return "夕照时分珊瑚鱼更活跃"; default: return "风平浪静，适合远航"; }
+        }
         public static float RareBonus(BayWeather weather, FishKind fish) => fish == Favored(weather) ? 0.04f : 0f;
         public static string MarineName(MarineKind kind)
         {

@@ -18,3 +18,10 @@ The gun archive's `sounds/creativecommons.txt` says Copyright (c) 2009 Vincent S
 This root manifest describes the original 34 action effects only. The subsequent nine user-supplied regional music tracks, 16 generated Meowa action effects and eight generated inspection/rifle effects have separate source records under `UserMusic/`, `Meowa/` and `MeowaInspection/`. See `Docs/REGIONAL_MUSIC_AND_MEOWA.md` and `Docs/AUDIO_MIX_AND_INSPECTION.md` for their mapping, provenance and licensing caveats; they are not covered by the CC0/CC BY notices above.
 
 The later world-audio batch archives 44 Meowa-generated originals under `MeowaWorld/`, yielding 45 runtime clips including an edited water-completion tail. Source URLs, prompts, costs and output hashes are retained there. See `Docs/WORLD_AUDIO_COMPLETION.md` and the shipped `Assets/Resources/FishingAudio/World/Attribution.txt`. These account-generated clips are not declared CC0 or covered by the licenses of the earlier third-party pack; retain applicable provider/account licensing records for distribution.
+
+## v0.44 (2026-10-27)
+
+Kenney RPG Audio (CC0 1.0, from Downloads/kenney_rpg-audio.zip) -> World/BagOpen, BagClose, BookOpen, BookClose, CoinGain, ChestOpen, JumpPush. Originals, License.txt and SHA-256 in V044/2026-10-27; processing in Tools/Art/prepare_v044_audio.sh.
+v0.44 designed cues (BitePing, RareShimmer, LineTensionLoop, PortalEnter, PortalPass, UIConfirm, UIBack, UIReject, UIPage, UINotify, CoinGain, Stinger*, Realm*): original procedural synthesis by this project (Tools/Art/synth_v044_audio.py); CoinGain layers the Kenney CC0 coin recording.
+
+v0.44 redo candidates (not yet shipped): Pixabay sound effects under the Pixabay Content License (free use, no attribution required); pages, CDN URLs in ArtSource/Audio/V044/2026-10-28-pixabay/sources.json.

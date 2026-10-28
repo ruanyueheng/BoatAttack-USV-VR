@@ -96,7 +96,7 @@ namespace BoatAttack.Fishing
         private void Sign(string text,Vector3 point)
         {
             var label=new GameObject(text).AddComponent<TextMesh>();label.transform.SetParent(transform,false);label.transform.localPosition=point;
-            label.text=text;label.font=FishingUIFont.Font;label.fontSize=64;label.characterSize=.026f;label.anchor=TextAnchor.MiddleCenter;label.color=new Color(.93f,.82f,.53f);
+            FishingXRText.Bind(label,text);label.font=FishingUIFont.Font;label.fontSize=64;label.characterSize=.026f;label.anchor=TextAnchor.MiddleCenter;label.color=new Color(.93f,.82f,.53f);
             label.GetComponent<MeshRenderer>().sharedMaterial=label.font.material;
         }
         private void OnDestroy(){if(_mesh!=null)Destroy(_mesh);if(_counterMesh!=null)Destroy(_counterMesh);if(_material!=null)Destroy(_material);}

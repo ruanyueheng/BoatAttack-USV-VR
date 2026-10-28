@@ -188,6 +188,12 @@ namespace BoatAttack.Fishing
             if(solid){var box=parent.gameObject.AddComponent<BoxCollider>();box.center=center;box.size=size;}
             return part;
         }
+        private void Pane(Transform parent,Vector3 center,Vector3 size,Material material=null)
+        {
+            var pane=GameObject.CreatePrimitive(PrimitiveType.Cube);Destroy(pane.GetComponent<Collider>());pane.name=material==null?"Aquarium glass pane":material.name;
+            pane.transform.SetParent(parent,false);pane.transform.localPosition=center;pane.transform.localScale=size;
+            var renderer=pane.GetComponent<Renderer>();renderer.sharedMaterial=material??_glass;if(material==null || material.shader==_glass.shader)renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
         public void Refresh()
         {
             if(_c==null)return;_profile=_c.Career;_day=_profile.Calendar.Day;_sourceCount=_c.RifleHunting.Targets.Count;_growthDays=_profile.AquariumGrowthDays;_fish.Clear();_pets.Clear();_traps.Clear();
@@ -198,12 +204,19 @@ namespace BoatAttack.Fishing
             var aquarium=new GameObject("家园水族箱").transform;aquarium.SetParent(_display,false);aquarium.position=AquariumPosition;
             if(_profile.AquariumLevel>0)
             {
-                FittedModel("FishingV023/Home/tableCoffee",aquarium,new Vector3(0,.25f,0),new Vector3(2.1f,.5f,1),true);
-                FittedModel("FishingV023/Items/Plank",aquarium,new Vector3(0,.51f,0),new Vector3(2,.08f,.9f));
-                foreach(float z in new[]{-.46f,.46f})FittedModel("FishingV023/Items/Glass",aquarium,new Vector3(0,.94f,z),new Vector3(2,.8f,.025f));
-                foreach(float x in new[]{-1f,1f})FittedModel("FishingV023/Items/Glass",aquarium,new Vector3(x,.94f,0),new Vector3(.025f,.8f,.9f));
-                FittedModel("FishingV035/ShoreRock",aquarium,new Vector3(-.65f,.58f,.25f),new Vector3(.30f,.14f,.22f));
-                FittedModel("FishingV035/ShoreRock",aquarium,new Vector3(.63f,.57f,-.22f),new Vector3(.23f,.12f,.19f));
+                // V044 authored cedar stand and tank interior (sand, mossy rocks, weeds, corals) in the vertex palette.
+                var palette=Resources.Load<Material>("FishingV023/CoastalPalette");
+                foreach(var (resource,y) in new[]{("FishingV044/AquariumStand",0f),("FishingV044/AquariumScape",.5f)})
+                {var part=Model(resource,aquarium,new Vector3(0,y,0));if(part!=null){foreach(var r in part.GetComponentsInChildren<Renderer>())r.sharedMaterial=palette;FishingPaintedArt.Apply(part,resource);}}
+                var stand=aquarium.gameObject.AddComponent<BoxCollider>();stand.center=new Vector3(0,.25f,0);stand.size=new Vector3(2.1f,.5f,1);
+                var water=new Material(_glass){name="Aquarium water volume"};water.SetColor("_BaseColor",new Color(.35f,.78f,.8f,.16f));_owned.Add(water);
+                Pane(aquarium,new Vector3(0,.92f,0),new Vector3(1.97f,.72f,.87f),water);
+                // Single flat panes: the Glass item model is a layered bottle and stacked into a milky blue block when stretched.
+                foreach(float z in new[]{-.46f,.46f})Pane(aquarium,new Vector3(0,.94f,z),new Vector3(2,.8f,.01f));
+                foreach(float x in new[]{-1f,1f})Pane(aquarium,new Vector3(x,.94f,0),new Vector3(.01f,.8f,.9f));
+                foreach(float x in new[]{-1f,1f})foreach(float z in new[]{-.46f,.46f})Pane(aquarium,new Vector3(x,.94f,z),new Vector3(.045f,.82f,.045f),_c.wood);
+                foreach(float z in new[]{-.46f,.46f})Pane(aquarium,new Vector3(0,1.355f,z),new Vector3(2.05f,.035f,.045f),_c.wood);
+                foreach(float x in new[]{-1f,1f})Pane(aquarium,new Vector3(x,1.355f,0),new Vector3(.045f,.035f,.95f),_c.wood);
                 foreach(var f in _profile.AquariumFish)
                 {
                     var fish=FishingArt.Fish(aquarium,_owned,_c.PaletteShader,f.fish.kind,f.fish.rare).transform;

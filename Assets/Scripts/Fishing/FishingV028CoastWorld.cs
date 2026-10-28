@@ -151,7 +151,7 @@ namespace BoatAttack.Fishing
         public void ShowSeaFind(FieldItem item)
         {
             if(_find!=null)Destroy(_find);_find=Model(item.ToString(),transform);_findAge=0;
-            _findStart=_c.Ashore?_c.Shore.Position+Vector3.up*1.2f+_c.Shore.Actor.forward*.7f:_c.LandingTarget;_find.transform.position=_findStart;
+            _findStart=_c.Ashore?_c.Shore.Position+Vector3.up*1.2f+_c.Shore.Actor.forward*1.15f:_c.LandingTarget;_find.transform.position=_findStart;
             _c.Effects?.Burst(_find.transform.position,item==FieldItem.SeaTreasure?new Color(1,.78f,.3f):new Color(.65f,.8f,.8f));
         }
         private void Update()
@@ -168,7 +168,7 @@ namespace BoatAttack.Fishing
                 if(_find!=null)
                 {
                     _findAge+=Time.deltaTime;float u=Mathf.SmoothStep(0,1,Mathf.Clamp01(_findAge/.8f));
-                    var end=_c.Ashore?_c.Shore.Position+Vector3.up*1.2f+_c.Shore.Actor.forward*.7f:_c.BoatPoint(new Vector3(-.6f,1.5f,.55f));
+                    var end=_c.Ashore?_c.Shore.Position+Vector3.up*1.2f+_c.Shore.Actor.forward*1.15f:_c.BoatPoint(new Vector3(-.6f,1.5f,.55f));
                     _find.transform.position=Vector3.Lerp(_findStart,end,u)+Vector3.up*Mathf.Sin(u*Mathf.PI)*.3f;
                     _find.transform.rotation=Quaternion.Euler(8,_c.viewCamera.transform.eulerAngles.y+_findAge*12,0);
                     if(_findAge>=4.5f){Destroy(_find);_find=null;}

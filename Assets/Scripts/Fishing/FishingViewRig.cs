@@ -38,6 +38,9 @@ namespace BoatAttack.Fishing
             FirstPerson = !FirstPerson;
             ResetLook();
         }
+        public float LookPitch=>_lookPitch;
+        // Turns the view with the body while keeping a caller-chosen pitch, unlike ResetLook which levels it.
+        public void FaceShore(float pitch) { if(Controller!=null && Controller.Ashore)_shoreYaw=Controller.Shore.Actor.eulerAngles.y; _lookYaw=0f; _lookPitch=Mathf.Clamp(pitch,-65,65); }
         public void ResetLook() { if(Controller!=null && Controller.Ashore)_shoreYaw=Controller.Shore.Actor.eulerAngles.y; _lookYaw = _lookPitch = 0f; _reset = true; IsLooking = false; }
 
         public void ResetInput() { _lookGate.Reset(); IsLooking = false; ReleaseCursor(); }
@@ -137,6 +140,7 @@ namespace BoatAttack.Fishing
                 c.viewCamera.nearClipPlane = .04f;
                 float pitch = Mathf.Clamp((fishingSeat ? 25f : 0f) + _lookPitch, -45f, 70f);
                 c.viewCamera.transform.rotation = yaw * Quaternion.Euler(pitch, (fishingSeat ? FishingPrototype.FishingSeatYaw : 0f) + _lookYaw, 0f);
+                if(!c.HasPendingCatch && !c.InspectingItem)c.viewCamera.transform.position += LookDownOffset(c.viewCamera.transform.rotation);
                 c.viewCamera.fieldOfView = c.FieldOfView;
             }
             else
@@ -181,15 +185,32 @@ namespace BoatAttack.Fishing
             if(IsLooking)ApplyShoreLookDelta(mouse.delta.ReadValue());
             var rotation=Quaternion.Euler(_lookPitch,_shoreYaw+_lookYaw,0);
             var eye=c.Shore.Character.EyePosition;
-            c.viewCamera.transform.position=FirstPerson?eye:ConstrainToVisibleSegment(eye,eye+rotation*new Vector3(0,.65f,-4.2f),c.Player.transform);
+            float rifleAim=c.RifleHunting!=null?c.RifleHunting.AimBlend:0;
+            // Held catches/items are framed from the true eye; the look-down shift would push them up the view.
+            float lookDown=c.HasPendingCatch || c.InspectingItem?0:1;
+            c.viewCamera.transform.position=FirstPerson?eye+ClearLookDown(eye,LookDownOffset(rotation)*(1-rifleAim)*lookDown,c.Shore.Actor):ConstrainToVisibleSegment(eye,eye+rotation*new Vector3(0,.65f,-4.2f),c.Player.transform);
             c.viewCamera.transform.rotation=FirstPerson?rotation:Quaternion.LookRotation(eye-Vector3.up*.45f-c.viewCamera.transform.position,Vector3.up);
             c.viewCamera.nearClipPlane=.04f;
             // Unity 的 fieldOfView 是垂直角；只放大第一人称世界，不放大第三人称或实体双手。
             float zoom=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.72f,1,BinocularBlend));
             float opticalFov=2*Mathf.Atan(Mathf.Tan(c.FieldOfView*Mathf.Deg2Rad*.5f)/BinocularMagnification)*Mathf.Rad2Deg;
-            float rifleZoom=c.RifleHunting!=null?c.RifleHunting.AimBlend:0;
+            float rifleZoom=rifleAim;
             c.viewCamera.fieldOfView=FirstPerson?Mathf.Lerp(Mathf.Lerp(c.FieldOfView,c.FieldOfView*.76f,rifleZoom),opticalFov,zoom):58;
             _reset=true; // Boarding must not interpolate the boat camera from an inland position.
+        }
+        // 头已隐藏：低头时眼位沿水平朝向前移，让颈口落在视锥后方，只看到胸腹外侧。
+        // Against a wall the forward eye shift must stop short of the surface instead of clipping through it.
+        private static Vector3 ClearLookDown(Vector3 eye,Vector3 offset,Transform self)
+        {
+            float length=offset.magnitude;if(length<.001f)return offset;
+            foreach(var hit in Physics.SphereCastAll(eye,.1f,offset/length,length,~(1<<4),QueryTriggerInteraction.Ignore))
+                if(!hit.transform.IsChildOf(self) && !FishingShore.NonSolidSurface(hit.collider) && hit.distance<length)length=Mathf.Max(0,hit.distance-.02f);
+            return offset.normalized*length;
+        }
+        private static Vector3 LookDownOffset(Quaternion rotation)
+        {
+            var f=rotation*Vector3.forward;
+            return new Vector3(f.x,0,f.z).normalized*(.16f*Mathf.Clamp01(-f.y));
         }
         private Vector3 ConstrainToVisibleSegment(Vector3 pivot,Vector3 position,Transform boat)
         {

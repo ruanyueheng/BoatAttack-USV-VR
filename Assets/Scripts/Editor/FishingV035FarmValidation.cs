@@ -83,13 +83,13 @@ namespace BoatAttack.EditorTools
             if(id<12 && c.Farm.Work(id)!=FarmWork.Water && c.Farm.CarryingCan)
             {var put=Use(c,15);while(put.MoveNext())yield return null;}
             var target=c.Farm.Target(id);var stance=target.position+Vector3.back*(id<12?1.1f:1.3f);
-            if(id==15)stance=target.position+Vector3.left*.65f;
+            if(id==15)stance=target.position+Vector3.back*.65f;
             stance.y=c.Home.Origin.y;
             if(id<12)stance.x-=.25f;
             if(id<12 && (c.Farm.CarryingCan || FishingPrototype.FlatDistance(c.Shore.Position,c.Farm.Target(15).position)<1.2f))foreach(var point in new[]{new Vector3(10.2f,0,-10.5f),new Vector3(12.8f,0,-11)}){var approach=Walk(c,c.Home.Origin+point);while(approach.MoveNext())yield return null;}
             if(id==13)foreach(var point in new[]{new Vector3(12.8f,0,-11),new Vector3(12.8f,0,-5.1f)}){var approach=Walk(c,c.Home.Origin+point);while(approach.MoveNext())yield return null;}
             if(id==12){var approach=Walk(c,c.Home.Origin+new Vector3(10.2f,0,-10.5f));while(approach.MoveNext())yield return null;}
-            if(id==15)foreach(var point in new[]{new Vector3(12.8f,0,-11),new Vector3(10.8f,0,-10.7f),new Vector3(10.8f,0,-9.1f)}){var approach=Walk(c,c.Home.Origin+point);while(approach.MoveNext())yield return null;}
+            if(id==15)foreach(var point in new[]{new Vector3(12.8f,0,-11),new Vector3(11.8f,0,-10.7f),new Vector3(11.8f,0,-10.05f)}){var approach=Walk(c,c.Home.Origin+point);while(approach.MoveNext())yield return null;}
             if(id==14){var approach=Walk(c,c.Home.Origin+new Vector3(10.2f,0,-2.5f));while(approach.MoveNext())yield return null;}
             var walk=Walk(c,stance);while(walk.MoveNext())yield return null;
             if(id==15)

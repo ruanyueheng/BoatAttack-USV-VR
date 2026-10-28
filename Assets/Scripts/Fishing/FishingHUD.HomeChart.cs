@@ -26,10 +26,9 @@ namespace BoatAttack.Fishing
             }
             if(Time.frameCount>_homeChartPaintFrame+1)_homeChartDragging=false;
             _homeChartPaintFrame=Time.frameCount;
-            Fill(-_offset / _scale, 0, Screen.width / _scale, _height, new Color(.015f, .035f, .045f, .88f));
             var panel = new Rect(52, 38, 1496, _height - 76);
-            Card(panel, Gold);
-            Label(panel.x + 28, panel.y + 18, 850, 34, (c.PortableChart!=null && c.PortableChart.Active?"随身航海图":"航线书桌")+" · 回潮海全域", 27, InkText, true);
+            ParchmentSpread(panel);
+            Label(panel.x + 28, panel.y + 14, 850, 40, Spaced((c.PortableChart!=null && c.PortableChart.Active?"随身航海图":"航线书桌")+"·回潮海全域"), 27, InkText, true);
             Label(panel.x + 28, panel.y + 58, 1000, 24, "独立阅读窗口  /  滚轮缩放  /  拖动底图  /  点击航点标记目的地", 14, Muted);
             if (Button(new Rect(panel.xMax - 178, panel.y + 20, 150, 42), "M / Esc 收起", true, false, 16))
             { c.CloseHomeChart(); _homeChartDragging = false; return; }
@@ -51,17 +50,22 @@ namespace BoatAttack.Fishing
             Rounded(new Rect(map.x + 8, map.y + 6, 76, 25),MapSurface,3);
             Label(new Rect(map.x + 14, map.y + 7, 68, 22), "北 ↑ N", 15, InkText, true);
             Label(panel.x + 28, panel.yMax - 64, panel.width - 56, 22, HomeChartTerrainStatus, 13, Muted);
-            Label(panel.x + 28, panel.yMax - 38, panel.width - 56, 20, "蓝色港口 · 橙色渔场 · 绿色岛屿 · 金圈为目标  /  未开放航点不可选  /  关闭后回到原镜头与游戏状态", 12, Muted);
+            Label(panel.x + 28, panel.yMax - 38, panel.width - 56, 20, "蓝色港口 · 橙色渔场 · 绿色岛屿 · 金色罗盘圈为目标  /  未开放航点不可选  /  关闭后回到原镜头与游戏状态", 12, Muted);
             DrawHomeChartWaypointList(list);
             HandleHomeChartMapInput(map);
         }
 
         private void DrawHomeUnknownGrid(Rect area)
         {
-            for (float x = area.x; x < area.xMax; x += 24)
-                Segment(new Vector2(x, area.y), new Vector2(Mathf.Min(x + 24, area.xMax), Mathf.Min(area.y + 24, area.yMax)), Hairline * .3f);
-            for (float y = area.y + 24; y < area.yMax; y += 24)
-                Segment(new Vector2(area.x, y), new Vector2(Mathf.Min(area.x + 24, area.xMax), Mathf.Min(y + 24, area.yMax)), Hairline * .3f);
+            // 未探索海域 = 海雾剪影：两层错位雾团铺满，已测绘地形随后覆盖其上。
+            GUI.BeginClip(area);
+            int n=0;// 确定性抖动：雾团大小/位置不成网格，避免壁纸感
+            for(float y=-90;y<area.height;y+=130)for(float x=-120+(n%2)*70;x<area.width;x+=150,n++)
+            {
+                float j=Mathf.Repeat(Mathf.Sin(n*12.9898f)*43758.55f,1),size=260+j*140;
+                Tinted(new Rect(x+(j-.5f)*80,y+(Mathf.Repeat(j*7.3f,1)-.5f)*70,size,size*.82f),FishingUITheme.SeaFog,FishingUITheme.Blend(new Color(1,1,1,.42f+j*.2f),new Color(.55f,.62f,.75f,.35f+j*.15f)));
+            }
+            GUI.EndClip();
         }
 
         private void DrawHomeChartGrid(Rect area)
@@ -113,11 +117,11 @@ namespace BoatAttack.Fishing
                 var p = HomeChartProject(world, c.HomeChartCenterXZ, c.HomeChartRangeMeters, area);
                 if (p.x < area.x + 18 || p.x > area.xMax - 18 || p.y < area.y + 18 || p.y > area.yMax - 18) continue;
                 var color = !available ? Faint : i == 0 ? MapPortColor : i <= c.fishingSpots.Length ? MapFishColor : MapShoreColor;
-                if (i == c.NavigationTarget) Outline(new Rect(p.x - 17, p.y - 17, 34, 34), Gold, 17, 2);
+                if (i == c.NavigationTarget) Tinted(new Rect(p.x - 26, p.y - 26, 52, 52), FishingUITheme.CompassRing, Gold);
                 Disc(p, 12, MapSurface); Outline(new Rect(p.x - 12, p.y - 12, 24, 24), color, 12, 2);
                 Label(new Rect(p.x - 12, p.y - 12, 24, 24), i == 0 ? "港" : i == c.HomeNavigationIndex ? "家" : i.ToString(), 12, InkText, true, TextAnchor.MiddleCenter);
                 bool enabled = GUI.enabled; GUI.enabled = enabled && available;
-                if (GUI.Button(new Rect(p.x - 16, p.y - 16, 32, 32), new GUIContent("", name + (available ? "" : " · 尚未开放")), GUIStyle.none))
+                if (GUI.Button(new Rect(p.x - 16, p.y - 16, 32, 32), Content("", available ? name : name + " · 尚未开放"), GUIStyle.none))
                     c.SelectHomeChartNavigation(i);
                 GUI.enabled = enabled;
             }

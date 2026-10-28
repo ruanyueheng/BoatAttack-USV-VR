@@ -85,7 +85,7 @@ namespace BoatAttack.EditorTools
             c.ToggleJournal();Check(c.ResolveCatch(false) && c.Letter.CanRead,"Settling the pending catch restores reading eligibility");yield return null;
             foreach(int id in new[]{0,1,2,3,5})
             {
-                var npc=c.Residents.Person(id);var group=npc.GetComponent<LODGroup>();
+                var npc=c.Residents.Person(id);var group=npc.GetComponentInChildren<LODGroup>(); // v044: model sits under the logical body
                 Check(group!=null && group.lodCount==2,"Resident has authored near/far LODs "+id);
                 foreach(var lod in group.GetLODs())foreach(var renderer in lod.renderers)
                     Check(renderer.sharedMaterial.GetTexture("_BaseMap")!=null && renderer.sharedMaterial.GetTexture("_BumpMap")!=null,"Resident retains skin, hair, eyes and fabric atlas "+id);

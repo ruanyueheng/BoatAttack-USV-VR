@@ -4,19 +4,65 @@ namespace BoatAttack.Fishing
     public sealed partial class FishingHUD
     {
         private void Dim()=>Fill(-_offset/_scale,0,Screen.width/_scale,_height,new Color(.01f,.025f,.04f,.64f));
+        private RenderTexture _pauseBackdrop;
+        private bool _pauseCapturing;
+        /// <summary>One frozen, downsampled frame (1/16 → 1/8 bilinear = soft blur) reused while paused: zero per-frame cost.</summary>
+        private bool PauseBackdrop()
+        {
+            if(_pauseBackdrop==null){if(!_pauseCapturing){_pauseCapturing=true;StartCoroutine(CapturePauseBackdrop());}return false;}
+            var previous=GUI.color;GUI.color=Faded(Color.white);
+            GUI.DrawTexture(new Rect(-_offset/_scale,0,Screen.width/_scale,_height),_pauseBackdrop,ScaleMode.StretchToFill,false);GUI.color=previous;
+            Fill(-_offset/_scale,0,Screen.width/_scale,_height,new Color(.02f,.04f,.08f,.45f));
+            Tinted(new Rect(-_offset/_scale-200,-120,Screen.width/_scale*.75f,_height+240),FishingUITheme.TitleGlow,new Color(1,1,1,.9f));
+            return true;
+        }
+        private System.Collections.IEnumerator CapturePauseBackdrop()
+        {
+            yield return new WaitForEndOfFrame();
+            var frame=ScreenCapture.CaptureScreenshotAsTexture();
+            int w=Mathf.Max(8,frame.width/16),h=Mathf.Max(8,frame.height/16);
+            var small=RenderTexture.GetTemporary(w,h,0);var half=RenderTexture.GetTemporary(w*4,h*4,0);
+            Graphics.Blit(frame,half);Graphics.Blit(half,small);
+            _pauseBackdrop=new RenderTexture(w*2,h*2,0){name="Pause backdrop",filterMode=FilterMode.Bilinear};
+            Graphics.Blit(small,_pauseBackdrop);
+            RenderTexture.ReleaseTemporary(small);RenderTexture.ReleaseTemporary(half);Destroy(frame);
+            _pauseCapturing=false;
+        }
+        private void ReleasePauseBackdrop(){if(_pauseBackdrop!=null){_pauseBackdrop.Release();Destroy(_pauseBackdrop);_pauseBackdrop=null;}}
+        private bool PauseOption(ref float y,string text,bool enabled)
+        {
+            var r=new Rect(80,y,380,50);y+=56;
+            bool hover=enabled && r.Contains(Event.current.mousePosition);
+            if(hover){Fill(r.x+30,r.yMax-6,240,1,AmberInk*new Color(1,1,1,.6f));GiltStar(new Vector2(r.x+10,r.center.y),7,AmberInk);}
+            float previous=_fade;if(!enabled)_fade*=.4f;
+            DisplayText(new Rect(r.x+31,r.y+11,r.width,36),text,24,new Color(0,0,0,.6f),true,TextAnchor.UpperLeft);
+            DisplayText(new Rect(r.x+30,r.y+10,r.width,36),text,24,hover?AmberInk:CreamInk,true,TextAnchor.UpperLeft);
+            _fade=previous;
+            bool clicked=GUI.Button(r,GUIContent.none,GUIStyle.none) && enabled;
+            if(clicked)Controller.WorldAudio?.Play("UIConfirm",Controller.ExplorerPosition,.24f);
+            return clicked;
+        }
         private void DrawPause()
         {
-            var c=Controller;Dim();
+            var c=Controller;
+            if(!PauseBackdrop())return;
             if(c.MenuControls){DrawMenuControls(new Rect(380,(_height-690)*.5f,1100,690));return;}
-            var r=new Rect(330,(_height-686)*.5f,940,686);Rounded(r,Ink,12);Outline(r,Hairline,12);
-            ChapterImage(new Rect(r.x+1,r.y+1,r.width-2,172),7);
-            Rounded(new Rect(r.x+25,r.y+42,360,93),new Color(.02f,.07f,.11f,.87f),6);
-            DisplayText(new Rect(r.x+49,r.y+59,320,47),"在海风里歇一会",32,CreamInk,true);
-            DisplayText(new Rect(r.x+51,r.y+110,300,26),"航程已暂停 · "+(c.LastAutoSave.Length>0?"自动保存 "+c.LastAutoSave:"内存进度保留"),15,AmberInk);
-            float x=r.x+30,y=r.y+204,w=432;
-            if(Button(new Rect(x,y,w,47),"操作与画面设置",true,true)){SettingsTab=0;c.MenuControls=true;}
-            if(Button(new Rect(x+w+16,y,w,47),"声音混音：BGM / 音效 / 环境",true,true)){SettingsTab=2;c.MenuControls=true;}
-            y+=65;
+            // V044：左侧竖排主选项（当前项金星），右侧羊皮纸放设置开关。
+            float top=(_height-560)*.5f;
+            DisplayText(new Rect(80,top-6,420,52),Spaced("在海风里歇一会"),34,CreamInk,true);
+            GiltRule(80,top+54,300);
+            DisplayText(new Rect(82,top+64,420,24),"航程已暂停 · "+(c.LastAutoSave.Length>0?"自动保存 "+c.LastAutoSave:"内存进度保留"),15,AmberInk);
+            float oy=top+112;
+            if(PauseOption(ref oy,"继续航行",true))c.TogglePause();
+            if(PauseOption(ref oy,"操作与画面设置",true)){SettingsTab=0;c.MenuControls=true;}
+            if(PauseOption(ref oy,"声音混音",true)){SettingsTab=2;c.MenuControls=true;}
+            if(PauseOption(ref oy,"手动保存",c.CanContinue))c.OpenSaveMenu("save");
+            if(PauseOption(ref oy,"读取存档",true))c.OpenSaveMenu("load");
+            if(PauseOption(ref oy,"返回开始菜单",!c.HasPendingCatch))c.OpenStartMenu();
+            if(PauseOption(ref oy,"退出游戏",true))Application.Quit();
+            var r=new Rect(640,top,880,560);MenuSheet(r,false);
+            ChapterImage(new Rect(r.x+24,r.y+22,r.width-48,150),7);
+            float x=r.x+34,y=r.y+196,w=398;
             if(Button(new Rect(x,y,w,47),"舒适航行："+(c.ComfortMode?"开启":"标准")))c.ToggleComfort();
             if(Button(new Rect(x+w+16,y,w,47),"环境特效："+(c.Weather.ReducedEffects?"精简":"标准")))c.Weather.ToggleReducedEffects();
             y+=65;
@@ -26,12 +72,7 @@ namespace BoatAttack.Fishing
             y+=65;
             if(Button(new Rect(x,y,w,47),"世界仪表："+(c.WorldInstruments?"开启":"关闭")))c.ToggleInstruments();
             if(Button(new Rect(x+w+16,y,w,47),"显示模式："+(Screen.fullScreen?"全屏":"窗口")))c.SetFullscreen(!Screen.fullScreen);
-            if(Button(new Rect(x,r.y+480,w,45),"手动保存（三个槽）",c.CanContinue))c.OpenSaveMenu("save");
-            if(Button(new Rect(x+w+16,r.y+480,w,45),"读取存档"))c.OpenSaveMenu("load");
-            if(Button(new Rect(x,r.y+566,278,49),"继续航行",true,true))c.TogglePause();
-            if(Button(new Rect(x+300,r.y+566,278,49),"返回开始菜单",!c.HasPendingCatch))c.OpenStartMenu();
-            if(Button(new Rect(x+600,r.y+566,278,49),"退出游戏"))Application.Quit();
-            Label(x,r.yMax-29,870,22,"图标：Delapouite / game-icons.net · CC BY 3.0",11,Muted);
+            Label(x,r.yMax-36,812,22,"图标：Delapouite / game-icons.net · CC BY 3.0",11,Muted);
         }
     }
 }

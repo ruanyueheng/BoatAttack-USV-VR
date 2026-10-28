@@ -61,7 +61,7 @@ namespace BoatAttack.Fishing
             float distance = Vector3.Distance(_climb.Bottom, _climb.ClimbEnd);
             bool effort = input.y > .1f;
             _motion.Exert(effort, Mathf.Abs(input.y) < .1f, dt);
-            float speed = Stamina > .08f || input.y < 0 ? 1.8f : .45f;
+            float speed = (Stamina > .08f || input.y < 0 ? 1.8f : .45f) * (UnityEngine.XR.XRSettings.isDeviceActive ? .6f : 1f); // VR: slower vertical vection
             _climbProgress = Mathf.Clamp01(_climbProgress + input.y * speed * dt / Mathf.Max(.1f, distance));
             // Finish the vertical rungs beside the landing before stepping onto its solid floor.
             var target = Vector3.Lerp(_climb.Bottom, _climb.ClimbEnd, _climbProgress) + Vector3.up * .08f;

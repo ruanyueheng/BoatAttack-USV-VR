@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
@@ -24,7 +25,7 @@ namespace BoatAttack.Fishing
             public ulong TimingStamp;
             public Vector3 Position;
             public float Daylight;
-            public long Allocated,Managed,Native,Graphics;
+            public long Allocated,Managed,Native,Graphics,DrawCalls,SetPass,Triangles;
         }
         private FishingPrototype _c;
         private Sample[] _samples;
@@ -36,6 +37,8 @@ namespace BoatAttack.Fishing
         private ulong _lastTimingStamp;
         private bool _timingsEnabled,_stopped,_allocationCounterAvailable;
         private string _metadata;
+        // Render counters are available in release players; -1 means the counter is unavailable.
+        private ProfilerRecorder _drawCalls,_setPass,_triangles;
         public string OutputPath { get; private set; }
         public int Segment { get; set; }
 
@@ -51,6 +54,7 @@ namespace BoatAttack.Fishing
         {
             if(c==null || _samples!=null)throw new InvalidOperationException("Performance capture needs one initialized controller and cannot be restarted.");
             _c=c;RenderPipelineManager.endCameraRendering+=WorldCameraRendered;_samples=new Sample[Capacity];_started=_previous=Time.realtimeSinceStartupAsDouble;
+            _drawCalls=ProfilerRecorder.StartNew(ProfilerCategory.Render,"Draw Calls Count");_setPass=ProfilerRecorder.StartNew(ProfilerCategory.Render,"SetPass Calls Count");_triangles=ProfilerRecorder.StartNew(ProfilerCategory.Render,"Triangles Count");
             _timingsEnabled=FrameTimingManager.IsFeatureEnabled();
             var pipeline=GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             _metadata="UTC start: "+DateTime.UtcNow.ToString("O",Invariant)+"\nGame: "+FishingPrototype.Version
@@ -101,7 +105,8 @@ namespace BoatAttack.Fishing
             _samples[_count++]=new Sample{Frame=Time.frameCount,CameraFrame=_lastWorldRenderFrame,Seconds=now-_started,Wall=(now-_previous)*1000,
                 Cpu=cpu,Main=main,Render=render,Gpu=gpu,TimingStamp=stamp,Position=_c.ExplorerPosition,
                 State=state,Segment=Segment,Quality=_c.GraphicsQuality,Target=_c.NavigationTarget,Daylight=_c.Weather!=null?_c.Weather.Daylight:float.NaN,
-                Gc0=gc0-_gc0,Gc1=gc1-_gc1,Gc2=gc2-_gc2,Allocated=_allocationCounterAvailable?Math.Max(0,allocated-_allocated):-1,Managed=_managed,Native=_native,Graphics=_graphics};
+                Gc0=gc0-_gc0,Gc1=gc1-_gc1,Gc2=gc2-_gc2,Allocated=_allocationCounterAvailable?Math.Max(0,allocated-_allocated):-1,Managed=_managed,Native=_native,Graphics=_graphics,
+                DrawCalls=_drawCalls.Valid?_drawCalls.LastValue:-1,SetPass=_setPass.Valid?_setPass.LastValue:-1,Triangles=_triangles.Valid?_triangles.LastValue:-1};
             _previous=now;_gc0=gc0;_gc1=gc1;_gc2=gc2;_allocated=allocated;
             if(_count==Capacity || now-_started>=Duration)StopAndWrite();
         }
@@ -121,13 +126,14 @@ namespace BoatAttack.Fishing
                 OutputPath=Path.Combine(folder,"voyage-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff",Invariant)+"-"+Guid.NewGuid().ToString("N").Substring(0,8)+".csv");
                 using(var writer=new StreamWriter(OutputPath,false,new UTF8Encoding(false)))
                 {
-                    writer.WriteLine("frame,seconds,wall_ms,cpu_frame_ms,cpu_main_ms,cpu_render_ms,gpu_ms,timing_timestamp,x,y,z,state_flags,quality,navigation_target,daylight,main_thread_allocated_bytes,gc0,gc1,gc2,managed_heap_bytes,unity_allocated_bytes,graphics_driver_bytes,segment_id,world_camera_frame");
+                    writer.WriteLine("frame,seconds,wall_ms,cpu_frame_ms,cpu_main_ms,cpu_render_ms,gpu_ms,timing_timestamp,x,y,z,state_flags,quality,navigation_target,daylight,main_thread_allocated_bytes,gc0,gc1,gc2,managed_heap_bytes,unity_allocated_bytes,graphics_driver_bytes,segment_id,world_camera_frame,draw_calls,setpass_calls,triangles");
                     for(int i=0;i<_count;i++)
                     {
                         var s=_samples[i];
                         writer.WriteLine(string.Join(",",s.Frame.ToString(Invariant),Number(s.Seconds),Number(s.Wall),Number(s.Cpu),Number(s.Main),Number(s.Render),Number(s.Gpu),s.TimingStamp.ToString(Invariant),
                             Number(s.Position.x),Number(s.Position.y),Number(s.Position.z),s.State.ToString(Invariant),s.Quality.ToString(Invariant),s.Target.ToString(Invariant),Number(s.Daylight),
-                            s.Allocated>=0?s.Allocated.ToString(Invariant):"NA",s.Gc0.ToString(Invariant),s.Gc1.ToString(Invariant),s.Gc2.ToString(Invariant),Memory(s.Managed),Memory(s.Native),Memory(s.Graphics),s.Segment.ToString(Invariant),s.CameraFrame.ToString(Invariant)));
+                            s.Allocated>=0?s.Allocated.ToString(Invariant):"NA",s.Gc0.ToString(Invariant),s.Gc1.ToString(Invariant),s.Gc2.ToString(Invariant),Memory(s.Managed),Memory(s.Native),Memory(s.Graphics),s.Segment.ToString(Invariant),s.CameraFrame.ToString(Invariant),
+                            s.DrawCalls>=0?s.DrawCalls.ToString(Invariant):"NA",s.SetPass>=0?s.SetPass.ToString(Invariant):"NA",s.Triangles>=0?s.Triangles.ToString(Invariant):"NA"));
                     }
                 }
                 var report=new StringBuilder(_metadata).Append("State bits: 1 ashore, 2 rifle visible, 4 paused, 8 start menu, 16 realm, 32 anchored.\nCollected frames: ").Append(_count).Append('\n');
@@ -139,7 +145,7 @@ namespace BoatAttack.Fishing
                 Debug.Log("[PERFORMANCE] Wrote "+_count+" frames: "+OutputPath);
             }
             catch(Exception ex){Debug.LogError("[PERFORMANCE] Capture could not be saved: "+ex);}
-            finally{RenderPipelineManager.endCameraRendering-=WorldCameraRendered;enabled=false;}
+            finally{RenderPipelineManager.endCameraRendering-=WorldCameraRendered;_drawCalls.Dispose();_setPass.Dispose();_triangles.Dispose();enabled=false;}
         }
 
         private static string Summarize(string label,double[] values,int count)

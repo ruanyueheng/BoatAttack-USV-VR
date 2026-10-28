@@ -38,6 +38,8 @@ namespace BoatAttack.EditorTools
             bool planned=c.WaterRoute.Plan();
             Debug.Log("[V024] ROUTE: "+c.NavigationName+" target="+c.NavigationPosition+" berth="+home.Berth+" start="+c.Player.transform.position+" clearGoal="+c.WaterRoute.ClearPoint(home.Berth)+" failure="+c.WaterRoute.Failure);
             Check(c.NavigationName=="回潮渔屋" && c.NavigationPosition==home.Berth && planned,"Home marker target resolves to reachable dedicated berth");
+            if(!c.WaterRoute.ClearPoint(home.Berth))foreach(var blocker in Physics.OverlapCapsule(home.Berth+Vector3.up*1.2f,home.Berth+Vector3.up*2.2f,1.8f,~(1<<4),QueryTriggerInteraction.Ignore))
+                Debug.Log("[V024] BERTH BLOCKER: "+blocker.name+" / "+blocker.transform.parent?.name+" / "+blocker.bounds);
             Check(c.WaterRoute.ClearPoint(home.Berth),"Home berth preserves hull clearance");
             c.ReturnToHarbor();yield return null;
             var rb=c.Player.engine.RB;var hull=c.Player.GetComponent<MeshCollider>();

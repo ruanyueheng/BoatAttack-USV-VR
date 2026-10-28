@@ -65,7 +65,7 @@ namespace BoatAttack.Fishing
         private TextMesh Text(Transform parent,string value,Vector3 local,float scale)
         {
             var go=new GameObject("Encounter label",typeof(TextMesh));go.transform.SetParent(parent,false);go.transform.localPosition=local;
-            var text=go.GetComponent<TextMesh>();text.text=value;text.font=FishingUIFont.Font;text.fontSize=48;text.characterSize=scale;
+            var text=go.GetComponent<TextMesh>();FishingXRText.Bind(text,value);text.font=FishingUIFont.Font;text.fontSize=48;text.characterSize=scale;
             text.anchor=TextAnchor.MiddleCenter;text.alignment=TextAlignment.Center;text.color=new Color(1,.94f,.75f);
             if(text.font!=null)go.GetComponent<MeshRenderer>().sharedMaterial=text.font.material;
             return text;

@@ -10,40 +10,18 @@ namespace BoatAttack.Fishing
     {
         private FishingPrototype _c;
         private Transform _sky,_sweep;
-        private Material _stars,_moon,_beam,_lens;
+        private Material _beam,_lens;
         private readonly List<Object> _owned=new List<Object>();
         private readonly Light[] _lights=new Light[2];
         public float Visibility { get; private set; }
         public Transform Moon { get; private set; }
         public Transform LighthouseSweep=>_sweep;
-        public int StarCount=>280;
         public void Build(FishingPrototype controller)
         {
             _c=controller;
+            // Stars, moon, milky way and meteors are drawn by the FishingCoastalSky skybox; this marker follows the moon.
             _sky=new GameObject("V031 moon and constellations").transform;_sky.SetParent(transform,false);
-            _stars=Material("FishingNightSky",new Color(.82f,.90f,1),"Starlight");
-            _moon=Material("FishingNightSky",new Color(1,.88f,.64f),"Crescent moon");_moon.SetFloat("_Moon",1);
-            var v=new List<Vector3>();var uv=new List<Vector2>();var colors=new List<Color>();var triangles=new List<int>();
-            var random=new System.Random(31016);float radius=Mathf.Min(290,_c.viewCamera.farClipPlane*.75f);
-            void Quad(Vector3 center,float size,Color color)
-            {
-                var forward=center.normalized;var right=Vector3.Cross(forward,Vector3.up).normalized*size;var up=Vector3.Cross(right.normalized,forward)*size;
-                int start=v.Count;v.Add(center-right-up);v.Add(center+right-up);v.Add(center+right+up);v.Add(center-right+up);
-                uv.AddRange(new[]{Vector2.zero,Vector2.right,Vector2.one,Vector2.up});for(int i=0;i<4;i++)colors.Add(color);
-                triangles.AddRange(new[]{start,start+1,start+2,start,start+2,start+3});
-            }
-            for(int i=0;i<StarCount;i++)
-            {
-                float azimuth=(float)random.NextDouble()*Mathf.PI*2,elevation=Mathf.Asin(.13f+(float)random.NextDouble()*.85f);
-                var direction=new Vector3(Mathf.Cos(azimuth)*Mathf.Cos(elevation),Mathf.Sin(elevation),Mathf.Sin(azimuth)*Mathf.Cos(elevation));
-                float size=(i%19==0?.62f:.22f+(float)random.NextDouble()*.23f)*radius/250;
-                Quad(direction*radius,size,new Color(1,1-i%3*.035f,1-i%3*.10f,.65f+(float)random.NextDouble()*.35f));
-            }
-            Mesh Finish(string name){var mesh=new Mesh{name=name};mesh.SetVertices(v);mesh.SetUVs(0,uv);mesh.SetColors(colors);mesh.SetTriangles(triangles,0);mesh.RecalculateBounds();_owned.Add(mesh);return mesh;}
-            Render("Stable star dome",_sky,Finish("280 star quads"),_stars);
-            v.Clear();uv.Clear();colors.Clear();triangles.Clear();
-            Quad(new Vector3(-.28f,.40f,.87f).normalized*radius,radius*.038f,Color.white);
-            Moon=Render("Waxing coastal moon",_sky,Finish("Crescent disc"),_moon);
+            Moon=new GameObject("Waxing coastal moon").transform;Moon.SetParent(_sky,false);
             _sweep=new GameObject("Home lighthouse rotating amber beam").transform;_sweep.SetParent(transform,false);
             _sweep.position=_c.Home.LighthouseLens;
             _beam=Material("FishingLighthouseBeam",new Color(4,3.6f,2.8f,.055f),"Lighthouse sea mist beam");
@@ -93,7 +71,8 @@ namespace BoatAttack.Fishing
             float weather=Mathf.Lerp(before,after,Mathf.SmoothStep(0,1,climate.Blend))*(1-_c.Weather.StormAmount);
             Visibility=(1-_c.Career.Calendar.Daylight)*weather;
             _sky.position=_c.viewCamera.transform.position;
-            _stars.SetFloat("_Visibility",Visibility);_moon.SetFloat("_Visibility",Visibility);
+            Moon.localPosition=_c.Weather.MoonDirection*Mathf.Min(290,_c.viewCamera.farClipPlane*.75f);
+            if(RenderSettings.skybox!=null)RenderSettings.skybox.SetFloat("_StarVisibility",Visibility);
             float light=1-_c.Career.Calendar.Daylight;_beam.SetFloat("_Visibility",light);_lens.SetFloat("_Visibility",light);
             _sweep.Rotate(0,seconds*9,0,Space.World);
             foreach(var spot in _lights){spot.enabled=light>.02f;spot.intensity=light*(XRSettings.isDeviceActive?5:8);}

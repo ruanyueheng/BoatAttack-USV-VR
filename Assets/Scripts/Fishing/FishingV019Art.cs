@@ -26,15 +26,19 @@ namespace BoatAttack.Fishing
             model.localScale *= scale;
             model.localPosition -= new Vector3(bounds.center.x, bounds.min.y, bounds.center.z) * scale;
             root.localPosition = point; root.localRotation = Quaternion.Euler(0, yaw, 0);
+            FishingPaintedArt.Apply(root, folder + "/" + name);
             foreach (var renderer in root.GetComponentsInChildren<Renderer>()) renderer.shadowCastingMode = ShadowCastingMode.On;
             return root;
         }
         public static TextMesh Sign(string text, Transform parent, Vector3 point, float size, Color color)
         {
             var label = new GameObject("Sign " + text).AddComponent<TextMesh>(); label.transform.SetParent(parent, false);
-            label.transform.localPosition = point; label.text = text; label.font = FishingUIFont.Font;
+            label.transform.localPosition = point; FishingXRText.Bind(label, text); label.font = FishingUIFont.Font;
             label.fontSize = 64; label.characterSize = size; label.anchor = TextAnchor.MiddleCenter; label.color = color;
-            label.GetComponent<MeshRenderer>().sharedMaterial = label.font.material; return label;
+            label.GetComponent<MeshRenderer>().sharedMaterial = label.font.material;
+            // V044：浅色说明牌改为绘本标签牌（淡纸底 + 细金边、深墨字），靠近时淡入。
+            if (color.grayscale > .6f) { label.color = FishingWorldSign.Ink; label.gameObject.AddComponent<FishingWorldSign>(); }
+            return label;
         }
     }
 }

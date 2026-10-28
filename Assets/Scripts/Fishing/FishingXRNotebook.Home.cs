@@ -51,8 +51,9 @@ namespace BoatAttack.Fishing
         {
             // The sea route uses queue 3100; retain UI/Default's world depth test and draw the notebook afterwards.
             _homeMaterial=FishingUITheme.WorldMaterial;
-            _homePaperSprite=FishingUITheme.PaperSprite;
-            _homeEdgeSprite=FishingUITheme.EdgeSprite;
+            // V044：手账纸与金线框换成绘本水彩纸 / 细金线四芒星框。
+            _homePaperSprite=FishingUITheme.StorybookPaperSprite;
+            _homeEdgeSprite=FishingUITheme.GiltFrameSprite;
             var atlas=Resources.Load<Texture2D>("FishingUIPrototype/NavigationAtlas");
             var titleFont=Resources.Load<Font>("FishingUIPrototype/TideHandSC");
             var art=Resources.Load<Texture2D>("FishingUIPrototype/IslandPostcard");

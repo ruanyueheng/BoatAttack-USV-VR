@@ -5,8 +5,8 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingHUD
     {
-        private static readonly string[] JournalTabs={"鱼获图鉴","传说线索","自然观察","海岸调查","海湾日历","群岛航记","世界与秘境"};
-        private static readonly string[] ChapterNotes={"海的收藏","夕照中的金帆","与万物相遇","沿着潮线走","听潮与候风","寄自远方的信","找回四段回响"};
+        private static readonly string[] JournalTabs={"鱼获图鉴","传说线索","自然观察","海岸调查","海湾日历","群岛航记","世界与秘境","相册图鉴","信件"};
+        private static readonly string[] ChapterNotes={"海的收藏","夕照中的金帆","与万物相遇","沿着潮线走","听潮与候风","寄自远方的信","找回四段回响","镜头里的回潮海","漂流瓶与回信"};
         private int _catalogPage,_selectedFish,_natureSelection;
         private bool _knownFishOnly,_journalDrawn,_journalOrderOpen;
         private float _journalShownAt;
@@ -32,7 +32,7 @@ namespace BoatAttack.Fishing
             var c=Controller;var r=new Rect(72,Mathf.Max(14,(_height-756)*.5f),1456,756);
             if(!_journalDrawn){_journalDrawn=true;_journalShownAt=Time.unscaledTime;}
             float previousFade=_fade;_fade=Mathf.SmoothStep(0,1,Mathf.Clamp01((Time.unscaledTime-_journalShownAt)/.28f));
-            Dim();Rounded(r,Ink,12);Outline(r,Hairline,12);
+            StarrySea(r);
             ThemedPaper(new Rect(r.x+254,r.y,r.width-254,r.height),_journalPage==0 || _journalPage==2?FishingPaperTheme.Herbarium:_journalPage==4?FishingPaperTheme.Workshop:FishingPaperTheme.Celestial);
             Rounded(new Rect(r.x,r.y,254,r.height),SeaInk,12);
             PaperImage(new Rect(r.x+96,r.y+604,62,50),FishingPaperDesign.Crest,Color.white);
@@ -41,24 +41,24 @@ namespace BoatAttack.Fishing
             Fill(r.x+28,r.y+126,192,1,new Color(.86f,.72f,.48f,.4f));
             for(int i=0;i<JournalTabs.Length;i++)
             {
-                var tab=new Rect(r.x+14,r.y+146+i*66,226,58);bool selected=_journalPage==i;
+                var tab=new Rect(r.x+14,r.y+146+i*52,226,48);bool selected=_journalPage==i;
                 if(selected)Rounded(tab,new Color(.18f,.29f,.33f),6);
                 else if(tab.Contains(Event.current.mousePosition))Rounded(tab,new Color(.1f,.19f,.25f),6);
-                var icon=new Rect(tab.x+12,tab.y+11,34,34);
+                var icon=new Rect(tab.x+12,tab.y+7,34,34);
                 if(i==0)FishGlyph(icon,FishKind.Coral,false);
                 else if(i==4)WeatherIcon(icon,Controller.Weather.Climate.Current);
                 else if(i==6)ArtIllustration(icon,"StarPrism");
-                else NavGlyph(icon,new[]{0,5,3,2,6,6,8}[i],selected?AmberInk:CreamInk);
-                DisplayText(new Rect(tab.x+58,tab.y+16,166,30),JournalTabs[i],20,selected?AmberInk:CreamInk);
+                else NavGlyph(icon,new[]{0,5,3,2,6,6,8,3,7}[i],selected?AmberInk:CreamInk);
+                DisplayText(new Rect(tab.x+58,tab.y+10,166,30),JournalTabs[i],20,selected?AmberInk:CreamInk);
                 if(GUI.Button(tab,GUIContent.none,GUIStyle.none))
-                {if(_journalPage!=i)Controller.WorldAudio?.Play("UIConfirm",Controller.ExplorerPosition,.24f);_journalPage=i;_journalOrderOpen=false;}
+                {if(_journalPage!=i)Controller.WorldAudio?.Play("UIPage",Controller.ExplorerPosition,.4f);_journalPage=i;_journalOrderOpen=false;}
             }
             DisplayText(new Rect(r.x+28,r.yMax-100,200,52),"每次发现，都有回响。\n记录随航程保存",15,CreamInk,true);
             if(SeaButton(new Rect(r.x+24,r.yMax-49,206,32),c.ReadingFieldGuide?"Esc  合上手册":"J / Esc  返回海湾",false,true,15))c.ToggleJournal();
             float x=r.x+290;
             Label(x,r.y+27,820,53,_journalOrderOpen?"港口委托":JournalTabs[_journalPage],36,InkText,true);
             Label(x+2,r.y+84,820,26,ChapterNotes[_journalPage]+"    /    回潮海自然档案",16,Muted);
-            Label(new Rect(r.xMax-185,r.y+43,146,28),"0"+(_journalPage+1)+"  /  07",16,Muted,false,TextAnchor.UpperRight);
+            Label(new Rect(r.xMax-185,r.y+43,146,28),(_journalPage+1).ToString("00")+"  /  "+JournalTabs.Length.ToString("00"),16,Muted,false,TextAnchor.UpperRight);
             if(Button(new Rect(r.xMax-250,r.y+79,210,31),_journalOrderOpen?"返回手札":"查看当前委托",true,false,14))_journalOrderOpen=!_journalOrderOpen;
             QuietRule(x,r.y+124,r.width-326);
             var page=new Rect(x,r.y+145,r.width-326,544);
@@ -72,6 +72,8 @@ namespace BoatAttack.Fishing
                 case 4:DrawCalendarPage(page);break;
                 case 5:DrawIslandsPage(page);break;
                 case 6:DrawLorePage(page);break;
+                case 7:DrawAlbumPage(page);break;
+                case 8:DrawLettersPage(page);break;
             }
             Fill(x,r.yMax-49,r.width-326,1,Hairline);
             Label(x,r.yMax-33,r.width-326,22,c.HasPendingCatch?"请先收好或放生待处理的鱼，再阅读航海来信。":"点击卡片查看详情  ·  观察与收集进度永久保留  ·  阅读时海湾暂停",13,Muted);

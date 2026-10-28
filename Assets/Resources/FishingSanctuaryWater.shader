@@ -22,6 +22,7 @@ Shader "BoatAttack/FishingSanctuaryWater"
             #pragma fragment Frag
             #pragma multi_compile_instancing
             #pragma multi_compile_fog
+            #pragma multi_compile _ _WATER_NO_SCENE_TEXTURES
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -56,12 +57,21 @@ Shader "BoatAttack/FishingSanctuaryWater"
                 half3 view=GetWorldSpaceNormalizeViewDir(input.positionWS);n*=dot(n,view)<0?-1:1;
                 half fresnel=.02+.98*pow(1-saturate(dot(n,view)),5);
                 float2 uv=GetNormalizedScreenSpaceUV(input.positionCS);
+                #if defined(_WATER_NO_SCENE_TEXTURES)
+                // PICO tier: no depth/opaque textures; assume a fixed shallow basin.
+                float depth=.6;
+                #else
                 float raw=SampleSceneDepth(uv);float depth=max(0,LinearEyeDepth(raw,_ZBufferParams)+TransformWorldToView(input.positionWS).z);
+                #endif
                 half shallow=exp(-depth*1.4);half3 base=lerp(_DeepColor.rgb,_ShallowColor.rgb,shallow);
                 Light sun=GetMainLight(TransformWorldToShadowCoord(input.positionWS));half3 ambient=SampleSH(n);
                 half3 tint=base*(ambient*.8+sun.color*(.28+.55*saturate(dot(n,sun.direction)))*sun.shadowAttenuation);
                 // One existing opaque-color sample and the environment probe avoid a second scene-rendering camera.
+                #if defined(_WATER_NO_SCENE_TEXTURES)
+                half3 through=_ShallowColor.rgb*(ambient+sun.color*.4);
+                #else
                 half3 through=SampleSceneColor(saturate(uv+n.xz*.006*saturate(depth*2)));
+                #endif
                 half3 reflection=GlossyEnvironmentReflection(reflect(-view,n),input.positionWS,.12h,1.0h);
                 half3 color=lerp(lerp(through,tint,1-exp(-depth*1.1)),reflection,saturate(fresnel*.8+.08));
                 color+=sun.color*pow(saturate(dot(n,normalize(sun.direction+view))),110)*.38*sun.shadowAttenuation;

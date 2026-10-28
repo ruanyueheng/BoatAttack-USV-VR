@@ -4,7 +4,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingHUD
     {
-        private static readonly Color SeaInk=new Color32(14,30,46,255),CreamInk=new Color32(247,235,208,255),AmberInk=new Color32(224,185,119,255);
+        private static readonly Color SeaInk=new Color32(14,30,46,255),CreamInk=new Color32(247,235,208,255),AmberInk=new Color32(232,183,90,255);
         private Texture2D _chapterArt,_titleVeil;
         public int SettingsTab { get; set; }
         private Color TitleFill=>FishingUITheme.TitleFill(Controller.Realms!=null && Controller.Realms.Inside?Controller.Realms.Island+1:0);
@@ -30,7 +30,7 @@ namespace BoatAttack.Fishing
             }
             else
             {
-                ink=ink==Gold?AmberInk:ink==Mint?new Color(.70f,.94f,.83f):ink==Color.white || ink==Muted || ink==Faint?CreamInk:ink;
+                ink=ink==Danger?new Color(1,.64f,.52f):ink==Gold?AmberInk:ink==Mint?new Color(.70f,.94f,.83f):ink==Color.white || ink==Muted || ink==Faint?CreamInk:ink;
                 DisplayText(new Rect(r.x+1,r.y+1,r.width,r.height),text,size,new Color(.015f,.035f,.045f,.95f),false,align);
             }
             DisplayText(r,text,size,ink,heading && size>=30 && !(Controller.MenuControls || Controller.Paused),align);
@@ -120,6 +120,8 @@ namespace BoatAttack.Fishing
         {
             var c=Controller;
             DreamSettingsPaper(new Rect(-_offset/_scale,0,Screen.width/_scale,_height));
+            // 标语衬一层淡纸，避开左侧海草装饰。
+            Rounded(new Rect(118,r.y+76,240,300),FishingUITheme.Blend(new Color(.99f,.96f,.89f,.88f),new Color(.12f,.18f,.27f,.85f)),14);
             WorldLabel(new Rect(132,r.y+88,220,60),"潮汐回响",37,CreamInk,true,onPaper:true);
             WorldLabel(new Rect(136,r.y+158,205,40),"设 置",30,AmberInk,true,onPaper:true);
             WorldLabel(new Rect(131,r.y+255,202,100),"把风声调轻一些，\n把远方看得清一些。",19,CreamInk,false,TextAnchor.UpperCenter,onPaper:true);
@@ -157,15 +159,17 @@ namespace BoatAttack.Fishing
             else
             {
                 SettingSlider(x,y,"总音量","Master",c.MasterVolume);
-                SettingSlider(x,y+87,"BGM 背景音乐","Music",c.MusicVolume);
-                SettingSlider(x,y+174,"环境音","Ambient",c.AmbientVolume);
-                SettingSlider(x,y+261,"动作音效","Effects",c.EffectsVolume);
-                WorldLabel(new Rect(x+248,y+38,800,25),"同时调整下方三路音量",15,AmberInk,onPaper:true);
-                WorldLabel(new Rect(x+248,y+125,800,25),"区域配乐、序章音乐；不影响引擎或枪声",15,AmberInk,onPaper:true);
-                WorldLabel(new Rect(x+248,y+212,800,25),"引擎、海浪与风雨；背景声太响时降低这一项",15,AmberInk,onPaper:true);
-                WorldLabel(new Rect(x+248,y+299,800,25),"脚步、拾取、鱼轮、活鱼与枪声等操作反馈",15,AmberInk,onPaper:true);
+                SettingSlider(x,y+72,"BGM 背景音乐","Music",c.MusicVolume);
+                SettingSlider(x,y+144,"环境音","Ambient",c.AmbientVolume);
+                SettingSlider(x,y+216,"动作音效","Effects",c.EffectsVolume);
+                SettingSlider(x,y+288,"角色语音","Voice",c.VoiceVolume);
+                WorldLabel(new Rect(x+248,y+38,800,25),"同时调整下方四路音量",15,AmberInk,onPaper:true);
+                WorldLabel(new Rect(x+248,y+110,800,25),"区域配乐、序章音乐；不影响引擎或枪声",15,AmberInk,onPaper:true);
+                WorldLabel(new Rect(x+248,y+182,800,25),"引擎、海浪与风雨；背景声太响时降低这一项",15,AmberInk,onPaper:true);
+                WorldLabel(new Rect(x+248,y+254,800,25),"脚步、拾取、鱼轮、活鱼与枪声等操作反馈",15,AmberInk,onPaper:true);
+                WorldLabel(new Rect(x+248,y+326,800,25),"居民对话与闲聊；调低音效不会影响这一项",15,AmberInk,onPaper:true);
                 if(SeaButton(new Rect(x,y+365,580,44),"静音："+(c.QuietMode?"开启":"关闭")))c.ToggleQuiet();
-                WorldLabel(new Rect(x,y+428,1000,58),"BGM、环境音与动作音效可独立调整。\n设置自动保存，下次启航继续使用；已有音量偏好保留。",17,AmberInk,onPaper:true);
+                WorldLabel(new Rect(x,y+428,1000,58),"BGM、环境音、动作音效与角色语音可独立调整。\n设置自动保存，下次启航继续使用；已有音量偏好保留。",17,AmberInk,onPaper:true);
             }
             KeyCap(new Rect(120,r.yMax-44,62,34),"Esc");
             if(SeaButton(new Rect(200,r.yMax-48,180,42),"返回",false,true,23)){c.MenuControls=false;c.SaveSettings();}

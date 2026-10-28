@@ -10,7 +10,7 @@ namespace BoatAttack.Fishing
         private Text _pageTitle,_pageDate,_pageDetail;
         private Image _pageLeaf,_pageLeafEdge;
         private int _pageHover=-1;
-        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤","储物箱 · 存入","储物箱 · 取出","声音混音","家园生态"};
+        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤","储物箱 · 存入","储物箱 · 取出","声音混音","家园生态","VR 舒适","操作说明","信件"};
 
         private void BuildNotebookPages()
         {
@@ -20,7 +20,7 @@ namespace BoatAttack.Fishing
             var p=_pageDecor.transform;
             HomeImage(p,"Cloth spine",new Rect(13,25,9,730),HomeSage,_homePaperSprite);
             HomeImage(p,"Paper perimeter",new Rect(29,18,1051,758),HomeGold,_homeEdgeSprite);
-            _pageTitle=HomeText(p,new Rect(52,37,600,64),"",45,HomeInk,FishingUITheme.Heading);
+            _pageTitle=HomeText(p,new Rect(52,33,600,70),"",42,HomeInk,FishingUITheme.Heading);
             HomeText(p,new Rect(55,106,620,33),"潮汐手册  /  回潮海",21,HomeMuted);
             _pageDate=HomeText(p,new Rect(651,49,407,40),"",23,HomeInk);_pageDate.alignment=TextAnchor.MiddleRight;
             HomeImage(p,"Header rule",new Rect(42,149,1020,1.5f),HomeGold);

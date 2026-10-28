@@ -24,7 +24,7 @@ internal static class ClimateTests
         foreach(BayWeather weather in Enum.GetValues(typeof(BayWeather)))
         {
             check(BayClimate.Duration(weather)>BayClimate.TransitionSeconds*4,"Climate sufficiently slow hold "+weather);
-            check(BayClimate.BiteScale(weather,BayClimate.Favored(weather))==.75f && BayClimate.RareBonus(weather,BayClimate.Favored(weather))==.04f,"Climate favored-species benefit "+weather);
+            check(BayClimate.BiteScale(weather,BayClimate.Favored(weather))==.75f*(weather==BayWeather.Rain?.7f:1f) && BayClimate.RareBonus(weather,BayClimate.Favored(weather))==.04f,"Climate favored-species benefit includes rain activity "+weather);
             foreach(FishKind kind in Enum.GetValues(typeof(FishKind)))
             {
                 var s=new CatchSession();s.Cast(kind,false,0,"weather-"+weather+kind,BaitKind.Pearl,weather);

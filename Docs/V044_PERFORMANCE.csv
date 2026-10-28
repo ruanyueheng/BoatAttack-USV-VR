@@ -1,0 +1,24 @@
+spot,draws_upper_bound,shadow_draws,materials,shaders,triangles_upper_bound,particles,gc_bytes_per_frame,editor_wall_ms,verdict
+harbor-day-before-detail-culling,363,12,95,13,718553,229,396,20.23,PICO-OVER
+# PICO detail budget: thinned=228 unshadowed=1263 culled=1810
+harbor-day,163,12,53,13,413538,278,291,20.18,PICO-OVER
+island0-berth-afloat,626,19,71,14,559082,716,378,20.19,PICO-OVER
+island0-ashore,602,24,65,12,540607,611,374,20.22,PICO-OVER
+realm0,98,48,14,6,197892,0,306,20.18,PICO-OK
+island1-berth-afloat,588,22,47,11,382012,1032,261,20.17,PICO-OVER
+island1-ashore,465,29,46,11,385219,790,298,20.17,PICO-OVER
+realm1,80,38,20,7,183189,2,310,20.18,PICO-OK
+island2-berth-afloat,62,18,24,6,124500,53,359,20.20,PICO-OK
+island2-ashore,47,18,19,5,103235,29,418,20.24,PICO-OK
+realm2,32,24,14,7,166354,10,359,20.20,PICO-OK
+island3-berth-afloat,109,14,23,6,203441,47,373,20.18,PICO-OK
+island3-ashore,90,14,19,5,176544,26,364,20.19,PICO-OK
+realm3,69,34,13,4,142656,0,379,20.22,PICO-OK
+resident,50,11,21,7,115980,35,289,20.20,PICO-OK
+harbor-night,164,12,54,13,413800,281,303,20.18,PICO-OVER
+harbor-night-rain,164,12,54,13,413930,282,427,20.21,PICO-OVER
+sea-Shoal,102,24,43,12,173270,595,441,20.22,PICO-OK
+sea-Bottle,114,14,46,13,222955,508,361,20.20,PICO-OK
+sea-Fog,113,24,40,10,218383,38,364,20.19,PICO-OK
+sea-Whales,111,14,43,12,238793,435,493,20.19,PICO-OK
+sea-Glow,205,14,51,13,240121,596,370,20.19,PICO-OVER

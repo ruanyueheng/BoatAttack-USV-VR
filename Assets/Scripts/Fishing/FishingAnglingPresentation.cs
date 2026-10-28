@@ -113,7 +113,7 @@ namespace BoatAttack.Fishing
                 for(int k=0;k<21;k++){float u=k/20f;_castGuide.SetPosition(k,Vector3.Lerp(_tip.position,goal,u)+Vector3.up*Mathf.Sin(u*Mathf.PI)*(1+power));}
                 _marker.transform.position=goal+Vector3.up*.65f;_marker.transform.rotation=Quaternion.LookRotation(goal-_c.viewCamera.transform.position);
                 SizeMarker();
-                _label.text="预计落点\n松开左键抛竿";
+                _label.text=FishingXRText.Adapt("预计落点\n松开左键抛竿");
             }
             if(wet)
             {
@@ -121,9 +121,9 @@ namespace BoatAttack.Fishing
                 _marker.transform.position=target+Vector3.up*.65f;
                 _marker.transform.rotation=Quaternion.LookRotation(target-_c.viewCamera.transform.position);
                 SizeMarker();
-                _label.text=s.Phase==CatchPhase.Bite?"咬钩！提竿":s.Phase==CatchPhase.Landing?(UnityEngine.XR.XRSettings.isDeviceActive?"鱼已靠近 · 抄网":"点击左键 · 提鱼检视"):
-                    (Vector3.Distance(_c.Player.transform.position,target)).ToString("0.0")+" m"+(fighting?"\n"+(s.Beat==FishBeat.Leap?"跃水 · 松线":s.FishDirection<-.2f?"← 鱼向左游":s.FishDirection>.2f?"鱼向右游 →":"鱼在转向"):s.BitePreview>0?"\n轻啄 · 等待下沉":"");
-                if(fighting && _clock-_strikeAt<1.1f && s.PerfectStrike)_label.text="漂亮提竿！\n"+_label.text;
+                _label.text=FishingXRText.Adapt(s.Phase==CatchPhase.Bite?"咬钩！提竿":s.Phase==CatchPhase.Landing?(UnityEngine.XR.XRSettings.isDeviceActive?"鱼已靠近 · 抄网":"点击左键 · 提鱼检视"):
+                    (Vector3.Distance(_c.Player.transform.position,target)).ToString("0.0")+" m"+(fighting?"\n"+(s.Beat==FishBeat.Leap?"跃水 · 松线":s.FishDirection<-.2f?"← 鱼向左游":s.FishDirection>.2f?"鱼向右游 →":"鱼在转向"):s.BitePreview>0?"\n轻啄 · 等待下沉":""));
+                if(fighting && _clock-_strikeAt<1.1f && s.PerfectStrike)_label.text=FishingXRText.Adapt("漂亮提竿！\n"+_label.text);
                 if(fighting && UnityEngine.XR.XRSettings.isDeviceActive)_label.text+="\n"+(s.Beat==FishBeat.Leap?"松开收线握把":s.FishDirection<0?"持竿手向右控竿":"持竿手向左控竿");
                 if(_clock>=_nextRipple)
                 {

@@ -1,0 +1,66 @@
+[
+ {
+  "key": "PortalAir",
+  "prompt": "soft magical air being inhaled into a glowing portal, gentle rising whoosh with glassy shimmer, calm, no voice",
+  "seconds": 1.5,
+  "seed": 31429,
+  "files": [
+   "PortalAir_1.wav",
+   "PortalAir_2.wav",
+   "PortalAir_3.wav",
+   "PortalAir_4.wav",
+   "PortalAir_5.wav",
+   "PortalAir_6.wav"
+  ],
+  "model": "facebook/audiogen-medium",
+  "license": "CC-BY-NC-4.0 (weights)"
+ },
+ {
+  "key": "PortalWater",
+  "prompt": "a gentle whoosh rising then softly closing like something sinking into calm water, airy, soft, no voice",
+  "seconds": 1.5,
+  "seed": 31454,
+  "files": [
+   "PortalWater_1.wav",
+   "PortalWater_2.wav",
+   "PortalWater_3.wav",
+   "PortalWater_4.wav",
+   "PortalWater_5.wav",
+   "PortalWater_6.wav"
+  ],
+  "model": "facebook/audiogen-medium",
+  "license": "CC-BY-NC-4.0 (weights)"
+ },
+ {
+  "key": "BagFlap",
+  "prompt": "a soft canvas bag flap being lifted open quickly, light fabric swish and a small leather strap click, close up",
+  "seconds": 0.8,
+  "seed": 31480,
+  "files": [
+   "BagFlap_1.wav",
+   "BagFlap_2.wav",
+   "BagFlap_3.wav",
+   "BagFlap_4.wav",
+   "BagFlap_5.wav",
+   "BagFlap_6.wav"
+  ],
+  "model": "facebook/audiogen-medium",
+  "license": "CC-BY-NC-4.0 (weights)"
+ },
+ {
+  "key": "BagNotebook",
+  "prompt": "opening a soft fabric covered notebook, gentle cloth rub and paper, close up quiet",
+  "seconds": 0.8,
+  "seed": 31505,
+  "files": [
+   "BagNotebook_1.wav",
+   "BagNotebook_2.wav",
+   "BagNotebook_3.wav",
+   "BagNotebook_4.wav",
+   "BagNotebook_5.wav",
+   "BagNotebook_6.wav"
+  ],
+  "model": "facebook/audiogen-medium",
+  "license": "CC-BY-NC-4.0 (weights)"
+ }
+]

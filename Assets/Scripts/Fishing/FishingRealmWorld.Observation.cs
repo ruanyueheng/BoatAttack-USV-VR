@@ -8,7 +8,8 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingRealmWorld
     {
-        private bool _observing,_focusReady,_observationDesktop,_exitHeld;
+        private bool _observing,_focusReady,_observationDesktop,_exitHeld,_handAim;
+        private Vector3 _handReach;
         private float _observationFov;
         private Transform _scopeYaw,_scopePitch,_eyepiece,_aimMarker;
         private Mesh _starSphereMesh;
@@ -34,20 +35,33 @@ namespace BoatAttack.Fishing
             var b=new FishingMeshBuilder();b.Ellipsoid(Vector3.zero,Vector3.one,Color.white,8,4);_starSphereMesh=b.Finish("Shared constellation stars");
             for(int stage=0;stage<3;stage++)
             {
-                var direction=Quaternion.Euler(-FishingShrineTrial.StarTargetPitch(stage),FishingShrineTrial.StarTargetYaw(stage),0)*Vector3.forward;
-                var facing=Quaternion.LookRotation(direction,Vector3.up);var centre=station.localPosition+Vector3.up*2.1f+direction*70;
                 var pattern=StarPatterns[stage];var line=FishingArt.Line("Constellation "+StarPatternName(stage),room,_lightMaterial,.035f,false);line.useWorldSpace=false;line.positionCount=pattern.Length;
+                _constellations[stage]=line;_constellationStars[stage]=new Transform[pattern.Length];
                 for(int i=0;i<pattern.Length;i++)
                 {
-                    var p=centre+facing*new Vector3(pattern[i].x*1.8f,pattern[i].y*1.8f,0);line.SetPosition(i,p);
-                    var star=new GameObject("Star "+stage+" "+i,typeof(MeshFilter),typeof(MeshRenderer));star.transform.SetParent(room,false);star.transform.localPosition=p;star.transform.localScale=Vector3.one*.10f;
-                    star.GetComponent<MeshFilter>().sharedMesh=_starSphereMesh;star.GetComponent<MeshRenderer>().sharedMaterial=_lightMaterial;
+                    var star=new GameObject("Star "+stage+" "+i,typeof(MeshFilter),typeof(MeshRenderer));star.transform.SetParent(room,false);star.transform.localScale=Vector3.one*.10f;
+                    star.GetComponent<MeshFilter>().sharedMesh=_starSphereMesh;star.GetComponent<MeshRenderer>().sharedMaterial=_lightMaterial;_constellationStars[stage][i]=star.transform;
                 }
             }
+            PlaceConstellations(new FishingShrineTrial(3));
             _aimMarker=new GameObject("Tracked telescope reticle").transform;_aimMarker.SetParent(room,false);
             var reticle=FishingArt.Line("Telescope direction",_aimMarker,_lightMaterial,.009f,true);reticle.useWorldSpace=false;reticle.positionCount=32;
             for(int i=0;i<32;i++){float a=i*Mathf.PI*2/32;reticle.SetPosition(i,new Vector3(Mathf.Cos(a)*.18f,Mathf.Sin(a)*.18f,0));}
             _aimMarker.gameObject.SetActive(false);
+        }
+        private readonly LineRenderer[] _constellations=new LineRenderer[3];
+        private readonly Transform[][] _constellationStars=new Transform[3][];
+        /// <summary>Moves the three constellations to this save's variant directions.</summary>
+        private void PlaceConstellations(FishingShrineTrial trial)
+        {
+            var station=_rooms[3].Find("Device 0");
+            for(int stage=0;stage<3;stage++)
+            {
+                var direction=Quaternion.Euler(-trial.TargetPitch(stage),trial.TargetYaw(stage),0)*Vector3.forward;
+                var facing=Quaternion.LookRotation(direction,Vector3.up);var centre=station.localPosition+Vector3.up*2.1f+direction*70;var pattern=StarPatterns[stage];
+                for(int i=0;i<pattern.Length;i++)
+                {var p=centre+facing*new Vector3(pattern[i].x*1.8f,pattern[i].y*1.8f,0);_constellations[stage].SetPosition(i,p);_constellationStars[stage][i].localPosition=p;}
+            }
         }
         private bool BeginObservation()
         {
@@ -80,7 +94,7 @@ namespace BoatAttack.Fishing
             bool completed=Trial.Observe(Trial.StarYaw+degrees.x,Trial.StarPitch+degrees.y,seconds,focusing);
             if(completed)
             {
-                _c.WorldAudio?.Play("MechanismClick",_devices[0].position,.4f);_c.Regions.Chime(Trial.StarStage-1);Refresh();
+                _c.WorldAudio?.PlayRealm(Island,"Step",_devices[0].position,.4f);_c.Regions.Chime(Trial.StarStage-1);Refresh();
                 _c.Notice(Trial.Ready?"三幅星图已记录。收起望远镜，阅读观测台上的回响。":"已记录 · 下一幅寻找「"+StarPatternName(Trial.StarStage)+"」。",6);
             }
             return completed;
@@ -102,6 +116,22 @@ namespace BoatAttack.Fishing
                 {
                     d.TryGetFeatureValue(CommonUsages.primary2DAxis,out var stick);degrees=stick*Time.deltaTime*35;
                     d.TryGetFeatureValue(CommonUsages.trigger,out float trigger);focus=trigger>.55f;
+                    // Hands first: grip the tube and swing it; holding the left grip too steadies focus.
+                    d.TryGetFeatureValue(CommonUsages.grip,out float grip);
+                    if(grip>.6f && _c.Hands.TryControllerPalm(false,out var palm,out _))
+                    {
+                        var reach=_scopePitch.position-palm;
+                        if(_handAim && reach.sqrMagnitude>.04f)
+                        {
+                            float yaw=Mathf.DeltaAngle(Mathf.Atan2(_handReach.x,_handReach.z)*Mathf.Rad2Deg,Mathf.Atan2(reach.x,reach.z)*Mathf.Rad2Deg);
+                            float pitch=(Mathf.Asin(Mathf.Clamp(reach.normalized.y,-1,1))-Mathf.Asin(Mathf.Clamp(_handReach.normalized.y,-1,1)))*Mathf.Rad2Deg;
+                            degrees+=new Vector2(yaw,pitch);
+                        }
+                        _handAim=true;_handReach=reach;
+                        InputDevices.GetDeviceAtXRNode(XRNode.LeftHand).TryGetFeatureValue(CommonUsages.grip,out float leftGrip);
+                        focus|=leftGrip>.6f;
+                    }
+                    else _handAim=false;
                 }
                 else {_focusReady=false;Trial.ReleaseFocus();return true;}
             }

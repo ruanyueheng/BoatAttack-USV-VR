@@ -1,6 +1,6 @@
-param(
+﻿param(
     [string]$EditorRoot,
-    [ValidateSet("FishingV043", "FishingV042", "FishingCoastArt", "FishingFeedbackMotion", "FishingMarineCapture", "FishingFeedbackTools", "FishingVoyageQuest", "FishingHomeEcology", "FishingFeedbackP3", "FishingCombat", "FishingWater", "FishingP0Art", "FishingPortableChart", "FishingWorldAudio", "FishingV039Realm", "FishingV039Home", "FishingV039", "FishingV038Swimming", "FishingV038", "FishingAudioMix", "FishingRegionalMusic", "FishingActionAudio", "FishingMouseFishing", "FishingAngling", "FishingV035Farm", "FishingV035", "FishingV035Levels", "FishingV035Art", "FishingV034Art", "FishingV034", "FishingV033", "FishingV032", "FishingV031", "FishingV030", "FishingV029", "FishingV028", "FishingV028UI", "FishingV028ToolsSleep", "FishingV028Coast", "FishingCashierDialogue", "FishingLantern", "FishingPickaxe", "FishingV027", "FishingV026", "FishingV025", "FishingV024", "FishingV023Art", "FishingV023", "FishingV022Art", "FishingV022", "FishingV021", "FishingV020Install", "FishingV020", "FishingV019Install", "FishingV019", "FishingV018Install", "FishingV018", "FishingSkiffBuild", "FishingV017", "FishingV016", "FishingLivingCoast", "Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild", "FishingWorkshop", "FishingTerrain", "FishingShopInstall", "FishingShop", "FishingMap", "FishingCharacter", "FishingInteraction", "FishingPlayer", "FishingPlayerBoundary", "FishingFirstPerson", "FishingCashierBuild", "FishingCashier", "FishingHunting", "FishingForge", "FishingV037Hands", "FishingV037Portal", "FishingV037Weather", "FishingV037UI", "FishingV036Storage", "FishingV036Orchard", "FishingV036Performance", "FishingV036", "FishingV036Art", "FishingV036Portal", "FishingV036Farm", "FishingV036UI")]
+    [ValidateSet("FishingPerfDevBuild", "FishingV044Perf", "FishingV044Tide", "FishingV044Life", "FishingV044Overlap", "FishingV044Voyage", "FishingV044Sea", "FishingV044Sky", "FishingV044Walk", "FishingV044Scene", "FishingV044SceneArt", "FishingV044Story", "FishingV044Npc", "FishingV044Realms", "FishingV043", "FishingV042", "FishingCoastArt", "FishingFeedbackMotion", "FishingMarineCapture", "FishingFeedbackTools", "FishingVoyageQuest", "FishingHomeEcology", "FishingFeedbackP3", "FishingCombat", "FishingWater", "FishingP0Art", "FishingPortableChart", "FishingWorldAudio", "FishingV039Realm", "FishingV039Home", "FishingV039", "FishingV038Swimming", "FishingV038", "FishingAudioMix", "FishingRegionalMusic", "FishingActionAudio", "FishingMouseFishing", "FishingAngling", "FishingV035Farm", "FishingV035", "FishingV035Levels", "FishingV035Art", "FishingV034Art", "FishingV034", "FishingV033", "FishingV032", "FishingV031", "FishingV030", "FishingV029", "FishingV028", "FishingV028UI", "FishingV028ToolsSleep", "FishingV028Coast", "FishingCashierDialogue", "FishingLantern", "FishingPickaxe", "FishingV027", "FishingV026", "FishingV025", "FishingV024", "FishingV023Art", "FishingV023", "FishingV022Art", "FishingV022", "FishingV021", "FishingV020Install", "FishingV020", "FishingV019Install", "FishingV019", "FishingV018Install", "FishingV018", "FishingSkiffBuild", "FishingV017", "FishingV016", "FishingLivingCoast", "Structure", "Regression", "PlayMode", "FishingGenerate", "FishingSmoke", "FishingBuild", "FishingShore", "FishingExpedition", "FishingExpeditionCapture", "FishingField", "FishingFieldCapture", "FishingXRSetup", "FishingCatch", "FishingCatchCapture", "FishingAndroidBuild", "FishingWorkshop", "FishingTerrain", "FishingShopInstall", "FishingShop", "FishingMap", "FishingCharacter", "FishingInteraction", "FishingPlayer", "FishingPlayerBoundary", "FishingFirstPerson", "FishingCashierBuild", "FishingCashier", "FishingHunting", "FishingForge", "FishingV037Hands", "FishingV037Portal", "FishingV037Weather", "FishingV037UI", "FishingV036Storage", "FishingV036Orchard", "FishingV036Performance", "FishingV036", "FishingV036Art", "FishingV036Portal", "FishingV036Farm", "FishingV036UI")]
 
 
 
@@ -36,6 +36,20 @@ $logDirectory = Join-Path $repo 'Logs'
 # Unique logs cannot accidentally satisfy this run with a previous PASS marker.
 $log = Join-Path $logDirectory ("usv-validation-" + [Guid]::NewGuid().ToString('N') + '.log')
 $method = switch ($Suite) {
+    'FishingV044Voyage' { 'BoatAttack.EditorTools.FishingV044VoyageFloatAudit.Run' }
+    'FishingV044Life' { 'BoatAttack.EditorTools.FishingV044LifeValidation.Run' }
+    'FishingV044Tide' { 'BoatAttack.EditorTools.FishingV044TideValidation.Run' }
+    'FishingV044Sea' { 'BoatAttack.EditorTools.FishingV044SeaValidation.Run' }
+    'FishingPerfDevBuild' { 'BoatAttack.EditorTools.FishingPerfDevBuild.Build' }
+    'FishingV044Perf' { 'BoatAttack.EditorTools.FishingV044PerfValidation.Run' }
+    'FishingV044Sky' { 'BoatAttack.EditorTools.FishingV044SkyValidation.Run' }
+    'FishingV044Overlap' { 'BoatAttack.EditorTools.FishingV044OverlapAudit.Run' }
+    'FishingV044Scene' { 'BoatAttack.EditorTools.FishingV044SceneCapture.Run' }
+    'FishingV044SceneArt' { 'BoatAttack.EditorTools.FishingV044SceneArt.Install' }
+    'FishingV044Walk' { 'BoatAttack.EditorTools.FishingV044WalkAudit.Run' }
+    'FishingV044Story' { 'BoatAttack.EditorTools.FishingV044StoryValidation.Run' }
+    'FishingV044Npc' { 'BoatAttack.EditorTools.FishingV044NpcValidation.Run' }
+    'FishingV044Realms' { 'BoatAttack.EditorTools.FishingV044RealmValidation.Run' }
     'FishingV043' { 'BoatAttack.EditorTools.FishingV043Validation.Run' }
     'FishingV042' { 'BoatAttack.EditorTools.FishingV042Validation.Run' }
     'FishingCoastArt' { 'BoatAttack.EditorTools.FishingCoastArtValidation.Run' }
@@ -142,6 +156,20 @@ $method = switch ($Suite) {
     'FishingExpeditionCapture' { 'BoatAttack.EditorTools.FishingExpeditionValidation.Capture' }
 }
 $marker = switch ($Suite) {
+    'FishingV044Voyage' { '[V044-VOYAGE]' }
+    'FishingV044Life' { '[V044-LIFE]' }
+    'FishingV044Tide' { '[V044-TIDE]' }
+    'FishingV044Sea' { '[V044-SEA]' }
+    'FishingPerfDevBuild' { '[PERF-DEV]' }
+    'FishingV044Perf' { '[V044-PERF]' }
+    'FishingV044Sky' { '[V044-SKY]' }
+    'FishingV044Overlap' { '[V044-OVERLAP]' }
+    'FishingV044Scene' { '[V044-SCENE]' }
+    'FishingV044SceneArt' { '[V044-SCENE-ART]' }
+    'FishingV044Walk' { '[V044-WALK]' }
+    'FishingV044Story' { '[V044-STORY]' }
+    'FishingV044Npc' { '[V044-NPC]' }
+    'FishingV044Realms' { '[V044-REALMS]' }
     'FishingV043' { '[V043]' }
     'FishingV042' { '[V042]' }
     'FishingCoastArt' { '[COAST-ART]' }
@@ -248,7 +276,7 @@ $marker = switch ($Suite) {
     'FishingExpeditionCapture' { '[EXPEDITION]' }
 }
 $arguments = '-batchmode -nographics -buildTarget StandaloneWindows64 -projectPath "' + $repo.Replace('\', '/') + '" -executeMethod ' + $method + ' -logFile "' + $log + '"'
-if ($Suite -in @('FishingV043','FishingV042','FishingCoastArt','FishingFeedbackMotion','FishingMarineCapture','FishingFeedbackTools','FishingVoyageQuest','FishingHomeEcology','FishingFeedbackP3','FishingCombat','FishingWater','FishingP0Art','FishingPortableChart','FishingWorldAudio','FishingAudioMix','FishingActionAudio','FishingRegionalMusic')) { $arguments = $arguments.Replace(' -nographics', '') + ' -screen-width 1600 -screen-height 900' }
+if ($Suite -in @('FishingV044Perf','FishingV044Tide','FishingV044Life','FishingV044Overlap','FishingV044Scene','FishingV044Voyage','FishingV044Sea','FishingV044Sky','FishingV044Walk','FishingV044Story','FishingV044Npc','FishingV044Realms','FishingV043','FishingV042','FishingCoastArt','FishingFeedbackMotion','FishingMarineCapture','FishingFeedbackTools','FishingVoyageQuest','FishingHomeEcology','FishingFeedbackP3','FishingCombat','FishingWater','FishingP0Art','FishingPortableChart','FishingWorldAudio','FishingAudioMix','FishingActionAudio','FishingRegionalMusic')) { $arguments = $arguments.Replace(' -nographics', '') + ' -screen-width 1600 -screen-height 900' }
 if ($Suite -in @('FishingV022Art', 'FishingV022', 'FishingV021', 'FishingHunting', 'FishingForge', 'FishingV020Install', 'FishingV020', 'FishingV019Install', 'FishingV019', 'FishingV018', 'FishingV017', 'FishingV016', 'FishingCatch', 'FishingLivingCoast', 'FishingFirstPerson', 'FishingPlayerBoundary', 'FishingPlayer', 'FishingMap', 'FishingCharacter', 'FishingInteraction', 'FishingShop', 'FishingShore', 'FishingField', 'FishingExpedition', 'FishingSmoke', 'FishingWorkshop', 'FishingExpeditionCapture', 'FishingFieldCapture', 'FishingCatchCapture')) { $arguments = $arguments.Replace(' -nographics', '') }
 if ($Suite -in @('FishingV039Realm','FishingV039Home','FishingV039','FishingV038Swimming','FishingV038','FishingV037Hands','FishingV037Portal','FishingV037Weather','FishingV037UI','FishingV036Storage','FishingV036Orchard','FishingV036Performance','FishingV036','FishingV036Portal','FishingV036Farm','FishingV036UI','FishingMouseFishing','FishingAngling','FishingV035Farm','FishingV035Levels','FishingV035','FishingV034','FishingV033','FishingV032','FishingV031','FishingV030','FishingV029','FishingV028','FishingV028UI','FishingV028ToolsSleep','FishingV028Coast','FishingCashierDialogue','FishingLantern','FishingPickaxe','FishingV023','FishingV024','FishingV025','FishingV026','FishingV027')) { $arguments = $arguments.Replace(' -nographics', '') + ' -screen-width 1600 -screen-height 900' }
 if ($DisableBurst) { $arguments += ' --burst-disable-compilation' }

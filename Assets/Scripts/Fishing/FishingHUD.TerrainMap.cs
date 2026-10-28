@@ -37,7 +37,7 @@ namespace BoatAttack.Fishing
         private string HomeChartTerrainStatus => !HasHomeChartTerrain
             ? "地形资源缺失 · 当前为虚构海域示意图，不代表岛屿形状 / 水深 / 可通航"
             : _terrainMapMaterial == null ? "已加载海域底图 · 地图着色器不可用，显示原始烘焙图像"
-            : "回潮海 · 游戏内虚构海域 · 高程 0–20m · 斜纹为未采集区域 · 不代表水深 / 可通航";
+            : "回潮海 · 游戏内虚构海域 · 高程 0–20m · 海雾为未测绘区域 · 不代表水深 / 可通航";
 
         private void DrawHomeTerrainMap(Rect area)
         {
@@ -133,19 +133,12 @@ namespace BoatAttack.Fishing
                     Segment(new Vector2(x, y), new Vector2(x + pixels, y), Muted, 2);
                     Segment(new Vector2(x, y - 3), new Vector2(x, y + 3), Muted, 1);
                     Segment(new Vector2(x + pixels, y - 3), new Vector2(x + pixels, y + 3), Muted, 1);
-                    WorldLabel(x + pixels + 5, footer.y + 1, 46, 18, metres.ToString("0.##") + " m", 11, Muted);
+                    WorldLabel(x + pixels + 6, footer.y, 60, 20, metres.ToString("0.##") + " m", 14, Muted);
                 }
-                float legendX = footer.x + 94;
-                Fill(legendX, footer.y + 7, 6, 7, MapLow);
-                Fill(legendX + 6, footer.y + 7, 6, 7, MapLand);
-                Fill(legendX + 12, footer.y + 7, 6, 7, MapHigh);
-                WorldLabel(legendX + 21, footer.y + 1, 78, 18, "高程0–20m", 10, Muted);
-                Fill(legendX + 102, footer.y + 7, 7, 7, MapWater);
-                WorldLabel(legendX + 112, footer.y + 1, 40, 18, "水面", 10, Muted);
-                string note = _terrainMap != null && _terrainMap.IsUsable
-                    ? "北↑ · 斜纹未知 · 不代表水深 / 可通航" : "北↑ · 地形未烘焙 · 仅显示方位标记";
+                // V044：图例与免责说明移入全域航海图；小地图只在需要行动时给一行提示。
+                string note = _terrainMap == null || !_terrainMap.IsUsable ? "地形未烘焙 · 仅显示方位" : "";
                 if(!Controller.Ashore && Controller.WaterRoute!=null && Controller.WaterRoute.Failure.Length>0)note=Controller.WaterRoute.Failure;
-                WorldLabel(new Rect(footer.x, footer.y + 18, footer.width, 18), note, 11, Muted, false, TextAnchor.MiddleCenter);
+                if(note.Length>0)WorldLabel(new Rect(footer.x, footer.y + 18, footer.width, 20), note, 13, Muted, false, TextAnchor.MiddleCenter);
             }
             finally { GUI.matrix = matrix; GUI.color = color; }
         }

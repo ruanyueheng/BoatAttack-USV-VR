@@ -31,7 +31,12 @@ namespace BoatAttack.Fishing
         public int Weekday => Day % 7;
         public float Hour => (float)(Minute / 60);
         public bool Night => Hour < 6 || Hour >= 19;
-        public bool RisingTide => Minute % 720 < 360;
+        /// <summary>One tide every 12h25m of game time, so low water comes about 50 minutes later each day.</summary>
+        public const double TidePeriod = 745;
+        public double TidePhase => TotalMinutes % TidePeriod;
+        public bool RisingTide => TidePhase < TidePeriod / 2;
+        /// <summary>0 at low water, 1 at high water.</summary>
+        public float TideLevel => (float)(1 - Math.Cos(TidePhase / TidePeriod * Math.PI * 2)) * .5f;
         public string TideName => RisingTide ? "涨潮" : "落潮";
         private static readonly string[] Seasons={"春","夏","秋","冬"};
         public string SeasonName => Seasons[Season];

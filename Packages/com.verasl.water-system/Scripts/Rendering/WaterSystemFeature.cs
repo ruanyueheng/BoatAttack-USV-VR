@@ -183,7 +183,7 @@ namespace WaterSystem
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
             renderer.EnqueuePass(m_WaterFxPass);
-            renderer.EnqueuePass(m_CausticsPass);
+            if (!Shader.IsKeywordEnabled("_WATER_NO_SCENE_TEXTURES")) renderer.EnqueuePass(m_CausticsPass); // caustics read scene depth
         }
 
         /// <summary>

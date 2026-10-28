@@ -6,7 +6,7 @@ using ShadowResolution = UnityEngine.ShadowResolution;
 
 namespace BoatAttack.Fishing
 {
-    public enum FishingAudioCategory { Music, Ambient, Effects }
+    public enum FishingAudioCategory { Music, Ambient, Effects, Voice }
 
     public sealed partial class FishingPrototype
     {
@@ -16,6 +16,7 @@ namespace BoatAttack.Fishing
         public float MusicVolume { get; private set; }=1;
         public float AmbientVolume { get; private set; }=1;
         public float EffectsVolume { get; private set; }=1;
+        public float VoiceVolume { get; private set; }=1;
         public float MouseSensitivity { get; private set; }=1;
         public float FieldOfView { get; private set; }=FishingViewRig.DesktopFieldOfView;
         public bool InvertLook { get; private set; }
@@ -48,6 +49,7 @@ namespace BoatAttack.Fishing
                 case "Music": MusicVolume=Mathf.Clamp01(value);value=MusicVolume;break;
                 case "Ambient": AmbientVolume=Mathf.Clamp01(value);value=AmbientVolume;break;
                 case "Effects": EffectsVolume=Mathf.Clamp01(value);value=EffectsVolume;break;
+                case "Voice": VoiceVolume=Mathf.Clamp01(value);value=VoiceVolume;break;
                 case "Sensitivity": MouseSensitivity=Mathf.Clamp(value,.25f,2.5f);value=MouseSensitivity;break;
                 case "FOV": FieldOfView=Mathf.Clamp(value,55,90);value=FieldOfView;break;
                 case "Invert": InvertLook=value>.5f;value=InvertLook?1:0;break;
@@ -72,9 +74,11 @@ namespace BoatAttack.Fishing
         public float GetAudioChannelVolume(AudioSource source)
         {
             if(source==null || !_settingAudio.TryGetValue(source,out var entry))return 0;
-            float volume=entry.Category==FishingAudioCategory.Music?MusicVolume:entry.Category==FishingAudioCategory.Ambient?AmbientVolume:EffectsVolume;
+            float volume=CategoryVolume(entry.Category);
             return entry.BaseVolume*volume;
         }
+        public float CategoryVolume(FishingAudioCategory category)=>category==FishingAudioCategory.Music?MusicVolume
+            :category==FishingAudioCategory.Ambient?AmbientVolume:category==FishingAudioCategory.Voice?VoiceVolume:EffectsVolume;
         public void SetAudioBaseVolume(AudioSource source,float baseVolume)
         {
             if(source==null || float.IsNaN(baseVolume) || float.IsInfinity(baseVolume) || !_settingAudio.TryGetValue(source,out var entry))return;
@@ -89,7 +93,7 @@ namespace BoatAttack.Fishing
             foreach(var entry in _settingAudio.Values)
             {
                 if(entry.Source==null)continue;
-                float volume=entry.Category==FishingAudioCategory.Music?MusicVolume:entry.Category==FishingAudioCategory.Ambient?AmbientVolume:EffectsVolume;
+                float volume=CategoryVolume(entry.Category);
                 entry.Source.ignoreListenerVolume=false;
                 entry.Source.volume=entry.BaseVolume*volume;
                 entry.Source.mute=entry.OriginalMute || QuietMode || (Paused && !StartMenuOpen && entry.Category!=FishingAudioCategory.Music && !entry.AllowDuringPause);
@@ -123,7 +127,7 @@ namespace BoatAttack.Fishing
                     && (source.clip.name=="ShoreWaves" || source.clip.name=="ShoreRocks" || source.clip.name=="Jetty" || source.clip.name=="FlowingWater"))
                     RegisterEnvironmentLoop(source,.20f,.055f);
             if(!HasIsolatedProfile && Weather.ReducedEffects!=(PlayerPrefs.GetInt(SettingsKey+"ReducedEffects",0)==1))Weather.ToggleReducedEffects();
-            foreach(string key in new[]{"Master","Music","Ambient","Effects","Sensitivity","FOV","Invert","Quality"})
+            foreach(string key in new[]{"Master","Music","Ambient","Effects","Voice","Sensitivity","FOV","Invert","Quality"})
             {
                 float fallback=key=="FOV"?FishingViewRig.DesktopFieldOfView:key=="Quality"?2:key=="Invert"?0:1;
                 SetSetting(key,HasIsolatedProfile?fallback:PlayerPrefs.GetFloat(SettingsKey+key,fallback));
@@ -146,6 +150,8 @@ namespace BoatAttack.Fishing
                 StartCoroutine(CaptureCoastalDepth(water,Rect.MinMaxRect((float)bounds.MinX-32,(float)bounds.MinZ-32,(float)bounds.MaxX+32,(float)bounds.MaxZ+32)));
             }
             FishingPerformanceCapture.AttachIfRequested(this);
+            FishingDrawBreakdown.AttachIfRequested(this);
+            FishingHitchTour.AttachIfRequested(this);
         }
         private void CoastalWorldRendered(UnityEngine.Rendering.ScriptableRenderContext context,Camera camera)
         {

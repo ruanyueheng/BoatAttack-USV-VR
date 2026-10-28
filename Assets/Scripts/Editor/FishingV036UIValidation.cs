@@ -41,6 +41,8 @@ namespace BoatAttack.EditorTools
                     c.MenuControls=false;c.FinishTitleVoyage();hud.JournalPage=0;c.ToggleJournal();
                     for(int frame=0;frame<20;frame++)yield return null;
                     capture=Capture(output,(palette==0?"day":"night")+"-catalogue");while(capture.MoveNext())yield return capture.Current;
+                    hud.JournalPage=5;for(int frame=0;frame<6;frame++)yield return null;
+                    capture=Capture(output,(palette==0?"day":"night")+"-islands");while(capture.MoveNext())yield return capture.Current;
                     c.ToggleJournal();c.Letter.ShowIsland(0);c.Letter.Reveal();Canvas.ForceUpdateCanvases();
                     Check(c.Letter.Ready && c.Letter.Paper.GetComponent<Image>().sprite==FishingPaperDesign.Vellum,"Letter shares original ivory vellum");
                     Check(c.Letter.Paper.GetComponentsInChildren<Image>().All(image=>!image.raycastTarget),"Botanical frame, bookmark and crest never block input");

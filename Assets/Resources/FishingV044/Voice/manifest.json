@@ -1,0 +1,1428 @@
+{
+ "cast": {
+  "0": {
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "who": "铃音 · 风铃修缮师 · 活泼少女"
+  },
+  "1": {
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "who": "青禾 · 潮林守护人 · 温和慢语"
+  },
+  "2": {
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "who": "阿砾 · 沉船打捞员 · 爽朗青年"
+  },
+  "3": {
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "who": "望星 · 星象记录者 · 沉稳学者"
+  },
+  "4": {
+   "voice": "zh-TW-HsiaoChenNeural",
+   "rate": "+0%",
+   "pitch": "+0Hz",
+   "who": "汐禾 · 钓具店店员 · 亲切店员"
+  },
+  "5": {
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "who": "林舟 · 老舵手 · 年长低沉"
+  },
+  "6": {
+   "voice": "zh-CN-liaoning-XiaobeiNeural",
+   "rate": "+8%",
+   "pitch": "-2Hz",
+   "who": "潮商·阿汛 · 流动商人 · 爽朗（代选）"
+  }
+ },
+ "lines": [
+  {
+   "id": 0,
+   "key": "ask",
+   "text": "你小时候，有没有人站在门口等你回家？",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "460965d237c227c7",
+   "file": "Assets/Resources/FishingV044/Voice/0/ask.ogg"
+  },
+  {
+   "id": 0,
+   "key": "ask_r1",
+   "text": "那你一定知道那种感觉。远远看见门口的灯，脚步就会自己变快。",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "9f81e1f23923decc",
+   "file": "Assets/Resources/FishingV044/Voice/0/ask_r1.ogg"
+  },
+  {
+   "id": 0,
+   "key": "ask_r2",
+   "text": "那以后就有啦。你出海的时候，我替你摇铃。说好了哦。",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "ff61ea01115a1158",
+   "file": "Assets/Resources/FishingV044/Voice/0/ask_r2.ogg"
+  },
+  {
+   "id": 0,
+   "key": "bark_1",
+   "text": "听，这只又走音了……",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "96f7455c7eb39720",
+   "file": "Assets/Resources/FishingV044/Voice/0/bark_1.ogg"
+  },
+  {
+   "id": 0,
+   "key": "bark_2",
+   "text": "风从南边来，今天适合晒网。",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "0992098de7d94473",
+   "file": "Assets/Resources/FishingV044/Voice/0/bark_2.ogg"
+  },
+  {
+   "id": 0,
+   "key": "bark_3",
+   "text": "风之回廊的钟，会不会也在等人敲响呢？",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "7cb3631d2e4a8948",
+   "file": "Assets/Resources/FishingV044/Voice/0/bark_3.ogg"
+  },
+  {
+   "id": 0,
+   "key": "bark_4",
+   "text": "五盏灯都亮着，真好听。",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "5004a3fb832e4970",
+   "file": "Assets/Resources/FishingV044/Voice/0/bark_4.ogg"
+  },
+  {
+   "id": 0,
+   "key": "bye",
+   "text": "听见铃声，就是到家了。路上小心！",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "9d27cf1d86ebce5a",
+   "file": "Assets/Resources/FishingV044/Voice/0/bye.ogg"
+  },
+  {
+   "id": 0,
+   "key": "chat_1",
+   "text": "青禾姐，你说今晚的风，会不会把灯笼吹到灯塔上去？",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "9673d374e966333f",
+   "file": "Assets/Resources/FishingV044/Voice/0/chat_1.ogg"
+  },
+  {
+   "id": 0,
+   "key": "chat_2",
+   "text": "阿砾，你那只破靴子，要不要挂起来当风铃？",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "1625d8e43e2ebfcb",
+   "file": "Assets/Resources/FishingV044/Voice/0/chat_2.ogg"
+  },
+  {
+   "id": 0,
+   "key": "clue",
+   "text": "要我说的话——风之回廊里，耳朵比眼睛更管用。",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "58cff0d4815a9241",
+   "file": "Assets/Resources/FishingV044/Voice/0/clue.ogg"
+  },
+  {
+   "id": 0,
+   "key": "fest",
+   "text": "听！今天的风铃和灯笼一起响，整个港口都在唱歌。",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "da1efe8dd780d1db",
+   "file": "Assets/Resources/FishingV044/Voice/0/fest.ogg"
+  },
+  {
+   "id": 0,
+   "key": "gift",
+   "text": "这是风之回廊留给你的东西。奶奶要是知道，一定会很高兴。",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "64d75236d77b5e38",
+   "file": "Assets/Resources/FishingV044/Voice/0/gift.ogg"
+  },
+  {
+   "id": 0,
+   "key": "greet_first",
+   "text": "听——风铃在唱呢。你就是新来的村长吧？我叫铃音，修风铃的。我奶奶阿铃，以前是风之灯塔的守灯人。",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "7a5d3a41e29fd5ea",
+   "file": "Assets/Resources/FishingV044/Voice/0/greet_first.ogg"
+  },
+  {
+   "id": 0,
+   "key": "greet_own",
+   "text": "听！灯塔又亮了！奶奶要是在，一定会把每个铃都摇一遍。谢谢你，村长。",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "2141ddc9dde398d0",
+   "file": "Assets/Resources/FishingV044/Voice/0/greet_own.ogg"
+  },
+  {
+   "id": 0,
+   "key": "greet_s0",
+   "text": "听，今天的风是从南边来的，铃声都是暖的。村长，渔屋收拾好了吗？",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "ad178c48e0ee231b",
+   "file": "Assets/Resources/FishingV044/Voice/0/greet_s0.ogg"
+  },
+  {
+   "id": 0,
+   "key": "greet_s1",
+   "text": "听说你在书桌里翻到了沈爷爷的海图？那风之回廊……你会去的吧？",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "0848c1b796afb2e8",
+   "file": "Assets/Resources/FishingV044/Voice/0/greet_s1.ogg"
+  },
+  {
+   "id": 0,
+   "key": "greet_s2",
+   "text": "听，别的岛上的灯醒了，风里带着回声。我们岛也快了，对吧？",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "bf2aa955ab5f36a5",
+   "file": "Assets/Resources/FishingV044/Voice/0/greet_s2.ogg"
+  },
+  {
+   "id": 0,
+   "key": "greet_s3",
+   "text": "五盏灯一起亮的那晚，我把所有的风铃都挂上了。听，它们到现在还在笑。",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "ecf00565bfb44863",
+   "file": "Assets/Resources/FishingV044/Voice/0/greet_s3.ogg"
+  },
+  {
+   "id": 0,
+   "key": "story_a",
+   "text": "大寂潮那一夜，暴风把港口的灯全吹灭了。船听不见港，港也看不见船。奶奶就站在岩拱底下摇铃，摇了整整一夜。",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "498c92da64df20ef",
+   "file": "Assets/Resources/FishingV044/Voice/0/story_a.ogg"
+  },
+  {
+   "id": 0,
+   "key": "story_b",
+   "text": "奶奶说，等人的时候不能光等，要让对方听得见。所以我修风铃——风一吹，岛就在说话：“我们在这儿呢。”",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "6a512350346d7d3b",
+   "file": "Assets/Resources/FishingV044/Voice/0/story_b.ogg"
+  },
+  {
+   "id": 0,
+   "key": "story_c",
+   "text": "每只风铃的音都不一样。高的报潮，低的报风，最低的那只，只在有船晚归的时候才响。",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "e97d0ad59039a624",
+   "file": "Assets/Resources/FishingV044/Voice/0/story_c.ogg"
+  },
+  {
+   "id": 0,
+   "key": "story_end",
+   "text": "现在夜里有船晚归，最低的那只风铃就会响。不是因为风大，是因为有人在等。",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "47e70a2b33c67071",
+   "file": "Assets/Resources/FishingV044/Voice/0/story_end.ogg"
+  },
+  {
+   "id": 0,
+   "key": "tip",
+   "text": "听我的，没错。",
+   "voice": "zh-CN-XiaoyiNeural",
+   "rate": "+6%",
+   "pitch": "+2Hz",
+   "hash": "5550f923e5c53ef9",
+   "file": "Assets/Resources/FishingV044/Voice/0/tip.ogg"
+  },
+  {
+   "id": 1,
+   "key": "ask",
+   "text": "如果你种下一棵树，自己永远看不到它长大，你还会种吗？",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "2d5c644f07f825a5",
+   "file": "Assets/Resources/FishingV044/Voice/1/ask.ogg"
+  },
+  {
+   "id": 1,
+   "key": "ask_r1",
+   "text": "嗯。根爷爷也是这么说的。你和他，有点像。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "9798de6135db067c",
+   "file": "Assets/Resources/FishingV044/Voice/1/ask_r1.ogg"
+  },
+  {
+   "id": 1,
+   "key": "ask_r2",
+   "text": "慢慢想。想得久一点的人，往往种得最认真。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "682b60c097b58004",
+   "file": "Assets/Resources/FishingV044/Voice/1/ask_r2.ogg"
+  },
+  {
+   "id": 1,
+   "key": "bark_1",
+   "text": "慢慢长，不着急……",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "deb95fb41a6469a1",
+   "file": "Assets/Resources/FishingV044/Voice/1/bark_1.ogg"
+  },
+  {
+   "id": 1,
+   "key": "bark_2",
+   "text": "今天的潮水，退得比昨天远一些。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "323cedd432cd6967",
+   "file": "Assets/Resources/FishingV044/Voice/1/bark_2.ogg"
+  },
+  {
+   "id": 1,
+   "key": "bark_3",
+   "text": "根爷爷，你种的路，有人要来走了。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "c84b64b97305e7c0",
+   "file": "Assets/Resources/FishingV044/Voice/1/bark_3.ogg"
+  },
+  {
+   "id": 1,
+   "key": "bark_4",
+   "text": "新芽又多了三棵。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "c163b01ec5a0729d",
+   "file": "Assets/Resources/FishingV044/Voice/1/bark_4.ogg"
+  },
+  {
+   "id": 1,
+   "key": "bye",
+   "text": "慢慢走，别踩到新芽。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "15caf578dd009a93",
+   "file": "Assets/Resources/FishingV044/Voice/1/bye.ogg"
+  },
+  {
+   "id": 1,
+   "key": "chat_1",
+   "text": "慢慢来，铃音，风再大，灯笼也有绳子拴着呢。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "1d6c60629f4311f4",
+   "file": "Assets/Resources/FishingV044/Voice/1/chat_1.ogg"
+  },
+  {
+   "id": 1,
+   "key": "chat_2",
+   "text": "望星先生，今晚的星星，比去年多吗？",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "8e674455ea7e9881",
+   "file": "Assets/Resources/FishingV044/Voice/1/chat_2.ogg"
+  },
+  {
+   "id": 1,
+   "key": "clue",
+   "text": "慢慢来，先听我说——光和影子，缺一不可。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "b7b5828f11dc2eb1",
+   "file": "Assets/Resources/FishingV044/Voice/1/clue.ogg"
+  },
+  {
+   "id": 1,
+   "key": "fest",
+   "text": "慢慢逛，节日的灯要一盏一盏地看，才看得完。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "0999fce121995d6b",
+   "file": "Assets/Resources/FishingV044/Voice/1/fest.ogg"
+  },
+  {
+   "id": 1,
+   "key": "gift",
+   "text": "这是森光庭院托我转交的。收好它，像收好一粒种子。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "998d99820bb89f13",
+   "file": "Assets/Resources/FishingV044/Voice/1/gift.ogg"
+  },
+  {
+   "id": 1,
+   "key": "greet_first",
+   "text": "嘘……先把脚步放轻。潮林里的小生命都在听海。我叫青禾，跟根爷爷学的种树。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "ba7a8cddc0f27c49",
+   "file": "Assets/Resources/FishingV044/Voice/1/greet_first.ogg"
+  },
+  {
+   "id": 1,
+   "key": "greet_own",
+   "text": "根桥长出来了……根爷爷种下的时候，他自己都没见过这一天。谢谢你，替他看见了。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "e818a5c94dee688c",
+   "file": "Assets/Resources/FishingV044/Voice/1/greet_own.ogg"
+  },
+  {
+   "id": 1,
+   "key": "greet_s0",
+   "text": "慢慢来。刚回来的人，总想一下子把什么都做完。先看看海，再看看地。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "f640bc3db0350b1b",
+   "file": "Assets/Resources/FishingV044/Voice/1/greet_s0.ogg"
+  },
+  {
+   "id": 1,
+   "key": "greet_s1",
+   "text": "海图找到了？慢慢来，森光庭院不会跑。它已经等了三十年，不差这几天。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "699fd79b57caf4b8",
+   "file": "Assets/Resources/FishingV044/Voice/1/greet_s1.ogg"
+  },
+  {
+   "id": 1,
+   "key": "greet_s2",
+   "text": "有灯醒了。我昨晚看见红树的新芽朝那边歪了一点点，它们也知道。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "6f6a7e6b19ac421b",
+   "file": "Assets/Resources/FishingV044/Voice/1/greet_s2.ogg"
+  },
+  {
+   "id": 1,
+   "key": "greet_s3",
+   "text": "今年的新苗，我在每一棵旁边都插了一根小木牌：给下一位守灯人。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "a9b78f83db4f8951",
+   "file": "Assets/Resources/FishingV044/Voice/1/greet_s3.ogg"
+  },
+  {
+   "id": 1,
+   "key": "story_a",
+   "text": "根爷爷知道自己看不到红树长成，还是在潮线上种下了第一排。他说，有些路，要很多年以后才有人走。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "f092466928341337",
+   "file": "Assets/Resources/FishingV044/Voice/1/story_a.ogg"
+  },
+  {
+   "id": 1,
+   "key": "story_b",
+   "text": "潮水每年都会吃掉一点海岸。红树的根抓住泥，泥护住岸，岸护住村子。慢慢来，可一天也不能停。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "cd7c745ae4268895",
+   "file": "Assets/Resources/FishingV044/Voice/1/story_b.ogg"
+  },
+  {
+   "id": 1,
+   "key": "story_c",
+   "text": "采走一棵树，要为下一代留下三棵。这是潮林的老规矩。根爷爷说，规矩是写给还没出生的人看的。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "b1d889eff070c7b2",
+   "file": "Assets/Resources/FishingV044/Voice/1/story_c.ogg"
+  },
+  {
+   "id": 1,
+   "key": "story_end",
+   "text": "你看，树还是那么慢，可村里的人回来了。慢一点也没关系，只要一直有人在种。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "b78f4a27afcd1b9c",
+   "file": "Assets/Resources/FishingV044/Voice/1/story_end.ogg"
+  },
+  {
+   "id": 1,
+   "key": "tip",
+   "text": "慢慢来，记住这一点就好。",
+   "voice": "zh-CN-XiaoxiaoNeural",
+   "rate": "-12%",
+   "pitch": "-3Hz",
+   "hash": "8911a83c5ebf940b",
+   "file": "Assets/Resources/FishingV044/Voice/1/tip.ogg"
+  },
+  {
+   "id": 2,
+   "key": "ask",
+   "text": "要是你的船上只剩一个位置，一边是宝贝，一边是人，你选哪个？",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "cf56b7fd77780fd7",
+   "file": "Assets/Resources/FishingV044/Voice/2/ask.ogg"
+  },
+  {
+   "id": 2,
+   "key": "ask_r1",
+   "text": "嘿嘿，跟老船长一样！我就知道你是好人。",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "97be859dc580dc5e",
+   "file": "Assets/Resources/FishingV044/Voice/2/ask_r1.ogg"
+  },
+  {
+   "id": 2,
+   "key": "ask_r2",
+   "text": "嘿！你这家伙……好吧，说实话我也会犹豫一秒。就一秒！",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "bdd8920c6d378c31",
+   "file": "Assets/Resources/FishingV044/Voice/2/ask_r2.ogg"
+  },
+  {
+   "id": 2,
+   "key": "bark_1",
+   "text": "嘿……嘿！这绳子怎么又打结了！",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "fffb21d1f89970d5",
+   "file": "Assets/Resources/FishingV044/Voice/2/bark_1.ogg"
+  },
+  {
+   "id": 2,
+   "key": "bark_2",
+   "text": "今天捞到什么好东西了呢……",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "0405205d469034c4",
+   "file": "Assets/Resources/FishingV044/Voice/2/bark_2.ogg"
+  },
+  {
+   "id": 2,
+   "key": "bark_3",
+   "text": "归潮号，等着，我迟早把你的故事全捞上来。",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "085e4b0fb4236e6a",
+   "file": "Assets/Resources/FishingV044/Voice/2/bark_3.ogg"
+  },
+  {
+   "id": 2,
+   "key": "bark_4",
+   "text": "嘿嘿，五盏灯，一盏都不少！",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "2df378344df88837",
+   "file": "Assets/Resources/FishingV044/Voice/2/bark_4.ogg"
+  },
+  {
+   "id": 2,
+   "key": "bye",
+   "text": "嘿嘿，下次带你去看我的宝贝库！",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "bddefad58ca9063d",
+   "file": "Assets/Resources/FishingV044/Voice/2/bye.ogg"
+  },
+  {
+   "id": 2,
+   "key": "chat_1",
+   "text": "嘿嘿，靴子当风铃？铃音你真会想！",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "e5f49df95017a752",
+   "file": "Assets/Resources/FishingV044/Voice/2/chat_1.ogg"
+  },
+  {
+   "id": 2,
+   "key": "chat_2",
+   "text": "林舟叔，今晚的码头灯，让我来点一盏吧！",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "d7cfe4ffab828fa7",
+   "file": "Assets/Resources/FishingV044/Voice/2/chat_2.ogg"
+  },
+  {
+   "id": 2,
+   "key": "clue",
+   "text": "嘿嘿，告诉你个门道——沉潮机库里，别急着推，先看水。",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "098324dff6bb348d",
+   "file": "Assets/Resources/FishingV044/Voice/2/clue.ogg"
+  },
+  {
+   "id": 2,
+   "key": "fest",
+   "text": "嘿嘿，节日到啦！今天我不捞东西，只吃东西！",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "f61cc158fa897dab",
+   "file": "Assets/Resources/FishingV044/Voice/2/fest.ogg"
+  },
+  {
+   "id": 2,
+   "key": "gift",
+   "text": "嘿嘿，这是沉潮机库里那位留给你的。比我捞的靴子值钱多了！",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "fef6372789803365",
+   "file": "Assets/Resources/FishingV044/Voice/2/gift.ogg"
+  },
+  {
+   "id": 2,
+   "key": "greet_first",
+   "text": "嘿嘿，又一个敢靠近沉船的人！我叫阿砾，捞东西的。今天刚从旧船里摸出一只没生锈的罗盘！",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "9aa4a55e9c8a42af",
+   "file": "Assets/Resources/FishingV044/Voice/2/greet_first.ogg"
+  },
+  {
+   "id": 2,
+   "key": "greet_own",
+   "text": "嘿……灯亮了。我爹看见的时候，一个字都没说，就那么站了很久。谢谢你，真的。",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "5da6c5c2697750d3",
+   "file": "Assets/Resources/FishingV044/Voice/2/greet_own.ogg"
+  },
+  {
+   "id": 2,
+   "key": "greet_s0",
+   "text": "嘿嘿，村长！要不要看看我今天捞的宝贝？好吧……其实是一只破靴子。",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "4d7caee833dc3299",
+   "file": "Assets/Resources/FishingV044/Voice/2/greet_s0.ogg"
+  },
+  {
+   "id": 2,
+   "key": "greet_s1",
+   "text": "嘿嘿，听说你拿到海图啦？那归潮号的事，你迟早会知道的。",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "8c7286d4c6ee890c",
+   "file": "Assets/Resources/FishingV044/Voice/2/greet_s1.ogg"
+  },
+  {
+   "id": 2,
+   "key": "greet_s2",
+   "text": "嘿嘿，有灯亮了！我在沙洲上都看见了，亮得我差点把绳子松了。",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "ea71eb48d9ad9311",
+   "file": "Assets/Resources/FishingV044/Voice/2/greet_s2.ogg"
+  },
+  {
+   "id": 2,
+   "key": "greet_s3",
+   "text": "嘿嘿，现在晚上捞东西都不用点灯了，五盏灯照得海面跟白天似的！",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "b7a04ea31fdb3c8a",
+   "file": "Assets/Resources/FishingV044/Voice/2/greet_s3.ogg"
+  },
+  {
+   "id": 2,
+   "key": "story_a",
+   "text": "沙洲上那条旧船叫归潮号。风暴那夜，老船长把满舱的货推进海里，空出位置给岛上的孩子。",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "464d08058141f226",
+   "file": "Assets/Resources/FishingV044/Voice/2/story_a.ogg"
+  },
+  {
+   "id": 2,
+   "key": "story_b",
+   "text": "船沉了，可人都回了家。嘿……我爹就是那晚被空出来的舱位救下的孩子之一。",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "52b67828cf7ec6ae",
+   "file": "Assets/Resources/FishingV044/Voice/2/story_b.ogg"
+  },
+  {
+   "id": 2,
+   "key": "story_c",
+   "text": "我捞东西不是为了卖钱。每捞上来一件，我都想知道，当年它被放下的时候，换回了谁。",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "ccd19aab4d4def5c",
+   "file": "Assets/Resources/FishingV044/Voice/2/story_c.ogg"
+  },
+  {
+   "id": 2,
+   "key": "story_end",
+   "text": "退潮的沙上刻着一行字：“放下的，海会替你记着。”嘿嘿，我现在每天都去看一眼。",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "fb0427fd962b8452",
+   "file": "Assets/Resources/FishingV044/Voice/2/story_end.ogg"
+  },
+  {
+   "id": 2,
+   "key": "tip",
+   "text": "嘿嘿，这可是独家消息。",
+   "voice": "zh-CN-YunxiNeural",
+   "rate": "+10%",
+   "pitch": "+0Hz",
+   "hash": "4843c3015beb373f",
+   "file": "Assets/Resources/FishingV044/Voice/2/tip.ogg"
+  },
+  {
+   "id": 3,
+   "key": "ask",
+   "text": "如果有一天，你也要在“远方”和“回家”之间选一个，你会怎么选？",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "a02b3ffb7007c31b",
+   "file": "Assets/Resources/FishingV044/Voice/3/ask.ogg"
+  },
+  {
+   "id": 3,
+   "key": "ask_r1",
+   "text": "按星图来说，这是最难的那条航线。不过，沈先生也是这么选的。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "fb6457114a2de0d8",
+   "file": "Assets/Resources/FishingV044/Voice/3/ask_r1.ogg"
+  },
+  {
+   "id": 3,
+   "key": "ask_r2",
+   "text": "留下来的人，要让走远的人看得见。这就是守灯人。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "e4bb4831646edc52",
+   "file": "Assets/Resources/FishingV044/Voice/3/ask_r2.ogg"
+  },
+  {
+   "id": 3,
+   "key": "bark_1",
+   "text": "按星图来说……嗯，这里还差一笔。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "5fb4fb45f2c36d38",
+   "file": "Assets/Resources/FishingV044/Voice/3/bark_1.ogg"
+  },
+  {
+   "id": 3,
+   "key": "bark_2",
+   "text": "今晚的云会散的。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "e6cefdfb8fc43eda",
+   "file": "Assets/Resources/FishingV044/Voice/3/bark_2.ogg"
+  },
+  {
+   "id": 3,
+   "key": "bark_3",
+   "text": "归航星，你还在那里吧？",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "67e43bd0fc8749a7",
+   "file": "Assets/Resources/FishingV044/Voice/3/bark_3.ogg"
+  },
+  {
+   "id": 3,
+   "key": "bark_4",
+   "text": "沈先生，灯都亮了。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "b2096783ad3b736f",
+   "file": "Assets/Resources/FishingV044/Voice/3/bark_4.ogg"
+  },
+  {
+   "id": 3,
+   "key": "bye",
+   "text": "抬头看看星星，就不会迷路。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "c9db345c05304616",
+   "file": "Assets/Resources/FishingV044/Voice/3/bye.ogg"
+  },
+  {
+   "id": 3,
+   "key": "chat_1",
+   "text": "按星图来说，多了一颗。是沈先生的那颗归航星。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "0186200935d2eb21",
+   "file": "Assets/Resources/FishingV044/Voice/3/chat_1.ogg"
+  },
+  {
+   "id": 3,
+   "key": "chat_2",
+   "text": "阿砾，记得收好你的绳子，节日的人多。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "2469fa578c82039f",
+   "file": "Assets/Resources/FishingV044/Voice/3/chat_2.ogg"
+  },
+  {
+   "id": 3,
+   "key": "clue",
+   "text": "按星图来说——星轨圣所的答案，要抬头才看得见。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "b3303149c7e4af0f",
+   "file": "Assets/Resources/FishingV044/Voice/3/clue.ogg"
+  },
+  {
+   "id": 3,
+   "key": "fest",
+   "text": "按星图来说，今晚的天空也在过节。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "a2c844ded1dbd914",
+   "file": "Assets/Resources/FishingV044/Voice/3/fest.ogg"
+  },
+  {
+   "id": 3,
+   "key": "gift",
+   "text": "星轨圣所留下的东西，我替你保管了很久。现在它是你的了。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "ed52a032e67fbc3b",
+   "file": "Assets/Resources/FishingV044/Voice/3/gift.ogg"
+  },
+  {
+   "id": 3,
+   "key": "greet_first",
+   "text": "白天也能看见星星，只是要记住它们的位置。我是望星，从前给沈望潮先生当过记录员。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "691850e0551e47fd",
+   "file": "Assets/Resources/FishingV044/Voice/3/greet_first.ogg"
+  },
+  {
+   "id": 3,
+   "key": "greet_own",
+   "text": "星望塔亮了。我一直以为，我等的是沈先生回来。原来我等的，是有人去接他的班。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "e675c10a5cdcc0d9",
+   "file": "Assets/Resources/FishingV044/Voice/3/greet_own.ogg"
+  },
+  {
+   "id": 3,
+   "key": "greet_s0",
+   "text": "按星图来说，今晚是个好天。你是沈先生的后人吧？眉眼很像。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "9dbce36189d4debb",
+   "file": "Assets/Resources/FishingV044/Voice/3/greet_s0.ogg"
+  },
+  {
+   "id": 3,
+   "key": "greet_s1",
+   "text": "你读到海图了。按星图来说，四段回响的顺序并不要紧——要紧的是，你愿意走完。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "6f49542435cc3104",
+   "file": "Assets/Resources/FishingV044/Voice/3/greet_s1.ogg"
+  },
+  {
+   "id": 3,
+   "key": "greet_s2",
+   "text": "一盏，又一盏。按星图来说，归航星的位置，已经能算出来了。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "0f16bda3299c6504",
+   "file": "Assets/Resources/FishingV044/Voice/3/greet_s2.ogg"
+  },
+  {
+   "id": 3,
+   "key": "greet_s3",
+   "text": "沈先生在塔上守了三十年。现在，换你了。按星图来说，这是最好的结局。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "13c51d1dee0420ae",
+   "file": "Assets/Resources/FishingV044/Voice/3/greet_s3.ogg"
+  },
+  {
+   "id": 3,
+   "key": "story_a",
+   "text": "四座灯塔从来不是为了找财宝建的。它们只回答一句话：今晚，有人在等你回家吗？",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "dc50b1a366bfbec2",
+   "file": "Assets/Resources/FishingV044/Voice/3/story_a.ogg"
+  },
+  {
+   "id": 3,
+   "key": "story_b",
+   "text": "沈先生出海那天，只说了一句：“我去把灯问回来。”我把这句话，记在了日志的最后一行。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "2dea4df13585e7d8",
+   "file": "Assets/Resources/FishingV044/Voice/3/story_b.ogg"
+  },
+  {
+   "id": 3,
+   "key": "story_c",
+   "text": "风、林、潮、星，四盏灯连成一个环，把迷路的船引回渔港。缺了哪一盏，环就断了。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "b19c7248aa81d3c1",
+   "file": "Assets/Resources/FishingV044/Voice/3/story_c.ogg"
+  },
+  {
+   "id": 3,
+   "key": "story_end",
+   "text": "他不是失踪，是选择留下。灯要有人守着才不会再熄。记下这一笔的时候，我的手一直在抖。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "ee2fcac77b194f59",
+   "file": "Assets/Resources/FishingV044/Voice/3/story_end.ogg"
+  },
+  {
+   "id": 3,
+   "key": "tip",
+   "text": "按星图来说，这条路最稳。",
+   "voice": "zh-CN-YunjianNeural",
+   "rate": "-8%",
+   "pitch": "-4Hz",
+   "hash": "c9e52dc98e85fbf0",
+   "file": "Assets/Resources/FishingV044/Voice/3/tip.ogg"
+  },
+  {
+   "id": 4,
+   "key": "history",
+   "text": "这里最早只修渔网。风暴过后，岛上的人带来绳索、木料和灯，才慢慢变成现在的钓具店。",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "rate": "+0%",
+   "pitch": "+0Hz",
+   "hash": "aa30107ce6bb50a2",
+   "file": "Assets/Resources/FishingV044/Voice/4/history.ogg"
+  },
+  {
+   "id": 4,
+   "key": "likes",
+   "text": "我喜欢傍晚的海面，也喜欢柜台上刚整理好的那一排灯。",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "rate": "+0%",
+   "pitch": "+0Hz",
+   "hash": "1b7aeaa9c6f67a30",
+   "file": "Assets/Resources/FishingV044/Voice/4/likes.ogg"
+  },
+  {
+   "id": 4,
+   "key": "sailing",
+   "text": "先减速，再靠岸；别急着把船往地基下面挤。",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "rate": "+0%",
+   "pitch": "+0Hz",
+   "hash": "0c684e8e13d240e4",
+   "file": "Assets/Resources/FishingV044/Voice/4/sailing.ogg"
+  },
+  {
+   "id": 4,
+   "key": "story",
+   "text": "这家店不算大，却见过好多次出航和归来。",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "rate": "+0%",
+   "pitch": "+0Hz",
+   "hash": "de041b98705a62ed",
+   "file": "Assets/Resources/FishingV044/Voice/4/story.ogg"
+  },
+  {
+   "id": 4,
+   "key": "upgrades",
+   "text": "钓具升级帮助你控制鱼线；船舶升级让航行和装载更顺手。二级载重、动力、操控专精三选一，先想好自己的玩法。",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "rate": "+0%",
+   "pitch": "+0Hz",
+   "hash": "fdab86c43499bb59",
+   "file": "Assets/Resources/FishingV044/Voice/4/upgrades.ogg"
+  },
+  {
+   "id": 4,
+   "key": "welcome_again",
+   "text": "又见面啦，领航员。海风有没有把你想找的东西送来？",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "rate": "+0%",
+   "pitch": "+0Hz",
+   "hash": "64fe4fb3e4efd9c1",
+   "file": "Assets/Resources/FishingV044/Voice/4/welcome_again.ogg"
+  },
+  {
+   "id": 4,
+   "key": "welcome_first",
+   "text": "你好，我是汐禾。第一次靠岸吧？欢迎来潮汐钓具店。",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "rate": "+0%",
+   "pitch": "+0Hz",
+   "hash": "e00c5f8899c7a32f",
+   "file": "Assets/Resources/FishingV044/Voice/4/welcome_first.ogg"
+  },
+  {
+   "id": 5,
+   "key": "ask",
+   "text": "你祖父那条小船，至今没回港。你恨他把你一个人留下吗？",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "035bf3d69e8e6c70",
+   "file": "Assets/Resources/FishingV044/Voice/5/ask.ogg"
+  },
+  {
+   "id": 5,
+   "key": "ask_r1",
+   "text": "嗯。你比你祖父心宽。老规矩，等你想明白了，再来跟我喝一杯。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "1d794bd6ed0d3e18",
+   "file": "Assets/Resources/FishingV044/Voice/5/ask_r1.ogg"
+  },
+  {
+   "id": 5,
+   "key": "ask_r2",
+   "text": "想知道，就去问。四座岛上，都有他留下的答案。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "f989a8b2d0c49cb5",
+   "file": "Assets/Resources/FishingV044/Voice/5/ask_r2.ogg"
+  },
+  {
+   "id": 5,
+   "key": "bark_1",
+   "text": "嗯，潮水准时，老规矩。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "7cd60d56d17be73f",
+   "file": "Assets/Resources/FishingV044/Voice/5/bark_1.ogg"
+  },
+  {
+   "id": 5,
+   "key": "bark_2",
+   "text": "这条缆绳，又该换了。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "cf0554cfd4e53288",
+   "file": "Assets/Resources/FishingV044/Voice/5/bark_2.ogg"
+  },
+  {
+   "id": 5,
+   "key": "bark_3",
+   "text": "老伙计，你孙子回来了。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "41b88764ad7a56f8",
+   "file": "Assets/Resources/FishingV044/Voice/5/bark_3.ogg"
+  },
+  {
+   "id": 5,
+   "key": "bark_4",
+   "text": "嗯，五盏灯，一条船都不少。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "ac1e4b27d5bf7f8d",
+   "file": "Assets/Resources/FishingV044/Voice/5/bark_4.ogg"
+  },
+  {
+   "id": 5,
+   "key": "bye",
+   "text": "嗯，早点回来。灯给你留着。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "45648305e3d1d300",
+   "file": "Assets/Resources/FishingV044/Voice/5/bye.ogg"
+  },
+  {
+   "id": 5,
+   "key": "chat_1",
+   "text": "嗯，好。手稳一点，灯芯别剪太短。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "490ca0e35cb1643f",
+   "file": "Assets/Resources/FishingV044/Voice/5/chat_1.ogg"
+  },
+  {
+   "id": 5,
+   "key": "chat_2",
+   "text": "嗯，你们几个，玩够了就早点回家。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "63e03f58786ce2b3",
+   "file": "Assets/Resources/FishingV044/Voice/5/chat_2.ogg"
+  },
+  {
+   "id": 5,
+   "key": "echo_done",
+   "text": "四段回响都回来了。风、林、潮、星，终于又连成了一条回家的路。收下这些，替我把灯火带到更远的海面。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "374c62449bab6edf",
+   "file": "Assets/Resources/FishingV044/Voice/5/echo_done.ogg"
+  },
+  {
+   "id": 5,
+   "key": "echo_finale",
+   "text": "你的航记已经记在港口的名册上了。海面上还有鱼群、宝箱和旧航标。去走走吧，回家的灯会一直亮着。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "3414db3972976a95",
+   "file": "Assets/Resources/FishingV044/Voice/5/echo_finale.ogg"
+  },
+  {
+   "id": 5,
+   "key": "echo_progress",
+   "text": "每座探索岛都有一扇刻着潮纹的门。把四段回响都带回来，我们再一起把航路连起来。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "e9cd192f78b31876",
+   "file": "Assets/Resources/FishingV044/Voice/5/echo_progress.ogg"
+  },
+  {
+   "id": 5,
+   "key": "fest",
+   "text": "嗯，老规矩，节日的晚上，码头的灯多点几盏。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "b4c9ceb9dc0a7e28",
+   "file": "Assets/Resources/FishingV044/Voice/5/fest.ogg"
+  },
+  {
+   "id": 5,
+   "key": "greet_first",
+   "text": "嗯，老规矩——先说欢迎回来。村长，我是林舟，替港口照看往来的船。你的任命函和祖父的旧海图，都放在渔屋书桌上了。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "8308bec5c8fc4b5d",
+   "file": "Assets/Resources/FishingV044/Voice/5/greet_first.ogg"
+  },
+  {
+   "id": 5,
+   "key": "greet_s0",
+   "text": "嗯，老规矩，先把日子过起来。钓鱼、种菜、修屋子，海都看在眼里。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "4d15dd246dd31134",
+   "file": "Assets/Resources/FishingV044/Voice/5/greet_s0.ogg"
+  },
+  {
+   "id": 5,
+   "key": "greet_s1",
+   "text": "嗯，你翻到那张海图了。你祖父的字，我隔着三十年都认得。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "75aaf1f12d56470c",
+   "file": "Assets/Resources/FishingV044/Voice/5/greet_s1.ogg"
+  },
+  {
+   "id": 5,
+   "key": "greet_s2",
+   "text": "嗯，灯醒了几盏，港口的船也多了。老规矩，今晚我会多留一盏灯。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "da514838d7642d57",
+   "file": "Assets/Resources/FishingV044/Voice/5/greet_s2.ogg"
+  },
+  {
+   "id": 5,
+   "key": "greet_s3",
+   "text": "嗯，老规矩，五盏灯都亮着，船一条不少。村长，这港口交给你，我放心。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "f7e9c37d9d7b0165",
+   "file": "Assets/Resources/FishingV044/Voice/5/greet_s3.ogg"
+  },
+  {
+   "id": 5,
+   "key": "keeper",
+   "text": "嗯……昨晚，塔上和码头上，两盏灯一起亮着。老苇的船回来了。谢谢你，守灯人。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "4a06082d096d482b",
+   "file": "Assets/Resources/FishingV044/Voice/5/keeper.ogg"
+  },
+  {
+   "id": 5,
+   "key": "night",
+   "text": "嗯，天黑了，老规矩，码头的灯得有人点。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "85f108bb60e878ac",
+   "file": "Assets/Resources/FishingV044/Voice/5/night.ogg"
+  },
+  {
+   "id": 5,
+   "key": "story_a",
+   "text": "大寂潮之后，人一个个去了城里。你祖父说：“我去把灯问回来。”驾着小船进了雾里。我在这码头上，送的他。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "03ab3cfac669cd8a",
+   "file": "Assets/Resources/FishingV044/Voice/5/story_a.ogg"
+  },
+  {
+   "id": 5,
+   "key": "story_b",
+   "text": "老规矩：天黑之前，码头上要亮一盏灯。三十年了，我一天都没落下。总得有人等着。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "4c49c059f4d285d5",
+   "file": "Assets/Resources/FishingV044/Voice/5/story_b.ogg"
+  },
+  {
+   "id": 5,
+   "key": "story_c",
+   "text": "海每涨一次潮，都会轻声问一句：今晚，有人在等你回家吗？我们这些老家伙，一直在替村子答。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "ac88c6c5776980a4",
+   "file": "Assets/Resources/FishingV044/Voice/5/story_c.ogg"
+  },
+  {
+   "id": 5,
+   "key": "story_end",
+   "text": "你祖父最后那页日志，我也读了。“换你来答。”嗯……他还是那个脾气，什么都不肯多说。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "cab7ed36756b246e",
+   "file": "Assets/Resources/FishingV044/Voice/5/story_end.ogg"
+  },
+  {
+   "id": 5,
+   "key": "tip",
+   "text": "嗯，老规矩，听我一句。",
+   "voice": "zh-CN-YunyangNeural",
+   "rate": "-15%",
+   "pitch": "-10Hz",
+   "hash": "d35537a0633867c1",
+   "file": "Assets/Resources/FishingV044/Voice/5/tip.ogg"
+  },
+  {
+   "id": 6,
+   "key": "bye",
+   "text": "下回潮水涨起来，我还来！",
+   "voice": "zh-CN-liaoning-XiaobeiNeural",
+   "rate": "+8%",
+   "pitch": "-2Hz",
+   "hash": "c3f35b03f92ecbc6",
+   "file": "Assets/Resources/FishingV044/Voice/6/bye.ogg"
+  },
+  {
+   "id": 6,
+   "key": "deal_1",
+   "text": "成交！这一路的风浪，算是没白跑。",
+   "voice": "zh-CN-liaoning-XiaobeiNeural",
+   "rate": "+8%",
+   "pitch": "-2Hz",
+   "hash": "7a916cbc5be6910f",
+   "file": "Assets/Resources/FishingV044/Voice/6/deal_1.ogg"
+  },
+  {
+   "id": 6,
+   "key": "deal_2",
+   "text": "好眼光！这可是我从南边的岛上换来的。",
+   "voice": "zh-CN-liaoning-XiaobeiNeural",
+   "rate": "+8%",
+   "pitch": "-2Hz",
+   "hash": "5e06aade7ce8d2d1",
+   "file": "Assets/Resources/FishingV044/Voice/6/deal_2.ogg"
+  },
+  {
+   "id": 6,
+   "key": "hail_1",
+   "text": "哟！靠过来看看，阿汛的船今天又从远方回来啦！",
+   "voice": "zh-CN-liaoning-XiaobeiNeural",
+   "rate": "+8%",
+   "pitch": "-2Hz",
+   "hash": "fb50298f15b075fd",
+   "file": "Assets/Resources/FishingV044/Voice/6/hail_1.ogg"
+  },
+  {
+   "id": 6,
+   "key": "hail_2",
+   "text": "来来来，别处的好东西，只有我这儿有！",
+   "voice": "zh-CN-liaoning-XiaobeiNeural",
+   "rate": "+8%",
+   "pitch": "-2Hz",
+   "hash": "f6d66a6927844faf",
+   "file": "Assets/Resources/FishingV044/Voice/6/hail_2.ogg"
+  },
+  {
+   "id": 6,
+   "key": "season_0",
+   "text": "春天南边的岛上开满了花，我顺手带了些种子回来。",
+   "voice": "zh-CN-liaoning-XiaobeiNeural",
+   "rate": "+8%",
+   "pitch": "-2Hz",
+   "hash": "45b918efcee99a3b",
+   "file": "Assets/Resources/FishingV044/Voice/6/season_0.ogg"
+  },
+  {
+   "id": 6,
+   "key": "season_1",
+   "text": "夏天北边的海会发光，我在那儿看了三个晚上。",
+   "voice": "zh-CN-liaoning-XiaobeiNeural",
+   "rate": "+8%",
+   "pitch": "-2Hz",
+   "hash": "8dbb81a7641d8852",
+   "file": "Assets/Resources/FishingV044/Voice/6/season_1.ogg"
+  },
+  {
+   "id": 6,
+   "key": "season_2",
+   "text": "秋天东边的渔村晒满了鱼干，香得我差点不想走。",
+   "voice": "zh-CN-liaoning-XiaobeiNeural",
+   "rate": "+8%",
+   "pitch": "-2Hz",
+   "hash": "787ec311b01a5843",
+   "file": "Assets/Resources/FishingV044/Voice/6/season_2.ogg"
+  },
+  {
+   "id": 6,
+   "key": "season_3",
+   "text": "冬天西边的港口结了冰，我是破着冰出来的！",
+   "voice": "zh-CN-liaoning-XiaobeiNeural",
+   "rate": "+8%",
+   "pitch": "-2Hz",
+   "hash": "16ff51f45006fc07",
+   "file": "Assets/Resources/FishingV044/Voice/6/season_3.ogg"
+  }
+ ]
+}

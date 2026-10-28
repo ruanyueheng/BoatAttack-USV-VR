@@ -23,7 +23,8 @@ namespace BoatAttack.EditorTools
             var visual=target.GetComponentInChildren<FishingPortalVisual>(true);
             Check(visual!=null && visual.Height>2,"Celestial portal is visibly framed: "+target.parent.name+" / "+target.name);
             Check(visual.GetComponentsInChildren<MeshRenderer>(true).Length==3,"Portal uses three batched surfaces");
-            Check(visual.GetComponentsInChildren<Collider>(true).Length==0 && visual.GetComponentsInChildren<ParticleSystem>(true).Length==0,"Light curtain never blocks walking or simulates particles");
+            var particles=visual.GetComponentsInChildren<ParticleSystem>(true);
+            Check(visual.GetComponentsInChildren<Collider>(true).Length==0 && particles.Length==1 && particles[0].main.maxParticles<=FishingPortalVisual.DustBudget && FishingPortalVisual.DustBudget<=40,"Light curtain never blocks walking; only the bounded gold dust simulates particles");
             var curtain=visual.transform.Find("Visible flowing light curtain").GetComponent<MeshRenderer>();
             Check(curtain.sharedMaterial.shader.name=="BoatAttack/FishingPortal" && curtain.sharedMaterial.renderQueue>=3000,"Portal has its translucent animated curtain");
         }

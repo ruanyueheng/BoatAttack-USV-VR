@@ -70,10 +70,18 @@ Shader "Fishing/TerrainMap"
                 half3 waterError = sampleColor - _SourceWater.rgb;
                 half lowDistance = dot(lowError, lowError), highDistance = dot(highError, highError);
                 half3 terrain = lowDistance < highDistance ? lerp(_Low.rgb, _Land.rgb, lowT) : lerp(_Land.rgb, _High.rgb, highT);
-                sampleColor = dot(waterError, waterError) < min(lowDistance, highDistance) ? _Water.rgb : terrain;
+                // V044 水彩海面：断续细浪纹，避免平涂方块；只作用于水体像素。
+                float2 p = worldUV * 60;
+                float wave = sin(p.y * 6.2832 + sin(p.x * 1.7) * 1.6 + sin(p.x * .37 + p.y * .9) * 2.0);
+                float stroke = smoothstep(.94, .995, wave) * saturate(.5 + .7 * sin(p.x * .8 + p.y * .3));
+                half3 sea = _Water.rgb + stroke * .10; // only the sparse wave strokes deviate; open water keeps the exact palette colour
+                sampleColor = dot(waterError, waterError) < min(lowDistance, highDistance) ? sea : terrain;
+                // 已测绘边界羽化进海雾，而不是硬方块边。
+                float rim = min(min(worldUV.x, 1 - worldUV.x), min(worldUV.y, 1 - worldUV.y));
+                known *= smoothstep(0, .06, rim);
                 float hatch = step(.72, frac((input.position.x + input.position.y) / 12));
                 half3 unknown = lerp(_Unknown.rgb, _Hatch.rgb, hatch);
-                return half4(lerp(unknown, sampleColor, known) * input.color.rgb, edge * input.color.a);
+                return half4(lerp(unknown, sampleColor, known) * input.color.rgb, edge * lerp(_Unknown.a, 1, known) * input.color.a);
             }
             ENDHLSL
         }

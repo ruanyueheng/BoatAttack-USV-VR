@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace BoatAttack.Fishing
@@ -223,7 +223,7 @@ namespace BoatAttack.Fishing
     public sealed class FishingSaveData
     {
         public List<HuntedAnimalData> huntedAnimals=new List<HuntedAnimalData>();
-        public const int CurrentVersion = 19;
+        public const int CurrentVersion = 20;
         public int version = CurrentVersion;
         public List<FieldStack> homeStorage;
         public int[] homeFruitDays;

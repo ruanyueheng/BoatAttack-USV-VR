@@ -21,7 +21,7 @@ namespace BoatAttack.Fishing
         public FishingActionClock Actions { get; } = new FishingActionClock();
         private ActionRequest _action;
         private int _actionContactFrame=-1,_actionConsumedFrame=-1;
-        public bool WorldActionBusy=>_action!=null || (Farm!=null && Farm.Busy);
+        public bool WorldActionBusy=>_action!=null || _approachPath!=null || (Farm!=null && Farm.Busy);
         public bool UsesFishingSeat=>Anchored || HasPendingCatch || (_action!=null && _action.Fish);
         public const float FishingSeatYaw=66f;
         public bool WorldActionBlocksGameplay=>WorldActionBusy || _actionConsumedFrame==Time.frameCount;
@@ -168,18 +168,21 @@ namespace BoatAttack.Fishing
             }
             check.Candidates=trace.ToString();return check;
         }
-        private InteractionPreflight EvaluateActionStart(FishingActionKind kind,Transform root,Vector3 contact,Quaternion rotation,bool fish)
+        // at/face evaluate a candidate stance: the solved skeleton is carried rigidly with the body before it moves there.
+        private InteractionPreflight EvaluateActionStart(FishingActionKind kind,Transform root,Vector3 contact,Quaternion rotation,bool fish,Vector3? at=null,Quaternion? face=null)
         {
             var character=Shore.Character;bool pick=kind==FishingActionKind.Harvest && FishingBackpack.IsGatherTool(Career.Backpack.Equipped);
             bool lowAction=kind==FishingActionKind.Pickup || kind==FishingActionKind.Harvest;
-            var check=new InteractionPreflight{Actor=ExplorerPosition,RootPosition=root==null?contact:root.position,Contact=contact,
-                Shoulder=character.ShoulderPosition(false),Grounded=Shore.Grounded,Crouched=Shore.Crouched,ArmReach=character.ArmReach(false)};
-            check.BaseShoulder=check.Shoulder-character.AppliedInteractionLean;
-            check.Palm=pick?FishingFieldWorld.WorkContactPalm(Career.Backpack.Equipped,contact,rotation,Quaternion.Euler(0,Shore.Actor.eulerAngles.y,0)):contact;
-            var wrist=pick?ActionPickWrist(check.Palm,rotation):check.Palm;
+            var turn=face.HasValue?face.Value*Quaternion.Inverse(Shore.Actor.rotation):Quaternion.identity;var pivot=Shore.Actor.position;var moved=at??pivot;
+            var yaw=Quaternion.Euler(0,(face??Shore.Actor.rotation).eulerAngles.y,0);
+            var check=new InteractionPreflight{Actor=at??ExplorerPosition,RootPosition=root==null?contact:root.position,Contact=contact,
+                Shoulder=moved+turn*(character.ShoulderPosition(false)-pivot),Grounded=Shore.Grounded,Crouched=Shore.Crouched,ArmReach=character.ArmReach(false)};
+            check.BaseShoulder=check.Shoulder-turn*character.AppliedInteractionLean;
+            check.Palm=pick?FishingFieldWorld.WorkContactPalm(Career.Backpack.Equipped,contact,rotation,yaw):contact;
+            var wrist=pick?Shore.Character.WristForPalm(false,check.Palm,rotation*FishingFieldWorld.PickHandRotation(rotation,yaw)):check.Palm;
             float ReachDistance(Vector3 shoulder)=>Mathf.Max(Vector3.Distance(shoulder,check.Palm),Vector3.Distance(shoulder,wrist));
             // 使用当前输入最终对应的姿态；起身途中的瞬时可达不能冒充站姿可达。
-            if(lowAction && Ashore)check.BaseShoulder+=character.AshoreStanceOffset(Shore.Crouched);
+            if(lowAction && Ashore)check.BaseShoulder+=turn*character.AshoreStanceOffset(Shore.Crouched);
             // 先保留当前可达且无遮挡的姿态，不能为台面物品强行蹲到栏杆后面。
             bool currentReachable=ReachDistance(check.BaseShoulder)<=check.ArmReach-.015f+.22f
                 && ClearActionSight(check.BaseShoulder,check.Palm,root);
@@ -187,7 +190,7 @@ namespace BoatAttack.Fishing
                 && !Shore.Crouched && !currentReachable && contact.y<check.BaseShoulder.y-.4f)
             {
                 // 三个方向共用剩余蹲姿权重，起身中再次 E 不重复扣除后移量。
-                var crouchedShoulder=check.Shoulder-character.AppliedInteractionLean+character.RemainingCrouchOffset;
+                var crouchedShoulder=check.Shoulder-turn*(character.AppliedInteractionLean-character.RemainingCrouchOffset);
                 if(ReachDistance(crouchedShoulder)<=check.ArmReach-.015f+.22f)
                 {check.BaseShoulder=crouchedShoulder;check.AutoCrouch=true;}
             }
@@ -223,6 +226,7 @@ namespace BoatAttack.Fishing
                 var combatHint=Combat?.NearbyHint;if(combatHint!=null)return combatHint;
                 var voyageHint=Voyage?.NearbyHint;if(voyageHint!=null)return voyageHint;
                 var ecologyHint=HomeEcology?.NearbyHint;if(ecologyHint!=null)return ecologyHint;
+                var keeperHint=Keeper?.NearbyHint??TidalFlat?.NearbyHint;if(keeperHint!=null)return keeperHint;
                 var realmHint=Realms?.NearbyHint;if(realmHint!=null)return realmHint;
                 if(Residents!=null && Residents.TryNearby(out int resident))return resident==4?"E 与汐禾交谈 · Tab 查看商品":"E 与"+FishingLore.ResidentName(resident)+"交谈";
                 if(Shore.ClimbHint!=null)return Shore.ClimbHint;
@@ -259,6 +263,7 @@ namespace BoatAttack.Fishing
             if(Combat!=null && Combat.TryInteract())return true;
             if(Voyage!=null && Voyage.TryInteract())return true;
             if(HomeEcology!=null && HomeEcology.TryInteract())return true;
+            if((Keeper!=null && Keeper.TryInteract()) || (TidalFlat!=null && TidalFlat.TryInteract()))return true;
             if(Realms.TryTarget(out _,out _))return Realms.Interact();
             if(Residents.TryNearby(out int resident))return Residents.Talk(resident);
             if(Shore.TryClimb())return true;
@@ -271,23 +276,29 @@ namespace BoatAttack.Fishing
             if(target.Kind==WorldTargetKind.Barbecue){CoastWorld.OpenMenu();return true;}
             if(target.Kind==WorldTargetKind.HandGame)return HandGames.Begin(target.Id);
             if(target.Kind==WorldTargetKind.Resource)return RequestHarvest(target.Resource);
+            return InteractWorldTarget(target);
+        }
+        private bool InteractWorldTarget(WorldTarget target)
+        {
+            if(target.Root==null || !target.Root.gameObject.activeInHierarchy)return false;
+            Func<bool> retry=()=>InteractWorldTarget(target);
             var point=FishingContactGeometry.ClosestPoint(target.Root,Shore.Character.ShoulderPosition(false));int id=target.Id;
             if(target.Kind==WorldTargetKind.Carcass)
-                return BeginWorldAction(FishingActionKind.Pickup,"carcass:"+id,target.Root,point,Shore.Actor.rotation,()=>RifleHunting.CollectAnimal(id));
+                return BeginWorldAction(FishingActionKind.Pickup,"carcass:"+id,target.Root,point,Shore.Actor.rotation,()=>RifleHunting.CollectAnimal(id),retry:retry);
             if(target.Kind==WorldTargetKind.Island)
-                return _xrActive ? Islands.InteractAt(id) : BeginWorldAction(id%3==1?FishingActionKind.Pickup:FishingActionKind.Inspect,"island:"+id,target.Root,point,Shore.Actor.rotation,()=>Islands.InteractAt(id));
+                return _xrActive ? Islands.InteractAt(id) : BeginWorldAction(id%3==1?FishingActionKind.Pickup:FishingActionKind.Inspect,"island:"+id,target.Root,point,Shore.Actor.rotation,()=>Islands.InteractAt(id),retry:retry);
             if(target.Kind==WorldTargetKind.Expedition)
                 return BeginWorldAction(id==4?FishingActionKind.Repair:FishingActionKind.Inspect,"expedition:"+id,target.Root,point,Shore.Actor.rotation,()=>
                 {
                     bool had=Career.Expedition.Has(FishingExpedition.ComponentFound);bool ok=Expedition.InteractAt(id);
                     if(ok && !had && Career.Expedition.Has(FishingExpedition.ComponentFound))Hands.PresentPickup();return ok;
-                });
+                },retry:retry);
             if(target.Kind==WorldTargetKind.Pickup)
             {
                 int count=target.Pickup.Count;var item=target.Pickup.Item;
-                return BeginWorldAction(FishingActionKind.Pickup,"pickup:"+id,target.Root,point,Shore.Actor.rotation,()=>FieldWorld.PickupById(id,item,count));
+                return BeginWorldAction(FishingActionKind.Pickup,"pickup:"+id,target.Root,point,Shore.Actor.rotation,()=>FieldWorld.PickupById(id,item,count),retry:retry);
             }
-            return BeginWorldAction(FishingActionKind.Inspect,"survey:"+id,target.Root,point,Shore.Actor.rotation,()=>Shore.SurveyTask(id));
+            return BeginWorldAction(FishingActionKind.Inspect,"survey:"+id,target.Root,point,Shore.Actor.rotation,()=>Shore.SurveyTask(id),retry:retry);
         }
         public bool RequestHarvest()
         {
@@ -308,7 +319,7 @@ namespace BoatAttack.Fishing
             if(!Career.Workshop.ResourceReady(node.Id)){Notice("这处资源正在恢复。",3);return false;}
             HarvestContact(node,out var contact,out var rotation);
             int id=node.Id;var item=node.Item;
-            return BeginWorldAction(FishingActionKind.Harvest,"resource:"+id,node.Root,contact,rotation,()=>WorkshopWorld.HarvestNode(id,item,tool));
+            return BeginWorldAction(FishingActionKind.Harvest,"resource:"+id,node.Root,contact,rotation,()=>WorkshopWorld.HarvestNode(id,item,tool),retry:()=>RequestHarvest(node));
         }
         private void HarvestContact(FishingWorkshopWorld.ResourceNode node,out Vector3 contact,out Quaternion rotation)
         {
@@ -361,11 +372,18 @@ namespace BoatAttack.Fishing
                 store?Quaternion.Euler(0,Player.transform.eulerAngles.y,0):frame,()=>HasPendingCatch && Career.PendingCatch.fish.id==id && ResolveCatch(store),true);
             if(began)CatchRig.PrepareHandAction();return began;
         }
-        internal bool BeginWorldAction(FishingActionKind kind,string targetId,Transform root,Vector3 contact,Quaternion rotation,Func<bool> commit,bool fish=false)
+        /// <param name="retry">Re-runs the request after a desktop step-in so contact/rotation are re-derived from the new stance.</param>
+        internal bool BeginWorldAction(FishingActionKind kind,string targetId,Transform root,Vector3 contact,Quaternion rotation,Func<bool> commit,bool fish=false,Func<bool> retry=null)
         {
             if(Farm!=null && Farm.CarryingCan){Notice("先将水壶放回井边木架，再腾出双手使用其他工具。",4);return false;}
             var check=EvaluateActionStart(kind,root,contact,rotation,fish);
-            if(!check.CanBegin){Notice(check.Reason,4);return false;}
+            if(!check.CanBegin)
+            {
+                if(!fish && check.Grounded && check.Reason==check.GeometryReason
+                    && TryPlanReachApproach(contact,contact,(at,face)=>EvaluateActionStart(kind,root,contact,rotation,fish,at,face).GeometryReady,
+                        retry??(()=>BeginWorldAction(kind,targetId,root,contact,rotation,commit,fish))))return true;
+                Notice(check.Reason,4);return false;
+            }
             var shoulder=check.BaseShoulder;var lean=check.Lean;
             const float duration=.7f,contactTime=.36f;
             if(!Actions.TryBegin(kind,targetId,duration,contactTime))return false;
@@ -392,6 +410,7 @@ namespace BoatAttack.Fishing
         }
         public void TickWorldAction(float deltaTime,bool focused,bool xrActive)
         {
+            if(TickReachApproach(deltaTime,focused,xrActive))return;
             var request=_action;if(request==null)return;
             if(!focused || xrActive || Paused || InventoryOpen || JournalOpen || ShopOpen || StoryBlocksGameplay || Expedition.Aligning || request.Profile!=Career
                 || request.Ashore!=Ashore || (Ashore && request.Crouched!=Shore.Crouched) || request.Tool!=Career.Backpack.Equipped || request.Slot!=Career.Backpack.Selected
@@ -440,7 +459,7 @@ namespace BoatAttack.Fishing
         public void CancelWorldAction()
         {
             if(WorldActionBusy)_actionConsumedFrame=Time.frameCount;
-            Farm?.CancelWork();
+            Farm?.CancelWork();CancelReachApproach();
             _action=null;Actions.Cancel();
             if(Shore!=null && Shore.Character!=null)Shore.Character.InteractionLean=Vector3.zero;
             WorkshopWorld?.SetPlacementPreview(Vector3.zero,0,false);
