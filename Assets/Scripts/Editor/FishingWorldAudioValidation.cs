@@ -24,7 +24,13 @@ namespace BoatAttack.EditorTools
             "FruitShake", "UIConfirm", "UIBack", "UIReject", "TVSwitch", "CushionCloth", "PortalPass",
             "MechanismClick", "HandcraftRub", "SeagullCall", "AnimalRustle", "BoatSlap", "WaterFinish",
             "BoatScrapeLoop", "FurnaceLoop", "CookSizzleLoop", "RainLoop", "ForestLoop", "WreckLoop",
-            "WindCorridorLoop", "StarsLoop", "WellRopeLoop", "WaterPourLoop", "TVLoop"
+            "WindCorridorLoop", "StarsLoop", "WellRopeLoop", "WaterPourLoop", "TVLoop",
+            "BagOpen", "BagClose", "BookOpen", "BookClose", "CoinGain", "ChestOpen", "JumpPush",
+            "BitePing", "RareShimmer", "LineTensionLoop", "PortalEnter", "UIPage", "UINotify",
+            "StingerDiscover", "StingerTender", "StingerRelic",
+            "RealmWindStep", "RealmWindSolve", "RealmWindEcho", "RealmForestStep", "RealmForestSolve", "RealmForestEcho",
+            "RealmWreckStep", "RealmWreckSolve", "RealmWreckEcho", "RealmStarsStep", "RealmStarsSolve", "RealmStarsEcho",
+            "SeaFogHorn", "SeaWhaleSpout", "SeaGlow"
         };
         public static void Run() => FishingV011Validation.Begin("WORLD-AUDIO");
         private static void Check(bool ok, string label)
@@ -65,6 +71,7 @@ namespace BoatAttack.EditorTools
                 ValidateResources();
                 ValidateWaterSamplerLifetime();
                 foreach (var step in ValidateRequests(c)) yield return step;
+                ValidateSignatureCues(c); foreach (var step in WaitForUiIdle(c)) yield return step;
                 foreach (var step in ValidateStorageAndCrafting(c)) yield return step;
                 foreach (var step in ValidateEnvironment(c)) yield return step;
                 foreach (var step in ValidateFarmWater(c)) yield return step;
@@ -107,8 +114,8 @@ namespace BoatAttack.EditorTools
                 Check(peak > .001f && peak < .99f && Math.Sqrt(energy / samples.Length) > .0001,
                     "Decoded recording contains finite non-silent sound with headroom: " + key);
             }
-            Check(distinct.Count == 45 && FishingWorldAudio.Clip("../Music/Home") == null && FishingWorldAudio.Clip(null) == null,
-                "All 44 generated originals plus the edited water-finish clip exist; unknown paths cannot load arbitrary resources");
+            Check(distinct.Count == 76 && FishingWorldAudio.Clip("../Music/Home") == null && FishingWorldAudio.Clip(null) == null,
+                "All 44 generated originals, the edited water-finish clip seven v0.44 Kenney CC0 cues and 24 v0.44 designed cues exist; unknown paths cannot load arbitrary resources");
         }
 
         private sealed class WaterSampleSnapshot
@@ -327,6 +334,20 @@ namespace BoatAttack.EditorTools
             foreach (var step in Wait(.35)) yield return step;
         }
 
+        private static void ValidateSignatureCues(FishingPrototype c)
+        {
+            var a = c.WorldAudio; var at = c.ExplorerPosition + Vector3.up;
+            string[] themes = { "Wind", "Forest", "Wreck", "Stars" };
+            for (int i = 0; i < themes.Length; i++)
+            {
+                int n = a.PlayCount("Realm" + themes[i] + "Echo");
+                Check(a.PlayRealm(i, "Echo", at) && a.PlayCount("Realm" + themes[i] + "Echo") == n + 1, "Realm " + i + " plays its own themed echo cue");
+            }
+            Check(!a.PlayRealm(4, "Step", at) && !a.PlayRealm(-1, "Step", at) && !a.PlayRealm(0, "Bogus", at), "Unknown realms or actions stay silent");
+            int s = a.PlayCount("StingerRelic");
+            Check(a.PlayStinger("Relic") && a.PlayCount("StingerRelic") == s + 1 && !a.PlayStinger("Missing"), "Story stinger plays through the 2D interface pool");
+        }
+
         private static IEnumerable ValidateStorageAndCrafting(FishingPrototype c)
         {
             ClosePanels(c); c.ReturnToHarbor(); yield return null;
@@ -337,8 +358,11 @@ namespace BoatAttack.EditorTools
             c.viewCamera.transform.LookAt(c.Home.InteractionPoint(6)); yield return null;
             Check(c.Career.Backpack.TryAdd(FieldItem.IslandFruit, 3), "The isolated actor owns a real transferable fruit stack");
             int fruitSlot = Slot(c.Career.Backpack, FieldItem.IslandFruit);
+            int chest = c.WorldAudio.PlayCount("ChestOpen"), bagOpen = c.WorldAudio.PlayCount("BagOpen");
             Check(c.Home.InteractAt(6) && c.InventoryOpen && c.Paused && Time.timeScale == 0,
                 "The production chest interaction opens the actual paused inventory panel");
+            Check(c.WorldAudio.PlayCount("ChestOpen") == chest + 1 && c.WorldAudio.PlayCount("BagOpen") == bagOpen + 1,
+                "Opening the chest plays one lid creak before pause and one bag-open interface cue");
             yield return null;
             int transfers = c.WorldAudio.PlayCount("StorageMove"), bagFruit = c.Career.Backpack.Count(FieldItem.IslandFruit);
             Check(c.Home.TransferStorage(true, fruitSlot) && c.Career.Backpack.Count(FieldItem.IslandFruit) == 0
@@ -351,7 +375,17 @@ namespace BoatAttack.EditorTools
                 && c.Career.Backpack.Count(FieldItem.IslandFruit) == bagFruit && c.WorldAudio.PlayCount("StorageMove") == transfers + 2,
                 "The actual paused withdrawal restores the conserved stack and plays its independent success edge");
             AssertUiAudible(c, "StorageMove");
+            int bagClose = c.WorldAudio.PlayCount("BagClose");
             c.ToggleInventory(); yield return null;
+            Check(!c.InventoryOpen, "The inventory closes");
+            Check(c.WorldAudio.PlayCount("BagClose") == bagClose + 1, "Closing the inventory plays one bag-close cue (busy UI voices: " + UiBusy(c) + ")");
+            foreach (var step in Wait(.14)) yield return step;
+            int bookOpen = c.WorldAudio.PlayCount("BookOpen"), bookClose = c.WorldAudio.PlayCount("BookClose");
+            c.ToggleJournal(); yield return null;
+            Check(c.JournalOpen && c.WorldAudio.PlayCount("BookOpen") == bookOpen + 1, "Opening the journal plays one page-open cue");
+            foreach (var step in Wait(.14)) yield return step;
+            c.ToggleJournal(); yield return null;
+            Check(!c.JournalOpen && c.WorldAudio.PlayCount("BookClose") == bookClose + 1, "Closing the journal plays one book-close cue");
 
             foreach (CraftStation kind in new[] { CraftStation.Workbench, CraftStation.Forge })
             {
@@ -421,14 +455,18 @@ namespace BoatAttack.EditorTools
             yield return null;
             foreach (var step in ApproachFarm(c, 15)) yield return step;
             int handle = c.WorldAudio.PlayCount("CanHandle");
-            Check(c.RequestWorldInteraction() && c.Farm.Busy, "Real reach and production targeting begin the watering-can pickup");
+            Check(c.RequestWorldInteraction(), "Production targeting accepts the watering-can pickup");
+            for (int f = 0; f < 240 && c.ReachApproachActive; f++) yield return null;
+            Check(c.Farm.Busy, "Real reach and production targeting begin the watering-can pickup");
             foreach (var step in FinishFarm(c)) yield return step;
             Check(c.Farm.CarryingCan && c.WorldAudio.PlayCount("CanHandle") == handle + 1,
                 "Actual hand contact acquires the same can and emits one handle cue");
             foreach (var step in ApproachFarm(c, 12)) yield return step;
             int water = c.Career.Farm.Water, rope = c.WorldAudio.LoopStarts("WellRopeLoop"), poured = c.WorldAudio.LoopStarts("WaterPourLoop");
             int finish = c.WorldAudio.PlayCount("WaterFinish"), bucket = c.WorldAudio.PlayCount("WellBucket");
-            Check(c.RequestWorldInteraction() && c.Farm.Busy, "Production well interaction starts the actual refill animation");
+            Check(c.RequestWorldInteraction(), "Production targeting accepts the well refill");
+            for(int f=0;f<240 && c.ReachApproachActive;f++)yield return null;
+            Check(c.Farm.Busy, "Production well interaction starts the actual refill animation after stepping into reach");
             bool actualStream = false, actualRope = false;
             double deadline = EditorApplication.timeSinceStartup + 12;
             while (c.Farm.Busy && c.Farm.WorkProgress < .67f && EditorApplication.timeSinceStartup < deadline)
@@ -497,14 +535,14 @@ namespace BoatAttack.EditorTools
 
         private static IEnumerable ApproachFarm(FishingPrototype c, int id)
         {
-            var p = c.Farm.Target(id).position + (id == 15 ? Vector3.left * .65f : Vector3.back * (id < 12 ? 1.1f : 1.3f));
+            var p = c.Farm.Target(id).position + (id == 15 ? Vector3.back * .65f : id == 12 ? new Vector3(1.6f,0,.9f) : Vector3.back * (id < 12 ? 1.1f : 1.3f));
             p.y = c.Home.Origin.y; if (id < 12) p.x -= .25f;
             Check(c.Shore.Relocate(p, Quaternion.identity), "Actual farm apron supports the actor capsule: " + id);
             c.View.ResetLook();
             if (id == 15)
             {
                 float scale = .12f * c.MouseSensitivity;
-                c.View.ApplyShoreLookDelta(new Vector2(90 / scale, -55 / scale * (c.InvertLook ? -1 : 1)));
+                c.View.ApplyShoreLookDelta(new Vector2(0, -55 / scale * (c.InvertLook ? -1 : 1)));
             }
             for (int frame = 0; frame < 30; frame++)
             { c.Shore.Move(Vector2.zero, false, false, false, Time.deltaTime); yield return null; if (frame >= 3 && c.Shore.Grounded) break; }
@@ -515,8 +553,8 @@ namespace BoatAttack.EditorTools
         private static IEnumerable FinishFarm(FishingPrototype c)
         {
             double deadline = EditorApplication.timeSinceStartup + 15;
-            while (c.Farm.Busy && EditorApplication.timeSinceStartup < deadline) { c.PresentCharacterFrame(); yield return null; }
-            Check(!c.Farm.Busy, "The real can animation reaches its contact and releases the action");
+            while ((c.Farm.Busy || c.ReachApproachActive) && EditorApplication.timeSinceStartup < deadline) { c.PresentCharacterFrame(); yield return null; }
+            Check(!c.Farm.Busy && !c.ReachApproachActive, "The real can animation reaches its contact and releases the action");
             yield return null; yield return null;
         }
         private static void AssertUiAudible(FishingPrototype c, string cue)
@@ -537,6 +575,12 @@ namespace BoatAttack.EditorTools
             double deadline = EditorApplication.timeSinceStartup + 40;
             while (UiPlaying(c) && EditorApplication.timeSinceStartup < deadline) yield return null;
             Check(!UiPlaying(c), "Preceding interface recordings finish naturally before the next independent station transaction");
+        }
+        private static string UiBusy(FishingPrototype c)
+        {
+            var names = new List<string>();
+            foreach (var s in c.WorldAudio.Sources) if (s != null && s.isPlaying && s.spatialBlend == 0 && s.clip != null) names.Add(s.clip.name);
+            return string.Join(",", names);
         }
         private static bool UiPlaying(FishingPrototype c)
         { foreach (var source in c.WorldAudio.Sources) if (source.spatialBlend == 0 && !source.loop && source.isPlaying) return true; return false; }

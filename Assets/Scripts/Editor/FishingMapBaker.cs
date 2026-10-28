@@ -47,7 +47,7 @@ namespace BoatAttack.Editor
                 runtimeRoots.Add(controller.Home.House);
                 if(controller.Farm!=null)runtimeRoots.Add(controller.Farm.Root);
                 foreach(Transform child in controller.transform)
-                    if(child.name.StartsWith("V027 Island",StringComparison.Ordinal) || child.name.StartsWith("V035 Home",StringComparison.Ordinal) || child.name.StartsWith("Home ",StringComparison.Ordinal)
+                    if(child.name.StartsWith("V027 Island",StringComparison.Ordinal) || child.name.StartsWith("V035 Home",StringComparison.Ordinal) || child.name.StartsWith("Home ",StringComparison.Ordinal) || child.name=="V044 painted lighthouse"
                         || child.name.StartsWith("Boardwalk ",StringComparison.Ordinal))runtimeRoots.Add(child);
             }
             foreach (Transform child in controller.transform)
@@ -169,6 +169,8 @@ namespace BoatAttack.Editor
                 importer.npotScale = TextureImporterNPOTScale.None;
                 importer.textureCompression = TextureImporterCompression.Uncompressed;
                 importer.maxTextureSize = longEdge;
+                // PICO: an uncompressed 2k map costs ~12 MB; ASTC 4x4 keeps chart lines crisp.
+                importer.SetPlatformTextureSettings(new TextureImporterPlatformSettings { name = "Android", overridden = true, format = TextureImporterFormat.ASTC_4x4, maxTextureSize = longEdge });
                 importer.SaveAndReimport();
                 var definition = AssetDatabase.LoadAssetAtPath<FishingMapDefinition>(DefinitionPath);
                 if (definition == null)

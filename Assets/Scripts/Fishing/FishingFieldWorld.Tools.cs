@@ -33,6 +33,11 @@ namespace BoatAttack.Fishing
         public static Vector3 PickGripPalm(Quaternion tool,Quaternion frame)=>PickHandRotation(tool,frame)*new Vector3(0,.035f,-.045f)/PickScale;
         public static Vector3 PickContactPalm(Vector3 contact,Quaternion rotation,Quaternion frame)=>contact+rotation*((PickGripPalm(rotation,frame)-PickTip)*PickScale);
         public static Quaternion PickContactRotation(Vector3 heading)=>Quaternion.LookRotation(heading)*Quaternion.FromToRotation(PickTip-PickPalm,new Vector3(0,-.24f,.30f));
+        // Rolling the resting pick 25° lines the gripping palm up with the forearm (wrist ≈34°, was 41.7°).
+        // Rolling the resting pick 25° lines the gripping palm up with the forearm (wrist ≈35°, was 41.7°).
+        private static readonly Vector3 PickRestEuler=new Vector3(-5,-45,25);
+        // Turn of a tool lowered toward the hip when looking down, so the hand follows the hanging forearm (wrist ≈35°).
+        private static readonly Vector3 LoweredToolEuler=new Vector3(-15,40,30);
         public static Quaternion PickHandRotation(Quaternion tool,Quaternion frame)
         {
             var shaft=tool*Vector3.up;var fingers=Vector3.ProjectOnPlane(frame*Vector3.forward,shaft).normalized;
@@ -119,7 +124,7 @@ namespace BoatAttack.Fishing
                     scale=WorkToolScale(item);curl=.94f;fingers=PickFingers;
                     // Keep the wrist beside the chest, not beside the eye. Palm orientation
                     // follows the real shaft while fingers remain forward instead of rolled inward.
-                    rotation=bodyFrame*Quaternion.Euler(item==FieldItem.Axe || item==FieldItem.Shovel || item==FieldItem.Rake?65:XRSettings.isDeviceActive?5:-5,-45,0);
+                    rotation=bodyFrame*(item==FieldItem.Axe || item==FieldItem.Shovel || item==FieldItem.Rake?Quaternion.Euler(65,-45,0):XRSettings.isDeviceActive?Quaternion.Euler(5,-45,0):Quaternion.Euler(PickRestEuler));
                     rightRotation=PickHandRotation(rotation,bodyFrame);
                     rightPalm=WorkGripPalm(item,rotation,bodyFrame);
                     position=shoulderFrame+bodyFrame*new Vector3(_c.Shore.Character.HandSide(false)*.12f,XRSettings.isDeviceActive?-.065f:-.035f,.53f)-rotation*(rightPalm*scale);break;
@@ -188,8 +193,13 @@ namespace BoatAttack.Fishing
             if(!tracked && !_c.InspectingItem && !_c.ActionUsesHeldTool && _huntTarget==null && !(item==FieldItem.Binoculars && (_c.BinocularsRaised || _c.View.BinocularBlend>0)) && !(item==FieldItem.FieldGuide && _c.GuideOpening))
             {
                 float down=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.2f,.85f,-_c.viewCamera.transform.forward.y));
-                var lowered=shoulderFrame+bodyFrame*new Vector3(_c.Shore.Character.HandSide(false)*.12f,-.32f,.34f);
+                // Kept inside the short arm's reach (≈0.39 m to the wrist) so the lowered grip is actually held.
+                var lowered=shoulderFrame+bodyFrame*new Vector3(_c.Shore.Character.HandSide(false)*.12f,-.24f,.30f);
                 _held.position+=(lowered-_held.TransformPoint(rightPalm))*down;
+                // The lowered forearm hangs downward; pitch the tool about the palm with it so the wrist is not kinked.
+                var palmPoint=_held.TransformPoint(rightPalm*scale/_held.localScale.x);
+                var turn=bodyFrame*Quaternion.Euler(LoweredToolEuler*down)*Quaternion.Inverse(bodyFrame);
+                _held.SetPositionAndRotation(palmPoint+turn*(_held.position-palmPoint),turn*_held.rotation);
             }
             if(tracked)
             {

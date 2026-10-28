@@ -26,15 +26,19 @@ namespace BoatAttack.Fishing
             WorldLabel(new Rect(r.x,r.y-23,r.width,20),"I 背包 · "+FishingBackpack.Name(c.Career.Backpack.Equipped)+" · F 使用 · Z 检视",13,Muted,false,TextAnchor.MiddleCenter);
             for(int i=0;i<9;i++)
             {
-                var slot=new Rect(r.x+4+i*54,r.y+2,48,48);
                 var stack=c.Career.Backpack.At(i);bool selected=c.Career.Backpack.Selected==i;
+                var slot=selected?new Rect(r.x+i*54,r.y-4,56,56):new Rect(r.x+4+i*54,r.y+2,48,48);
+                bool filled=stack.count>0;
+                Rounded(new Rect(slot.x,slot.y+2,slot.width,slot.height),new Color(.01f,.03f,.06f,.30f),10);
+                Rounded(slot,filled?(selected?new Color(.98f,.93f,.80f,.96f):new Color(.95f,.91f,.82f,.88f)):new Color(.06f,.11f,.19f,selected?.72f:.48f),10);
+                Outline(slot,selected?AmberInk:AmberInk*new Color(1,1,1,filled?.75f:.38f),10,selected?2.5f:1f);
                 if(stack.count>0)
                 {
-                    FieldIcon(new Rect(slot.x+5,slot.y+1,38,36),stack.item);
-                    if(stack.count>1)DisplayText(new Rect(slot.x+23,slot.y+23,24,20),stack.count.ToString(),13,CreamInk,false,TextAnchor.MiddleRight);
+                    FieldIcon(new Rect(slot.x+slot.width*.14f,slot.y+slot.height*.12f,slot.width*.72f,slot.height*.72f),stack.item);
+                    if(stack.count>1)DisplayText(new Rect(slot.xMax-27,slot.yMax-21,24,20),Number(stack.count),13,SeaInk,false,TextAnchor.MiddleRight);
                 }
-                DisplayText(new Rect(slot.x,slot.yMax-16,slot.width,18),(i+1).ToString(),12,selected?AmberInk:CreamInk,false,TextAnchor.MiddleCenter);
-                if(selected)Fill(slot.x+9,slot.yMax+3,30,2,AmberInk);
+                DisplayText(new Rect(slot.x+5,slot.y+2,14,16),Number(i+1),11,stack.count>0?new Color(.42f,.32f,.18f):new Color(.86f,.80f,.66f,.75f),false,TextAnchor.UpperLeft);
+                if(selected)GiltStar(new Vector2(slot.center.x,slot.y-2),6,AmberInk);
                 if(GUI.Button(slot,GUIContent.none,GUIStyle.none))c.SelectFieldSlot(i);
             }
         }
@@ -42,12 +46,11 @@ namespace BoatAttack.Fishing
         {
             if(_homeStorageOpen){DrawHomeStorage();return;}
             if(_ecologyPage){DrawHomeEcology();return;}
-            Fill(-_offset/_scale,0,Screen.width/_scale,_height,new Color(.01f,.025f,.03f,.78f));
-            var panel=BackpackPanel;Card(panel,Mint);
-            Label(320,156,340,45,_craftPage?"海岸工坊":"随身行囊",32,Color.white,true);
+            var panel=BackpackPanel;MenuSheet(panel);
+            Label(320,150,420,46,Spaced(_craftPage?"海岸工坊":"随身行囊"),32,Color.white,true);GiltRule(320,200,240);
             if(Button(new Rect(807,163,145,34),"背包 / 手册",true,!_craftPage,15))_craftPage=false;
             if(Button(new Rect(965,163,145,34),"制作 / 熔炼",true,_craftPage,15)){_craftPage=true;Controller.WorkshopWorld.SelectNearby();}
-            Label(322,206,590,24,"世界已暂停  ·  "+Controller.Career.Backpack.UsedSlots+" / 36 格  ·  物资与鱼箱独立保存",15,Muted);
+            Label(322,206,590,26,"世界已暂停  ·  "+Controller.Career.Backpack.UsedSlots+" / 36 格  ·  物资与鱼箱独立保存",17,Muted);
             if(Button(new Rect(1154,160,124,38),"I / Esc 关闭",true,false,14)){Controller.ToggleInventory();_moveFrom=-1;return;}
             if(_craftPage){DrawCraftingContents();return;}
             Section(320,238,588,"储物区 · 27 格","材料最多 64 / 格，工具不堆叠");
@@ -68,7 +71,7 @@ namespace BoatAttack.Fishing
                     e.Use();
                 }
             }
-            Label(320,634,586,50,_moveFrom<0?"点击物品，再点击目标格：移动 / 合并 / 交换\nShift + 点击：快捷栏与储物区之间快速转移":"已选中 "+FishingBackpack.Name(Controller.Career.Backpack.At(_moveFrom).item)+"：点击目标格转移；右键目标格分出一半。",15,Muted);
+            Label(320,630,586,56,_moveFrom<0?"点击物品，再点击目标格：移动 / 合并 / 交换\nShift + 点击：快捷栏与储物区之间快速转移":"已选中 "+FishingBackpack.Name(Controller.Career.Backpack.At(_moveFrom).item)+"：点击目标格转移；右键目标格分出一半。",17,Muted);
             var selected=Controller.Career.Backpack.At(_moveFrom);
             bool disposable=selected.count>0 && selected.item!=FieldItem.FieldGuide && !FishingBackpack.IsQuestItem(selected.item);
             bool confirming=_discardSlot==_moveFrom && _discardItem==selected.item && _discardCount==selected.count;
@@ -78,25 +81,27 @@ namespace BoatAttack.Fishing
                 else{_discardSlot=_moveFrom;_discardItem=selected.item;_discardCount=selected.count;}
             }
             if(Button(new Rect(545,697,190,35),"拿起检视",selected.count>0,false,14)){int slot=_moveFrom;ClearFieldSelection();Controller.InspectFieldItem(slot);return;}
-            Label(747,698,164,45,FishingBackpack.IsQuestItem(selected.item)?"航海遗物 · 可存入家园箱":confirming?"不可撤销":"Z 检视快捷栏物品",13,confirming?Danger:Faint);
-            Fill(933,235,1,495,Hairline);
-            Label(958,239,300,30,"野外手册",23,Mint,true);
+            Label(747,696,180,48,FishingBackpack.IsQuestItem(selected.item)?"航海遗物 · 可存入家园箱":confirming?"不可撤销":"Z 检视快捷栏物品",15,confirming?Danger:Faint);
+            Fill(946,235,1,495,Hairline);
+            Label(984,239,290,30,"野外手册",24,Mint,true);
             string[] notes={"野兔掉落兔肉和兔毛。","赤狐掉落狐狸肉和狐皮。","龟类掉落海龟肉和龟壳；海鸥掉落肉和羽毛。"};
             for(int i=0;i<3;i++)
             {
                 bool seen=Controller.Career.Backpack.Seen((LandAnimalKind)i);float y=288+i*93;
-                Rounded(new Rect(958,y,316,81),InkRaised,9);
-                Label(972,y+9,286,25,(seen?"已记录 · ":"待观察 · ")+FishingBackpack.AnimalName((LandAnimalKind)i),17,seen?Mint:Muted,true);
-                Label(972,y+40,286,34,notes[i],13,Faint);
+                Rounded(new Rect(984,y,290,81),InkRaised,9);
+                Label(998,y+8,264,26,(seen?"已记录 · ":"待观察 · ")+FishingBackpack.AnimalName((LandAnimalKind)i),18,seen?Mint:Muted,true);
+                Label(998,y+38,264,40,notes[i],15,Faint);
             }
-            if(Button(new Rect(958,735,316,31),"家园生态 · 鱼缸 / 活捉 / 繁殖",true,false,15)){OpenHomeEcologyPage();return;}
-            Label(958,595,316,30,"工具使用",20,Gold,true);
-            Label(958,635,312,92,"自然手册：F 翻开 · T 观察 · 望远镜：F 举镜\n提灯：F 点亮 · 夜间照路\n猎矛：蹲下接近，F 刺击野兔 / 赤狐\n生兽肉 + 燃料 → 熔炉炭烤兽肉",14,Muted);
+            if(Button(new Rect(984,735,290,31),"家园生态 · 鱼缸 / 活捉 / 繁殖",true,false,15)){OpenHomeEcologyPage();return;}
+            Label(984,592,290,30,"工具使用",21,Gold,true);
+            Label(984,628,290,104,"手册 F 翻开 · T 观察 · 望远镜 F\n提灯 F 点亮 · 夜间照路\n猎矛 蹲下接近，F 刺击\n生兽肉 + 燃料 → 熔炉炭烤",15,Muted);
         }
         private void DrawFieldSlot(Rect r,int index,bool equipped,bool source)
         {
             var stack=Controller.Career.Backpack.At(index);
-            Rounded(r,source?ButtonHover:InkRaised,7);Outline(r,source?Mint:equipped?Gold:Hairline,7,equipped||source?2:1);
+            // 空格是纸面上的浅凹槽，有物品才抬起成亮卡，避免一片白格。
+            bool filled=stack.count>0;var inset=FishingUITheme.Blend(new Color(.55f,.45f,.30f,.12f),new Color(0,0,0,.25f));
+            Rounded(r,source?ButtonHover:filled?InkRaised:inset,8);Outline(r,source?Mint:equipped?Gold:filled?Hairline:Hairline*new Color(1,1,1,.6f),8,equipped||source?2:1);
             if(stack.count>0)
             {
                 FieldIcon(new Rect(r.x+3,r.y+5,r.width-6,r.height-24),stack.item);

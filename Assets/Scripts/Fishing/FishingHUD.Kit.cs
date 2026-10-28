@@ -53,10 +53,85 @@ namespace BoatAttack.Fishing
 
         private void GiltStar(Vector2 centre,float radius,Color color)
         {
-            Segment(centre-Vector2.up*radius,centre+Vector2.up*radius,color,1.2f);
-            Segment(centre-Vector2.right*radius*.55f,centre+Vector2.right*radius*.55f,color,1.2f);
-            Disc(centre,1.4f,color);
+            var previous=GUI.color;GUI.color=Faded(color);
+            GUI.DrawTexture(new Rect(centre.x-radius*1.6f,centre.y-radius*1.6f,radius*3.2f,radius*3.2f),FishingUITheme.Star,ScaleMode.StretchToFill,true);
+            GUI.color=previous;
         }
+        /// <summary>One 9-slice draw per surface; the watercolour wash, deckled edge, gilt hairline and corner stars live in the texture.</summary>
+        private void Panel(Rect r,Texture2D texture,ref GUIStyle style,Color tint,int border=FishingUITheme.PanelBorder)
+        {
+            if(style==null){style=new GUIStyle{border=new RectOffset(border,border,border,border)};style.normal.background=texture;}
+            if(Event.current.type!=EventType.Repaint)return;
+            var previous=GUI.color;GUI.color=Faded(tint);style.Draw(r,GUIContent.none,false,false,false,false);GUI.color=previous;
+        }
+        private GUIStyle _veilStyle,_panelStyle,_parchmentStyle;
+        // Per-frame text is rebuilt only when its numeric key changes (OnGUI runs per event; avoid GC churn).
+        private readonly string[] _memo=new string[24];
+        private readonly long[] _memoKey=new long[24];
+        private string Memo(int slot,long key,System.Func<FishingHUD,string> build)
+        {
+            if(_memo[slot]==null || _memoKey[slot]!=key){_memoKey[slot]=key;_memo[slot]=build(this);}
+            return _memo[slot];
+        }
+        private static readonly GUIContent SharedContent=new GUIContent();
+        private static GUIContent Content(string text,string tooltip=null){SharedContent.text=text;SharedContent.tooltip=tooltip;SharedContent.image=null;return SharedContent;}
+        private static readonly string[] Numbers=new string[1000];
+        private static string Number(int value)=>value>=0 && value<Numbers.Length?(Numbers[value]??(Numbers[value]=value.ToString())):value.ToString();
+        private static Color NightPaperTint=>FishingUITheme.Blend(Color.white,new Color(.15f,.21f,.31f));
+        private void Tinted(Rect r,Texture2D texture,Color tint)
+        {
+            var previous=GUI.color;GUI.color=Faded(tint);GUI.DrawTexture(r,texture,ScaleMode.StretchToFill,true);GUI.color=previous;
+        }
+        /// <summary>Full-screen starry night-sea wash with gilt stars just outside the reading area's corners.</summary>
+        private void StarrySea(Rect reading)
+        {
+            var previous=GUI.color;GUI.color=Faded(Color.white);
+            GUI.DrawTexture(new Rect(-_offset/_scale,0,Screen.width/_scale,_height),FishingUITheme.StarrySea,ScaleMode.ScaleAndCrop,false);GUI.color=previous;
+            foreach(var p in new[]{new Vector2(reading.x+6,reading.y+8),new Vector2(reading.xMax-8,reading.y+10),new Vector2(reading.x+10,reading.yMax-8),new Vector2(reading.xMax-6,reading.yMax-10)})
+                GiltStar(p,9,AmberInk);
+        }
+        /// <summary>Torn parchment laid on the night sea (journey-map spread).</summary>
+        private void ParchmentSpread(Rect r)
+        {
+            StarrySea(r);
+            Panel(new Rect(r.x-18,r.y-18,r.width+36,r.height+36),FishingUITheme.TornParchment,ref _parchmentStyle,NightPaperTint,80);
+        }
+        /// <summary>Menu sheet: torn parchment on the night sea, with a faint chart-grid and compass-rose watermark in the quiet margin.</summary>
+        private void MenuSheet(Rect r,bool starrySea=true)
+        {
+            if(starrySea)ParchmentSpread(r);
+            else Panel(new Rect(r.x-18,r.y-18,r.width+36,r.height+36),FishingUITheme.TornParchment,ref _parchmentStyle,NightPaperTint,80);
+            var ink=FishingUITheme.Ink;var faint=new Color(ink.r,ink.g,ink.b,.05f);
+            for(int i=1;i<6;i++){Fill(r.x+24,r.y+r.height*i/6f,r.width-48,1,faint);Fill(r.x+r.width*i/6f,r.y+24,1,r.height-48,faint);}
+            Tinted(new Rect(r.xMax-330,r.yMax-330,300,300),FishingUITheme.CompassRing,new Color(ink.r,ink.g,ink.b,.10f));
+        }
+        /// <summary>Storybook header: wide-tracked serif title, gilt rule with star, small subtitle.</summary>
+        private void MenuTitle(float x,float y,float width,string title,string subtitle)
+        {
+            Label(new Rect(x,y,width,46),Spaced(title),30,InkText,true);
+            GiltRule(x,y+52,Mathf.Min(width,360));
+            if(subtitle.Length>0)Label(x,y+62,width,24,subtitle,15,Muted);
+        }
+        /// <summary>List entry card: glyph medallion, name over detail, optional a/b progress bar, action chevron.</summary>
+        private bool RowCard(Rect r,int glyph,string text,bool enabled)
+        {
+            bool hover=enabled && r.Contains(Event.current.mousePosition);
+            Rounded(r,(hover?FishingUITheme.Selected:FishingUITheme.Light)*new Color(1,1,1,enabled?.82f:.45f),8);
+            Outline(r,hover?Gold:Hairline,8,hover?1.5f:1);
+            Disc(new Vector2(r.x+r.height*.5f+4,r.center.y),r.height*.36f,FishingUITheme.Blend(new Color(.91f,.85f,.72f),new Color(.20f,.29f,.40f)));
+            NavGlyph(new Rect(r.x+r.height*.5f+4-r.height*.24f,r.center.y-r.height*.24f,r.height*.48f,r.height*.48f),glyph,enabled?Gold:Faint);
+            int split=text.IndexOf(" · ",System.StringComparison.Ordinal);
+            string name=split>0?text.Substring(0,split):text,detail=split>0?text.Substring(split+3):"";
+            float x=r.x+r.height+14,w=r.width-r.height-60;
+            Label(new Rect(x,r.y+4,w,26),name,18,enabled?Color.white:Faint,true,TextAnchor.MiddleLeft);
+            if(detail.Length>0)Label(new Rect(x,r.y+28,w*.62f,20),detail,14,Muted,false,TextAnchor.MiddleLeft);
+            var m=System.Text.RegularExpressions.Regex.Match(name,@"(\d+)\s*/\s*(\d+)");
+            if(m.Success && int.Parse(m.Groups[2].Value)>0)Bar(new Rect(r.x+r.width*.66f,r.y+r.height-14,r.width*.26f,5),int.Parse(m.Groups[1].Value)/(float)int.Parse(m.Groups[2].Value),Mint);
+            if(enabled)Label(new Rect(r.xMax-40,r.y,30,r.height),"›",26,Gold,false,TextAnchor.MiddleCenter);
+            return GUI.Button(r,GUIContent.none,GUIStyle.none) && enabled;
+        }
+        /// <summary>Wide-tracked serif titles, as on the storybook map ("小 王 子 的 旅 程").</summary>
+        private static string Spaced(string text)=>string.Join(" ",text.ToCharArray()).Replace("   ","  ");
         private Texture2D ReadingMask()
         {
             if(_readingVeil==null)
@@ -73,46 +148,25 @@ namespace BoatAttack.Fishing
             }
             return _readingVeil;
         }
+        /// <summary>In-world HUD surfaces are night-sky veils in both palettes so cream text reads over sand and sky alike.</summary>
         private void ReadingVeil(Rect r,bool ornament=false)
         {
-            // [Claude v0.41] 清晰圆角纸卡替代羽化遮罩：投影 + 纸面 + 内描金线，边缘不再发糊。
             var card=new Rect(r.x-14,r.y-4,r.width+28,r.height+8);
-            Rounded(new Rect(card.x+1,card.y+3,card.width,card.height),new Color(.01f,.03f,.05f,.22f),10);
-            var paper=FishingUITheme.Paper;Rounded(card,new Color(paper.r,paper.g,paper.b,.94f),9);
-            Outline(new Rect(card.x+3,card.y+3,card.width-6,card.height-6),AmberInk*new Color(1,1,1,.55f),7,1);
-            if(ornament)foreach(float x in new[]{r.x+5,r.xMax-5})foreach(float y in new[]{r.y+5,r.yMax-5})
-            {
-                float sx=x<r.center.x?1:-1,sy=y<r.center.y?1:-1;var gilt=AmberInk*new Color(1,1,1,.65f);
-                Segment(new Vector2(x,y+sy*18),new Vector2(x,y+sy*6),gilt);
-                Segment(new Vector2(x,y+sy*6),new Vector2(x+sx*6,y),gilt);
-                Segment(new Vector2(x+sx*6,y),new Vector2(x+sx*24,y),gilt);
-            }
+            Panel(card,FishingUITheme.PanelVeil,ref _veilStyle,Color.white);
+            if(ornament)GiltStar(new Vector2(card.center.x,card.y+3),5,AmberInk);
         }
         private void GiltRule(float x,float y,float width)
         {
-            Segment(new Vector2(x,y),new Vector2(x+width*.5f-12,y),AmberInk*new Color(1,1,1,.65f));
-            Segment(new Vector2(x+width*.5f+12,y),new Vector2(x+width,y),AmberInk*new Color(1,1,1,.65f));
+            var previous=GUI.color;GUI.color=Faded(AmberInk);
+            GUI.DrawTexture(new Rect(x,y-4,width,8),FishingUITheme.GiltRule,ScaleMode.StretchToFill,true);GUI.color=previous;
             GiltStar(new Vector2(x+width*.5f,y),5,AmberInk);
         }
-        /// <summary>Reading/choice surfaces use textured vellum with restrained gilt corner work.</summary>
+        /// <summary>Reading/choice surfaces use cream watercolour paper by day and a deep tide-blue wash by night.</summary>
         private void Card(Rect r, Color accent)
         {
-            Rounded(new Rect(r.x-2,r.y+4,r.width+4,r.height),new Color(.015f,.035f,.055f,.30f),9);
-            if(_paperStyle==null){_paperStyle=new GUIStyle{border=new RectOffset(24,24,24,24)};_paperStyle.normal.background=FishingUITheme.PaperSprite.texture;}
-            var previous=GUI.color;GUI.color=Faded(Color.Lerp(Ink,FishingUITheme.Blend(new Color(.81f,.75f,.61f),new Color(.08f,.14f,.19f)),.25f));
-            if(Event.current.type==EventType.Repaint)_paperStyle.Draw(r,GUIContent.none,false,false,false,false);
-            GUI.color=previous;
-            Outline(r,SeaInk*new Color(1,1,1,.70f),8,3);
-            Outline(new Rect(r.x+3,r.y+3,r.width-6,r.height-6),Hairline,6);
-            foreach(float x in new[]{r.x+13,r.xMax-13})foreach(float y in new[]{r.y+13,r.yMax-13})
-            {
-                float sx=x<r.center.x?1:-1,sy=y<r.center.y?1:-1;
-                Segment(new Vector2(x+sx*5,y),new Vector2(x+sx*28,y),Gold,1.2f);
-                Segment(new Vector2(x,y+sy*5),new Vector2(x,y+sy*22),Gold,1.2f);
-                GiltStar(new Vector2(x,y),3,accent);
-            }
+            Panel(new Rect(r.x-6,r.y-6,r.width+12,r.height+12),FishingUITheme.PanelPaper,ref _panelStyle,FishingUITheme.Blend(Color.white,new Color(.15f,.21f,.31f)));
+            GiltStar(new Vector2(r.center.x,r.y+2),6,Color.Lerp(Gold,accent,.35f));
         }
-
         private void Label(Rect r, string text, int size, Color color, bool bold = false, TextAnchor align = TextAnchor.UpperLeft)
         {
             _label.fontSize = size;
@@ -156,7 +210,7 @@ namespace BoatAttack.Fishing
             }
             Label(r, text, 17, selected ? Mint : Muted, true, TextAnchor.MiddleCenter);
             bool clicked=GUI.Button(r, GUIContent.none, GUIStyle.none);
-            if(clicked && !selected)Controller.WorldAudio?.Play("UIConfirm",Controller.ExplorerPosition,.24f);
+            if(clicked && !selected)Controller.WorldAudio?.Play("UIPage",Controller.ExplorerPosition,.4f);
             return clicked;
         }
 
@@ -166,7 +220,7 @@ namespace BoatAttack.Fishing
             _label.font=_font;
             _label.fontSize = size;
             _label.fontStyle = FontStyle.Normal;
-            float width = _label.CalcSize(new GUIContent(text)).x + 18;
+            float width = _label.CalcSize(Content(text)).x + 18;
             var r = new Rect(x, y, width, size + 11);
             if (filled) Rounded(r, color, r.height * 0.5f);
             else

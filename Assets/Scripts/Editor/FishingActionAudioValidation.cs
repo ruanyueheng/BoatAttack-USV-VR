@@ -450,7 +450,9 @@ namespace BoatAttack.EditorTools
             Check(pickSlot>=0 && pickSlot<FishingBackpack.HotbarCount,"The can fixture's real pickaxe is in a reachable hotbar slot");
             c.SelectFieldSlot(pickSlot);yield return null;
             var canApproach=ApproachAudioFarm(c,15);while(canApproach.MoveNext())yield return canApproach.Current;
-            Check(c.RequestWorldInteraction() && c.Farm.Busy && !c.Farm.CarryingCan,
+            Check(c.RequestWorldInteraction(),"The real E route accepts the watering can");
+            for(int f=0;f<240 && c.ReachApproachActive;f++)yield return null;
+            Check(c.Farm.Busy && !c.Farm.CarryingCan,
                 "The real E route begins reaching for the persistent watering can before taking ownership");
             var canFinish=FinishAudioFarm(c);while(canFinish.MoveNext())yield return canFinish.Current;
             Check(c.Farm.CarryingCan && farm.Water==charges && a.DetailCount("FarmWater")==water,
@@ -482,7 +484,9 @@ namespace BoatAttack.EditorTools
             Check(!FarmCommit(c, id, FarmWork.Water) && a.DetailCount("FarmWater") == waterAfter,
                 "An already watered plot rejects the same-day repeat without another water cue");
             canApproach=ApproachAudioFarm(c,15);while(canApproach.MoveNext())yield return canApproach.Current;
-            Check(c.RequestWorldInteraction() && c.Farm.Busy && c.Farm.CarryingCan,
+            Check(c.RequestWorldInteraction(),"The real E route accepts returning the can");
+            for(int f=0;f<240 && c.ReachApproachActive;f++)yield return null;
+            Check(c.Farm.Busy && c.Farm.CarryingCan,
                 "The can returns through its real stand-contact animation");
             canFinish=FinishAudioFarm(c);while(canFinish.MoveNext())yield return canFinish.Current;
             Check(!c.Farm.CarryingCan && farm.Water==charges-1 && a.DetailCount("FarmWater")==waterAfter,
@@ -519,14 +523,14 @@ namespace BoatAttack.EditorTools
 
         private static IEnumerator ApproachAudioFarm(FishingPrototype c,int id)
         {
-            var position=c.Farm.Target(id).position+(id==15?Vector3.left*.65f:Vector3.back*1.1f);
+            var position=c.Farm.Target(id).position+(id==15?Vector3.back*.65f:Vector3.back*1.1f);
             position.y=c.Home.Origin.y;if(id<12)position.x-=.25f;
             Check(c.Shore.Relocate(position,Quaternion.identity),"The actor reaches actual farm audio target "+id);
             c.View.ResetLook();
             if(id==15)
             {
                 float scale=.12f*c.MouseSensitivity;
-                c.View.ApplyShoreLookDelta(new Vector2(90/scale,-55/scale*(c.InvertLook?-1:1)));
+                c.View.ApplyShoreLookDelta(new Vector2(0,-55/scale*(c.InvertLook?-1:1)));
             }
             for(int frame=0;frame<30;frame++)
             {

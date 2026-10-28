@@ -141,6 +141,7 @@ namespace BoatAttack.Fishing
             if(source==null)throw new System.InvalidOperationException("Missing V034 handcraft model "+name);
             var root=new GameObject(name).transform;root.SetParent(parent,false);var go=Instantiate(source,root,false);
             foreach(var renderer in go.GetComponentsInChildren<Renderer>())renderer.sharedMaterial=folder=="FishingV034/"?_material:(folder=="FishingFeedbackTools/" || folder=="FishingV023/Items/")?_toolMaterial:Resources.Load<Material>(folder+"Coastal");
+            FishingPaintedArt.Apply(root,folder+name);
             return root;
         }
         private void BuildGrains(Transform parent)
@@ -298,8 +299,8 @@ namespace BoatAttack.Fishing
             int percent=Mathf.RoundToInt(_task.Progress*100);
             if(percent!=_lastPercent || !tracked)
             {
-                _lastPercent=percent;_status.text=(!tracked?"松开握把，靠近桌上握柄后再握住。":_index==1?"左握把扶稳 · 右握把画圈":_index==3?"右握把 · 上下敲锤":"右握把 · 左右往复")
-                    +"\n"+(_index==3?FishingBackpack.Name(_task.Output)+" · A切换配方\n":_index==1?"纤维×3 → 绳索×"+_task.OutputCount+"\n":"")+(_index==1?Count+" / 3 圈":_task.Strokes+" / "+_task.StrokeTarget+" 次")+"    B 收起";
+                _lastPercent=percent;_status.text=FishingXRText.Adapt((!tracked?"松开握把，靠近桌上握柄后再握住。":_index==1?"左握把扶稳 · 右握把画圈":_index==3?"右握把 · 上下敲锤":"右握把 · 左右往复")
+                    +"\n"+(_index==3?FishingBackpack.Name(_task.Output)+" · A切换配方\n":_index==1?"纤维×3 → 绳索×"+_task.OutputCount+"\n":"")+(_index==1?Count+" / 3 圈":_task.Strokes+" / "+_task.StrokeTarget+" 次")+"    B 收起");
             }
             if(_task.Complete && held && _ready && tracked)
             {

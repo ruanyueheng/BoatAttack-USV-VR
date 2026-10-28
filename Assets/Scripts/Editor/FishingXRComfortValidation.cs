@@ -71,6 +71,7 @@ namespace BoatAttack.EditorTools
                 hand.SetPose(Vector3.one,Quaternion.identity,.6f);hand.BeginFrame();Check(!hand.Visible,"Stale hand goals expire at the next presentation frame");
             }
             finally{UnityEngine.Object.Destroy(root);}
+            FishingXRComfortV044Validation.Run(c);
             yield return null;
         }
         private static void CheckBound(float target,float height)

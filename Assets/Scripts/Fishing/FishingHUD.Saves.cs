@@ -24,9 +24,9 @@ namespace BoatAttack.Fishing
         {
             var c=Controller;Dim();
             var r=new Rect(180,(_height-730)*.5f,1240,730);
-            Rounded(r,new Color(.035f,.07f,.10f,.96f),12);Outline(r,AmberInk,12);
+            StarrySea(r);Panel(new Rect(r.x-14,r.y-6,r.width+28,r.height+12),FishingUITheme.PanelVeil,ref _veilStyle,Color.white);
             string heading=c.SaveMenuMode=="save"?"手动保存":c.SaveMenuMode=="new"?"选择新航程存档槽":"读取存档";
-            DisplayText(new Rect(r.x+30,r.y+24,1100,48),heading,34,CreamInk,true);
+            DisplayText(new Rect(r.x+30,r.y+20,1100,50),Spaced(heading),34,CreamInk,true);
             DisplayText(new Rect(r.x+30,r.y+82,1160,72),"三个存档槽 · 每槽的手动记录与自动记录独立。自动保存不会覆盖手动记录。\n读取会替换当前航程；“继续游戏”只恢复本次内存进度。",18,CreamInk);
             bool modal=c.SaveConfirmation.Length>0;bool enabled=GUI.enabled;GUI.enabled=!modal;
             for(int slot=0;slot<FishingSlotStore.Count;slot++)

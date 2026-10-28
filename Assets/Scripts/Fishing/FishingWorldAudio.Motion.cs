@@ -142,6 +142,9 @@ namespace BoatAttack.Fishing
             {
                 if (!grounded)
                 {
+                    // Jump take-off edge: ~6 m/s upward the frame feet leave ground; stairs and slopes stay far below 2.5.
+                    if (_motionGrounded && !_motionSwimming && !_motionClimbing && delta.y / dt > 2.5f)
+                        Play("JumpPush", feet + Vector3.up * .4f, .45f);
                     _motionAirTime += dt;
                     _motionFallDistance += Mathf.Max(0, -delta.y);
                     _motionDownSpeed = Mathf.Max(_motionDownSpeed, -delta.y / dt);

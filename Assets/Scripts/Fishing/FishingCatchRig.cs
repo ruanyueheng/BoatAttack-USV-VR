@@ -232,6 +232,9 @@ namespace BoatAttack.Fishing
             return tip && _c.ResolveCatch(true);
         }
         private static bool Grip(InputDevice device){if(device.TryGetFeatureValue(CommonUsages.gripButton,out bool held))return held;return device.TryGetFeatureValue(CommonUsages.grip,out float value) && value>.65f;}
+        private float _handLandingWait;
+        public const float HandLandingTimeout=8f;
+        public static bool HandLandingReach(Vector3 palm,Vector3 fish)=>Vector3.Distance(palm,fish)<.2f;
         private void ReadTracked(float dt)
         {
             var left=InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
@@ -243,6 +246,14 @@ namespace BoatAttack.Fishing
             bool grabNet=_left.Step(true,lg),grabFish=_right.Step(true,rg);
             if(grabNet && _c.Anchored && (_c.Session.Phase==CatchPhase.Landing || _c.HasPendingCatch) && Vector3.Distance(lp,_c.LandingNet.position)<.35f)_netHeld=true;
             if(!lg)_netHeld=false;
+            // An empty left hand closing on the hanging fish lands it; left alone it is landed after 8 s.
+            if(_c.Session.Phase==CatchPhase.Landing && !_netHeld)
+            {
+                _handLandingWait+=dt;
+                if((grabNet && HandLandingReach(lp,_c.LandingTarget)) || _handLandingWait>=HandLandingTimeout)
+                {_handLandingWait=0;if(_c.BeginHandCatch() && left.TryGetHapticCapabilities(out var cap) && cap.supportsImpulse)left.SendHapticImpulse(0,.3f,.08f);}
+            }
+            else _handLandingWait=0;
             if(_netHeld)
             {
                 // The pole's +X axis points along the controller's forward axis.

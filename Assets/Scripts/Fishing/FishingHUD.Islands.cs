@@ -14,11 +14,16 @@ namespace BoatAttack.Fishing
                 Rounded(tile,selected?FishingUITheme.Selected:InkRaised,8);ChapterImage(new Rect(tile.x+1,tile.y+1,268,137),4+i);
                 Label(tile.x+16,tile.y+149,238,34,FishingAdventure.Name(i),23,InkText,true);
                 Label(tile.x+16,tile.y+190,238,24,lorePage?(lore.Cleared(i)?"回响已取回":lore.Met(i)?"已结识守望者":"守望者等待来访"):(a.Restored(i)?"灯塔已重新点亮":a.Visited(i)?"来信已读 · 继续探索":"循着海图，发现这座岛"),14,Muted);
-                Outline(tile,selected?Gold:Hairline,8,selected?2:1);
+                if(!(lorePage?lore.Met(i):a.Visited(i)))// 未到访 = 海雾剪影
+                    for(int f=0;f<3;f++)Tinted(new Rect(tile.x-20+f*90,tile.y-14+(f%2)*24,170,160),FishingUITheme.SeaFog,FishingUITheme.Blend(new Color(1,1,1,.85f),new Color(.6f,.67f,.8f,.8f)));
+                Outline(tile,selected?Gold:Hairline,8,1);
+                if(selected)Tinted(new Rect(tile.center.x-70,tile.y,140,140),FishingUITheme.CompassRing,Gold);
                 if(GUI.Button(tile,GUIContent.none,GUIStyle.none))_islandSelection=i;
             }
             int id=_islandSelection;var d=new Rect(r.x+590,r.y,540,527);Rounded(d,InkRaised,8);
-            Label(d.x+26,d.y+22,488,46,lorePage?FishingLore.ShrineName(id):FishingAdventure.Name(id),31,Gold,true);
+            Label(new Rect(d.x+26,d.y+4,488,20),Spaced("第"+"一二三四"[id]+"岛"),13,Muted,false,TextAnchor.UpperCenter);
+            Label(new Rect(d.x+26,d.y+22,488,46),lorePage?FishingLore.ShrineName(id):FishingAdventure.Name(id),31,Gold,true,TextAnchor.UpperCenter);
+            GiltRule(d.x+120,d.y+72,300);
             if(lorePage)
             {
                 Label(d.x+26,d.y+78,488,90,c.Career.PlayerTitle+" · "+c.Career.MainObjective,17,Gold,true);
@@ -42,6 +47,7 @@ namespace BoatAttack.Fishing
                 Label(d.x+26,d.y+413,488,30,a.Finale?"四岛航记已完成":a.ReadyForFinale?"四灯已亮 · 返港领取150金币":"四岛顺序自由，循着自己的航线出发",15,Muted);
             }
             bool treasureRoute=lorePage && lore.RewardedShrines==15 && !c.Career.PirateKing && c.Career.Backpack.Count(FieldItem.VoyageCompass)>0;
+            GiltStar(new Vector2(d.x+18,d.y+486),5,Gold);
             if(Button(new Rect(d.x+26,d.y+465,234,42),treasureRoute?"白帆拱湾宝藏航线":"设为航点",true,true,16)){c.ToggleJournal();c.SelectNavigation(treasureRoute?c.HomeNavigationIndex+1:c.IslandNavigationIndex(id));}
             if(lorePage)
             {

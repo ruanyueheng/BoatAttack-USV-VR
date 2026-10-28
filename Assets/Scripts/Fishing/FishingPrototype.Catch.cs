@@ -7,12 +7,15 @@ namespace BoatAttack.Fishing
         public FishingCatchRig CatchRig { get; private set; }
         public FishingDockConsole DockConsole { get; private set; }
         public FishingXRSeat XRSeat { get; private set; }
+        public FishingXRComfort XRComfort { get; private set; }
         public bool HasPendingCatch=>Career!=null && Career.HasPendingCatch;
         public Transform ActiveFish=>_fish.transform;
         public Transform LandingNet=>_net;
         public Transform FishBox=>_box.transform;
         public Vector3 BoatPoint(Vector3 point)=>Player.transform.position+Quaternion.Euler(0,Player.transform.eulerAngles.y,0)*point;
-        public Vector3 LandingTarget=>LandingTargetForMode(UnityEngine.XR.XRSettings.isDeviceActive);
+        public Vector3 LandingTarget=>UnityEngine.XR.XRSettings.isDeviceActive && viewCamera!=null?HandLandingPoint(viewCamera.transform):LandingTargetForMode(false);
+        /// <summary>In VR the landed fish hangs on the line half a metre in front of the face, just below eye level, to be taken by hand.</summary>
+        public static Vector3 HandLandingPoint(Transform head)=>head.position+Vector3.ProjectOnPlane(head.forward,Vector3.up).normalized*.5f-Vector3.up*.15f;
         public Vector3 LandingTargetForMode(bool xr)=>BoatPoint(new Vector3(xr?-1.15f:1.5f,.93f,.55f));
         public Vector3 NetTray=>BoatPoint(new Vector3(.55f,.99f,-.28f));
         internal Vector3 StowedNetPosition=>new Vector3(-.8f,.70f,-.55f);
@@ -44,6 +47,7 @@ namespace BoatAttack.Fishing
             _feedback.PlayOneShot(FishingSpecies.Of(fish.kind).Legendary?_legendTone:_successTone);
             Effects?.Splash(_fish.transform.position,1.5f);Effects?.Burst(_fish.transform.position,new Color(1,.79f,.37f));
             WorldAudio?.Play("FishSplash",_fish.transform.position,.5f);
+            if(special)WorldAudio?.Play("RareShimmer",_fish.transform.position,.6f);
             if(leftHand)
             {
                 CatchRig.StartLeftInspection(_fish.transform.position);

@@ -375,9 +375,33 @@ def home_desk():
         for z in [-.29,.29]:profile((x,0,z),[(0,.055),(.08,.08),(.19,.05),(.60,.055),(.78,.09)],3,12)
     for x in [-.7,0,.7]:
         box((x,.68,0),(.65,.23,.72),3,.025);ring((x,.70,-.38),.045,.010,4,'upright',n=24)
-    box((0,.935,0),(1.12,.018,.60),10,.008)
-    for j in range(7):tube([(-.46+j*.14,.947,-.22),(-.36+j*.14,.948,.22)],.005,4,5)
-    for j in range(4):box((.76,.96+j*.035,.12),(.26,.027,.32),2 if j%2 else 13,.006)
+    # V044 story desk: an unrolled sea chart with curled ends, coastline and compass rose, plus life-size lamp, compass, lens, letters, books.
+    top=.93;vs=[];fs=[];nx,nz=14,6
+    for a in range(nz+1):
+        for b in range(nx+1):
+            x=-.5+b/nx;z=-.3+.6*a/nz;curl=max(0,abs(x)-.42)/.08
+            vs.append((x+(-1 if x<0 else 1)*-.03*curl*curl,top+.004+.05*curl*curl+.004*math.sin(z*9),z))
+    for a in range(nz):
+        for b in range(nx):fs.append((a*(nx+1)+b,a*(nx+1)+b+1,(a+1)*(nx+1)+b+1,(a+1)*(nx+1)+b))
+    mesh(vs,fs,10,True);mesh([(x,y-.004,z) for x,y,z in vs],[tuple(reversed(f)) for f in fs],10,True)
+    coast=[(-.36,.25),(-.25,.12),(-.28,0),(-.12,-.08),(-.05,-.2),(.08,-.16),(.12,-.24)]
+    tube([(x,top+.012,z) for x,z in coast],.006,6,5)
+    for x,z,r in [(.08,.1,.05),(.2,.05,.03)]:ring((x,top+.012,z),r,.005,6,n=16)
+    rose=[(.33,top+.013,.18)]
+    for k in range(16):
+        a=k*math.tau/16;r=.11 if k%4==0 else .05 if k%2==0 else .03
+        rose.append((.33+math.cos(a)*r,top+.013,.18+math.sin(a)*r))
+    mesh(rose,[(0,1+k,1+(k+1)%16) for k in range(16)],4)
+    profile((-.82,top,-.25),[(0,.08),(.03,.085),(.05,.06),(.12,.05),(.14,.06),(.16,.03)],4,16)
+    profile((-.82,top+.16,-.25),[(0,.035),(.04,.055),(.12,.05),(.16,.032)],10,16)
+    leaf((-.82,top+.17,-.25),(-.82,top+.25,-.25),.025,4)
+    tube([(-.72,top+.06,-.25),(-.66,top+.1,-.25),(-.72,top+.14,-.25)],.008,4,6)
+    profile((.62,top,-.22),[(0,.075),(.025,.078),(.03,.07),(.032,.0)],4,20);tube([(.57,top+.035,-.22),(.67,top+.035,-.22)],.006,15,5)
+    ring((.25,top+.02,-.2),.06,.009,4,n=24);tube([(.31,top+.02,-.2),(.46,top+.02,-.26)],.012,3,8)
+    for k,(x,z,yaw) in enumerate([(-.45,-.2,12),(-.38,-.24,-8),(-.5,-.12,25)]):
+        box((x,top+.006+k*.004,z),(.22,.006,.13),10,.003,yaw);profile((x,top+.01+k*.004,z),[(0,.018),(.006,.0)],11,10)
+    for j,(yaw,tile) in enumerate([(0,6),(9,13),(-7,2),(5,11)]):
+        y=top+.03+j*.05;box((.82,y,.18),(.34,.045,.26),tile,.014,yaw,3);box((.825,y,.18),(.325,.034,.24),10,.004,yaw)
 
 def home_bookcase():
     for x in [-.77,.77]:box((x,1.07,0),(.10,2.14,.43),3,.02)

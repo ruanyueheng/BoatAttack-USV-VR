@@ -44,14 +44,20 @@ namespace BoatAttack.EditorTools
             FeatureHelpers.RefreshFeatures(BuildTargetGroup.Android);
             var xr=OpenXRSettings.GetSettingsForBuildTargetGroup(BuildTargetGroup.Android);
             foreach(var feature in xr.GetFeatures<UnityEngine.XR.OpenXR.Features.OpenXRFeature>())feature.enabled=false;
-            foreach(var id in new[]{"com.unity.openxr.feature.pico","com.unity.openxr.pico.features","com.unity.openxr.feature.input.PICO4Ultratouch","com.unity.openxr.feature.input.PICO4touch"})
+            foreach(var id in new[]{"com.unity.openxr.feature.pico","com.unity.openxr.pico.features","com.unity.openxr.feature.input.PICO4Ultratouch","com.unity.openxr.feature.input.PICO4touch",FoveationFeature.featureId})
             {
                 var feature=FeatureHelpers.GetFeatureWithIdForBuildTarget(BuildTargetGroup.Android,id);
                 if(feature==null)throw new Exception("Missing pinned SDK feature: "+id);feature.enabled=true;EditorUtility.SetDirty(feature);
             }
             xr.renderMode=OpenXRSettings.RenderMode.SinglePassInstanced;EditorUtility.SetDirty(xr);
+            // PICO 4 Ultra GPU budget: fixed foveation and ASTC are the cheapest per-pixel and bandwidth wins.
+            var foveation=Unity.XR.OpenXR.Features.PICOSupport.PICOProjectSetting.GetProjectConfig();
+            foveation.foveationEnable=true;foveation.foveatedRenderingMode=FoveationFeature.FoveatedRenderingMode.FixedFoveatedRendering;
+            foveation.foveatedRenderingLevel=FoveationFeature.FoveatedRenderingLevel.Medium;EditorUtility.SetDirty(foveation);
+            EditorUserBuildSettings.androidBuildSubtarget=MobileTextureSubtarget.ASTC;
+            FishingPicoQuality.Ensure();
             PlayerSettings.bundleVersion=FishingPrototype.Version;
-            PlayerSettings.Android.bundleVersionCode=43;
+            PlayerSettings.Android.bundleVersionCode=44;
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android,ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures=AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion=AndroidSdkVersions.AndroidApiLevel29;

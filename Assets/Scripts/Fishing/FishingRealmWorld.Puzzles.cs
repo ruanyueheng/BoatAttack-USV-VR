@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace BoatAttack.Fishing
@@ -20,7 +20,7 @@ namespace BoatAttack.Fishing
         {
             var plaque=new GameObject("Old inscription and optional graduated help").transform;
             plaque.SetParent(room,false);plaque.position=_entries[island].position+room.right*.65f;
-            FishingV019Art.Sign("旧刻痕 · E 阅读\n再次阅读可请求线索",plaque,Vector3.up*1.35f,.008f,new Color(.90f,.82f,.62f));
+            FishingV019Art.Sign(FishingXRText.Adapt("旧刻痕 · E 阅读\n再次阅读可请求线索"),plaque,Vector3.up*1.35f,.008f,new Color(.90f,.82f,.62f));
             _helpPlaques[island]=plaque;
             if(island!=1)return;
             _sideReceiver=new GameObject("First sunlight receiver on the side island").transform;
@@ -36,7 +36,7 @@ namespace BoatAttack.Fishing
             _shutterControl=new GameObject("Side island shutter control").transform;
             _shutterControl.SetParent(room,false);_shutterControl.localPosition=end;
             Model("ValveWheel",_shutterControl,Vector3.up*1.1f);
-            FishingV019Art.Sign("旧铜闸 · E 转动",_shutterControl,Vector3.up*2,.009f,new Color(.92f,.85f,.64f));
+            FishingV019Art.Sign(FishingXRText.Adapt("旧铜闸 · E 转动"),_shutterControl,Vector3.up*2,.009f,new Color(.92f,.85f,.64f));
             _shutterControl.gameObject.SetActive(false);
             _shutterHome=new Vector3(0,0,8);_shutterPanel=Model("HoldHatch",room,_shutterHome);
             _shutterPanel.name="Linked optical shutter between the two far mirrors";_shutterPanel.localRotation=Quaternion.Euler(0,90,0);
@@ -72,7 +72,7 @@ namespace BoatAttack.Fishing
                     _windBridgeOpening[i]=next;var bridge=_windBridges[i];bridge.gameObject.SetActive(next>0 || _windBridgeWanted[i]);
                     bridge.localPosition=Vector3.down*(1-Mathf.SmoothStep(0,1,next))*1.2f;
                     foreach(var collider in _windBridgeColliders[i])collider.enabled=next>=1 && _windBridgeWanted[i];
-                    if(previous==0 && next>0)_c.WorldAudio?.Play("MechanismClick",bridge.position,.35f);
+                    if(previous==0 && next>0)_c.WorldAudio?.PlayRealm(Island,"Step",bridge.position,.35f);
                 }
             if(Island==1)
             {
@@ -86,11 +86,16 @@ namespace BoatAttack.Fishing
             if(!Inside || Transitioning || _c.Paused)return;
             int level=Mathf.Min(2,_hintLevel++);string hint;
             if(level==0)hint=FishingLore.TrialHint(Island);
-            else if(Island==0)hint=level==1?"听钟声辨别石台音色；长回声中会折返，走错只重来当前一轮。":(Trial.WindRound==0?"第一轮：星 → 风 → 潮。":"第二轮：星 → 风 → 潮 → 风 → 潮。")+" 每次离开再踩入，间隔至少半秒。";
-            else if(Island==1)hint=level==1?"第一处受光后会留下一条侧路；到侧岛解开遮光闸，再看光是否仍按原路前进。":Trial.LightStage==0?"先把三镜转为 1、2、3 档，留光五息，打开侧岛桥。":"侧岛铜轮开启遮光闸；三镜改为 3、1、2 档，光将折返另一面镜，再照种池五息。";
-            else if(Island==2)hint=level==1?"水轻时才能搬动货物；浮桥除了水，还受一块承重铜台约束。":"在上层水阀排干船舱，下舱按住 E / A 并随箱前进至铜台，再回阀注水，等待浮桥接平。";
-            else hint=level==1?"两页星图分别记录羽翼与锚，最后一幅藏着回家的帆。":"望远镜里依次找海鸥、船锚、归航星；用鼠标或手柄移动，对准轮廓后保持对焦。";
-            _c.Notice((level==0?"旧刻痕：":level==1?"方向提示：":"操作提示：")+hint,12);
+            else if(Island==0)hint=level==1?"听钟声辨别石台音色；长回声中会折返，走错只重来当前一轮。桥上起风前旗会先猎猎作响。":Trial.WindRound==0?"第一声来自离入口最远、星纹的那块石台；之后沿着桥一路向前。":Trial.Ready?"看见旗帜狂舞就蹲下（C）或按住 E / 握键稳住，或在石台上等风过去。":"长回声的开头与短回声相同，但走到尽头前要回身一次。";
+            else if(Island==1)hint=level==1?"第一处受光后会留下一条侧路；到侧岛解开遮光闸，再看光是否仍按原路前进。":"看光束落在镜子的哪一侧，就朝相反方向再拨一档；"+(Trial.LightStage==0?"光要依次经过三面镜，最后落在侧岛的受光镜上。":"闸开后，光会先跳到最远那面镜，再折回中间那面。");
+            else if(Island==2)hint=level==1?"水轻时才能搬动货物；浮桥除了水，还受一块承重铜台约束。潮位计显示排水泵还能撑多久。":"排水泵在"+(_c.Career.Calendar.RisingTide?"涨潮时撑得更短":"落潮时更从容")+"；货箱推过半程会卡在止滑楔上，回灌也不会滑回。先看潮位计，再一口气推。";
+            else
+            {
+                int stage=Mathf.Min(2,Trial.StarStage);float yaw=Trial.TargetYaw(stage),pitch=Trial.TargetPitch(stage);
+                hint=level==1?"两页星图分别记录羽翼与锚，最后一幅藏着回家的帆。夜里星光更亮，对焦更快。":"「"+StarPatternName(stage)+"」在"+(yaw<-20?"左侧":yaw>20?"右侧":"正前方")+(pitch>45?"高空":"偏低的天幕")+"，找到后稳住对焦。";
+            }
+            if(level==2 && Inside)hint+=" · 本境回响贝 "+_c.Career.Lore.ShellCount(Island)+" / 3";
+            _c.Notice((level==0?"旧刻痕：":level==1?"规则提示：":"方向提示：")+hint,12);
         }
     }
 }

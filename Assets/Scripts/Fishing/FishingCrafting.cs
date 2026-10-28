@@ -138,6 +138,9 @@ namespace BoatAttack.Fishing
         }
         public void FinishInitialization()=>_data.initialized=true;
         public IEnumerable<WorkshopStationData> Stations { get {foreach(var s in _data.stations)yield return s.Copy();} }
+        /// <summary>Allocation-free read for per-frame HUD drawing (no copies, no iterator).</summary>
+        public int StationCount=>_data.stations.Count;
+        public CraftStation StationAt(int index,out float x,out float y,out float z){var s=_data.stations[index];x=s.x;y=s.y;z=s.z;return s.kind;}
         public WorkshopStationData Station(int id){var s=Find(id);return s==null?null:s.Copy();}
         private WorkshopStationData Find(int id)=>_data.stations.Find(s=>s.id==id);
         private static bool Finite(float n)=>!float.IsNaN(n)&&!float.IsInfinity(n);

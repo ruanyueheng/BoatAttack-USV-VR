@@ -33,7 +33,7 @@ namespace BoatAttack.Fishing
             _title=Label(root.transform,new Vector2(26,-18),new Vector2(628,60),40);_title.text="码头事务";_title.font=FishingUITheme.Heading;
             _status=Label(root.transform,new Vector2(26,-85),new Vector2(628,250),21);
             _message=Label(root.transform,new Vector2(26,-704),new Vector2(628,76),21);
-            Label(root.transform,new Vector2(26,-786),new Vector2(628,32),20).text="B 收起  ·  右手指向  ·  扳机选择";
+            FishingUITheme.HintRow(root.transform,new Vector2(26,-784),32,20,("B","收起"),("Trigger","指向并选择"));
             int i=0;foreach(FishingDockAction action in Enum.GetValues(typeof(FishingDockAction)))
             {
                 var go=new GameObject(action.ToString(),typeof(RectTransform),typeof(Image));go.layer=5;go.transform.SetParent(root.transform,false);
@@ -77,13 +77,13 @@ namespace BoatAttack.Fishing
         private string Quote()=>_c.Career.Coins+":"+_c.Career.Count+":"+_c.Career.SaleValue+":"+_c.Career.OrdersCompleted+":"+_c.Career.LineLevel+":"+(_c.Career.PendingCatch?.fish.id??"");
         public bool Press(FishingDockAction action)
         {
-            if(!Allowed(action)){ClearOffer();_message.text=action==FishingDockAction.Release && _c.HasPendingCatch?"请先举起传说鱼测量，或点击「存放 / 测量」。":"此处暂不可操作，请检查鱼货、金币和位置。";return false;}
+            if(!Allowed(action)){ClearOffer();_message.text=FishingXRText.Adapt(action==FishingDockAction.Release && _c.HasPendingCatch?"请先举起传说鱼测量，或点击「存放 / 测量」。":"此处暂不可操作，请检查鱼货、金币和位置。");return false;}
             bool confirm=action==FishingDockAction.Release || action==FishingDockAction.UpgradeLine || action==FishingDockAction.Sell || action==FishingDockAction.Deliver;
             if(confirm)
             {
                 if(_offer!=action || Time.unscaledTime>_until)
-                {_offer=action;_quote=Quote();_until=Time.unscaledTime+5;_message.text="确认："+Name(action)+"\n松开右扳机，再点一次确认。";return false;}
-                if(_quote!=Quote()){ClearOffer();_message.text="鱼货或价格已变化，请重新确认。";return false;}
+                {_offer=action;_quote=Quote();_until=Time.unscaledTime+5;_message.text=FishingXRText.Adapt("确认："+Name(action)+"\n松开右扳机，再点一次确认。");return false;}
+                if(_quote!=Quote()){ClearOffer();_message.text=FishingXRText.Adapt("鱼货或价格已变化，请重新确认。");return false;}
             }
             ClearOffer();bool ok=true;
             switch(action)
@@ -98,12 +98,12 @@ namespace BoatAttack.Fishing
                     _c.SelectNavigation(next);break;
                 case FishingDockAction.Anchor:if(_c.Anchored)_c.LeaveStation();else _c.Interact();break;
                 case FishingDockAction.Store:
-                    if(FishingSpecies.Of(_c.Career.PendingCatch.fish.kind).Legendary){ok=_c.MeasureCatch();_message.text="已测量："+FishingText.Weight(_c.Career.PendingCatch.fish.grams)+"。\n点击放生并确认，领取纪念奖励。";return ok;}
+                    if(FishingSpecies.Of(_c.Career.PendingCatch.fish.kind).Legendary){ok=_c.MeasureCatch();_message.text=FishingXRText.Adapt("已测量："+FishingText.Weight(_c.Career.PendingCatch.fish.grams)+"。\n点击放生并确认，领取纪念奖励。");return ok;}
                     ok=_c.ResolveCatch(true);break;
                 case FishingDockAction.Release:ok=_c.ResolveCatch(false);break;
                 case FishingDockAction.Pause:_c.TogglePause();break;
             }
-            _message.text=ok?"操作完成。B 收起面板，B 再次打开手册。":"操作未完成，待处理的鱼仍会保留。";return ok;
+            _message.text=FishingXRText.Adapt(ok?"操作完成。B 收起面板，B 再次打开手册。":"操作未完成，待处理的鱼仍会保留。");return ok;
         }
         public bool Tick(bool allowInput)
         {
@@ -146,7 +146,7 @@ namespace BoatAttack.Fishing
             for(int i=0;i<_rings.Length;i++)_rings[i].gameObject.SetActive(_c.Career.LineLevel>i);
             foreach(var p in _buttons)p.Value.color=!Allowed(p.Key)?FishingUITheme.Disabled:_offer==p.Key?FishingUITheme.Selected:_hover!=null && _hover.Action==p.Key?FishingUITheme.Selected:FishingUITheme.Light;
             string state=_c.HasPendingCatch?"待处理："+FishingSpecies.Name(_c.Career.PendingCatch.fish.kind)+" "+FishingText.Weight(_c.Career.PendingCatch.fish.grams)+(_c.Career.PendingCatch.measured?"（已测量）":""):_c.Anchored?"驻钓中":"航行："+(_c.Speed*3.6f).ToString("0")+" 千米/时";
-            _status.text="潮汐渔港  ·  "+state+"\n金币 "+_c.Career.Coins+"    鱼箱 "+_c.Career.Count+"/"+_c.Career.Capacity+"    鱼线 "+_c.Career.LineLevel+" 级\n委托「"+_c.Career.CurrentOrder.Name+"」"+(_c.Career.OrderReady?" · 可交付":"")+"\n";
+            _status.text=FishingXRText.Adapt("潮汐渔港  ·  "+state+"\n金币 "+_c.Career.Coins+"    鱼箱 "+_c.Career.Count+"/"+_c.Career.Capacity+"    鱼线 "+_c.Career.LineLevel+" 级\n委托「"+_c.Career.CurrentOrder.Name+"」"+(_c.Career.OrderReady?" · 可交付":"")+"\n");
             for(int i=0;i<_c.Career.CurrentOrder.LineCount;i++){var line=_c.Career.CurrentOrder.Line(i);_status.text+=FishingSpecies.Name(line.Kind)+" ×"+line.Count+(line.Rare?" 珍珠":"")+"  ";}
             _status.text+="\n"+(!_c.Anchored?"动力温度 "+(_c.Boost.Heat*100).ToString("0")+"%"+(_c.Boost.Overheated?" · 冷却至 25%":"")
                 :_c.Session.Phase==CatchPhase.Fighting?"鱼线张力 "+(_c.Session.Tension*100).ToString("0")+"% · "+(_c.Session.Beat==FishBeat.Rest?"回气时转轮收线":"冲刺或跃水时松开左握把")

@@ -9,7 +9,7 @@ namespace BoatAttack.Fishing
             if(Controller.Combat!=null && Controller.Combat.Status.Length>0)
             {
                 ReadingVeil(new Rect(530,104,540,36));
-                WorldLabel(new Rect(540,108,520,28),Controller.Combat.Status,18,CreamInk,true,TextAnchor.MiddleCenter,onPaper:true);
+                WorldLabel(new Rect(540,108,520,28),Controller.Combat.Status,18,CreamInk,true,TextAnchor.MiddleCenter);
             }
             var hunt=Controller.RifleHunting;
             if(hunt==null || !hunt.Equipped || !Controller.Ashore || Controller.ShopBlocksGameplay || Controller.StoryBlocksGameplay || Controller.WorldActionBlocksGameplay)return;

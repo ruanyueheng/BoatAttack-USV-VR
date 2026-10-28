@@ -54,7 +54,7 @@ namespace BoatAttack.EditorTools
                 for(int i=0;i<7;i++){hud.JournalPage=i;Check(hud.JournalPage==i,"Chapter selection "+i);}
                 hud.CatalogPage=3;Check(hud.CatalogPage==3,"Catalog reaches species 19 and 20");hud.CatalogPage=0;
                 c.SetDayNight(false);c.Nightscape.Apply(0);Check(c.Nightscape.Visibility<.01f,"Moon and stars vanish in daylight");
-                c.SetDayNight(true);c.Nightscape.Apply(0);Check(c.Nightscape.Visibility>.95f && c.Nightscape.StarCount==280,"Moon and stable star dome appear at night");
+                c.SetDayNight(true);c.Nightscape.Apply(0);Check(c.Nightscape.Visibility>.95f && RenderSettings.skybox.GetFloat("_StarVisibility")>.95f,"Moon and rotating star sky appear at night");
                 var sweep=c.Nightscape.LighthouseSweep;var rotation=sweep.rotation;c.Nightscape.Apply(2);
                 Check(Mathf.Abs(Quaternion.Angle(rotation,sweep.rotation)-18)<.1f,"Home lighthouse sweeps at nine degrees per second");
                 Check(c.Nightscape.GetComponentsInChildren<Light>().Count(l=>l.enabled && l.type==LightType.Spot)==2,"Two opposing warm lighthouse lights illuminate the sea");

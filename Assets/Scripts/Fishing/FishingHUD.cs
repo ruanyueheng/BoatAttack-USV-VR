@@ -40,18 +40,23 @@ namespace BoatAttack.Fishing
                 || (acceptance && AcceptanceBanner.Contains(point));
         }
 
-        private void Awake() => _font = FishingUIFont.Font;
+        private FishingXRTargetArrow _xrArrow;
+        private void Awake(){_font = FishingUIFont.Font;useGUILayout=false;} // HUD never uses GUILayout: skip the Layout pass
 
         private void Update()
         {
             if(Controller==null || !Controller.JournalOpen){_journalDrawn=false;_journalOrderOpen=false;}
+            if(Controller==null || !Controller.Paused)ReleasePauseBackdrop();
+            FishingXRText.Tick();
+            if(Controller!=null && XRSettings.isDeviceActive && _xrArrow==null){_xrArrow=gameObject.AddComponent<FishingXRTargetArrow>();_xrArrow.Bind(Controller);}
+            if(_xrArrow!=null)_xrArrow.enabled=XRSettings.isDeviceActive;
             if(Controller!=null && Controller.Career!=null)FishingUITheme.Tick(Controller.Career.Calendar.Daylight,Time.unscaledDeltaTime);
         }
 
         private void OnGUI()
         {
             var c = Controller;
-            if (c == null || c.Career == null || c.Player == null || XRSettings.isDeviceActive) return;
+            if (c == null || c.Career == null || c.Player == null || XRSettings.isDeviceActive || FishingMobileQuality.HeadsetPreview) return;
             c.HandleDisplayShortcut(Event.current);
             if(c.Prologue.Open || c.Home.Sleeping)return;
             if(Event.current.rawType==EventType.MouseDown)_pressedButton=default;
@@ -96,7 +101,7 @@ namespace BoatAttack.Fishing
                     {
                         float y=c.Acceptance!=null && !c.Acceptance.IsCapturing?160:88;
                         ReadingVeil(new Rect(485,y-2,630,42));
-                        WorldLabel(new Rect(500,y+6,600,26),c.Farm.Status,17,CreamInk,false,TextAnchor.MiddleCenter,onPaper:true);
+                        WorldLabel(new Rect(500,y+6,600,26),c.Farm.Status,17,CreamInk,false,TextAnchor.MiddleCenter);
                     }
                     DrawCatchToast();
                     DrawCompactNotice();
@@ -104,6 +109,7 @@ namespace BoatAttack.Fishing
                     DrawHuntingAim();
                     DrawExplorationStatus();
                     DrawRegionTitle();
+                    DrawOffscreenMarker();
                 }
                 if(c.Realms!=null && c.Realms.Blackout>0)Fill(-_offset/_scale,0,Screen.width/_scale,_height,new Color(.008f,.016f,.025f,c.Realms.Blackout));
                 if (c.Acceptance != null) DrawAcceptanceToolbar();
@@ -224,6 +230,6 @@ namespace BoatAttack.Fishing
             return "鱼在冲刺 · 放线避开拉力";
         }
 
-        private void OnDestroy() { ReleaseTerrainMap(); ReleaseOptics(); if(_titleVeil!=null)Destroy(_titleVeil);if(_readingVeil!=null)Destroy(_readingVeil); }
+        private void OnDestroy() { ReleasePauseBackdrop(); ReleaseTerrainMap(); ReleaseOptics(); if(_titleVeil!=null)Destroy(_titleVeil);if(_readingVeil!=null)Destroy(_readingVeil); }
     }
 }

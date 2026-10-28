@@ -10,9 +10,43 @@ namespace BoatAttack.EditorTools
     public static class FishingV037HandsValidation
     {
         public static void Run()=>FishingV011Validation.Begin("V037-HANDS");
+        /// <summary>Injected 90 Hz controller speeds drive the real VR cast and stick-reel recognisers.</summary>
+        private static void XRGestureChecks()
+        {
+            float Cast(float peak,bool release=true)
+            {
+                var g=new FishingCastGesture();const float dt=1/90f;g.Step(true,false,0,dt);bool cast=false;
+                for(int i=0;i<30;i++)cast|=g.Step(true,true,peak*Mathf.Sin(i/29f*Mathf.PI),dt);
+                if(release)cast|=g.Step(true,false,0,dt);return cast?g.Power:-1;
+            }
+            Check(Cast(.6f)<0,"A gentle wave under the swing threshold does not cast");
+            Check(Cast(2f)<0==false && Cast(3.5f)>Cast(1.6f),"A forward flick casts, and a faster flick casts farther");
+            Check(Cast(3f,false)<0,"Holding the trigger keeps the line until it is released");
+            float last=float.NaN,swept=0;
+            for(int i=0;i<36;i++){float a=i*10*Mathf.Deg2Rad;swept+=FishingHands.StickSweep(new Vector2(Mathf.Cos(a),Mathf.Sin(a)),ref last);}
+            Check(swept>330,"Circling the right stick reels continuously, swept "+swept);
+            last=float.NaN;swept=0;for(int i=0;i<36;i++)swept+=FishingHands.StickSweep(new Vector2(.3f*Mathf.Cos(i),.3f*Mathf.Sin(i)),ref last);
+            Check(swept==0,"Stick drift near centre never reels");
+            var o=Vector3.zero;var far=Vector3.one*5;var handle=new Vector3(0,1,0);var stand=new Vector3(0,.88f,0);var crank=new Vector3(1,1.6f,0);
+            FishingXRGrab.FarmHand D(bool carrying,bool press,bool held,bool left,Vector3 r,Vector3 l,float tilt,float spout)=>FishingXRGrab.DecideFarm(carrying,press,held,left,r,l,handle,stand,crank,tilt,spout);
+            Check(D(false,true,true,false,handle,far,0,5)==FishingXRGrab.FarmHand.TakeCan && D(false,true,true,false,far,far,0,5)==FishingXRGrab.FarmHand.None,"VR: only a grip closed on the can handle takes it");
+            Check(D(true,false,false,false,handle,far,0,5)==FishingXRGrab.FarmHand.ReturnCan && D(true,false,true,false,handle,far,0,5)==FishingXRGrab.FarmHand.None,"VR: opening the hand over the stand returns the can; holding keeps it");
+            Check(D(true,false,true,true,far,crank,0,5)==FishingXRGrab.FarmHand.Refill && D(true,false,true,true,far,far,0,5)==FishingXRGrab.FarmHand.None,"VR: the left hand gripping the windlass crank draws water");
+            Check(D(true,false,true,false,far,far,55,.5f)==FishingXRGrab.FarmHand.Water && D(true,false,true,false,far,far,20,.5f)==FishingXRGrab.FarmHand.None && D(true,false,true,false,far,far,55,2)==FishingXRGrab.FarmHand.None,"VR: tipping the spout over a plot waters it; upright or away does not");
+            var head=new GameObject("validation head").transform;
+            try
+            {
+                head.SetPositionAndRotation(new Vector3(0,1.6f,0),Quaternion.Euler(30,90,0));var hang=FishingPrototype.HandLandingPoint(head);
+                Check(Mathf.Abs(Vector3.Distance(new Vector3(hang.x,0,hang.z),Vector3.zero)-.5f)<.001f && hang.y<1.6f && hang.x>.49f,"The landed fish hangs 0.5 m in front of the face, below the eyes, regardless of head pitch");
+                Check(FishingCatchRig.HandLandingReach(hang+Vector3.right*.1f,hang) && !FishingCatchRig.HandLandingReach(hang+Vector3.down*.4f,hang),"Only a hand closing on the fish takes it");
+                Check(FishingCatchRig.HandLandingTimeout==8,"An untaken fish is landed after 8 s");
+            }
+            finally{UnityEngine.Object.DestroyImmediate(head.gameObject);}
+        }
         private static void Check(bool ok,string label){if(!ok)throw new InvalidOperationException(label);Debug.Log("[V037-HANDS] CHECK: "+label);}
         public static IEnumerator Checks(FishingPrototype c)
         {
+            XRGestureChecks();
             Directory.CreateDirectory("Logs/V037");
             var character=c.Shore.Character;
             Check(character.LeftFingerJointCount==19 && character.RightFingerJointCount==19,"All five digits retain the source-skinned joints on both hands");
@@ -57,6 +91,9 @@ namespace BoatAttack.EditorTools
                     CaptureGripSide(c,"hand-grip-side-"+seen.Count.ToString("D2"));
                     if(phase=="carry0" || (c.Farm.Busy && c.Farm.WorkProgress>=.4f && c.Farm.WorkProgress<.6f))
                         CaptureGripSide(c,"hand-grip-palm-"+seen.Count.ToString("D2"),true);
+                    // While drawing water the can rests on the rim and both hands work the windlass and bucket.
+                    bool canOnRim=c.Farm.Busy && c.Farm.ActionHint.StartsWith("摇井绳") && c.Farm.WorkProgress>.2f && c.Farm.WorkProgress<.85f;
+                    if(canOnRim){Check(c.Farm.WellBucket!=null,"Refill hands are on the windlass/bucket: "+phase);continue;}
                     InspectCan(c,phase);
                     FishingV038Validation.InspectCan(c,phase);
                 }

@@ -18,6 +18,8 @@ namespace BoatAttack.Fishing
         private readonly Collider[] _overlaps = new Collider[32];
         private readonly RaycastHit[] _hits = new RaycastHit[32];
         private readonly Dictionary<Collider,bool> _nonSolid=new Dictionary<Collider,bool>();
+        private Terrain[] _terrains;
+        private readonly List<Mesh> _terrainEdges=new List<Mesh>();
         private Vector3 _goal, _origin;
         private int _target = -1, _width, _depth;
         private byte[] _water;
@@ -32,6 +34,8 @@ namespace BoatAttack.Fishing
         public void Build(FishingPrototype c)
         {
             _c = c;
+            _terrains=FindObjectsOfType<Terrain>();
+            BuildTerrainEdges();
             var map = Resources.Load<FishingMapDefinition>("FishingMap");
             var bounds = map != null && map.IsUsable ? map.worldXZBounds : new Vector4(-600, -500, 600, 400);
             _origin = new Vector3(bounds.x - 80, 0, bounds.y - 80);
@@ -74,17 +78,59 @@ namespace BoatAttack.Fishing
         }
         public bool ClearPoint(Vector3 p)
         {
+            if(!ClearTerrain(p))return false;
             p.y = 1.2f;
             int count = Physics.OverlapCapsuleNonAlloc(p, p + Vector3.up, Clearance, _overlaps, ~(1 << 4), QueryTriggerInteraction.Ignore);
             if (count == _overlaps.Length) return false;
             for (int i = 0; i < count; i++) if (!Ignored(_overlaps[i])) return false;
             return true;
         }
+        private bool ClearTerrain(Vector3 p)
+        {
+            foreach(var terrain in _terrains)
+            {
+                if(terrain==null || !terrain.isActiveAndEnabled || terrain.terrainData==null)continue;
+                var local=p-terrain.transform.position;var size=terrain.terrainData.size;
+                if(local.x<0 || local.z<0 || local.x>size.x || local.z>size.z)continue;
+                // TerrainCollider is a surface: an overlap below a tall hill otherwise reports open water.
+                if(terrain.SampleHeight(p)+terrain.transform.position.y>=1.2f-Clearance)return false;
+            }
+            return true;
+        }
+        private void BuildTerrainEdges()
+        {
+            // Imported heightfields end in open vertical cuts; close those cuts below sea level for manual boats too.
+            foreach(var terrain in _terrains)
+            {
+                var data=terrain.terrainData;var size=data.size;var vertices=new List<Vector3>();var triangles=new List<int>();
+                var corners=new[]{Vector3.zero,new Vector3(size.x,0,0),new Vector3(size.x,0,size.z),new Vector3(0,0,size.z)};
+                for(int edge=0;edge<4;edge++)
+                {
+                    var from=corners[edge];var to=corners[(edge+1)%4];int steps=Mathf.CeilToInt(Vector3.Distance(from,to)/8);
+                    for(int i=0;i<steps;i++)
+                    {
+                        var a=Vector3.Lerp(from,to,i/(float)steps);var b=Vector3.Lerp(from,to,(i+1)/(float)steps);
+                        a.y=data.GetInterpolatedHeight(a.x/size.x,a.z/size.z);b.y=data.GetInterpolatedHeight(b.x/size.x,b.z/size.z);
+                        if(Mathf.Max(a.y,b.y)+terrain.transform.position.y<0)continue;
+                        int n=vertices.Count;float bottom=-10-terrain.transform.position.y;
+                        vertices.Add(a);vertices.Add(b);vertices.Add(new Vector3(a.x,bottom,a.z));vertices.Add(new Vector3(b.x,bottom,b.z));
+                        triangles.AddRange(new[]{n,n+1,n+2,n+2,n+1,n+3,n+2,n+1,n,n+3,n+1,n+2});
+                    }
+                }
+                if(vertices.Count==0)continue;
+                var mesh=new Mesh{name="V044 terrain cut edges"};mesh.SetVertices(vertices);mesh.SetTriangles(triangles,0);mesh.RecalculateBounds();_terrainEdges.Add(mesh);
+                var go=new GameObject("Terrain cut-edge collision");go.layer=terrain.gameObject.layer;go.transform.SetParent(transform,false);
+                go.transform.SetPositionAndRotation(terrain.transform.position,terrain.transform.rotation);go.transform.localScale=terrain.transform.lossyScale;
+                go.AddComponent<MeshCollider>().sharedMesh=mesh;
+            }
+        }
         public bool ClearSegment(Vector3 from, Vector3 to)
         {
             from.y = to.y = 1.2f;
             if (!ClearPoint(from) || !ClearPoint(to)) return false;
             var delta = to - from; if (delta.sqrMagnitude < .001f) return true;
+            int samples=Mathf.CeilToInt(delta.magnitude/(Cell*.5f));
+            for(int i=1;i<samples;i++)if(!ClearTerrain(Vector3.Lerp(from,to,i/(float)samples)))return false;
             int count = Physics.CapsuleCastNonAlloc(from, from + Vector3.up, Clearance, delta.normalized,
                 _hits, delta.magnitude, ~(1 << 4), QueryTriggerInteraction.Ignore);
             if (count == _hits.Length) return false;
@@ -176,6 +222,6 @@ namespace BoatAttack.Fishing
             }
         }
         private void OnDisable()=>CancelPlanning();
-        private void OnDestroy() { CancelPlanning();foreach (var material in _materials) if (material != null) Destroy(material); }
+        private void OnDestroy() { CancelPlanning();foreach (var material in _materials) if (material != null) Destroy(material);foreach(var mesh in _terrainEdges)if(mesh!=null)Destroy(mesh); }
     }
 }

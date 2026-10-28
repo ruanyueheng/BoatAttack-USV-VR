@@ -1,0 +1,52 @@
+{
+  "residents": [
+    {
+      "id": 0,
+      "lod0_triangles": 14499,
+      "lod1_triangles": 3998,
+      "atlas": 1024,
+      "height": 1.7,
+      "bottom": -0.008407175540924072
+    },
+    {
+      "id": 1,
+      "lod0_triangles": 14499,
+      "lod1_triangles": 3998,
+      "atlas": 1024,
+      "height": 1.7,
+      "bottom": -0.008407175540924072
+    },
+    {
+      "id": 2,
+      "lod0_triangles": 14498,
+      "lod1_triangles": 3999,
+      "atlas": 1024,
+      "height": 1.78,
+      "bottom": -0.009509669616818428
+    },
+    {
+      "id": 3,
+      "lod0_triangles": 14499,
+      "lod1_triangles": 3998,
+      "atlas": 1024,
+      "height": 1.78,
+      "bottom": -0.009509669616818428
+    },
+    {
+      "id": 5,
+      "lod0_triangles": 14500,
+      "lod1_triangles": 4000,
+      "atlas": 1024,
+      "height": 1.78,
+      "bottom": -0.009509669616818428
+    },
+    {
+      "id": 6,
+      "lod0_triangles": 14499,
+      "lod1_triangles": 3998,
+      "atlas": 1024,
+      "height": 1.7,
+      "bottom": -0.008407175540924072
+    }
+  ]
+}

@@ -19,7 +19,7 @@ namespace BoatAttack.Fishing
             TackleShop?.Close();
             if((Paused && !InventoryOpen) || _xrActive || JournalOpen)return;
             InventoryOpen=!InventoryOpen;if(_hud!=null)_hud.ClearFieldSelection();BinocularsRaised=false;TogglePause();
-            WorldAudio?.Play(InventoryOpen?"UIConfirm":"UIBack",ExplorerPosition,.3f);
+            WorldAudio?.Play(InventoryOpen?"BagOpen":"BagClose",ExplorerPosition,.45f);
             if(InventoryOpen){ShowDetails=false;HarborDeskOpen=false;WorkshopWorld?.SelectNearby();}
             else if(_workshopReceipt)
             {

@@ -16,7 +16,7 @@ namespace BoatAttack.Fishing
         private void DrawTackleShop()
         {
             var c=Controller;var r=new Rect(270,Mathf.Max(20,(_height-680)*.5f),1060,680);
-            Dim();Card(r,Gold);Label(r.x+30,r.y+20,680,44,"潮汐钓具店",32,Color.white,true);
+            MenuSheet(r);Label(r.x+30,r.y+16,680,46,Spaced("潮汐钓具店"),32,Color.white,true);
             Label(r.x+255,r.y+33,390,22,"TIDE & TACKLE  /  远航的准备",14,Muted);
             Label(new Rect(r.xMax-250,r.y+28,220,35),c.Career.Coins+" 金币",23,Gold,true,TextAnchor.MiddleRight);
             int categories=FishingSupplies.CategoryCount+3;float tabWidth=(r.width-60)/categories;

@@ -39,6 +39,72 @@ namespace BoatAttack.EditorTools
                     CapturePortal(c,exit,exit.position+exit.forward*1.8f,"portal-exit-0");
                 }
                 finally{room.gameObject.SetActive(active);Physics.SyncTransforms();}
+                // PICO-tier ocean review: same harbour-side framing with and without scene textures, day and night.
+                {
+                    var centre0=FishingIslandWorld.Center(0);var eye0=centre0+new Vector3(45,24,75);
+                    foreach(float hour in new[]{11f,22f})
+                    {
+                        c.Career.Calendar.AdvanceToHour(hour);c.Weather.ApplyEnvironment();
+                        foreach(bool pico in new[]{false,true})
+                        {
+                            if(pico)Shader.EnableKeyword("_WATER_NO_SCENE_TEXTURES");else Shader.DisableKeyword("_WATER_NO_SCENE_TEXTURES");
+                            for(int f=0;f<3;f++)yield return null;
+                            c.viewCamera.fieldOfView=60;c.viewCamera.transform.SetPositionAndRotation(eye0,Quaternion.LookRotation(centre0+Vector3.up*3-eye0));
+                            FishingV016Validation.Capture(c,"Logs/V044/vfx","ocean-"+(hour<12?"day":"night")+(pico?"-pico":"-desktop"));
+                        }
+                    }
+                    Shader.DisableKeyword("_WATER_NO_SCENE_TEXTURES");c.Career.Calendar.AdvanceToHour(11);c.Weather.ApplyEnvironment();
+                }
+                // Diagnostic for the striped sheets in island0-far: same framing with and without vfx-owned renderers.
+                {
+                    var centre0=FishingIslandWorld.Center(0);var eye0=centre0+new Vector3(45,24,75);
+                    void Far(string label){c.viewCamera.fieldOfView=60;c.viewCamera.transform.SetPositionAndRotation(eye0,Quaternion.LookRotation(centre0+Vector3.up*3-eye0));FishingV016Validation.Capture(c,"Logs/V044/vfx",label);}
+                    Far("diag-island0-far-same-frame");
+                    for(int f=0;f<5;f++){c.viewCamera.transform.SetPositionAndRotation(eye0,Quaternion.LookRotation(centre0+Vector3.up*3-eye0));yield return null;}
+                    Far("diag-island0-far-settled");
+                    var hidden=new List<Renderer>();
+                    foreach(var r in c.Effects.GetComponentsInChildren<Renderer>())if(r.enabled){r.enabled=false;hidden.Add(r);}
+                    foreach(var v in UnityEngine.Object.FindObjectsOfType<FishingPortalVisual>())foreach(var r in v.GetComponentsInChildren<Renderer>())if(r.enabled){r.enabled=false;hidden.Add(r);}
+                    Far("diag-island0-far-no-vfx");
+                    foreach(var r in hidden)r.enabled=true;
+                }
+                // V044 themed portals: one identical framing per island for the comparison sheet.
+                for(int id=0;id<4;id++)
+                {
+                    var door=c.Realms.Portal(id);var art=door.GetComponentInChildren<FishingPortalVisual>();
+                    Check(art.Island==id,"Portal is themed for its own island "+id);
+                    var facing=Vector3.ProjectOnPlane(door.Find("Approach").position-door.position,Vector3.up).normalized;
+                    var centre=door.TransformPoint(Vector3.up*(art.Height*.5f));
+                    c.viewCamera.fieldOfView=60;c.viewCamera.transform.SetPositionAndRotation(centre+facing*3.4f,Quaternion.LookRotation(-facing));
+                    for(int f=0;f<3;f++)yield return null;
+                    c.viewCamera.fieldOfView=60;c.viewCamera.transform.SetPositionAndRotation(centre+facing*3.4f,Quaternion.LookRotation(-facing));
+                    FishingV016Validation.Capture(c,"Logs/V044/vfx","theme-"+id);
+                }
+                // V044 art review: pulse flash plus pickup sparkle and splash in front of a portal.
+                Directory.CreateDirectory("Logs/V044/vfx");
+                var review=c.Realms.Portal(1);var reviewEye=review.Find("Approach").position+Vector3.up*1.65f;
+                CaptureApproach(c,review,review.Find("Approach").position,"portal-approach-1");
+                review.GetComponentInChildren<FishingPortalVisual>().Pulse();
+                var front=Vector3.Lerp(reviewEye,review.position,.55f);
+                c.Effects.Burst(front,new Color(1,.79f,.37f));c.Effects.Burst(front+Vector3.right*.6f,new Color(.46f,.82f,.80f));
+                for(int f=0;f<6;f++)yield return null;
+                c.viewCamera.fieldOfView=70;c.viewCamera.transform.SetPositionAndRotation(reviewEye,Quaternion.LookRotation(front-reviewEye));
+                FishingV016Validation.Capture(c,"Logs/V044/vfx","after-portal-pulse-burst");
+                for(int f=0;f<90;f++)yield return null;
+                c.Effects.Celebrate(front+Vector3.left*.5f);for(int f=0;f<10;f++)yield return null;
+                c.viewCamera.fieldOfView=70;c.viewCamera.transform.SetPositionAndRotation(reviewEye,Quaternion.LookRotation(front-reviewEye));
+                FishingV016Validation.Capture(c,"Logs/V044/vfx","after-portal-idle-dust-celebrate");
+                // Watering review: damp soil spots on the ground in front of the door.
+                if(c.Shore.Ground(front,out var soil))for(int f=0;f<6;f++)c.Effects.Wet(soil+new Vector3((f%3-1)*.35f,0,(f/3)*.4f-.2f));
+                for(int f=0;f<5;f++)yield return null;
+                c.viewCamera.fieldOfView=60;c.viewCamera.transform.SetPositionAndRotation(reviewEye,Quaternion.LookRotation(soil-reviewEye));
+                FishingV016Validation.Capture(c,"Logs/V044/vfx","after-wet-soil");
+                // Night review: fireflies drifting in front of the grove door.
+                c.Career.Calendar.AdvanceToHour(22);c.Weather.ApplyEnvironment();
+                for(int f=0;f<14;f++)c.Effects.Firefly(front+new Vector3(Mathf.Cos(f*2.4f)*(1+f%3*.5f),.2f+(f%5)*.3f,Mathf.Sin(f*2.4f)*.8f));
+                for(int f=0;f<40;f++)yield return null;
+                c.viewCamera.fieldOfView=70;c.viewCamera.transform.SetPositionAndRotation(reviewEye,Quaternion.LookRotation(front-reviewEye));
+                FishingV016Validation.Capture(c,"Logs/V044/vfx","after-night-fireflies");
             }
             finally{camera.SetPositionAndRotation(position,rotation);c.viewCamera.fieldOfView=fov;}
             for(int id=0;id<4;id++)
@@ -141,7 +207,10 @@ namespace BoatAttack.EditorTools
             {
                 var renderer=filter.GetComponent<Renderer>();
                 if(renderer==null || !renderer.enabled || !renderer.bounds.IntersectRay(new Ray(eye,delta.normalized)))continue;
-                var mesh=filter.sharedMesh;var vertices=mesh.vertices;var triangles=mesh.triangles;
+                var mesh=filter.sharedMesh;if(mesh==null)continue;
+                // Without Read/Write we cannot test triangles; count a hit on its bounds as blocked (stricter, never looser).
+                if(!mesh.isReadable){if(renderer.bounds.IntersectRay(new Ray(eye,delta.normalized),out float hitAt) && hitAt<delta.magnitude-.06f)return false;continue;}
+                var vertices=mesh.vertices;var triangles=mesh.triangles;
                 var from=filter.transform.InverseTransformPoint(eye);var ray=filter.transform.InverseTransformVector(delta);
                 for(int i=0;i<triangles.Length;i+=3)
                 {
@@ -164,7 +233,8 @@ namespace BoatAttack.EditorTools
             Check(visual!=null && visual.Height>2,"Storybook portal exists: "+target.parent.name+" / "+target.name);
             var renderers=visual.GetComponentsInChildren<MeshRenderer>(true);
             Check(renderers.Length==3,"Portal retains three batched surfaces");
-            Check(visual.GetComponentsInChildren<Collider>(true).Length==0 && visual.GetComponentsInChildren<ParticleSystem>(true).Length==0,"Doorway remains passable without per-particle simulation");
+            var particles=visual.GetComponentsInChildren<ParticleSystem>(true);
+            Check(visual.GetComponentsInChildren<Collider>(true).Length==0 && particles.Length==1 && particles[0].main.maxParticles<=FishingPortalVisual.DustBudget && FishingPortalVisual.DustBudget<=40,"Doorway remains passable; one gold dust emitter within the PICO budget");
             var frame=visual.transform.Find("Carved brass arch").GetComponent<MeshFilter>().sharedMesh;
             Check(frame.bounds.max.y>visual.Height+.4f,"Crescent crown rises above the carved arch");
             Check(frame.vertexCount<20000 && frame.triangles.Length/3<12000,"Complete carved arch fits the fixed geometry budget: "+frame.vertexCount+" vertices / "+frame.triangles.Length/3+" triangles");

@@ -54,6 +54,14 @@ namespace BoatAttack.Fishing
                 if (phase == CatchPhase.Escaped && phase != _gameplayPhase
                     && (_c.Session.Failure == CatchFailure.LineSnapped || _c.Session.Failure == CatchFailure.LeapSnapped))
                     Play("LineSnap", _c.ExplorerPosition + Vector3.up, .65f);
+                // Line hum follows live tension: louder and higher as the fish pulls, silent outside the fight.
+                if ((phase == CatchPhase.Fighting || phase == CatchPhase.Landing) && _c.Session.Tension > .05f)
+                {
+                    float tension = Mathf.Clamp01(_c.Session.Tension);
+                    MaintainLoop("line-tension", "LineTensionLoop", _c.ExplorerPosition + Vector3.up * 1.2f,
+                        Mathf.Lerp(.015f, .09f, tension * tension), true, 12, FishingAudioCategory.Effects);
+                    var line = LoopSource("line-tension"); if (line != null) line.pitch = Mathf.Lerp(.85f, 1.45f, tension);
+                }
                 // One splash at takeoff and one at water re-entry. Cancellation/reposition never fabricates a splash.
                 if (phase == CatchPhase.Fighting && _gameplayPhase == CatchPhase.Fighting && leaping != _gameplayLeaping && _c.ActiveFish != null)
                     Play("FishSplash", _c.ActiveFish.position, leaping ? .48f : .63f);

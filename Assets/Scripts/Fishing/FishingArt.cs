@@ -26,6 +26,13 @@ namespace BoatAttack.Fishing
             var source=(kind==FishKind.SeaTurtle?Resources.Load<GameObject>("FishingV029/Turtle"):null) ?? Resources.Load<GameObject>("FishingFish/"+kind);
             var imported=source!=null?source.GetComponentInChildren<MeshFilter>():null;
             go.GetComponent<MeshFilter>().sharedMesh = imported!=null?imported.sharedMesh:Cached(owned, FishingMeshBuilder.FishMeshName(kind, rare), () => FishingMeshBuilder.Fish(kind, rare));
+            // The shared V029 coast turtle is authored at its land size; the marine species keeps its own metre length.
+            if(kind==FishKind.SeaTurtle && imported!=null && source.name=="Turtle")
+                go.GetComponent<MeshFilter>().sharedMesh=Cached(owned,"Metre-scaled marine sea turtle",()=>
+                {
+                    var mesh=Object.Instantiate(imported.sharedMesh);var size=mesh.bounds.size;float scale=FishingSpecies.LengthMeters(kind)/Mathf.Max(size.x,size.y,size.z);
+                    var vertices=mesh.vertices;for(int i=0;i<vertices.Length;i++)vertices[i]*=scale;mesh.vertices=vertices;mesh.RecalculateBounds();mesh.name="Metre-scaled marine sea turtle";return mesh;
+                });
             var renderer = go.GetComponent<MeshRenderer>();
             renderer.sharedMaterial = Palette(owned, palette, "Fishing v0.4 fish gloss", .55f, .3f);
             if(imported!=null)

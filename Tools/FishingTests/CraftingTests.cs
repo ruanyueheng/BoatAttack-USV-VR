@@ -52,6 +52,8 @@ internal static class CraftingTests
         check(!loaded.Remove(bag,furnace) && bag.Count(FieldItem.Furnace)==1,"Dismantled item cannot be duplicated");
         int publicId=loaded.Place(null,CraftStation.Workbench,2,1,2,0,true);
         check(publicId>0 && !loaded.Remove(bag,publicId),"Public facilities cannot be taken");
+        var markerKind=loaded.StationAt(loaded.StationCount-1,out var markerX,out var markerY,out var markerZ);
+        check(markerKind==CraftStation.Workbench && markerX==2 && markerY==1 && markerZ==2,"Chart station lookup preserves kind and coordinates without Unity dependency");
         var crowded=new FishingWorkshop();var builder=new FishingBackpack(false);builder.TryAdd(FieldItem.Workbench,33);
         for(int i=0;i<FishingWorkshop.MaxPlayerStations;i++)check(crowded.Place(builder,CraftStation.Workbench,i,1,5,0)>0,"Owned station slot "+i);
         check(crowded.Place(builder,CraftStation.Workbench,40,1,5,0)<0 && builder.Count(FieldItem.Workbench)==1,"Owned facility cap leaves rejected item in the bag");

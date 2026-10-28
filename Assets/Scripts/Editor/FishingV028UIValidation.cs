@@ -33,7 +33,11 @@ namespace BoatAttack.EditorTools
             float sixty=0,ninety=0;for(int i=0;i<60;i++)sixty=FishingUITheme.AdvanceNight(sixty,0,1f/60);for(int i=0;i<90;i++)ninety=FishingUITheme.AdvanceNight(ninety,0,1f/90);
             Check(Mathf.Abs(sixty-ninety)<.0001f,"Theme transition duration is stable at desktop and headset frame rates");
             bool headingsComplete=true;
-            Check(FishingUITheme.Heading.name=="MaShanZheng-Regular","Game headings load the expressive Ma Shan Zheng brush-script asset");
+            var xrLiterals=FishingXRTextValidation.LiteralFailures();
+            Check(xrLiterals.Count==0,"XR prompts contain no keyboard key names ("+xrLiterals.Count+"): "+string.Join(" | ",xrLiterals.GetRange(0,Mathf.Min(5,xrLiterals.Count))));
+            var signFailure=FishingXRTextValidation.SignRefreshFailure();
+            Check(signFailure==null,"World signs built before XR are rewritten on entering VR and restored on leaving: "+signFailure);
+            Check(FishingUITheme.Heading.name=="NotoSerifSC-SemiBold-Subset","Game headings load the V044 storybook Noto Serif SC display face");
             foreach(char glyph in "枪械铁件海风烧烤渔屋鱼箱海边烧烤铁镐头沉海宝匣香烤海鱼海漂旧靴锈蚀铁罐")headingsComplete&=FishingUITheme.Heading.HasCharacter(glyph);
             Check(headingsComplete,"Bundled handwritten font covers the V028 crafting and coast headings");
             foreach(var sprite in new[]{FishingUITheme.Coins,FishingUITheme.FishBox})Check(sprite!=null && sprite.texture.width>=128 && sprite.texture.height>=128,"Resource counter has a bundled pictogram: "+sprite.texture.name);

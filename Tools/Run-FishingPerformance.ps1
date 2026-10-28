@@ -1,7 +1,11 @@
-param(
+﻿param(
     [Parameter(Mandatory)][string]$Player,
     [ValidatePattern('^[A-Za-z0-9_-]{1,48}$')][string]$Label='baseline',
-    [ValidateRange(300,1200)][int]$TimeoutSeconds=720
+    [ValidateRange(300,1200)][int]$TimeoutSeconds=720,
+    # Apply the PICO runtime quality/detail budget on desktop to read real draw calls and triangles.
+    [switch]$PicoQuality,
+    # Extra player flags, e.g. '-pico-keep-depth' to measure one PICO saving at a time.
+    [string]$ExtraArgs=''
 )
 $ErrorActionPreference='Stop'
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
@@ -12,6 +16,8 @@ $output=Join-Path $repo ('Logs/Performance/'+$Label+'-'+[Guid]::NewGuid().ToStri
 [IO.Directory]::CreateDirectory($output)|Out-Null
 $log=Join-Path $output 'player.log'
 $arguments='-fishing-performance-voyage -force-d3d11 -popupwindow -screen-fullscreen 0 -screen-width 1920 -screen-height 1080 -logFile "'+$log+'"'
+if($PicoQuality){$arguments+=' -fishing-pico-quality'}
+if($ExtraArgs){$arguments+=' '+$ExtraArgs}
 $watch=[Diagnostics.Stopwatch]::StartNew()
 $taskLaunchUtc=[DateTime]::UtcNow
 # This rendered game test needs a visible window; a hidden player may never draw the first shoreline frame.

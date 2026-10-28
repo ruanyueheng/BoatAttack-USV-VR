@@ -52,4 +52,6 @@ Assets/Resources/FishingCharacter/CompatibleInteractions/*.anim filter=lfs diff=
 *.shadersubgraph text
 *.inputactions text
 *.json text
+ArtSource/V044/**/*.blend filter=lfs diff=lfs merge=lfs -text
+Assets/Resources/FishingV044/Scene/GrassClusters.asset filter=lfs diff=lfs merge=lfs -text
 *.cs text

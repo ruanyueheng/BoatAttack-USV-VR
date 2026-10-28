@@ -305,7 +305,7 @@ namespace BoatAttack.Fishing
             if(Acceptance.CurrentCase!=FishingAcceptanceCase.StarObservation)yield break;
             SelectFieldSlot(8);
             if(!Shore.Relocate(Realms.Device(0).position+Vector3.back*1.6f,Quaternion.identity) || !RequestWorldInteraction())throw new InvalidOperationException("Observation fixture cannot reach the actual telescope.");
-            Realms.AimTelescope(new Vector2(FishingShrineTrial.StarTargetYaw(0)-Realms.Trial.StarYaw,FishingShrineTrial.StarTargetPitch(0)-Realms.Trial.StarPitch),true,.1f);
+            Realms.AimTelescope(new Vector2(Realms.Trial.TargetYaw(0)-Realms.Trial.StarYaw,Realms.Trial.TargetPitch(0)-Realms.Trial.StarPitch),true,.1f);
             for(int i=0;i<5;i++)Realms.AimTelescope(Vector2.zero,true,.1f);
         }
         private void PrepareStoryFixture(FishingAcceptanceCase selected)

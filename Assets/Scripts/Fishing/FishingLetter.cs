@@ -58,7 +58,7 @@ namespace BoatAttack.Fishing
             FishingPaperDesign.Image(_paper,"Title hairline",new Rect(103,153,554,1),rect.sizeDelta,null,new Color(.63f,.51f,.29f,.4f));
             _heading = Label("Title",new Vector2(80,-87),new Vector2(600,59),36,TextAnchor.MiddleCenter);
             Label("Letterhead",new Vector2(68,-35),new Vector2(235,26),15,TextAnchor.UpperLeft).text = "回 潮 海  /  航 海 来 信";
-            _body = Label("Letter body",new Vector2(76,-183),new Vector2(608,288),26,TextAnchor.UpperLeft);
+            _body = Label("Letter body",new Vector2(76,-183),new Vector2(608,288),24,TextAnchor.UpperLeft);
             _sender = Label("Signature",new Vector2(76,-486),new Vector2(608,40),22,TextAnchor.UpperRight);
             _hint = Label("Reading hint",new Vector2(76,-546),new Vector2(608,30),16,TextAnchor.MiddleCenter);
             _root.gameObject.SetActive(false);
@@ -74,7 +74,7 @@ namespace BoatAttack.Fishing
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));go.layer=5; go.transform.SetParent(_paper,false);
             var rect = go.GetComponent<RectTransform>(); rect.anchorMin = rect.anchorMax = new Vector2(0,1); rect.pivot = new Vector2(0,1);
             rect.anchoredPosition = position; rect.sizeDelta = size;
-            var text = go.GetComponent<Text>(); text.font = FishingUITheme.Heading ?? FishingUIFont.Font; text.fontSize = font;text.lineSpacing=1.15f;
+            var text = go.GetComponent<Text>(); text.font = FishingUITheme.Heading ?? FishingUIFont.Font; text.fontSize = font;text.lineSpacing=1f; // Noto Serif SC already carries ~1.44em line height
             text.color = new Color(.23f,.29f,.20f); text.alignment = alignment; text.raycastTarget = false;text.material=FishingUITheme.WorldMaterial;
             text.horizontalOverflow = HorizontalWrapMode.Wrap; text.verticalOverflow = VerticalWrapMode.Truncate; return text;
         }

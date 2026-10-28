@@ -13,7 +13,7 @@ namespace BoatAttack.Fishing
         {
             _c=c;
             _smokeMaterial=new Material(Resources.Load<Shader>("FishingSmoke")){name="Warm coastal cooking smoke"};
-            _emberMaterial=new Material(Resources.Load<Shader>("FishingSpray")){name="Tiny charcoal embers"};
+            _emberMaterial=new Material(Resources.Load<Shader>("FishingSpray")){name="Tiny charcoal embers"};_emberMaterial.SetFloat("_Round",2);
             _smoke=Emitter("Soft curling grill smoke",_smokeMaterial,64,new Vector3(0,1.05f,0));
             var main=_smoke.main;main.startLifetime=new ParticleSystem.MinMaxCurve(2.4f,3.8f);main.startSize=new ParticleSystem.MinMaxCurve(.14f,.23f);
             main.startSpeed=.15f;main.startColor=new Color(.86f,.83f,.75f,.42f);main.startRotation=new ParticleSystem.MinMaxCurve(-Mathf.PI,Mathf.PI);

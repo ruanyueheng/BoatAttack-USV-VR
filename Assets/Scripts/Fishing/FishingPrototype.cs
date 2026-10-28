@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.43.0";
+        public const string Version = "0.44.0";
         public FishingHandGames HandGames { get; private set; }
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
@@ -126,7 +126,7 @@ namespace BoatAttack.Fishing
             _previousTargetFrameRate=Application.targetFrameRate;
             _xrActive=UnityEngine.XR.XRSettings.isDeviceActive;Application.targetFrameRate=_xrActive?-1:60;
             ReadAcceptanceOptions();
-            Automated = Application.isBatchMode || HasArgument("-fishing-field-capture") || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || HasArgument(FishingPerformanceVoyage.EnableFlag) || HasArgument(FishingFeedbackCapture.EnableFlag) || HasArgument(FishingStoryCapture.EnableFlag) || HasArgument(FishingFrameProbe.EnableFlag) || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
+            Automated = Application.isBatchMode || HasArgument("-fishing-field-capture") || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || HasArgument(FishingPerformanceVoyage.EnableFlag) || HasArgument(FishingFeedbackCapture.EnableFlag) || HasArgument(FishingUICapture.EnableFlag) || HasArgument(FishingStoryCapture.EnableFlag) || HasArgument(FishingFrameProbe.EnableFlag) || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
             SavePath = AcceptanceOptions != null ? AcceptanceOptions.ProfilePath(Application.temporaryCachePath, false)
                 : Path.Combine(Automated ? Application.temporaryCachePath : Application.persistentDataPath,
                 Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v13.json");
@@ -187,7 +187,7 @@ namespace BoatAttack.Fishing
             RifleHunting=gameObject.AddComponent<FishingRifleHunting>();RifleHunting.Build(this);
             Effects=gameObject.AddComponent<FishingEffects>();Effects.Controller=this;
             WorkshopWorld=gameObject.AddComponent<FishingWorkshopWorld>();WorkshopWorld.Build(this);
-            XRSeat=gameObject.AddComponent<FishingXRSeat>();XRSeat.Build(this);
+            XRSeat=gameObject.AddComponent<FishingXRSeat>();XRSeat.Build(this);XRComfort=gameObject.AddComponent<FishingXRComfort>();XRComfort.Build(this);gameObject.AddComponent<FishingXRHints>().Build(this);gameObject.AddComponent<FishingXRGrab>().Build(this);
             CatchRig=gameObject.AddComponent<FishingCatchRig>();CatchRig.Build(this);
             DockConsole=gameObject.AddComponent<FishingDockConsole>();DockConsole.Build(this);
             XRNotebook=gameObject.AddComponent<FishingXRNotebook>();XRNotebook.Build(this);
@@ -217,6 +217,8 @@ namespace BoatAttack.Fishing
             _initialized=true;
             InitializeSettings();
             BuildVoyageWorld();
+            BuildKeeperWorld(); // V044 守灯值夜 + 退潮礁石小路
+            BuildLife(); // V044 相机图鉴/掌心地图/节日
             HomeEcology=gameObject.AddComponent<FishingHomeEcologyWorld>();HomeEcology.Build(this);
             Combat=gameObject.AddComponent<FishingCombatWorld>();Combat.Build(this);
             ActionAudio=gameObject.AddComponent<FishingActionAudio>();ActionAudio.Build(this);
@@ -227,6 +229,7 @@ namespace BoatAttack.Fishing
             if(AcceptanceOptions != null) { Acceptance=gameObject.AddComponent<FishingAcceptance>(); Acceptance.Controller=this; }
             else if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
             if(HasArgument(FishingFeedbackCapture.EnableFlag))gameObject.AddComponent<FishingFeedbackCapture>().Begin(this);
+            if(HasArgument(FishingUICapture.EnableFlag))gameObject.AddComponent<FishingUICapture>().Begin(this);
             Debug.Log("[FISHING] Prototype v"+Version+" initialized. Procedural and Hunyuan fish; desktop/XR input.");
         }
 
@@ -249,6 +252,7 @@ namespace BoatAttack.Fishing
             if(TickHomeChart(k)){Shore.Tick(false);AnimateEquipment();return;}
             if(TickGuideOpening(k,focused)){Shore.Tick(false);AnimateEquipment();return;}
             if(TickStoryInput(k,focused,xr)){Shore.Tick(false);AnimateEquipment();return;}
+            if(Life.Tick(k,m,focused,xr)){Shore.Tick(false);AnimateEquipment();return;}
             if(!Anchored || HasPendingCatch)CastMotion.Reset();
             else if(Paused || !focused)CastMotion.CancelPreparation();
             else if(Acceptance==null || !Acceptance.FreezeScenario)CastMotion.Tick(Time.deltaTime);
@@ -350,7 +354,8 @@ namespace BoatAttack.Fishing
                 {
                     if(Session.Phase==CatchPhase.Bite)
                     {
-                        WorldAudio?.Play("FishBite",_bobber.transform.position,.55f);
+                        WorldAudio?.Play("FishBite",_bobber.transform.position,.55f);WorldAudio?.Play("BitePing",_bobber.transform.position,.6f);
+                        if(_xrActive)Hands?.BiteHaptic();
                         bool legend=Session.Species.Legendary;
                         bool special=legend || Session.Rare || FishingSpecies.SizePermille(Session.Kind,Session.Grams)>=850;
                         _feedback.PlayOneShot(special?_legendTone:_biteTone);
@@ -508,6 +513,7 @@ namespace BoatAttack.Fishing
                 if(!hadComponent && Career.Expedition.Has(FishingExpedition.ComponentFound))Hands.PresentPickup();
                 return;
             }
+            if(!Anchored && SeaMarket!=null && SeaMarket.TryInteract())return; // V044 海上集市船：注视货品按 E / A 交易
             UpdateNearestSpot();
             if(Anchored){if(Session.Phase==CatchPhase.Landing)Scoop();return;}
             if(AtHarbor){int voyage=Islands.CompleteAtHarbor();int survey=ClaimShoreRewards();if(Career.OrderReady)DeliverOrder();else if((survey==0 && voyage==0) || Career.SaleValue>0)Sell();return;}
@@ -529,6 +535,7 @@ namespace BoatAttack.Fishing
                 && (ForceLegend || FishingSurvey.LegendCoordinates(Career) || UnityEngine.Random.value<LegendRules.StrikeChance);
             bool rare=!legend && UnityEngine.Random.value<Mathf.Clamp01(FishingVoyage.RareChance(Bait)+BayClimate.RareBonus(weather,kind));
             if(legend)kind=FishKind.Sailfish;
+            SeaEvents?.AdjustCatch(Spot,ref kind,ref rare,legend); // V044 海上事件：鱼群沸腾/夜光海
             // Two uniform rolls: average fish are common and record-sized fish stay rare.
             float size=(UnityEngine.Random.value+UnityEngine.Random.value)*0.5f;
             bool cast=Session.Cast(kind,rare,Career.LineLevel,Guid.NewGuid().ToString("N"),Bait,weather,size,Career.ReelLevel);
@@ -563,7 +570,7 @@ namespace BoatAttack.Fishing
             int sold=Career.Sell();
             if(sold>0)
             {
-                Save();RefreshHold();_feedback.PlayOneShot(_successTone);
+                Save();RefreshHold();_feedback.PlayOneShot(_successTone);WorldAudio?.Play("CoinGain",ExplorerPosition,.6f);
                 Notice("出售成功 +"+sold+" 金币"+(reserved>0?"，已为委托保留 "+reserved+" 条鱼（X 可全部出售）。":"！金币可在沙滩钓具店或港口购买装备。"),7f);
             }
             else Notice(reserved>0?"鱼货都在为委托保留。凑齐后按 E 交付，或按 X 全部出售。":"鱼箱还是空的。前往黄色渔区捕捞，带回这里出售。");
@@ -573,7 +580,7 @@ namespace BoatAttack.Fishing
         {
             if(!AtHarbor || Paused){Notice("请先回到青色港口再出售。");return 0;}
             int sold=Career.SellAll();
-            if(sold>0){Save();RefreshHold();_feedback.PlayOneShot(_successTone);Notice("全部出售 +"+sold+" 金币。",6f);}
+            if(sold>0){Save();RefreshHold();_feedback.PlayOneShot(_successTone);WorldAudio?.Play("CoinGain",ExplorerPosition,.6f);Notice("全部出售 +"+sold+" 金币。",6f);}
             else Notice("鱼箱还是空的。");
             return sold;
         }
@@ -587,7 +594,7 @@ namespace BoatAttack.Fishing
             bool ok=Career.Upgrade(track);
             if(ok)
             {
-                Fleet.Refresh();Save();if(track==UpgradeTrack.Hold)RefreshHold();ActionAudio?.Detail("ShopPurchase",ExplorerPosition+Vector3.up*.7f);
+                Fleet.Refresh();Save();if(track==UpgradeTrack.Hold)RefreshHold();ActionAudio?.Detail("ShopPurchase",ExplorerPosition+Vector3.up*.7f);Effects?.Celebrate(ExplorerPosition+Vector3.up*.3f);WorldAudio?.Play("RareShimmer",ExplorerPosition+Vector3.up*.7f,.4f);
                 int level=Career.Level(track);
                 if(ShopOpen)Hands.ReachGesture(Shore.Character.HandReferencePosition+Shore.Actor.forward*.28f);
                 Notice(FishingText.UpgradeName(track)+" 升至 Lv."+level+" · "+FishingText.UpgradeEffect(track,level)+" · 花费 "+cost+" 金币，余额 "+Career.Coins,7f);
@@ -656,6 +663,7 @@ namespace BoatAttack.Fishing
             if(InventoryOpen)return;
             if(Paused && !JournalOpen)return;
             JournalOpen=!JournalOpen;if(!JournalOpen){ReadingFieldGuide=false;GuideOpenAmount=0;}TogglePause();
+            WorldAudio?.Play(JournalOpen?"BookOpen":"BookClose",ExplorerPosition,.5f);
         }
         public void ToggleComfort()
         {
@@ -704,8 +712,8 @@ namespace BoatAttack.Fishing
         }
         public void CommitExpedition(string message) { Save();Notice(message,9f); }
         internal void Save() => SaveProgress();
-        public void Notice(string text,float seconds=5f,bool catchNotice=false){Message=text;MessageIsCatch=catchNotice;_messageUntil=Time.unscaledTime+seconds;}
-        public string VisibleMessage=>Time.unscaledTime<_messageUntil?Message:string.Empty;
+        public void Notice(string text,float seconds=5f,bool catchNotice=false){if(text!=Message && !string.IsNullOrEmpty(text))WorldAudio?.Play("UINotify",ExplorerPosition,.25f);Message=text;MessageIsCatch=catchNotice;_messageUntil=Time.unscaledTime+seconds;}
+        public string VisibleMessage=>Time.unscaledTime<_messageUntil?FishingXRText.Adapt(Message):string.Empty;
         public static float FlatDistance(Vector3 a,Vector3 b)=>Vector2.Distance(new Vector2(a.x,a.z),new Vector2(b.x,b.z));
         public static bool HasArgument(string arg)=>Array.IndexOf(Environment.GetCommandLineArgs(),arg)>=0;
 
@@ -717,6 +725,10 @@ namespace BoatAttack.Fishing
                     && wall.transform.parent.parent!=null && wall.transform.parent.parent.name=="Logic")wall.enabled=false;
             // Race buoys are particle impostors with no collision; fishing has its own physical markers.
             foreach(var raceBuoys in FindObjectsOfType<BuoyManager>())raceBuoys.gameObject.SetActive(false);
+            // Race-level leftovers read as floating junk on voyages: course arrow rafts, windsurfers, paraglider and blimp.
+            foreach(var t in FindObjectsOfType<Transform>(true))
+                if(t.name.StartsWith("Props_ArrowSign_Dynamic") || t.name.StartsWith("Windsurfer") || t.name.StartsWith("Props_Paraglider") || t.name.StartsWith("Geo_Props_Blimp"))
+                    t.gameObject.SetActive(false);
             for(int i=0;i<fishingSpots.Length;i++)
             {
                 FishingArt.Ring("Fishing area "+i,transform,new Vector3(fishingSpots[i].x,0.22f,fishingSpots[i].z),9f,orange);

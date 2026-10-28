@@ -41,7 +41,7 @@ namespace BoatAttack.Fishing
         }
 
         private bool EnvironmentInside => _c != null && ((_c.Home != null && _c.Home.Inside)
-            || (_c.TackleShop != null && _c.TackleShop.Inside));
+            || (_c.TackleShop != null && _c.TackleShop.Inside) || (_c.Weather != null && _c.Weather.Sheltered));
         private bool EnvironmentInRealm => _c != null && _c.Realms != null && _c.Realms.Inside;
 
         partial void TickEnvironment(float dt)

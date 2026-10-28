@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 89a60a618e414e42a47a5948037b63ab, type: 3}
   m_Name: PICOProjectSetting
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   useContentProtect: 0
   isEyeTracking: 0
   MRSafeguard: 0
@@ -20,9 +20,9 @@ MonoBehaviour:
   highFrequencyHand: 0
   displayFrequency: 0
   contentProtectFlags: 0
-  foveationEnable: 0
+  foveationEnable: 1
   foveatedRenderingMode: 0
-  foveatedRenderingLevel: 0
+  foveatedRenderingLevel: 2
   isSubsampledEnabled: 0
   handTrackingSupportType: 0
   systemSplashScreen: {fileID: 0}

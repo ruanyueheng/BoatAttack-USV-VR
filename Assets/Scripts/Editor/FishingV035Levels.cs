@@ -56,7 +56,7 @@ namespace BoatAttack.EditorTools
             {
                 Check(c.Realms.HintLevel==0,"Puzzle entry does not reveal a solution automatically");
                 for(int hint=0;hint<3;hint++)c.Realms.RequestHint();
-                Check(c.Realms.HintLevel==3 && c.VisibleMessage.Contains("操作提示"),"Explicit repeated help progresses from environmental clue to rule and operation");
+                Check(c.Realms.HintLevel==3 && c.VisibleMessage.Contains("方向提示"),"Explicit repeated help progresses from environmental clue to rule and direction");
             }
             Check(room.Find("Echo gate")==null && room.Find("Floor")==null,"Old shared rectangular room and gate removed "+id);
             c.Weather.ApplyEnvironment();c.PresentCharacterFrame();var aim=id==0?new Vector3(-2,3,5):id==1?new Vector3(-5,3,2):id==2?new Vector3(0,.5f,3):new Vector3(0,4,10);
@@ -186,7 +186,7 @@ namespace BoatAttack.EditorTools
                 yield return null;yield return null;Check(c.RequestWorldInteraction(),"Scope can be reopened after cancellation");
                 for(int star=0;star<3;star++)
                 {
-                    r.AimTelescope(new Vector2(FishingShrineTrial.StarTargetYaw(star)-r.Trial.StarYaw,FishingShrineTrial.StarTargetPitch(star)-r.Trial.StarPitch),true,.1f);
+                    r.AimTelescope(new Vector2(r.Trial.TargetYaw(star)-r.Trial.StarYaw,r.Trial.TargetPitch(star)-r.Trial.StarPitch),true,.1f);
                     for(int j=0;j<11;j++)r.AimTelescope(Vector2.zero,true,.1f);
                     c.PresentCharacterFrame();
                     foreach(var dot in r.Room.Cast<Transform>().Where(t=>t.name.StartsWith("Star "+star+" ",StringComparison.Ordinal)))
@@ -218,13 +218,13 @@ namespace BoatAttack.EditorTools
             if(id==1){walk=Walk(c,r.Room.TransformPoint(new Vector3(-3.1f,0,19.3f)));while(walk.MoveNext())yield return null;}
             walk=Walk(c,r.Device(4).position+r.Device(4).forward*1.4f);while(walk.MoveNext())yield return null;
         }
-        private static void CaptureViews(FishingPrototype c,int id,string directory)
+        internal static void CaptureViews(FishingPrototype c,int id,string directory)
         {
             var camera=c.viewCamera;var position=camera.transform.position;var rotation=camera.transform.rotation;float fov=camera.fieldOfView;
             var room=c.Realms.Room;c.Shore.Character.SetOpticalView(true);
             try
             {
-                var eyes=new[]{new Vector3(25,23,-31),id==0?new Vector3(0,7,25):id==1?new Vector3(6,2.2f,22):id==2?new Vector3(0,4,19):new Vector3(2,5.3f,13),id==0?new Vector3(1.8f,6.6f,20):id==1?new Vector3(-7.4f,1.6f,-7):id==2?new Vector3(3.4f,3,3):new Vector3(-2.6f,5.4f,7.5f)};
+                var eyes=new[]{new Vector3(25,23,-31),id==0?new Vector3(0,7,25):id==1?new Vector3(6,2.2f,22):id==2?new Vector3(0,4,19):new Vector3(-3,6.2f,4),id==0?new Vector3(1.8f,6.6f,20):id==1?new Vector3(-7.4f,1.6f,-7):id==2?new Vector3(3.4f,3,3):new Vector3(-2.6f,5.4f,7.5f)};
                 var targets=new[]{new Vector3(0,1,4),new Vector3(0,1,-4),id==0?new Vector3(0,8.5f,23.5f):id==1?new Vector3(-6,1.6f,-5):id==2?new Vector3(4.2f,3,5):new Vector3(0,5.7f,10)};
                 for(int i=0;i<eyes.Length;i++)
                 {
@@ -241,7 +241,7 @@ namespace BoatAttack.EditorTools
             for(int i=0;i<1500 && FishingPrototype.FlatDistance(c.Shore.Position,target)>.14f && !(stopOnWindRound && c.Realms.Trial.WindRound!=round);i++)
             {
                 var delta=Vector3.ProjectOnPlane(target-c.Shore.Position,Vector3.up);c.viewCamera.transform.rotation=Quaternion.LookRotation(delta.normalized);
-                c.Shore.Move(Vector2.up,false,false,false,Mathf.Min(.05f,delta.magnitude/2.6f));yield return null;
+                c.Shore.Move(Vector2.up,false,false,c.Realms.GustImminent,Mathf.Min(.05f,delta.magnitude/2.6f));yield return null;
                 stuck=Vector3.Distance(previous,c.Shore.Position)<.003f?stuck+Time.deltaTime:0;previous=c.Shore.Position;
                 if(stuck>2)break;
             }

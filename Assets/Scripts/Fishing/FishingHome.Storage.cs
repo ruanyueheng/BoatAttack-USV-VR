@@ -15,7 +15,7 @@ namespace BoatAttack.Fishing
             var p=new Vector3(4.8f,.20f,-2.1f);
             StorageChest=FishingV019Art.Spawn("HomeChest",House,p,1.45f,0,"FishingFeedbackTools");StorageChest.name="Home keepsake storage chest";
             var palette=Resources.Load<Material>("FishingV019/MAT-V019-vertex-palette");
-            foreach(var renderer in StorageChest.GetComponentsInChildren<MeshRenderer>())renderer.sharedMaterial=palette;
+            foreach(var renderer in StorageChest.GetComponentsInChildren<MeshRenderer>())renderer.sharedMaterial=palette;FishingPaintedArt.Apply(StorageChest,"FishingFeedbackTools/HomeChest");
             foreach(var part in StorageChest.GetComponentsInChildren<Transform>())if(string.Equals(part.name,"lid",System.StringComparison.OrdinalIgnoreCase))StorageLid=part;
             if(StorageLid!=null)
             {
@@ -37,6 +37,8 @@ namespace BoatAttack.Fishing
         public bool OpenStorage()
         {
             if(!ReachInteraction(6) || _c.Paused || _c.StoryBlocksGameplay || _c.ShopBlocksGameplay || _c.HasPendingCatch)return false;
+            // World cues are muted once the inventory pauses, so the lid creak sounds before the panel opens.
+            _c.WorldAudio?.Play("ChestOpen",StorageChest.position+Vector3.up*.5f,.55f);
             if(XRSettings.isDeviceActive){_c.XRNotebook.Open(18);return true;}
             if(!_c.InventoryOpen)_c.ToggleInventory();if(!_c.InventoryOpen)return false;
             _c.GetComponent<FishingHUD>().OpenHomeStorage();return true;

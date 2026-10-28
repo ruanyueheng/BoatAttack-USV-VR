@@ -75,3 +75,9 @@ Assets/ActualImages*
 /Assets/AddressableAssetsData/Android/
 /Assets/AddressableAssetsData/Android.meta
 /ArtSource/V030/9s/
+
+# parallel validation lanes
+.lane-claim
+
+# Python bytecode from local art tooling.
+__pycache__/

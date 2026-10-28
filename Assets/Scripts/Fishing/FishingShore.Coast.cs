@@ -73,11 +73,13 @@ namespace BoatAttack.Fishing
                 if(!Ignored(hit.collider))return false;
             return true;
         }
+        private readonly System.Collections.Generic.List<Collider> _boatColliders=new System.Collections.Generic.List<Collider>();
         public float BoatEdgeDistance()
         {
             if(Controller==null || Controller.Player==null || Body==null)return float.MaxValue;
             var p=Actor.position;float best=float.MaxValue;
-            foreach(var col in Controller.Player.GetComponentsInChildren<Collider>())
+            Controller.Player.GetComponentsInChildren(_boatColliders); // HUD asks several times per frame; reuse the list.
+            foreach(var col in _boatColliders)
             {
                 if(!col.enabled || col.isTrigger || !col.gameObject.activeInHierarchy)continue;
                 // Use a point at hull mid-height, then compare horizontally: dock height and bobbing

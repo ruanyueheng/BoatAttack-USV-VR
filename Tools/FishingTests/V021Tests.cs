@@ -106,9 +106,9 @@ internal static class V021Tests
     {
         var calendar=new FishingCalendar();
         check(!FishingSpecies.InHabitat(FishKind.Mackerel,1,calendar,BayWeather.Clear) && FishingSpecies.InHabitat(FishKind.Mackerel,1,calendar,BayWeather.Rain),"V21: rain-only target cannot bite under clear skies");
-        calendar.AdvanceToHour(12);
+        calendar.AdvanceToHour(14);
         check(calendar.RisingTide && FishingSpecies.InHabitat(FishKind.Grouper,2,calendar,BayWeather.Mist),"V21: rising tide and mist bring spring grouper");
-        calendar.AdvanceToHour(18);
+        calendar.AdvanceToHour(20);
         check(!calendar.RisingTide && !FishingSpecies.InHabitat(FishKind.Grouper,2,calendar,BayWeather.Mist),"V21: falling tide removes grouper from the actual selection pool");
         bool valid=true;
         for(int area=0;area<4;area++)for(int hour=0;hour<24;hour++)for(int weather=0;weather<5;weather++)

@@ -21,12 +21,18 @@ namespace BoatAttack.Fishing
             "FruitShake", "UIConfirm", "UIBack", "UIReject", "TVSwitch", "CushionCloth", "PortalPass",
             "MechanismClick", "HandcraftRub", "SeagullCall", "AnimalRustle", "BoatSlap", "WaterFinish",
             "BoatScrapeLoop", "FurnaceLoop", "CookSizzleLoop", "RainLoop", "ForestLoop", "WreckLoop",
-            "WindCorridorLoop", "StarsLoop", "WellRopeLoop", "WaterPourLoop", "WaterSprinkleLoop", "TVLoop"
+            "WindCorridorLoop", "StarsLoop", "WellRopeLoop", "WaterPourLoop", "WaterSprinkleLoop", "TVLoop",
+            "BagOpen", "BagClose", "BookOpen", "BookClose", "CoinGain", "ChestOpen", "JumpPush",
+            "BitePing", "RareShimmer", "LineTensionLoop", "PortalEnter", "UIPage", "UINotify",
+            "StingerDiscover", "StingerTender", "StingerRelic",
+            "RealmWindStep", "RealmWindSolve", "RealmWindEcho", "RealmForestStep", "RealmForestSolve", "RealmForestEcho",
+            "RealmWreckStep", "RealmWreckSolve", "RealmWreckEcho", "RealmStarsStep", "RealmStarsSolve", "RealmStarsEcho",
+            "SeaFogHorn", "SeaWhaleSpout", "SeaGlow"
         };
         private static readonly HashSet<string> LoopKeys = new HashSet<string>(StringComparer.Ordinal)
         {
             "BoatScrapeLoop", "FurnaceLoop", "CookSizzleLoop", "RainLoop", "ForestLoop", "WreckLoop",
-            "WindCorridorLoop", "StarsLoop", "WellRopeLoop", "WaterPourLoop", "WaterSprinkleLoop", "TVLoop"
+            "WindCorridorLoop", "StarsLoop", "WellRopeLoop", "WaterPourLoop", "WaterSprinkleLoop", "TVLoop", "LineTensionLoop"
         };
         private sealed class Shot
         {
@@ -44,7 +50,7 @@ namespace BoatAttack.Fishing
 
         private FishingPrototype _c;
         private bool _built, _disposed, _focused = true, _applicationPaused;
-        private readonly Shot[] _effects = new Shot[10], _ui = new Shot[4], _ambientShots = new Shot[4];
+        private readonly Shot[] _effects = new Shot[10], _ui = new Shot[6], _ambientShots = new Shot[4];
         private readonly LoopVoice[] _loops = new LoopVoice[12];
         private readonly List<AudioSource> _sources = new List<AudioSource>();
         private readonly Dictionary<string, AudioClip> _clips = new Dictionary<string, AudioClip>(StringComparer.Ordinal);
@@ -124,13 +130,23 @@ namespace BoatAttack.Fishing
         }
         private static bool UiCue(string key) => key == "UIConfirm" || key == "UIBack" || key == "UIReject"
             || key == "StorageMove" || key == "CraftFinish" || key == "ForgeStrike" || key == "WorkbenchAssemble"
-            || key == "LanternSwitch" || key == "TVSwitch";
+            || key == "LanternSwitch" || key == "TVSwitch" || key == "BagOpen" || key == "BagClose"
+            || key == "BookOpen" || key == "BookClose" || key == "CoinGain" || key == "UIPage" || key == "UINotify"
+            || (key != null && key.StartsWith("Stinger", StringComparison.Ordinal));
         private static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
         private static bool Finite(Vector3 value) => Finite(value.x) && Finite(value.y) && Finite(value.z);
 
         /// <summary>One recorded cue, once per successful edge. Pool and cooldown bound collision/UI spam.</summary>
         public bool Play(string cue, Vector3 at, float gain = 1, FishingAudioCategory category = FishingAudioCategory.Effects)
             => PlayRecorded(cue, at, gain, category, false);
+
+        private static readonly string[] RealmThemes = { "Wind", "Forest", "Wreck", "Stars" };
+        /// <summary>Per-realm signature timbre. action: "Step" (one mechanism advances), "Solve" (trial ready), "Echo" (shrine echo restored).</summary>
+        public bool PlayRealm(int island, string action, Vector3 at, float gain = .5f)
+            => island >= 0 && island < RealmThemes.Length && Play("Realm" + RealmThemes[island] + action, at, gain);
+
+        /// <summary>Story beat phrase: "Discover", "Tender" or "Relic". 2D and allowed while a cutscene is open.</summary>
+        public bool PlayStinger(string kind) => _c != null && Play("Stinger" + kind, _c.ExplorerPosition, .8f);
 
         /// <summary>Only the actual sleep-motion contacts may sound while the rest of the world is asleep.</summary>
         public bool NotifyBedContact(Vector3 at)
@@ -146,7 +162,8 @@ namespace BoatAttack.Fishing
                 || cue == null || LoopKeys.Contains(cue)) return false;
             var clip = LoadedClip(cue); if (clip == null) return false;
             double now = Time.realtimeSinceStartupAsDouble;
-            float cooldown = ui ? .08f : cue.StartsWith("Impact", StringComparison.Ordinal) ? .28f : .18f;
+            // Notices can burst several per second; one chime per burst keeps the interface pool free for real actions.
+            float cooldown = cue == "UINotify" ? 2.5f : ui ? .08f : cue.StartsWith("Impact", StringComparison.Ordinal) ? .28f : .18f;
             if (_lastPlay.TryGetValue(cue, out double last) && now - last < cooldown) return false;
             var pool = ui ? _ui : category == FishingAudioCategory.Ambient ? _ambientShots : _effects;
             Shot voice = null;
@@ -156,7 +173,8 @@ namespace BoatAttack.Fishing
             if (voice == null) return false;
             voice.BedContact = bedContact;
             voice.Source.transform.position = at; voice.Source.clip = clip;
-            voice.Source.pitch = 1;
+            // Small per-play pitch/gain spread so repeated single-file cues do not sound machine-identical.
+            voice.Source.pitch = UnityEngine.Random.Range(.95f, 1.05f); gain *= UnityEngine.Random.Range(.9f, 1f);
             _c.SetAudioBaseVolume(voice.Source, Mathf.Clamp01(gain) * (ui ? .11f : category == FishingAudioCategory.Ambient ? .13f : .17f));
             voice.Source.Play(); _lastPlay[cue] = now; _plays[cue] = PlayCount(cue) + 1;
             return true;
@@ -213,7 +231,7 @@ namespace BoatAttack.Fishing
         {
             if (voice.Source != null)
             {
-                voice.Source.Stop(); voice.Source.clip = null;
+                voice.Source.Stop(); voice.Source.clip = null; voice.Source.pitch = 1;
                 if (_c != null) _c.SetAudioBaseVolume(voice.Source, 0);
             }
             voice.Id = voice.Cue = null; voice.Target = voice.Gain = 0; voice.MaintainedFrame = -1;

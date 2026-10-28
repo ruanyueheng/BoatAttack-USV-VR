@@ -31,7 +31,7 @@ namespace BoatAttack.Fishing
         public Vector3 Origin { get; private set; }
         public Vector3 Entry => Origin+new Vector3(0,.22f,-6.5f);
         public Vector3 WakePoint => Origin+new Vector3(-1.6f,.22f,2.5f);
-        public Vector3 Berth => new Vector3(Origin.x+3,0,Origin.z-26);
+        public Vector3 Berth => new Vector3(Origin.x,0,Origin.z-26);
         public Vector3 BoardwalkStart => new Vector3(Origin.x,1.05f,Origin.z-21);
         public Vector3 StationPosition(CraftStation kind)=>Origin+new Vector3(kind==CraftStation.Workbench?1.95f:kind==CraftStation.Furnace?3.55f:5.12f,.22f,.65f);
         public Vector3 ApproachPosition
@@ -63,6 +63,7 @@ namespace BoatAttack.Fishing
                 if(name=="HomeLand")foreach(var filter in island.GetComponentsInChildren<MeshFilter>())filter.gameObject.layer=10;
                 if(name=="HomeLandscaping")LighthouseLens=FishingRealmWorld.Marker(island,"LighthouseLens").position;
             }
+            FishingFarmWorld.Model("Lighthouse",transform,LighthouseLens-Vector3.up*10.2f,true).name="V044 painted lighthouse";
             DressGarden();
             Solid("Home floor",new Vector3(0,.10f,0),new Vector3(12,.20f,10));
             Solid("Porch floor",new Vector3(0,.10f,-6.5f),new Vector3(13,.20f,3));

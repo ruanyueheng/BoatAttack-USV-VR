@@ -30,6 +30,7 @@ namespace BoatAttack.Fishing
         private Text _feedbackText;
         private string _feedbackMessage;
         private Quaternion _feedbackYaw;
+        private bool _toastFollowing;
         private bool _guideLeftReady,_guideRightReady;
         private readonly FishingPressEdge _guideLeftTrigger=new FishingPressEdge(),_guideLeftGrip=new FishingPressEdge(),_guideRightGrip=new FishingPressEdge(),_guideBoost=new FishingPressEdge();
         public const string GuidePreference="FishingXRGuideV025";
@@ -92,20 +93,20 @@ namespace BoatAttack.Fishing
             if(IsOpen)_canvas.GetComponent<Image>().color=FishingPaperDesign.PaperTint;
             if(_mapPalette!=null){FishingUITheme.StyleMap(_mapPalette);_map.material=_mapPalette;}
             if(_c==null || _feedback==null)return;
+            if(IsOpen && !_c.Automated)FollowHead();
             if(IsOpen && !_c.Automated)_canvas.transform.localScale=Vector3.one*.00105f*Mathf.Lerp(.985f,1,Mathf.SmoothStep(0,1,(Time.unscaledTime-_pageOpenedAt)/.12f));
             var message=_c.VisibleMessage;
             bool visible=XRSettings.isDeviceActive && _c.XRSeat.Ready && Application.isFocused && !IsOpen
                 && !_c.Paused && !_c.StoryBlocksGameplay && !_c.DockConsole.Visible && !string.IsNullOrEmpty(message);
             _feedback.gameObject.SetActive(visible);if(!visible)return;
-            if(message!=_feedbackMessage)
-            {
-                _feedbackMessage=message;
-                var forward=Vector3.ProjectOnPlane(_c.viewCamera.transform.forward,Vector3.up);
-                _feedbackYaw=Quaternion.LookRotation(forward.sqrMagnitude>.1f?forward:_c.XRSeat.Origin.transform.forward,Vector3.up);
-                _feedbackText.text=message;
-            }
+            var forward=Vector3.ProjectOnPlane(_c.viewCamera.transform.forward,Vector3.up);
+            var gaze=Quaternion.LookRotation(forward.sqrMagnitude>.1f?forward:_c.XRSeat.Origin.transform.forward,Vector3.up);
+            if(message!=_feedbackMessage){_feedbackMessage=message;_feedbackYaw=gaze;_feedbackText.text=message;}
+            // Lazy follow: the toast stays put until the gaze leaves it by 35°, then eases back in front.
+            if(Quaternion.Angle(_feedbackYaw,gaze)>35)_toastFollowing=true;
+            if(_toastFollowing){_feedbackYaw=Quaternion.Slerp(_feedbackYaw,gaze,1-Mathf.Exp(-3*Time.unscaledDeltaTime));if(Quaternion.Angle(_feedbackYaw,gaze)<3)_toastFollowing=false;}
             _feedback.transform.SetPositionAndRotation(_c.XRSeat.Origin.transform.position+Vector3.up*(FishingXRSeat.EyeHeight-.45f)
-                +_feedbackYaw*Vector3.forward*1.8f,_feedbackYaw);
+                +_feedbackYaw*Vector3.forward*ClearDistance(_c.viewCamera.transform.position,_feedbackYaw*Vector3.forward,1.4f),_feedbackYaw);
         }
         private static Text Label(Transform parent,Vector2 position,Vector2 size,int fontSize)
         {
@@ -116,6 +117,29 @@ namespace BoatAttack.Fishing
         private static RectTransform MapMarker(Transform parent,string mark,Color color)
         {var text=Label(parent,Vector2.zero,new Vector2(36,36),18);text.text=mark;text.color=color;text.alignment=TextAnchor.MiddleCenter;var shadow=text.gameObject.AddComponent<Shadow>();shadow.effectColor=Color.black;shadow.effectDistance=new Vector2(1,-1);return text.rectTransform;}
         public void BeginGuide(){Open(11);}
+        private bool _following;
+        private readonly Collider[] _pokeHits=new Collider[8];
+        private int _pokedIndex=-1;private float _pokeReady;
+        /// <summary>1.1 m ahead, pulled in (never under 0.8 m) when scenery is closer so the page never sinks into walls.</summary>
+        private static Vector3 NotebookPose(Transform eye,Vector3 forward)
+        {
+            var dir=(forward-Vector3.up*.09f).normalized;float distance=1.1f; // 1.1 m keeps 18–22px text at ≥1° visual angle
+            if(Physics.SphereCast(eye.position,.12f,dir,out var hit,1.25f,~0,QueryTriggerInteraction.Ignore))distance=Mathf.Clamp(hit.distance-.12f,.8f,1.1f);
+            return eye.position+dir*distance;
+        }
+        /// <summary>Lazy follow: only once the page leaves a 40° cone, then ease back in front over ~0.4 s (no per-frame head lock).</summary>
+        private void FollowHead()
+        {
+            var eye=_c.viewCamera.transform;var forward=Vector3.ProjectOnPlane(eye.forward,Vector3.up);if(forward.sqrMagnitude<.1f)return;forward.Normalize();
+            var toPage=Vector3.ProjectOnPlane(_canvas.transform.position-eye.position,Vector3.up);
+            float angle=Vector3.Angle(forward,toPage),distance=toPage.magnitude;
+            if(!_following && (angle>40 || distance>1.7f || distance<.6f))_following=true;
+            if(!_following)return;
+            var target=NotebookPose(eye,forward);var rotation=Quaternion.LookRotation(forward,Vector3.up);
+            float k=1-Mathf.Exp(-Time.unscaledDeltaTime*7);
+            _canvas.transform.SetPositionAndRotation(Vector3.Lerp(_canvas.transform.position,target,k),Quaternion.Slerp(_canvas.transform.rotation,rotation,k));
+            if(Vector3.Distance(_canvas.transform.position,target)<.02f && angle<3)_following=false;
+        }
         public void Open(int page=0)
         {
             if(!XRSettings.isDeviceActive)return;
@@ -124,7 +148,7 @@ namespace BoatAttack.Fishing
             {
                 var eye=_c.viewCamera.transform;var forward=Vector3.ProjectOnPlane(eye.forward,Vector3.up).normalized;
                 if(forward.sqrMagnitude<.1f)forward=_c.Shore.Actor.forward;
-                _canvas.transform.SetPositionAndRotation(eye.position+forward*1.3f-Vector3.up*.12f,Quaternion.LookRotation(forward,Vector3.up));
+                _canvas.transform.SetPositionAndRotation(NotebookPose(eye,forward),Quaternion.LookRotation(forward,Vector3.up));_following=false;
                 _c.Hands.ResetInteraction();_c.FieldWorld.ClearToolPresentation();_trigger.Reset();
             }
             IsOpen=true;_page=page;_offset=0;
@@ -142,7 +166,7 @@ namespace BoatAttack.Fishing
         private void Set(int index,string label,Action action)
         {
             _icons[index].gameObject.SetActive(false);_labels[index].rectTransform.anchoredPosition=new Vector2(10,-10);_labels[index].rectTransform.sizeDelta=new Vector2(150,94);_labels[index].fontSize=21;
-            _labels[index].text=label;_pageContent[index]=label;_actions[index]=action;
+            label=FishingXRText.Adapt(label);_labels[index].text=label;_pageContent[index]=label;_actions[index]=action;
             if(_homeDecor==null)_plates[index].color=action==null?new Color(.09f,.13f,.14f):new Color(.12f,.27f,.25f);
         }
         private void Photo(int index,Texture2D texture)
@@ -193,7 +217,7 @@ namespace BoatAttack.Fishing
             else if(_page==3)
             {
                 _status.text=day.DateLabel+"   "+day.TimeLabel+" · "+day.TideName+"\n每季 28 天 · 每日 15 分钟\n今日："+BayClimate.Name(_c.Weather.Climate.Current)+
-                    "\n明日："+BayClimate.Name(FishingCalendar.Forecast(day.Day+1))+"\n夜间提灯照路 · 星灯鱼仅在夜间出现\n打开手册时日历和熔炉暂停";
+                    "\n明日："+BayClimate.Name(FishingCalendar.Forecast(day.Day+1))+"\n打开手册时日历和熔炉暂停"+TideStatus();
                 Set(0,"休息至清晨",_c.CanRest?(Action)(()=>{Close();_c.RestUntilMorning();}):null);
                 Set(1,"观察附近动物",()=>{Close();if(_c.Ashore)_c.FieldWorld.Observe();else _c.Ecology.Observe();});
                 Set(2,"图鉴："+FishingSpecies.Count+" 种生物\n实物照片 / 栖息条件",()=>Open(10));Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
@@ -231,7 +255,7 @@ namespace BoatAttack.Fishing
                 if(_c.Career.Backpack.Count(FieldItem.VoyageCompass)>0 && !_c.Career.PirateKing)Set(4,"白帆拱湾\n前往宝藏航点",()=>{Close();_c.SelectNavigation(_c.HomeNavigationIndex+1);});
                 else Set(4,"群岛来信 / 航标",()=>Open(6));
                 Set(5,"附近互动 / 补领遗物",()=>{Close();_c.RequestWorldInteraction();});
-                Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
+                Set(6,"信件 / 漂流瓶",()=>Open(LettersPage));Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
             }
             else if(_page==5)
             {
@@ -293,7 +317,7 @@ namespace BoatAttack.Fishing
             {
                 _status.text="海湾设置 / 手柄教学\n"+(_c.Paused?"世界已暂停 · A 或下方按钮继续":"手册打开时停止操作和世界计时")+"\nVR 使用世界空间中文界面\n与电脑版共用背包、任务、图鉴和制作\n"+_c.VisibleMessage;
                 Set(0,_c.Paused?"继续游戏":"暂停游戏",()=>{_c.TogglePause();Refresh();});
-                Set(1,"舒适航行\n"+(_c.ComfortMode?"开启":"标准动力"),()=>{_c.ToggleComfort();Refresh();});
+                Set(1,"VR 舒适\n转向 / 移动 / 视野收窄",()=>Open(22));
                 Set(2,"天气："+BayClimate.Name(_c.Weather.Climate.Current)+"\n点击切换",()=>{_c.Weather.CyclePreview();Refresh();});
                 Set(3,_c.Weather.Climate.Automatic?"天气循环：自动\n点击固定":"天气循环：固定\n点击自动",()=>{if(_c.Weather.Climate.Automatic)_c.Weather.Climate.Hold();else _c.Weather.Climate.ResumeCycle();Refresh();});
                 Set(4,"声音混音\nBGM / 音效 / 环境",()=>Open(20));
@@ -316,8 +340,8 @@ namespace BoatAttack.Fishing
             else if(_page==16)
             {
                 _status.text="序章 / 航行帮助\n序章使用固定影院屏，保留自由转头\n救援保留金币、背包与鱼箱\nB 随时返回手册\n"+_c.VisibleMessage;
-                Set(0,"重看序章 CG",_c.Prologue.CanBegin?(Action)(()=>{Close();_c.Prologue.Begin();}):null);
-                Set(1,"完整手柄教学",BeginGuide);
+                Set(0,"重看剧情 · "+FishingPrologue.Name(_c.Prologue.Latest),_c.Prologue.CanBegin?(Action)(()=>{Close();_c.Prologue.Begin(_c.Prologue.Latest);}):null);
+                Set(1,"操作说明\n各情境按键表",()=>Open(23));
                 Set(2,"救援返回港口",()=>{Close();if(_c.Paused)_c.TogglePause();_c.ReturnToHarbor();});
                 Set(3,"导航回潮渔屋",()=>{_c.SelectNavigation(_c.HomeNavigationIndex);Close();});
                 Set(4,"雨量特效\n"+(_c.Weather.ReducedEffects?"精简":"标准"),()=>{_c.Weather.ToggleReducedEffects();Refresh();});
@@ -328,6 +352,9 @@ namespace BoatAttack.Fishing
             else if(_page==17)RefreshBarbecuePage();
             else if(_page==18 || _page==19)RefreshHomeStorage();
             else if(_page==20)RefreshAudioPage();
+            else if(_page==22)RefreshComfortPage();
+            else if(_page==23)RefreshControlsPage();
+            else if(_page==LettersPage)RefreshLettersPage();
             else
             {
                 _status.text="二级载重 / 动力 / 操控专精三选一\n其他两项可升至一级；旧升级保留\n金币 "+_c.Career.Coins;
@@ -355,7 +382,7 @@ namespace BoatAttack.Fishing
         private void RefreshGuide()
         {
             _status.fontSize=21;_status.text="手柄教学 · "+(_guideLesson+1)+" / 3\n右手 A/B · 左手 X/Y · 扳机在食指处\n握把在手柄侧面，由中指按住\n"+(_guideLesson<2?"安全练习：按下 / 推动下方五项操作\n已完成 "+PracticeCount(_guidePracticed)+" / 5 · 此时不操作游戏":"操作说明已读完，完成后返回海湾")+"\nB 可关闭，设置页可重新开始";
-            for(int i=0;i<6;i++){Set(i,GuideCards[_guideLesson][i],null);_labels[i].fontSize=17;}
+            for(int i=0;i<6;i++){Set(i,GuideCards[_guideLesson][i],null);_labels[i].fontSize=18;}
             if(_guideLesson<2)
             {
                 int[] cards=_guideLesson==0?new[]{0,2,3,4,5}:new[]{0,1,2,3,4};
@@ -415,6 +442,8 @@ namespace BoatAttack.Fishing
             if(!tracked){ResetInput();_ray.enabled=false;if(!allow)Close();return true;}
             var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);var left=InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
             right.TryGetFeatureValue(CommonUsages.secondaryButton,out bool menu);right.TryGetFeatureValue(CommonUsages.primaryButton,out bool primary);
+            // Left menu key mirrors right B so the notebook is reachable with either hand.
+            if(left.TryGetFeatureValue(CommonUsages.menuButton,out bool leftMenu))menu|=leftMenu;
             right.TryGetFeatureValue(CommonUsages.triggerButton,out bool trigger);left.TryGetFeatureValue(CommonUsages.primaryButton,out bool board);left.TryGetFeatureValue(CommonUsages.secondaryButton,out bool slot);
             right.TryGetFeatureValue(CommonUsages.primary2DAxis,out var axis);
             bool action=_primary.Step(true,primary),boardEdge=_board.Step(true,board),slotEdge=_slot.Step(true,slot),click=_trigger.Step(true,trigger);
@@ -426,6 +455,16 @@ namespace BoatAttack.Fishing
                 _ray.enabled=true;_ray.SetPosition(0,origin);_ray.SetPosition(1,origin+direction*2);
                 if(Time.unscaledTime>=_nextText){Refresh();_nextText=Time.unscaledTime+.2f;}
                 int homeHover=-1;
+                // Direct poke: the right controller tip touching a button presses it once (no ray needed).
+                var tip=origin+direction*.06f;int poked=-1;
+                int touching=Physics.OverlapSphereNonAlloc(tip,.02f,_pokeHits,1<<5,QueryTriggerInteraction.Collide);
+                for(int i=0;i<touching;i++){var b=_pokeHits[i].GetComponent<FishingNotebookButton>();if(b!=null && b.Owner==this){poked=b.Index;break;}}
+                if(poked>=0 && poked!=_pokedIndex && Time.unscaledTime>=_pokeReady)
+                {
+                    _pokeReady=Time.unscaledTime+.35f;right.SendHapticImpulse(0,.25f,.04f);
+                    if(_page==0 && _actions[poked]!=null)_homeSelected=poked;_actions[poked]?.Invoke();if(IsOpen)Refresh();
+                }
+                _pokedIndex=poked;if(!IsOpen)return true;
                 if(Physics.Raycast(origin,direction,out var hit,3,1<<5,QueryTriggerInteraction.Collide))
                 {
                     var button=hit.collider.GetComponent<FishingNotebookButton>();
@@ -445,7 +484,8 @@ namespace BoatAttack.Fishing
             if(_c.Paused){if(action)_c.TogglePause();return true;}
             if(_c.Expedition.Aligning){_c.Expedition.Dial.Rotate(axis.x*Time.unscaledDeltaTime*45);if(action)_c.Expedition.Confirm();return true;}
             if(Mathf.Abs(axis.x)<.25f)_turnReady=true;
-            if(_c.Ashore && _turnReady && Mathf.Abs(axis.x)>.7f){_c.XRSeat.SnapTurn(Mathf.Sign(axis.x)*30);_turnReady=false;}
+            if(_c.Ashore && FishingXRComfort.TurnMode==FishingXRComfort.Turn.Smooth){if(Mathf.Abs(axis.x)>.2f)_c.XRSeat.SnapTurn(axis.x*FishingXRComfort.SmoothTurnSpeed*Time.deltaTime);}
+            else if(_c.Ashore && _turnReady && Mathf.Abs(axis.x)>.7f){_c.XRSeat.SnapTurn(Mathf.Sign(axis.x)*FishingXRComfort.SnapDegrees);_turnReady=false;}
             if(boardEdge){if(_c.Ashore)_c.Shore.TryBoard();else _c.Shore.TryDisembark();return true;}
             if(slotEdge){_c.SelectFieldSlot((_c.Career.Backpack.Selected+1)%9);return true;}
             if(action && !_c.XRSeat.HeadBlocked)

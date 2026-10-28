@@ -131,7 +131,7 @@ namespace BoatAttack.Fishing
                 sign.transform.localPosition=new Vector3(0,1.75f,-.05f);sign.transform.localRotation=Quaternion.Euler(0,180,0);
                 var label=sign.GetComponent<TextMesh>();label.font=FishingUIFont.Font;label.fontSize=40;label.characterSize=.023f;
                 label.anchor=TextAnchor.MiddleCenter;label.alignment=TextAlignment.Center;label.color=FishingUITheme.Ink;
-                label.text=FishingRecipes.StationName(s.kind)+"\nE 制作 / 加工";
+                FishingXRText.Bind(label,FishingRecipes.StationName(s.kind)+"\nE 制作 / 加工");
                 sign.GetComponent<MeshRenderer>().sharedMaterial=FishingUIFont.Font.material;
             }
             if(s.kind==CraftStation.Forge)
