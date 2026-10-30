@@ -44,7 +44,7 @@ namespace BoatAttack.Fishing
             var panel=_canvas.GetComponent<Image>();panel.sprite=FishingPaperDesign.Surface(theme);panel.type=Image.Type.Sliced;panel.color=FishingPaperDesign.PaperTint;
             FishingUITheme.StyleHeading(_pageTitle,theme==FishingPaperTheme.Celestial?1:theme==FishingPaperTheme.Herbarium?2:theme==FishingPaperTheme.DreamSettings?4:0);
             _pageTitle.fontSize=42;
-            _pageTitle.text=_page>=0 && _page<PageTitles.Length?PageTitles[_page]:"潮汐手册";
+            _pageTitle.text=_page==34?"手部对齐":_page==35?"退出游戏":_page>=0 && _page<PageTitles.Length?PageTitles[_page]:"潮汐手册";
             _pageDate.text=_c.Career.Calendar.DateLabel+"  /  "+_c.Career.Calendar.TimeLabel;
             bool guide=_page==11;
             _pageSubtitle.text=guide?"安全练习 "+(_guideLesson+1)+" / 3  ·  "+(_guideLesson<2?PracticeCount(_guidePracticed)+" / 5 项已完成":"航行与生活") : "潮汐手册  /  回潮海";

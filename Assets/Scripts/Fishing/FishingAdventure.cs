@@ -5,8 +5,8 @@ namespace BoatAttack.Fishing
 {
     public static class FishingFleet
     {
-        public static float Power(int level) => 11f + 4f * Math.Max(0, Math.Min(2, level));
-        public static float SpeedLimit(int level) => 11f + 3f * Math.Max(0, Math.Min(2, level));
+        public static float Power(int level) => 1.3f * (11f + 4f * Math.Max(0, Math.Min(2, level)));
+        public static float SpeedLimit(int level) => 1.3f * (11f + 3f * Math.Max(0, Math.Min(2, level)));
         public static float Rudder(int level) => 1f + .22f * Math.Max(0, Math.Min(2, level));
     }
 

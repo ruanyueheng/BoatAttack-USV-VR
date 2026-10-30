@@ -7,6 +7,7 @@ namespace BoatAttack.Fishing
         internal static readonly Color SeaInk=new Color32(14,30,46,255),CreamInk=new Color32(247,235,208,255),AmberInk=new Color32(232,183,90,255);
         private Texture2D _chapterArt,_titleVeil;
         public int SettingsTab { get; set; }
+        private bool _exitConfirmation;
         private Color TitleFill=>FishingUITheme.TitleFill(Controller.Realms!=null && Controller.Realms.Inside?Controller.Realms.Island+1:0);
         private void GildedTitle(Rect r,string text,int size,Color fill,TextAnchor align=TextAnchor.UpperLeft)
         {
@@ -86,7 +87,7 @@ namespace BoatAttack.Fishing
             if(SeaButton(new Rect(120,top+508,278,48),"读取存档",false,true,26))c.OpenSaveMenu("load");
             if(SeaButton(new Rect(452,top+508,278,48),"手动保存",false,c.CanContinue,23))c.OpenSaveMenu("save");
             if(SeaButton(new Rect(120,top+570,278,48),"设置 / 声音混音",false,true,26)){SettingsTab=2;c.MenuControls=true;}
-            if(SeaButton(new Rect(120,top+632,278,48),"退出游戏",false,true,26))Application.Quit();
+            if(SeaButton(new Rect(120,top+632,278,48),"退出游戏",false,true,26))c.QuitGame();
             if(c.SaveMenuMessage.Length>0 || c.SaveWarning.Length>0)WorldLabel(new Rect(452,top+570,266,101),c.SaveWarning.Length>0?c.SaveWarning:c.SaveMenuMessage,15,AmberInk,onPaper:true);
             KeyCap(new Rect(120,_height-56,62,30),"Enter");WorldLabel(new Rect(196,_height-54,800,30),"继续 / 新建  ·  F11 显示模式  ·  自动与手动存档独立",15,CreamInk,onPaper:true);
             WorldLabel(new Rect(1190,_height-56,290,25),"海岸航记  /  v"+FishingPrototype.Version,14,AmberInk,false,TextAnchor.UpperRight);
@@ -172,7 +173,10 @@ namespace BoatAttack.Fishing
                 WorldLabel(new Rect(x,y+428,1000,58),"BGM、环境音、动作音效与角色语音可独立调整。\n设置自动保存，下次启航继续使用；已有音量偏好保留。",17,AmberInk,onPaper:true);
             }
             KeyCap(new Rect(120,r.yMax-44,62,34),"Esc");
-            if(SeaButton(new Rect(200,r.yMax-48,180,42),"返回",false,true,23)){c.MenuControls=false;c.SaveSettings();}
+            if(SeaButton(new Rect(200,r.yMax-48,180,42),"返回",false,true,23)){_exitConfirmation=false;c.MenuControls=false;c.SaveSettings();}
+            if(SeaButton(new Rect(r.xMax-250,r.yMax-48,210,42),_exitConfirmation?"确认退出游戏":"退出游戏",false,true,23))
+            {if(_exitConfirmation)c.QuitGame();else _exitConfirmation=true;}
+            if(_exitConfirmation && SeaButton(new Rect(r.xMax-470,r.yMax-48,190,42),"取消退出",false,true,23))_exitConfirmation=false;
         }
     }
 }

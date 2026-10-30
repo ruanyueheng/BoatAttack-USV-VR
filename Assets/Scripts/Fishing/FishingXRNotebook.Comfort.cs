@@ -23,6 +23,18 @@ namespace BoatAttack.Fishing
             Set(6,"校准眼高",()=>{_c.XRSeat.Recenter();Close();});
             Set(7,"操作说明\n各情境按键表",()=>Open(23));Set(8,"返回设置",()=>Open(14));
         }
+        private void RefreshHandAlignment()
+        {
+            _status.text="手部倾角对齐（自动保存）\n左手："+FishingHands.ControllerRoll(true).ToString("0")+"°\n右手："+FishingHands.ControllerRoll(false).ToString("0")+"°\n正值向左倾，负值向右倾。\n放松手腕，调整到虚拟手与现实手一致。\n校准时可收起手册观察手和持握工具。";
+            Set(0,"左手向左 +5°",()=>{FishingHands.SetControllerRoll(true,FishingHands.ControllerRoll(true)+5);Refresh();});
+            Set(1,"左手向右 -5°",()=>{FishingHands.SetControllerRoll(true,FishingHands.ControllerRoll(true)-5);Refresh();});
+            Set(2,"右手向左 +5°",()=>{FishingHands.SetControllerRoll(false,FishingHands.ControllerRoll(false)+5);Refresh();});
+            Set(3,"右手向右 -5°",()=>{FishingHands.SetControllerRoll(false,FishingHands.ControllerRoll(false)-5);Refresh();});
+            Set(4,"恢复默认 +30°",()=>{FishingHands.SetControllerRoll(true,30);FishingHands.SetControllerRoll(false,30);Refresh();});
+            Set(5,"清零倾角补偿",()=>{FishingHands.SetControllerRoll(true,0);FishingHands.SetControllerRoll(false,0);Refresh();});
+            Set(6,"校准眼高",()=>{_c.XRSeat.Recenter();Close();});
+            Set(7,"返回设置",()=>Open(14));Set(8,"收起手册",Close);
+        }
         private void RefreshControlsPage()
         {
             int count=FishingXRHints.ContextNames.Length;
