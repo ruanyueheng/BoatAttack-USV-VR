@@ -58,6 +58,7 @@ namespace BoatAttack.Fishing
             if(PauseOption(ref oy,"声音混音",true)){SettingsTab=2;c.MenuControls=true;}
             if(PauseOption(ref oy,"手动保存",c.CanContinue))c.OpenSaveMenu("save");
             if(PauseOption(ref oy,"读取存档",true))c.OpenSaveMenu("load");
+            if(PauseOption(ref oy,"快速回家",true))c.ReturnHome();
             if(PauseOption(ref oy,"返回开始菜单",!c.HasPendingCatch))c.OpenStartMenu();
             if(PauseOption(ref oy,"退出游戏",true))Application.Quit();
             var r=new Rect(640,top,880,560);MenuSheet(r,false);

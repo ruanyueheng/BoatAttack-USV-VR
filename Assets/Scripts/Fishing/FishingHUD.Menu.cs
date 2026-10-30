@@ -4,7 +4,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingHUD
     {
-        private static readonly Color SeaInk=new Color32(14,30,46,255),CreamInk=new Color32(247,235,208,255),AmberInk=new Color32(232,183,90,255);
+        internal static readonly Color SeaInk=new Color32(14,30,46,255),CreamInk=new Color32(247,235,208,255),AmberInk=new Color32(232,183,90,255);
         private Texture2D _chapterArt,_titleVeil;
         public int SettingsTab { get; set; }
         private Color TitleFill=>FishingUITheme.TitleFill(Controller.Realms!=null && Controller.Realms.Inside?Controller.Realms.Island+1:0);
@@ -89,7 +89,7 @@ namespace BoatAttack.Fishing
             if(SeaButton(new Rect(120,top+632,278,48),"退出游戏",false,true,26))Application.Quit();
             if(c.SaveMenuMessage.Length>0 || c.SaveWarning.Length>0)WorldLabel(new Rect(452,top+570,266,101),c.SaveWarning.Length>0?c.SaveWarning:c.SaveMenuMessage,15,AmberInk,onPaper:true);
             KeyCap(new Rect(120,_height-56,62,30),"Enter");WorldLabel(new Rect(196,_height-54,800,30),"继续 / 新建  ·  F11 显示模式  ·  自动与手动存档独立",15,CreamInk,onPaper:true);
-            WorldLabel(new Rect(1190,_height-56,290,25),"第 37 版  /  v"+FishingPrototype.Version,14,AmberInk,false,TextAnchor.UpperRight);
+            WorldLabel(new Rect(1190,_height-56,290,25),"海岸航记  /  v"+FishingPrototype.Version,14,AmberInk,false,TextAnchor.UpperRight);
         }
         private void KeyCap(Rect r,string key)
         {

@@ -205,11 +205,15 @@ namespace BoatAttack.Fishing
             {
                 if(!_c.Hands.TryControllerPalm(false,out var palm,out var palmFrame)){ClearToolPresentation();_held.gameObject.SetActive(false);return;}
                 _held.rotation=palmFrame*Quaternion.Inverse(rightRotation);
+                var controller=_c.Hands.ControllerGripRotation(palmFrame);
+                if(pick)_held.rotation=controller*Quaternion.Euler(90,0,0); // Imported work-tool shafts use +Y; the tracked handle points along +Z.
+                else if(item==FieldItem.Binoculars || item==FieldItem.HuntingSpear || item==FieldItem.Lantern || facility)_held.rotation=controller;
+                rightRotation=Quaternion.Inverse(_held.rotation)*palmFrame;
                 _held.position=palm-_held.rotation*(rightPalm*scale);
                 twoHands=twoHands && _c.Hands.Left.Visible && Vector3.Distance(_c.Hands.Left.Palm.position,_held.TransformPoint(leftPalm))<.18f;
             }
             if(!tracked && !_c.Hands.FitToolPose(_held,leftPalm,rightPalm,leftRotation,rightRotation,twoHands,true)){_held.gameObject.SetActive(false);PresentedItem=FieldItem.Empty;return;}
-            if(_c.ActionUsesHeldTool && pick)
+            if(_c.ActionUsesHeldTool && pick && !tracked)
             {
                 // 镐尖与接触许可使用同一个目标，不能先夹短手臂再让远处矿石扣减。
                 var contactRotation=_c.ActionToolRotation;

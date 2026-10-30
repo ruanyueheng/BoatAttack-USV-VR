@@ -246,7 +246,12 @@ half4 WaterFragment(WaterVertexOutput IN) : SV_Target
 
 	// Lighting
 	Light mainLight = GetMainLight(TransformWorldToShadowCoord(IN.posWS));
+#if defined(_WATER_NO_SCENE_TEXTURES)
+    // Mobile already samples the main shadow; avoid four more volumetric shadow taps per water pixel.
+    half shadow = mainLight.shadowAttenuation;
+#else
     half shadow = SoftShadows(screenUV, IN.posWS, IN.viewDir.xyz, depth.x);
+#endif
     half3 GI = SampleSH(IN.normal);
 
     // SSS

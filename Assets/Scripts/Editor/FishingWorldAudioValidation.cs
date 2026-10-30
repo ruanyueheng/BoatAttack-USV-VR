@@ -30,7 +30,7 @@ namespace BoatAttack.EditorTools
             "StingerDiscover", "StingerTender", "StingerRelic",
             "RealmWindStep", "RealmWindSolve", "RealmWindEcho", "RealmForestStep", "RealmForestSolve", "RealmForestEcho",
             "RealmWreckStep", "RealmWreckSolve", "RealmWreckEcho", "RealmStarsStep", "RealmStarsSolve", "RealmStarsEcho",
-            "SeaFogHorn", "SeaWhaleSpout", "SeaGlow"
+            "SeaFogHorn", "SeaWhaleSpout", "SeaGlow", "SeaMarketTrade", "SeaMarketLoop"
         };
         public static void Run() => FishingV011Validation.Begin("WORLD-AUDIO");
         private static void Check(bool ok, string label)
@@ -72,6 +72,7 @@ namespace BoatAttack.EditorTools
                 ValidateWaterSamplerLifetime();
                 foreach (var step in ValidateRequests(c)) yield return step;
                 ValidateSignatureCues(c); foreach (var step in WaitForUiIdle(c)) yield return step;
+                foreach (var step in ValidateRealmPlayback(c)) yield return step;
                 foreach (var step in ValidateStorageAndCrafting(c)) yield return step;
                 foreach (var step in ValidateEnvironment(c)) yield return step;
                 foreach (var step in ValidateFarmWater(c)) yield return step;
@@ -114,8 +115,8 @@ namespace BoatAttack.EditorTools
                 Check(peak > .001f && peak < .99f && Math.Sqrt(energy / samples.Length) > .0001,
                     "Decoded recording contains finite non-silent sound with headroom: " + key);
             }
-            Check(distinct.Count == 76 && FishingWorldAudio.Clip("../Music/Home") == null && FishingWorldAudio.Clip(null) == null,
-                "All 44 generated originals, the edited water-finish clip seven v0.44 Kenney CC0 cues and 24 v0.44 designed cues exist; unknown paths cannot load arbitrary resources");
+            Check(distinct.Count == 78 && FishingWorldAudio.Clip("../Music/Home") == null && FishingWorldAudio.Clip(null) == null,
+                "All original, edited, licensed, designed and market cues exist; unknown paths cannot load arbitrary resources");
         }
 
         private sealed class WaterSampleSnapshot
@@ -346,6 +347,34 @@ namespace BoatAttack.EditorTools
             Check(!a.PlayRealm(4, "Step", at) && !a.PlayRealm(-1, "Step", at) && !a.PlayRealm(0, "Bogus", at), "Unknown realms or actions stay silent");
             int s = a.PlayCount("StingerRelic");
             Check(a.PlayStinger("Relic") && a.PlayCount("StingerRelic") == s + 1 && !a.PlayStinger("Missing"), "Story stinger plays through the 2D interface pool");
+        }
+
+        private static IEnumerable ValidateRealmPlayback(FishingPrototype c)
+        {
+            // The old test called PlayRealm at the listener and never opened the queued film in automation.
+            foreach(var step in Wait(3.7))yield return step;
+            var audio=c.WorldAudio;var at=c.ExplorerPosition+Vector3.forward*90;
+            string[] themes={"Wind","Forest","Wreck","Stars"};
+            for(int island=0;island<4;island++)
+            {
+                string cue="Realm"+themes[island]+"Solve";
+                Check(audio.PlayRealm(island,"Solve",at,.55f),"Accept a completion phrase even when its shrine is far away "+island);
+                AudioSource source=null;
+                foreach(var voice in audio.Sources)if(voice.clip==FishingWorldAudio.Clip(cue) && voice.isPlaying)source=voice;
+                Check(source!=null && source.spatialBlend==0 && !source.mute && source.volume>=.17f,
+                    "Distant Solve uses nonspatial playback and a measurable Effects gain "+island);
+                int sample=source.timeSamples;foreach(var step in Wait(.12))yield return step;
+                Check(source.isPlaying && source.timeSamples>sample,"Distant Solve advances real decoded samples "+island);
+            }
+            c.TogglePause();yield return null;
+            Check(!audio.PlayRealm(0,"Echo",at),"A story-safe realm phrase still rejects paused gameplay");
+            foreach(var voice in audio.Sources)
+                if(voice.clip!=null && voice.clip.name.StartsWith("Realm",StringComparison.Ordinal))
+                    Check(!voice.isPlaying && voice.mute,"Pause stops existing realm phrases and mutes their Effects route");
+            c.TogglePause();yield return null;
+            c.SetSetting("Effects",0);
+            Check(!audio.PlayRealm(1,"Echo",at),"Realm completion respects Effects zero");
+            c.SetSetting("Effects",.7f);
         }
 
         private static IEnumerable ValidateStorageAndCrafting(FishingPrototype c)

@@ -1,0 +1,8 @@
+Route equivalence: V035 reference = reusable synchronous = incremental
+Grid cells: 161721
+Runtime slices: 3
+Maximum expanded nodes per slice: 32
+Maximum measured slice milliseconds: 1.538
+Managed bytes for 4 warm replans: 0
+Budget: 1.5 ms soft deadline plus at most one physics/node step; 32 expanded nodes hard maximum.
+Editor timings are diagnostic and are not a player/headset frame-rate guarantee.

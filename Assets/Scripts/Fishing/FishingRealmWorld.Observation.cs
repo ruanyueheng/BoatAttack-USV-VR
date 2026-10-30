@@ -94,7 +94,7 @@ namespace BoatAttack.Fishing
             bool completed=Trial.Observe(Trial.StarYaw+degrees.x,Trial.StarPitch+degrees.y,seconds,focusing);
             if(completed)
             {
-                _c.WorldAudio?.PlayRealm(Island,"Step",_devices[0].position,.4f);_c.Regions.Chime(Trial.StarStage-1);Refresh();
+                _c.WorldAudio?.PlayRealm(Island,"Step",_devices[0].position,.5f);Refresh();
                 _c.Notice(Trial.Ready?"三幅星图已记录。收起望远镜，阅读观测台上的回响。":"已记录 · 下一幅寻找「"+StarPatternName(Trial.StarStage)+"」。",6);
             }
             return completed;

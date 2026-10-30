@@ -146,7 +146,7 @@ namespace BoatAttack.Fishing
                 }
                 if(!xr || _c.Automated || !OrchardAvailable || !Application.isFocused || tree.Shake>=0 || tree.Fall>=0 || !_c.Career.CanHarvestHomeFruit(id) || FishingPrototype.FlatDistance(_c.Shore.Position,tree.Root.position)>2.2f){tree.Gesture.Suspend();continue;}
                 var hand=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);bool tracked=_c.Hands.TryControllerPalm(false,out var palm,out _);
-                bool held=hand.TryGetFeatureValue(CommonUsages.grip,out float grip)?grip>=.55f:hand.TryGetFeatureValue(CommonUsages.gripButton,out bool pressed) && pressed;
+                bool held=FishingXRInput.Grip(hand);
                 bool native=hand.TryGetFeatureValue(CommonUsages.devicePosition,out var nativePosition);
                 bool near=tracked && native && FishingPrototype.FlatDistance(palm,tree.Root.position)<.70f && palm.y>tree.Root.position.y+.55f && palm.y<tree.Root.position.y+1.9f;
                 // Native tracking coordinates exclude stick locomotion and snap turns of the world rig.

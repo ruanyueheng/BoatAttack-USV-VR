@@ -19,6 +19,8 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $android=[IO.Compression.ZipFile]::OpenRead($apk)
 try {
     if(-not $android.GetEntry('AndroidManifest.xml') -or -not $android.GetEntry('lib/arm64-v8a/libil2cpp.so')){throw 'APK is missing its manifest or ARM64 runtime.'}
+    $playerData=$android.GetEntry('assets/bin/Data/data.unity3d')
+    if(-not $playerData -or $playerData.CompressedLength -ne $playerData.Length){throw 'Android player data must use an LZ4 container stored without outer ZIP compression (PICO startup regression).'}
     foreach($entry in $android.Entries){
         if($entry.Length -eq 0){continue}
         $stream=$entry.Open()

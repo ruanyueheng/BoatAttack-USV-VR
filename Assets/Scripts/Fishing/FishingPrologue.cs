@@ -15,7 +15,7 @@ namespace BoatAttack.Fishing
     {
         public enum Sequence { Prologue, Chart, Wind, Forest, Tide, Star, Finale }
         public const int ShotCount=6;
-        public const float ShotSeconds=6.5f;
+        public const float ShotSeconds=8.5f;
         private const float Fade=.7f,TypeSpeed=16;
 
         // [Claude v0.44] 全部改为引擎内实时演出（不再混用 AI 插画），剧情见 Docs/STORY_V044.md。
@@ -27,7 +27,7 @@ namespace BoatAttack.Fishing
             public Cut(int camera,int mood,string title,string caption,int island=0,int alt=-1,int altTarget=0,bool act=false,string sting=null)
             {Camera=camera;Mood=mood;Island=island;Title=title;Caption=caption;Alt=alt;AltTarget=altTarget;Act=act;Sting=sting;}
         }
-        // 每段镜头数与 FishingV042/Story 配乐长度绑定（6/3/2/2/2/2/4 × 6.5s），改镜头数需同时重烘配乐。
+        // 每段镜头数与 FishingV042/Story 配乐长度绑定（6/3/2/2/2/2/4 × 8.5s），改时长需同时运行 Tools/Art/bake_story_audio.py。
         private static readonly Dictionary<Sequence,Cut[]> Films=new Dictionary<Sequence,Cut[]>
         {
             {Sequence.Prologue,new[]{
@@ -70,7 +70,7 @@ namespace BoatAttack.Fishing
         private Image _fade;
         private AudioSource _music;
         private readonly Dictionary<Sequence,AudioClip> _scores=new Dictionary<Sequence,AudioClip>();
-        private readonly FishingPressEdge _skip=new FishingPressEdge();
+        private readonly FishingPressEdge _skip=new FishingPressEdge(),_advance=new FishingPressEdge();
         private readonly Queue<Sequence> _pending=new Queue<Sequence>();
         private bool _screenXR,_xrIntroOffered;
         private int _headReadyFrames;
@@ -91,7 +91,7 @@ namespace BoatAttack.Fishing
             bool mobile=Application.platform==RuntimePlatform.Android;
             _film=new RenderTexture(mobile?896:1280,mobile?504:720,24){name="Tidebound story film"};_film.Create();_camera.targetTexture=_film;
             var root=new GameObject("Story cinema screen",typeof(RectTransform),typeof(Canvas),typeof(CanvasScaler));root.layer=5;root.transform.SetParent(transform,false);
-            var scaler=root.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1280,720);scaler.matchWidthOrHeight=.5f;
+            var scaler=root.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1280,720);scaler.matchWidthOrHeight=.5f;scaler.dynamicPixelsPerUnit=4;
             _canvas=root.GetComponent<Canvas>();_canvas.sortingOrder=200;_canvas.worldCamera=c.viewCamera;
             var rect=root.GetComponent<RectTransform>();rect.sizeDelta=new Vector2(1280,720);
             var backdrop=new GameObject("Backdrop",typeof(RectTransform),typeof(Image));backdrop.layer=5;backdrop.transform.SetParent(root.transform,false);
@@ -116,6 +116,7 @@ namespace BoatAttack.Fishing
             _title=Label(root.transform,"Title",new Vector2(.06f,.215f),new Vector2(.94f,.29f),36);_title.font=FishingUITheme.Heading;_title.alignment=TextAnchor.MiddleCenter;
             _subtitle=Label(root.transform,"Subtitle",new Vector2(.08f,.07f),new Vector2(.92f,.2f),26);_subtitle.alignment=TextAnchor.UpperCenter;
             _card=Label(root.transform,"Chapter card",new Vector2(.1f,.42f),new Vector2(.9f,.62f),46);_card.font=FishingUITheme.Heading;_card.alignment=TextAnchor.MiddleCenter;
+            FishingUITheme.StyleHeading(_title);FishingUITheme.StyleHeading(_card);
             _hint=Label(root.transform,"Skip hint",new Vector2(.06f,.005f),new Vector2(.94f,.06f),16);_hint.alignment=TextAnchor.MiddleRight;_hint.color=new Color(.72f,.76f,.80f,.75f);
             var fade=new GameObject("Shot dissolve",typeof(RectTransform),typeof(Image));fade.layer=5;fade.transform.SetParent(root.transform,false);Stretch(fade.GetComponent<RectTransform>());
             _fade=fade.GetComponent<Image>();_fade.color=Color.black;_fade.raycastTarget=false;_card.transform.SetAsLastSibling();root.SetActive(false);
@@ -177,7 +178,7 @@ namespace BoatAttack.Fishing
             if(_c.JournalOpen)_c.ToggleJournal();
             if(_c.Paused)return false;
             Current=sequence;_shots=Films[sequence];CollectSigns();
-            _c.XRNotebook.Close();_c.CloseBoatPanels();Open=true;Age=0;_performed=-1;Capturing=false;_ending=false;_skip.Reset();_c.StoryModalChanged();
+            _c.XRNotebook.Close();_c.CloseBoatPanels();Open=true;Age=0;_performed=-1;Capturing=false;_ending=false;_skip.Reset();_advance.Reset();_c.StoryModalChanged();
             ConfigureScreen(XRSettings.isDeviceActive);
             _canvas.gameObject.SetActive(true);_c.ApplyAudioSettings();_music.clip=Score(sequence);_music.Play();Present();return true;
         }
@@ -185,15 +186,18 @@ namespace BoatAttack.Fishing
         {
             if(!Open || float.IsNaN(seconds) || float.IsInfinity(seconds) || seconds<0)return;
             if(tracked && (!_c.XRSeat.Ready || !FishingXRTracking.TryPose(_c.viewCamera,XRNode.Head,out _,out _)))
-            {_canvas.gameObject.SetActive(false);_music.Pause();_skip.Reset();return;}
+            {_canvas.gameObject.SetActive(false);_music.Pause();_skip.Reset();_advance.Reset();return;}
             if(_screenXR!=tracked)ConfigureScreen(tracked);
             _canvas.gameObject.SetActive(true);_music.UnPause();
             Age=Mathf.Min(Duration,Age+Mathf.Min(seconds,.25f));
             if(tracked)
             {
                 var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
-                right.TryGetFeatureValue(CommonUsages.primaryButton,out bool pressed);
-                if(_skip.Step(right.isValid,pressed)){Finish();return;}
+                right.TryGetFeatureValue(CommonUsages.primaryButton,out bool next);
+                right.TryGetFeatureValue(CommonUsages.secondaryButton,out bool skip);
+                bool handTracked=FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out _,out _);
+                if(_skip.Step(handTracked,skip)){Finish();return;}
+                if(_advance.Step(handTracked,next)){Advance(false);return;}
             }
             if(Age>=Duration)
             {
@@ -227,7 +231,7 @@ namespace BoatAttack.Fishing
             _title.text=shot.Title;
             int typed=Mathf.Clamp(Mathf.FloorToInt((t-Fade*.5f)*TypeSpeed),0,shot.Caption.Length);
             var caption=Balance(shot.Caption);typed=Mathf.Min(typed+(caption.Length-shot.Caption.Length),caption.Length);_subtitle.text=caption.Substring(0,typed);
-            _hint.text=XRSettings.isDeviceActive?"右手 A 跳过":"E / 空格 继续    Esc 跳过";
+            _hint.text=XRSettings.isDeviceActive?"右手 A 继续    B 跳过":"E / 空格 继续    Esc 跳过";
             float titleIn=Mathf.Clamp01((t-.2f)/.6f);_title.color=new Color(.97f,.92f,.82f,titleIn);
             float dip=shot.Alt>=0?Mathf.Clamp01(1-Mathf.Abs(t-Half)/.22f)*.9f:0;
             // 章节卡：每段开头 2 秒在压暗画面上显示章节名，再淡出进入第一镜。
@@ -359,8 +363,8 @@ namespace BoatAttack.Fishing
             _c.StoryModalChanged();
             if(finished!=Sequence.Finale)_c.Notice(_c.Career.MainObjective,9);
         }
-        public void Suspend()
-        {if(!Open)return;Open=false;_camera.enabled=false;_canvas.gameObject.SetActive(false);_music.Stop();if(Current!=Sequence.Prologue && !_pending.Contains(Current))_pending.Enqueue(Current);_c.StoryModalChanged();}
+        public void Suspend(bool replay=true)
+        {if(!Open)return;Open=false;_camera.enabled=false;_canvas.gameObject.SetActive(false);_music.Stop();if(replay && Current!=Sequence.Prologue && !_pending.Contains(Current))_pending.Enqueue(Current);_c.StoryModalChanged();}
         private void OnDisable()=>Suspend();
         private void BeginFilmRender(ScriptableRenderContext context,Camera camera){if(camera==_camera && _c!=null && _c.Shore!=null){_c.Shore.Character.SetFilmPresentation(true);ApplyMood();Signs(true);}}
         private void EndFilmRender(ScriptableRenderContext context,Camera camera){if(camera==_camera && _c!=null && _c.Shore!=null){_c.Shore.Character.SetFilmPresentation(false);RestoreMood();Signs(false);}}

@@ -75,7 +75,6 @@ namespace BoatAttack.Fishing
         private readonly List<Object> _owned = new List<Object>();
         private Transform _ship, _marker;
         private readonly List<(MarketGoods goods, int phrase, Transform slot, TextMesh label)> _stalls = new List<(MarketGoods, int, Transform, TextMesh)>();
-        private AudioSource _music;
         private int _shownDay = -1, _shownSeason = -1, _shownFestival = -2, _baitDay = -1;
         public bool Visible => _ship != null && _ship.gameObject.activeSelf;
         public Vector3 Position => _ship.position;
@@ -145,9 +144,6 @@ namespace BoatAttack.Fishing
             var probe = _ship.TransformPoint(owner + Vector3.up * 2);
             if (Physics.Raycast(probe, Vector3.down, out var deckHit, 4, ~((1 << 4) | (1 << 5)), QueryTriggerInteraction.Ignore)) owner = _ship.InverseTransformPoint(deckHit.point);
             Merchant = FishingResidents.SpawnMerchant(c, _ship, owner, Quaternion.LookRotation(Vector3.left));
-            _music = _ship.gameObject.AddComponent<AudioSource>(); _music.clip = Resources.Load<AudioClip>("FishingAudio/World/SeaMarketLoop");
-            _music.loop = true; _music.spatialBlend = 1; _music.minDistance = 8; _music.maxDistance = 60; _music.rolloffMode = AudioRolloffMode.Linear; _music.playOnAwake = false; _music.volume = .5f;
-            c.RegisterAudioSource(_music, FishingAudioCategory.Music, .5f);
             _ship.gameObject.SetActive(false);
         }
         private Transform Lamp(Material m, Vector3 local, float size)
@@ -192,7 +188,6 @@ namespace BoatAttack.Fishing
             if (_shownSeason != cal.Season || _shownFestival != Festival) Relabel();
             var p = _ship.position; p.y = Mathf.Sin(Time.time * .7f) * .08f; _ship.position = p;
             _ship.localRotation = Quaternion.Euler(Mathf.Sin(Time.time * .5f) * 1.2f, _ship.localEulerAngles.y, Mathf.Sin(Time.time * .6f) * 1.5f);
-            if (_music.clip != null) { bool near = (_c.viewCamera.transform.position - p).sqrMagnitude < 60 * 60; if (near && !_music.isPlaying) _music.Play(); else if (!near && _music.isPlaying) _music.Stop(); }
             Gaze();
         }
         private void Moor()
@@ -274,7 +269,7 @@ namespace BoatAttack.Fishing
                     break;
             }
             if (ok && Merchant != null) Merchant.ShowBark(Trades % 2 == 0 ? "deal_1" : "deal_2");
-            if (ok) { Trades++; _c.Save(); _c.WorldAudio?.Play(_c.WorldAudio.HasCue("SeaMarketTrade") ? "SeaMarketTrade" : "CoinGain", _c.viewCamera.transform.position + _c.viewCamera.transform.forward * 2, .6f); _c.Effects?.Celebrate(_marker.position); }
+            if (ok) { Trades++; _c.Save(); _c.WorldAudio?.Play("SeaMarketTrade", _c.viewCamera.transform.position + _c.viewCamera.transform.forward * 2, .6f); _c.Effects?.Celebrate(_marker.position); }
             if (!FishingSeaEventWorld.Vr && text.Length > 0) _c.Notice(text, 6);
             Relabel();
             return ok;

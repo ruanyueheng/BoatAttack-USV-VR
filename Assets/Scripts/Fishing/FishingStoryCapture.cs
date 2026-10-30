@@ -42,7 +42,7 @@ namespace BoatAttack.Fishing
                 int shots=Mathf.RoundToInt(c.Prologue.Duration/FishingPrologue.ShotSeconds);
                 for(int shot=0;shot<shots;shot++)
                 {
-                    c.Prologue.SeekForCapture(shot*FishingPrologue.ShotSeconds+4.6f);
+                    c.Prologue.SeekForCapture((shot+.71f)*FishingPrologue.ShotSeconds);
                     yield return null;yield return null;yield return new WaitForEndOfFrame();
                     var file=Path.Combine(_output,$"{(int)sequence}-{sequence}-{shot}.png");
                     var texture=ScreenCapture.CaptureScreenshotAsTexture();File.WriteAllBytes(file,texture.EncodeToPNG());Destroy(texture);

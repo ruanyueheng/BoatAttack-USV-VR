@@ -37,6 +37,7 @@ namespace BoatAttack.Fishing
             }
             _signalMaterial=new Material(c.PaletteShader){name="Restored island signals"};_signalMaterial.SetFloat("_Unlit",1);
             for(int i=0;i<4;i++)_targets[i*3+2].Find("Lit signal").GetComponent<Renderer>().sharedMaterial=_signalMaterial;
+            FishingWreckAccess.Install(c,_world.GetChild(2));
             Refresh();
         }
         private void OnDestroy(){if(_signalMaterial!=null)Destroy(_signalMaterial);}

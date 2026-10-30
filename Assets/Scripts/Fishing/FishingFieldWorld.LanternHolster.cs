@@ -20,7 +20,7 @@ namespace BoatAttack.Fishing
             bool ready=_c.Ashore && Application.isFocused && !_c.Paused && !_c.StoryBlocksGameplay && !_c.ShopBlocksGameplay && !_c.XRNotebook.BlocksGameplay
                 && !_c.WorldActionBusy && !_c.Expedition.Aligning && !_c.XRSeat.HeadBlocked
                 && _c.Hands.TryControllerPalm(false,out _,out _) && !_c.Shore.Swimming && !_c.Shore.Climbing;
-            var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);right.TryGetFeatureValue(CommonUsages.gripButton,out bool grip);
+            var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);bool grip=FishingXRInput.Grip(right);
             bool grab=_lanternGrip.Step(ready,grip);
             if(!ready || !grip || _c.Career.Backpack.Equipped!=FieldItem.Lantern)_lanternInHand=false;
             if(!grab || _holsteredLantern==null || !_holsteredLantern.gameObject.activeInHierarchy || !_c.Hands.TryControllerPalm(false,out var palm,out _))return;

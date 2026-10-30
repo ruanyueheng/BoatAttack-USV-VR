@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using BoatAttack.Fishing;
 using UnityEngine;
@@ -24,7 +25,7 @@ namespace BoatAttack.EditorTools
             var labels=(Text[])Field("_labels").GetValue(notebook);var actions=(Action[])Field("_actions").GetValue(notebook);
             var feedback=(Canvas)Field("_feedback").GetValue(notebook);var feedbackText=(Text)Field("_feedbackText").GetValue(notebook);
             Check(feedback.renderMode==RenderMode.WorldSpace && feedback.GetComponentsInChildren<Collider>().Length==0,"Transient Chinese feedback cannot intercept tool or menu rays");
-            feedbackText.text="已收取海鸥肉与羽毛。背包空间不足时，猎物会保留在原处；B 打开背包整理后再收取。";
+            typeof(FishingXRNotebook).GetMethod("ApplyGuidanceText",Private).Invoke(notebook,new object[]{"已收取海鸥肉与羽毛\n背包空间不足时，猎物会保留在原处；B 打开背包整理后再收取。"});
             Check(feedbackText.preferredHeight<=feedbackText.rectTransform.rect.height,"Normal pickup and full-bag feedback fits the readable transient panel");
             CaptureCanvas(feedback,Path.Combine(evidence,"transient-feedback.png"));
             Check(!c.DockConsole.Visible,"No permanent gray command panel at startup");
@@ -66,6 +67,8 @@ namespace BoatAttack.EditorTools
                 c.DockConsole.PreviewForValidation();CaptureCanvas(dock,Path.Combine(evidence,"dock-commands.png"));
                 typeof(FishingDockConsole).GetField("_preview",Private).SetValue(c.DockConsole,false);c.DockConsole.Hide();
                 Check(c.Prologue.Begin(),"Opening can be replayed through its production entry");
+                c.Prologue.Advance(false);Check(c.Prologue.Shot==0 && c.Prologue.Age>0,"XR A shares the desktop path that reveals the current subtitle");
+                c.Prologue.Advance(false);Check(c.Prologue.Shot==1,"The next XR A continues to the next shot instead of skipping the whole film");
                 c.Prologue.Tick(.25f,false);float age=c.Prologue.Age;
                 c.Prologue.Tick(.25f,true);Check(c.Prologue.Age==age,"XR waits for a real head pose instead of finishing an invisible film");
                 var configure=typeof(FishingPrologue).GetMethod("ConfigureScreen",Private);configure.Invoke(c.Prologue,new object[]{true});
@@ -80,6 +83,7 @@ namespace BoatAttack.EditorTools
                 c.Prologue.Suspend();Field("_page").SetValue(notebook,0);Field("_offset").SetValue(notebook,0);notebook.Close();
                 typeof(FishingDockConsole).GetField("_preview",Private).SetValue(c.DockConsole,false);c.DockConsole.Hide();
             }
+            var interaction=FishingXRInteractionValidation.Checks(c);try{while(interaction.MoveNext())yield return interaction.Current;}finally{(interaction as IDisposable)?.Dispose();}
             Debug.Log("[V025 UI] EVIDENCE: "+evidence);yield return null;
         }
         private static void ValidateModalMotion(FishingPrototype c)
@@ -98,7 +102,7 @@ namespace BoatAttack.EditorTools
             }
             finally{xr.SetValue(c,wasXR);c.XRNotebook.Close();rb.velocity=velocity;rb.angularVelocity=angular;}
         }
-        internal static void CaptureCanvas(Canvas canvas,string path)
+        internal static void CaptureCanvas(Canvas canvas,string path,bool verifyText=false)
         {
             bool active=canvas.gameObject.activeSelf;var mode=canvas.renderMode;var camera=canvas.worldCamera;
             var p=canvas.transform.position;var q=canvas.transform.rotation;var scale=canvas.transform.localScale;
@@ -114,6 +118,26 @@ namespace BoatAttack.EditorTools
                 foreach(var pixel in pixels)if(Math.Abs(pixel.r-background.r)+Math.Abs(pixel.g-background.g)+Math.Abs(pixel.b-background.b)>30)varied++;
                 if(varied<pixels.Length/100)throw new InvalidOperationException("UI capture is empty: "+path);
                 File.WriteAllBytes(path,photo.EncodeToPNG());
+                if(verifyText)
+                {
+                    var labels=canvas.GetComponentsInChildren<Text>().Where(t=>t.enabled && !string.IsNullOrWhiteSpace(t.text) && t.color.a>.1f).ToArray();
+                    foreach(var label in labels)label.enabled=false;
+                    try
+                    {
+                        Canvas.ForceUpdateCanvases();view.Render();photo.ReadPixels(new Rect(0,0,rt.width,rt.height),0,0);photo.Apply();
+                        var without=photo.GetPixels32();var corners=new Vector3[4];
+                        foreach(var label in labels)
+                        {
+                            label.rectTransform.GetWorldCorners(corners);int left=rt.width,right=0,bottom=rt.height,top=0;
+                            foreach(var corner in corners){var at=view.WorldToScreenPoint(corner);left=Math.Min(left,Mathf.FloorToInt(at.x));right=Math.Max(right,Mathf.CeilToInt(at.x));bottom=Math.Min(bottom,Mathf.FloorToInt(at.y));top=Math.Max(top,Mathf.CeilToInt(at.y));}
+                            int changed=0;for(int y=Math.Max(0,bottom);y<Math.Min(rt.height,top);y++)for(int x=Math.Max(0,left);x<Math.Min(rt.width,right);x++)
+                            {int index=y*rt.width+x;if(Math.Abs(pixels[index].r-without[index].r)+Math.Abs(pixels[index].g-without[index].g)+Math.Abs(pixels[index].b-without[index].b)>25)changed++;}
+                            if(changed<5)throw new InvalidOperationException("Text has no rendered pixels: "+label.name+" / "+label.text+" in "+path);
+                        }
+                        Debug.Log("[XR-TEXT-PIXELS] CHECK: "+labels.Length+" visible labels contribute actual pixels in "+Path.GetFileName(path));
+                    }
+                    finally{foreach(var label in labels)label.enabled=true;Canvas.ForceUpdateCanvases();}
+                }
             }
             finally{canvas.transform.SetPositionAndRotation(p,q);canvas.transform.localScale=scale;canvas.renderMode=mode;canvas.worldCamera=camera;canvas.gameObject.SetActive(active);RenderTexture.active=old;rt.Release();Object.Destroy(rt);Object.Destroy(photo);Object.Destroy(go);}
         }

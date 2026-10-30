@@ -66,6 +66,15 @@ namespace BoatAttack.Fishing
         private static readonly Sprite[] Glyphs=new Sprite[9];
         // V044 storybook display face: Noto Serif SC SemiBold subset (OFL, see FishingV044/Fonts/NotoSerifSC-OFL.txt).
         public static Font Heading=>_heading!=null?_heading:(_heading=Resources.Load<Font>("FishingV044/Fonts/NotoSerifSC-SemiBold-Subset"));
+        /// <summary>The same serif, gilt letter edge and dark offset used by the desktop's GildedTitle.</summary>
+        public static void StyleHeading(Text text,int style=0)
+        {
+            text.font=Heading;text.fontStyle=FontStyle.Normal;text.lineSpacing=1;text.color=TitleFill(style);
+            var shadow=text.GetComponent<Shadow>() ?? text.gameObject.AddComponent<Shadow>();
+            shadow.effectColor=new Color(.025f,.035f,.04f,.50f);shadow.effectDistance=new Vector2(1,-1.5f);shadow.useGraphicAlpha=true;
+            var outline=text.GetComponent<Outline>() ?? text.gameObject.AddComponent<Outline>();
+            outline.effectColor=Gold;outline.effectDistance=new Vector2(.65f,-.65f);outline.useGraphicAlpha=true;
+        }
         private static Texture2D _panelPaper,_panelVeil,_star,_rule,_slot,_titleGlow;
         /// <summary>V044 9-slice surfaces (40px border): cream watercolour paper for reading, night-sky veil for in-world HUD.</summary>
         public static Texture2D PanelPaper=>Storybook(ref _panelPaper,"PanelPaper");
@@ -84,10 +93,31 @@ namespace BoatAttack.Fishing
         /// <summary>XR/world uGUI surfaces in the V044 language: tintable watercolour paper and a gilt hairline frame with corner stars (40px 9-slice).</summary>
         public static Sprite StorybookPaperSprite=>_plainSprite!=null?_plainSprite:(_plainSprite=Sliced("PanelPlain"));
         public static Sprite GiltFrameSprite=>_giltFrameSprite!=null?_giltFrameSprite:(_giltFrameSprite=Sliced("GiltFrame"));
-        private static Sprite Sliced(string name)
+        private static Sprite _starrySeaSprite,_tornParchmentSprite,_panelVeilSprite;
+        public static Sprite PanelVeilSprite=>_panelVeilSprite!=null?_panelVeilSprite:(_panelVeilSprite=Sliced("PanelVeil"));
+        public static Sprite StarrySeaSprite=>_starrySeaSprite!=null?_starrySeaSprite:(_starrySeaSprite=Sliced("StarrySea"));
+        public static Sprite TornParchmentSprite=>_tornParchmentSprite!=null?_tornParchmentSprite:(_tornParchmentSprite=Sliced("TornParchment",80));
+        private static Sprite _roundedSurface,_roundedStroke;
+        public static Sprite RoundedSurface=>_roundedSurface!=null?_roundedSurface:(_roundedSurface=RoundedUiSprite(false));
+        public static Sprite RoundedStroke=>_roundedStroke!=null?_roundedStroke:(_roundedStroke=RoundedUiSprite(true));
+        private static Sprite RoundedUiSprite(bool stroke)
+        {
+            const int size=32;const float radius=8;
+            var texture=new Texture2D(size,size,TextureFormat.RGBA32,false){name=stroke?"Windows 1px rounded frame":"Windows 8px rounded surface",wrapMode=TextureWrapMode.Clamp};
+            for(int y=0;y<size;y++)for(int x=0;x<size;x++)
+            {
+                var q=new Vector2(Mathf.Abs(x+.5f-size*.5f)-(size*.5f-radius),Mathf.Abs(y+.5f-size*.5f)-(size*.5f-radius));
+                float distance=new Vector2(Mathf.Max(q.x,0),Mathf.Max(q.y,0)).magnitude+Mathf.Min(Mathf.Max(q.x,q.y),0)-radius;
+                float alpha=Mathf.Clamp01(.5f-distance);if(stroke)alpha*=Mathf.Clamp01(distance+1.5f);
+                texture.SetPixel(x,y,new Color(1,1,1,alpha));
+            }
+            texture.Apply(false,true);
+            return Sprite.Create(texture,new Rect(0,0,size,size),new Vector2(.5f,.5f),100,0,SpriteMeshType.FullRect,new Vector4(9,9,9,9));
+        }
+        private static Sprite Sliced(string name,float border=PanelBorder)
         {
             Texture2D texture=null;texture=Storybook(ref texture,name);
-            return Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f),100,0,SpriteMeshType.FullRect,new Vector4(PanelBorder,PanelBorder,PanelBorder,PanelBorder));
+            return Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f),100,0,SpriteMeshType.FullRect,new Vector4(border,border,border,border));
         }
         private static readonly Sprite[] ControllerGlyphs=new Sprite[6];
         private static Texture2D _controllerAtlas;

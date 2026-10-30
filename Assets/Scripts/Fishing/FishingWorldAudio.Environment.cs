@@ -63,7 +63,7 @@ namespace BoatAttack.Fishing
                 int island = _c.Realms.Island;
                 string cue = island == 0 ? "WindCorridorLoop" : island == 1 ? "ForestLoop" : island == 2 ? "WreckLoop" : "StarsLoop";
                 // Each room has a quiet sound bed, never a second musical layer.
-                MaintainLoop("environment-realm-" + island, cue, listener, island == 3 ? .020f : .030f, false);
+                MaintainLoop("environment-realm-" + island, cue, listener, island == 3 ? .065f : .080f, false);
                 return;
             }
 

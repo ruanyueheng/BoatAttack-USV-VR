@@ -7,7 +7,9 @@ namespace BoatAttack.Fishing
     public sealed class FishingXRComfort : MonoBehaviour
     {
         public enum Turn { Snap30, Snap45, Smooth }
-        public static Turn TurnMode{get=>(Turn)PlayerPrefs.GetInt("FishingXR.Turn",0);set=>Save("FishingXR.Turn",(int)value);}
+        // New preference also gives existing installs the requested smooth default; subsequent choices persist.
+        public const string TurnPreference="FishingXR.TurnV047";
+        public static Turn TurnMode{get=>(Turn)Mathf.Clamp(PlayerPrefs.GetInt(TurnPreference,(int)Turn.Smooth),0,2);set=>Save(TurnPreference,(int)value);}
         public static bool Teleport{get=>PlayerPrefs.GetInt("FishingXR.Teleport",0)==1;set=>Save("FishingXR.Teleport",value?1:0);}
         /// <summary>0 off … 3 strong; default 2.</summary>
         public static int Vignette{get=>Mathf.Clamp(PlayerPrefs.GetInt("FishingXR.Vignette",2),0,3);set=>Save("FishingXR.Vignette",Mathf.Clamp(value,0,3));}
@@ -17,6 +19,11 @@ namespace BoatAttack.Fishing
         public static float WalkSpeed=>SpeedLevel==0?1f:SpeedLevel==1?1.3f:1.6f;
         public const float SmoothTurnSpeed=75,StickRamp=4,TeleportRange=6;
         public static float SnapDegrees=>TurnMode==Turn.Snap45?45:30;
+        public static float SmoothTurnDegrees(float axis,float dt)
+        {
+            if(float.IsNaN(axis) || float.IsInfinity(axis) || float.IsNaN(dt) || float.IsInfinity(dt) || dt<=0)return 0;
+            return Mathf.Sign(axis)*Mathf.InverseLerp(.2f,1,Mathf.Abs(axis))*SmoothTurnSpeed*Mathf.Min(dt,.05f);
+        }
         public static bool AllowsGustPush=>!XRSettings.isDeviceActive || !GustComfort;
         /// <summary>Desktop keeps the authored push; VR without gust comfort uses a slow drift.</summary>
         public static float GustSpeed(float desktop)=>XRSettings.isDeviceActive?.35f:desktop;

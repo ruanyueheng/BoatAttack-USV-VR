@@ -83,7 +83,14 @@ namespace BoatAttack.EditorTools
         private static IEnumerator Checks(FishingPrototype c)
         {
             yield return null;Check(c.HasIsolatedProfile && c.Automated,"test profile is isolated");
-            Check(c.FieldWorld.Pickups.Count==8,"all eight stable-ID field pickups found safe ground");
+            Check(c.FieldWorld.Pickups.Count==FishingBackpack.PickupCount,"all sixteen stable-ID pickups, including island caches, are present");
+            var pickupIds=new bool[FishingBackpack.PickupCount];
+            foreach(var placedPickup in c.FieldWorld.Pickups)
+            {
+                Check(placedPickup.Id>=0 && placedPickup.Id<pickupIds.Length && !pickupIds[placedPickup.Id],"pickup ID is unique and save-compatible: "+placedPickup.Id);
+                pickupIds[placedPickup.Id]=true;
+                Check(placedPickup.Root!=null && c.Shore.Ground(placedPickup.Feet,out _),"pickup has a real model and supported ground: "+placedPickup.Id);
+            }
             Check(c.FieldWorld.Animals.Count==8,"eight land animals spawned without changing terrain");
             foreach(var a in c.FieldWorld.Animals)Check(c.Shore.Ground(a.Feet,out _) && c.Shore.Clearance(a.Feet),"animal starts on clear dry ground: "+a.Kind);
             var rb=c.Player.engine.RB;var site=c.Shore.Sites[0];rb.position=site.Berth+Vector3.up*.5f;rb.rotation=Quaternion.identity;rb.velocity=Vector3.zero;c.Player.transform.position=rb.position;Physics.SyncTransforms();

@@ -100,12 +100,26 @@ namespace BoatAttack.EditorTools
             Shot(c,dir,"sea-market-far",market.Position+side*55+Vector3.up*5,market.Position+Vector3.up*5);
             Place(c,market.Position+side*10,-side);var w=Wait(.5f);while(w.MoveNext())yield return null;
             Check(market.Target!=null,"Gaze picks a stall once moored alongside");
+            var marketLoop=c.WorldAudio.LoopSource("sea-market");
+            Check(marketLoop!=null && marketLoop.isPlaying && marketLoop.clip.name=="SeaMarketLoop" && marketLoop.spatialBlend==1 && marketLoop.volume>0,"Nearby market maintains its dedicated spatial ambient recording");
+            Place(c,market.Position+side*70,-side);w=Wait(.8f);while(w.MoveNext())yield return null;
+            Check(c.WorldAudio.LoopSource("sea-market")==null,"Leaving the market's audible range fades and releases its loop");
+            Place(c,market.Position+side*10,-side);w=Wait(.5f);while(w.MoveNext())yield return null;
+            c.ToggleQuiet();yield return null;yield return null;
+            Check(c.WorldAudio.LoopSource("sea-market")==null,"Quiet mode stops the market loop");
+            c.ToggleQuiet();w=Wait(.5f);while(w.MoveNext())yield return null;
+            float ambient=c.AmbientVolume;
+            c.SetSetting("Ambient",0);yield return null;yield return null;
+            Check(c.WorldAudio.LoopSource("sea-market")==null || c.WorldAudio.LoopSource("sea-market").volume==0,"Market ambience obeys Ambient mute");
+            c.SetSetting("Ambient",ambient);yield return null;yield return null;
             Check(market.Merchant!=null,"Merchant A-Xun stands aboard");
             if(market.Merchant!=null)Shot(c,dir,"sea-market-owner",new Vector3(market.Merchant.transform.position.x,1.6f,market.Merchant.transform.position.z)+side*7,market.Merchant.transform.position+Vector3.up*1.5f); // seated eye height in the skiff
             Shot(c,dir,"sea-market-stalls",market.Position+side*7+Vector3.up*3.5f,market.Position+Vector3.up*2);
             c.Career.AwardSeaCoins(1000);int coins=c.Career.Coins;
             FishingSeaEventWorld.ForceVr=true;c.Notice("vr-market",60);
-            try{Check(market.Trade(MarketGoods.Bait) && market.BaitActive && c.Career.Coins==coins-FishingSeaMarket.BaitPrice && c.VisibleMessage=="vr-market","Seasonal bait sells without a VR popup");}
+            int tradeSounds=c.WorldAudio.PlayCount("SeaMarketTrade");
+            try{Check(market.Trade(MarketGoods.Bait) && market.BaitActive && c.Career.Coins==coins-FishingSeaMarket.BaitPrice && c.VisibleMessage=="vr-market","Seasonal bait sells without a VR popup");
+                Check(c.WorldAudio.PlayCount("SeaMarketTrade")==tradeSounds+1,"Successful market trade plays the dedicated transaction cue");}
             finally{FishingSeaEventWorld.ForceVr=false;}
             int rares=0;for(int i=0;i<200;i++){var k=FishKind.Coral;bool r=false;sea.AdjustCatch(3,ref k,ref r,false);if(r)rares++;}
             Check(rares>20 && rares<120,"Market bait raises the rare rate ("+rares+"/200)");
@@ -113,7 +127,8 @@ namespace BoatAttack.EditorTools
             Check(market.Trade(MarketGoods.Seeds) && c.Career.Backpack.Count(FieldItem.TurnipSeeds)+c.Career.Backpack.Count(FieldItem.FishFeed)==seeds+3,"Seasonal seeds go into the backpack");
             Check(market.Trade(MarketGoods.Souvenir) && FishingSeaMarket.Bit(lore.SeaPost,c.Career.Calendar.Season)==1 && !market.Trade(MarketGoods.Souvenir),"Season souvenir sells once");
             FishingV016Validation.Capture(c,dir,"sea-market-souvenir");c.Letter.Close();yield return null;
-            Check(!market.Trade(MarketGoods.Buyback),"Buyback refuses an empty rare hold");
+            tradeSounds=c.WorldAudio.PlayCount("SeaMarketTrade");
+            Check(!market.Trade(MarketGoods.Buyback) && c.WorldAudio.PlayCount("SeaMarketTrade")==tradeSounds,"Empty buyback refuses the trade without a success sound");
             Check(!FishingSeaMarket.ReplyReady(3,lore) && FishingSeaMarket.ReplyReady(1,lore),"The finale-quoting reply waits for the grand treasure");
             Check(market.Trade(MarketGoods.Letter,1) && FishingSeaMarket.Pending(lore.SeaPost)==2 && lore.SeaPostDay==c.Career.Calendar.Day && !market.Trade(MarketGoods.Letter,2),"One drift letter at a time");
             sea.Force(SeaEventKind.Bottle);yield return null;Place(c,sea.Center,Vector3.forward);w=Wait(.4f);while(w.MoveNext())yield return null;c.Letter.Close();yield return null;
@@ -125,7 +140,9 @@ namespace BoatAttack.EditorTools
             Check(FishingSeaMarket.Archive(lore).Count>=10 && FishingSeaMarket.Archive(lore).Exists(x=>x.title.StartsWith("回信")),"Journal archive lists read letters, replies and souvenir cards");
             var back=JsonUtility.FromJson<FishingSaveData>(JsonUtility.ToJson(c.Career.Snapshot()));
             Check(FishingCareer.TryRestore(back,out var restored) && restored.Lore.SeaPost==lore.SeaPost,"Market and post progress round-trip");
-            market.ForceOpen=false;yield return null;
+            market.ForceOpen=false;c.Career.Calendar.AdvanceToHour(22);
+            Place(c,market.Position+side*10,-side);w=Wait(.8f);while(w.MoveNext())yield return null;
+            Check(!market.Visible && c.WorldAudio.LoopSource("sea-market")==null,"Closing the market at night releases its ambience even with the player nearby");
         }
         private static IEnumerator Play(FishingPrototype c,string dir)
         {

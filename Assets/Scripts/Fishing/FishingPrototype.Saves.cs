@@ -21,12 +21,13 @@ namespace BoatAttack.Fishing
         private int _confirmSlot = -1;
         private FishingSlotKind _confirmKind;
         private string _confirmAction;
+        private const string ActiveSlotPreference="Fishing.ActiveSaveSlot";
 
         private void InitializeSaveSlots(string legacyPath)
         {
             _sessionResumable = HasIsolatedProfile || !DesktopDisplay;
             _savingReady = true;
-            ActiveSaveSlot = _sessionResumable ? 0 : -1;
+            ActiveSaveSlot = _sessionResumable ? (HasIsolatedProfile?0:Mathf.Clamp(PlayerPrefs.GetInt(ActiveSlotPreference,0),0,FishingSlotStore.Count-1)) : -1;
             try
             {
                 if(!HasIsolatedProfile && (File.Exists(SavePath) || File.Exists(SavePath+".bak") || File.Exists(legacyPath) || File.Exists(legacyPath+".bak")))
@@ -38,7 +39,7 @@ namespace BoatAttack.Fishing
             RefreshSaveSlots();
             if(!HasIsolatedProfile && !DesktopDisplay)
             {
-                var manual=SlotInfo(0,FishingSlotKind.Manual);var auto=SlotInfo(0,FishingSlotKind.Auto);
+                var manual=SlotInfo(ActiveSaveSlot,FishingSlotKind.Manual);var auto=SlotInfo(ActiveSaveSlot,FishingSlotKind.Auto);
                 var latest=auto.Valid && (!manual.Valid || string.CompareOrdinal(auto.Data.savedUtc,manual.Data.savedUtc)>=0)?auto:manual;
                 if(latest.Valid && FishingCareer.TryRestore(latest.Data.career,out var restored))
                 {
@@ -47,7 +48,7 @@ namespace BoatAttack.Fishing
                 }
                 else if(manual.Exists || auto.Exists)
                 {
-                    ActiveSaveSlot=-1;SaveWarning="存档槽1已有但无法恢复；不会自动覆盖。当前进度仅在内存，请在桌面存档菜单恢复备份或明确选择新槽。";
+                    int failedSlot=ActiveSaveSlot+1;ActiveSaveSlot=-1;SaveWarning="存档槽"+failedSlot+"已有但无法恢复；不会自动覆盖。当前进度仅在内存，请在存档菜单恢复备份或明确选择新槽。";
                     Notice(SaveWarning,15);
                 }
             }
@@ -101,7 +102,7 @@ namespace BoatAttack.Fishing
                 else saved=WriteCheckpoint(slot,FishingSlotKind.Manual);
                 if(saved)
                 {
-                    ActiveSaveSlot=slot;SaveMenuMessage=takeover?"已确认接管此槽，手动和自动记录均已写入当前航程。":"手动存档已保存；后续自动保存写入此槽的独立自动记录。";
+                    ActiveSaveSlot=slot;RememberActiveSaveSlot();SaveMenuMessage=takeover?"已确认接管此槽，手动和自动记录均已写入当前航程。":"手动存档已保存；后续自动保存写入此槽的独立自动记录。";
                 }
                 RefreshSaveSlots();return;
             }
@@ -126,7 +127,7 @@ namespace BoatAttack.Fishing
             }
             _savingReady=false;
             try{ApplySavedCareer(career,data.resume);}finally{_savingReady=true;}
-            ActiveSaveSlot=slot;_runId=data.runId;_sessionResumable=true;_autoClock=0;
+            ActiveSaveSlot=slot;RememberActiveSaveSlot();_runId=data.runId;_sessionResumable=true;_autoClock=0;
             SaveMenuOpen=false;MenuControls=false;
             if(action=="new")
             {
@@ -146,6 +147,7 @@ namespace BoatAttack.Fishing
             if(!CanContinue){SaveMenuMessage="没有本次可恢复的航程。请选择新建游戏或读取存档。";return;}
             MenuControls=false;SaveMenuOpen=false;TitleVoyage.Sail(true);
         }
+        private void RememberActiveSaveSlot(){if(!HasIsolatedProfile){PlayerPrefs.SetInt(ActiveSlotPreference,ActiveSaveSlot);PlayerPrefs.Save();}}
         private bool CanSaveCheckpoint() => _initialized && !HasPendingCatch && !WorldActionBusy && !GuideOpening
             && !Prologue.Open && !Home.Sleeping && !Realms.Inside && !Realms.Transitioning
             && !Shore.Swimming && !Shore.Climbing

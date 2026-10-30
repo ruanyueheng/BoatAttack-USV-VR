@@ -53,6 +53,7 @@ namespace BoatAttack.EditorTools
                 while(Time.realtimeSinceStartup<deadline && !XRSettings.isDeviceActive)yield return null;
                 Check(started && XRSettings.isDeviceActive,"Mock OpenXR session drives the production XR path");
                 for(int i=0;i<10;i++)yield return null;
+                FishingXRParityValidation.Run(c);
 
                 c.ReturnToHarbor();yield return null;
                 var rb=c.Player.engine.RB;rb.position=c.Home.Berth+Vector3.up*.7f;rb.rotation=Quaternion.identity;rb.velocity=rb.angularVelocity=Vector3.zero;
@@ -62,6 +63,21 @@ namespace BoatAttack.EditorTools
                 {var probe=Probe(c,Quaternion.Euler(-20,60,0),20,result);while(probe.MoveNext())yield return probe.Current;} // the runner does not flatten nested coroutines
                 Debug.Log("[XR-MOCK] SHORE: head yaw 60 / pitch -20 -> world "+result[0].ToString("0.0")+" / "+result[1].ToString("0.0"));
                 Check(Mathf.Abs(result[0]-60)<1 && Mathf.Abs(result[1]+20)<1,"Ashore, no game code rewrites the XR camera or origin: 60° head yaw and -20° pitch stay in world space");
+                var feet=c.Shore.Position;
+                Check((bool)typeof(FishingXRNotebook).GetMethod("ReArmMotion",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(c.XRNotebook,new object[]{Vector2.zero,Vector2.zero,false}),"Released XR controls rearm movement before motor checks");
+                var direction=new[]{Vector3.forward,Vector3.back,Vector3.left,Vector3.right}.First(d=>c.Shore.Ground(feet+d*.75f,out var ground) && c.Shore.Clearance(ground));
+                c.viewCamera.transform.rotation=Quaternion.LookRotation(direction);
+                c.Shore.Move(Vector2.zero,false,false,false,.05f);
+                c.Shore.Move(Vector2.up,false,false,false,.05f);float walking=c.Shore.WalkSpeed;
+                Check(c.Shore.Relocate(feet,Quaternion.LookRotation(direction)),"Movement test restores supported footing");c.viewCamera.transform.rotation=Quaternion.LookRotation(direction);
+                c.Shore.Move(Vector2.zero,false,false,false,.05f);
+                c.Shore.Move(Vector2.up,true,false,false,.05f);
+                Check(walking>.5f && c.Shore.WalkSpeed>walking*1.5f && c.Shore.Stamina<1,"XR sprint moves the real capsule faster and consumes stamina; walk="+walking+" sprint="+c.Shore.WalkSpeed+" stamina="+c.Shore.Stamina);
+                Check(c.Shore.Relocate(feet,Quaternion.identity),"Jump test restores supported footing");
+                for(int i=0;i<4;i++)c.Shore.Move(Vector2.zero,false,false,false,.05f);
+                float standing=c.Shore.Position.y;c.Shore.Move(Vector2.zero,false,true,false,.05f);
+                Check(c.Shore.Position.y>standing+.05f,"XR jump lifts the real collision body");
+                Check(c.Shore.Relocate(feet,Quaternion.identity),"Movement checks leave the player beside the original berth");
                 Check(c.Shore.TryBoard(),"Board again for the afloat checks");
                 for(int i=0;i<30;i++)yield return null;
                 var boat=c.Player.transform;var basePosition=boat.position;float boatYaw=Yaw(boat);

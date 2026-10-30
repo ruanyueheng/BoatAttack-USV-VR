@@ -1,0 +1,12 @@
+{
+  "model": "PICO 4 Ultra (A9210)",
+  "os": "5.15.8",
+  "android": 14,
+  "version": "0.45.0",
+  "localApkSha256": "F15F22CF73E12E86E25F08B06400EC080CB432E96E5E606678E8BD17CF9BF7FC",
+  "installedApkSha256": "f15f22cf73e12e86e25f08b06400ec080cb432e96e5e606678e8bd17cf9bf7fc",
+  "headTrackingUserConfirmed": true,
+  "bothControllersUserConfirmed": true,
+  "doubleEyeGameImage": true,
+  "physicalRealmAudioListened": false
+}

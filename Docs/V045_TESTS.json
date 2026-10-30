@@ -1,0 +1,75 @@
+{
+  "version": "0.45.0",
+  "rulesPassed": 4728,
+  "inputPassed": 70,
+  "physicalHeadsetTested": true,
+  "subjectiveAudioApproved": false,
+  "suites": [
+    {
+      "suite": "FishingAudioMix-run",
+      "pass": true,
+      "checks": 78,
+      "exceptions": 0,
+      "log": "usv-validation-081fce50fbf5471fba8ae8d508556ae3.log"
+    },
+    {
+      "suite": "FishingV025-run",
+      "pass": true,
+      "checks": 575,
+      "exceptions": 0,
+      "log": "usv-validation-f032ac6208ca49cfad5c6418ad2d0683.log"
+    },
+    {
+      "suite": "FishingV035Levels-run",
+      "pass": true,
+      "checks": 383,
+      "exceptions": 0,
+      "log": "usv-validation-12ee491dc5fd401c84437ea031c8e1b6.log"
+    },
+    {
+      "suite": "FishingV036Storage-run",
+      "pass": true,
+      "checks": 28,
+      "exceptions": 0,
+      "log": "usv-validation-0b6190ccf65247d39e12dc70e511580f.log"
+    },
+    {
+      "suite": "FishingV044Life-run",
+      "pass": true,
+      "checks": 82,
+      "exceptions": 0,
+      "log": "usv-validation-8089838fee7d46378997b7d6b9a7a885.log"
+    },
+    {
+      "suite": "FishingV044Npc-run",
+      "pass": true,
+      "checks": 547,
+      "exceptions": 0,
+      "log": "usv-validation-e2f22f43908c4bbaaf6f160476f3ea34.log"
+    },
+    {
+      "suite": "FishingV044Sea-run",
+      "pass": true,
+      "checks": 128,
+      "exceptions": 0,
+      "log": "usv-validation-07bfbd42ee9f4153ae6036a5c4be82e4.log"
+    },
+    {
+      "suite": "FishingV044Tide-run",
+      "pass": true,
+      "checks": 788,
+      "exceptions": 0,
+      "log": "usv-validation-1b0be4c9bb5f43a7a77d437e7833c247.log"
+    },
+    {
+      "suite": "world-audio-run",
+      "pass": true,
+      "checks": 550,
+      "exceptions": 0,
+      "log": "usv-validation-79a6edb4fc5c4883ab9f76ffec4e000f.log"
+    }
+  ],
+  "windowsReleaseSmokePassed": true,
+  "desktopSmokeCases": 88,
+  "picoInstalledApkMatches": true
+}

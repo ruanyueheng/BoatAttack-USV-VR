@@ -85,6 +85,9 @@ namespace BoatAttack.Fishing
                     _gameplayFurnaceReady[station.id] = station.ready;
                 }
             if (!world) return;
+            var market = _c.SeaMarket;
+            if (market != null && market.Visible && (_c.viewCamera.transform.position - market.Position).sqrMagnitude < 45 * 45)
+                MaintainLoop("sea-market", "SeaMarketLoop", market.Position + Vector3.up * 2, .09f, true, 45);
             var barbecue = _c.Career.Barbecue;
             if (_c.CoastWorld != null && _c.CoastWorld.Grill != null && barbecue.fish != null && barbecue.remaining > 0 && barbecue.remaining < 17
                 && !_c.CoastWorld.Grill.TryGetComponent<FishingBarbecueEffects>(out _)

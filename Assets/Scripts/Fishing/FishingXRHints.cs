@@ -10,6 +10,7 @@ namespace BoatAttack.Fishing
     /// </summary>
     public sealed class FishingXRHints : MonoBehaviour
     {
+        public const string NotebookHelp="B 手册：地图 / 背包 / 设置与救援";
         public enum Context { Shore, Boat, Fishing, Notebook, Story, Realm, Align, Climb, Camera, Craft }
         public static readonly string[] ContextNames={"岸上行走","船上驾驶","驻钓 / 搏鱼","手册 / 菜单","对话 / 信件 / 过场","秘境机关","信标校准","攀爬绳梯","相机取景","手工 / 锻造"};
         /// <summary>key: A B X Y Trigger Grip use PICO glyphs; Stick / Click / Menu are drawn as text.</summary>
@@ -18,14 +19,14 @@ namespace BoatAttack.Fishing
             switch(context)
             {
                 case Context.Shore:return left
-                    ?new[]{("Stick",FishingXRComfort.Teleport?"前推瞄准 · 松开瞬移":"行走"),("X","上船（靠近泊船）"),("Y","切换装备"),("Menu","手册")}
-                    :new[]{("Stick",FishingXRComfort.TurnName),("A","互动 / 对话 / 攀爬"),("Trigger","使用工具"),("Grip","握住：拾取物品 / 提灯 / 摇果树"),("B","手册")};
+                    ?new[]{("Stick",FishingXRComfort.Teleport?"前推瞄准 · 松开瞬移":"行走"),("Grip","移动时按住疾跑"),("X","上船（靠近泊船）"),("Y","切换装备"),("Menu","手册")}
+                    :new[]{("Stick",FishingXRComfort.TurnName+" · 按下跳跃"),("A","互动 / 对话 / 攀爬"),("Trigger","使用工具 / 确认信标"),("Grip","拾取 / 提灯 / 摇树 / 掀箱盖"),("B","手册")};
                 case Context.Boat:return left
-                    ?new[]{("Stick","前推油门 · 后拉倒车"),("Click","按下摇杆加速"),("Trigger","刹车"),("X","靠岸低速时上岸")}
+                    ?new[]{("Stick","前推油门 · 后拉倒车"),("Grip","按住加速"),("Click","按下左摇杆亦可加速"),("Trigger","刹车"),("X","靠岸低速时上岸")}
                     :new[]{("Stick","左右掌舵"),("A","钓点驻钓 / 互动"),("B","手册 / 收起面板")};
                 case Context.Fishing:return left
                     ?new[]{("Grip","握轮柄 · 转腕收线"),("Grip","鱼跃出水：松开"),("Grip","抄网 / 抓鱼")}
-                    :new[]{("Grip","握竿，松开放下"),("Trigger","按住抖腕 · 松开抛竿 · 遛鱼按住收线"),("A","快捷抛竿 / 咬钩提竿"),("Trigger","事务面板：指向点选"),("B","收起面板 / 手册")};
+                    :new[]{("Grip","握竿，松开放下"),("Trigger","按住蓄力 · 松开抛竿 · 遛鱼按住收线"),("A","快捷抛竿 / 咬钩提竿"),("Click","收竿起航"),("B","手册 / 收起面板")};
                 case Context.Notebook:return left
                     ?new[]{("Menu","也可开关手册")}
                     :new[]{("Trigger","射线点选"),("B","关闭手册")};
@@ -39,8 +40,8 @@ namespace BoatAttack.Fishing
                     ?new[]{("Stick","（校准中不移动）")}
                     :new[]{("Stick","左右转动转盘"),("A","确认"),("B","取消")};
                 case Context.Climb:return left
-                    ?new[]{("Stick","上推攀登 · 下拉下降")}
-                    :new[]{("A","到端自动离开")};
+                    ?new[]{("Grip","握住横档下拉 · 双手交替"),("Stick","上推攀登 · 下拉下降")}
+                    :new[]{("Grip","握住下一横档 · 下拉攀登"),("A","到端自动离开")};
                 case Context.Camera:return left
                     ?new[]{("Stick","可继续行走")}
                     :new[]{("Trigger","拍照"),("B","收起 / 手册")};
@@ -60,7 +61,7 @@ namespace BoatAttack.Fishing
             if(c.Shore.Climbing)return Context.Climb;
             return c.Realms!=null && c.Realms.Inside?Context.Realm:Context.Shore;
         }
-        public static string KeyName(string key,bool left)=>key=="Stick"?(left?"左摇杆":"右摇杆"):key=="Click"?"按下左摇杆":key=="Menu"?"左菜单键":key=="Trigger"?(left?"左扳机":"右扳机"):key=="Grip"?(left?"左握把":"右握把"):key;
+        public static string KeyName(string key,bool left)=>key=="Stick"?(left?"左摇杆":"右摇杆"):key=="Click"?(left?"按下左摇杆":"按下右摇杆"):key=="Menu"?"左菜单键":key=="Trigger"?(left?"左扳机":"右扳机"):key=="Grip"?(left?"左握把":"右握把"):key;
         /// <summary>Plain text for the notebook 操作说明 cards.</summary>
         public static string Card(Context context)
         {
@@ -69,27 +70,85 @@ namespace BoatAttack.Fishing
             return text;
         }
 
+        /// <summary>The desktop's next-action and objective cues remain visible in VR without raising a controller.</summary>
+        public static string Guidance(FishingPrototype c)
+        {
+            const string help=NotebookHelp;
+            if(c.Combat!=null && c.Combat.Status.Length>0)return c.Combat.Status+"\n红圈出现后侧移离开落点；右扳机使用武器\n"+help;
+            if(c.HasPendingCatch)return "钓到了 · 按 A 放入鱼箱，或在收获卡选择放生\n传说鱼：A 测量，再确认放生\n"+help;
+            if(c.Expedition.Aligning)return "校准信标 · 右摇杆左右调转盘，A 确认，B 取消\n"+c.Expedition.AlignmentHint;
+            if(!c.Ashore && c.Anchored)return FishingAction(c.Session,c.Hands.HoldingRod)+"\n按下右摇杆收竿起航 · B 手册换饵 / 返家";
+            string action;
+            if(c.Ashore)
+            {
+                string nearby=c.WorldInteractionTitle;
+                action=FishingXRText.Adapt(nearby ?? c.Shore.ActionTitle,true);
+                if(c.Shore.Climbing)return action+"\n双手握住横档交替下拉，或左摇杆上下；到端自动离开\n"+help;
+                if(c.Shore.Swimming)return "游泳 · 左摇杆朝浅岸移动，左握把加速\n靠近船边按 X 上船，右摇杆按下攀低台\n"+help;
+                if(nearby==null)action+=" · "+(FishingXRComfort.Teleport?"左摇杆前推，松开瞬移":"左摇杆行走，左握把疾跑")+" · 右摇杆按下跳跃 · Y 换装备";
+            }
+            else if(c.AtHarbor)action="潮汐渔港 · A 交付 / 出售，X 上岸\n左摇杆前进 / 倒车，右摇杆掌舵，左扳机刹车";
+            else if(c.SpotDistance<=22)action=c.Speed>3?"接近钓点 · 按住左扳机减速至停船，再按 A 驻钓":"A 驻钓 · 右握把拿竿后，A 抛竿 / 提竿";
+            else action="左摇杆前进 / 倒车 · 右摇杆掌舵 · 左扳机刹车 · 靠岸 X 下船";
+            string goal=FishingXRText.Adapt(FishingVoyageWorld.CompactObjective(c.Career),true);
+            if(!c.Ashore)
+            {
+                var delta=c.NavigationPosition-c.ExplorerPosition;
+                float bearing=Mathf.DeltaAngle(c.viewCamera.transform.eulerAngles.y,Mathf.Atan2(delta.x,delta.z)*Mathf.Rad2Deg);
+                string direction=Mathf.Abs(bearing)<12?"前方":(bearing<0?"左侧 ":"右侧 ")+Mathf.RoundToInt(Mathf.Abs(bearing))+"°";
+                goal=c.NavigationName+" · "+Mathf.RoundToInt(FishingPrototype.FlatDistance(c.ExplorerPosition,c.NavigationPosition))+" 米 · "+direction+"\n"+goal;
+            }
+            return action+"\n"+goal+"\n"+help;
+        }
+        public static string FishingAction(CatchSession session,bool holdingRod)
+        {
+            if(session.Phase==CatchPhase.Landing)return "鱼已靠近 · 左手握抄网，套住鱼后举起\n不要继续硬拉；鱼线张力 "+Mathf.RoundToInt(session.Tension*100)+"%";
+            if(!holdingRod)return "按 A 快捷拿竿并抛出，或右握把握住竿柄\n拿竿后：右扳机按住蓄力、松开抛竿";
+            switch(session.Phase)
+            {
+                case CatchPhase.Waiting:return session.BitePreview>0?"浮标轻啄 · 先别提竿，等明显下沉再按 A":"等待咬钩 · 看浮标、听声音，咬钩后按 A 提竿";
+                case CatchPhase.Bite:return "咬钩了！按 A 或右扳机提竿 · 剩余 "+session.Remaining.ToString("0.0")+" 秒";
+                case CatchPhase.Fighting:
+                    string action=session.Beat==FishBeat.Leap?"跃出水面！松开右扳机和左握把，停止收线"
+                        :session.Tension>.78f?"张力过高！松开右扳机和左握把，停止收线"
+                        :session.Beat==FishBeat.Rest?"鱼在回气 · 按住右扳机收线，或左握把转轮"
+                        :session.Beat==FishBeat.Windup?"鱼在蓄力 · 准备松开右扳机和左握把":"鱼在冲刺 · 松开右扳机和左握把放线";
+                    string steer=session.FishDirection<-.2f?"持竿手向右横移":session.FishDirection>.2f?"持竿手向左横移":"保持收线节奏";
+                    return action+"\n"+steer+" · 张力 "+Mathf.RoundToInt(session.Tension*100)+"% · 余线 "+session.Distance.ToString("0.0")+" 米";
+                case CatchPhase.Caught:return "鱼获已处理 · 右扳机蓄力松开或 A 再抛一竿";
+                case CatchPhase.Escaped:return "鱼逃走了 · A 重试；鱼冲刺、跃水或张力高时放线";
+                default:return "右扳机按住蓄力，松开抛竿；向前挥手可增加抛距\nA 快捷抛竿；咬钩后 A 或右扳机提竿";
+            }
+        }
+
         private const int Slots=7;private const float Scale=.0005f;
         private FishingPrototype _c;
         private readonly Tag[] _tags=new Tag[2];
-        private Context _context=(Context)(-1);private string _nearby="";private float _teachUntil;
-        private sealed class Tag{public Canvas Canvas;public RectTransform Rect;public Image[] Glyphs=new Image[Slots];public Text[] Labels=new Text[Slots];public float Alpha;public CanvasGroup Group;}
+        private Context _context=(Context)(-1);private string _nearby="";private float _teachUntil;private int _taughtContexts;
+        private sealed class Tag{public Canvas Canvas;public RectTransform Rect;public Text Title;public Image[] Glyphs=new Image[Slots];public Text[] Labels=new Text[Slots];public float Alpha;public CanvasGroup Group;}
         public void Build(FishingPrototype c)
         {
             _c=c;
             for(int h=0;h<2;h++)
             {
-                var root=new GameObject(h==0?"XR left controller hints":"XR right controller hints",typeof(RectTransform),typeof(Canvas),typeof(CanvasGroup));root.layer=5;root.transform.SetParent(transform,false);
+                var root=new GameObject(h==0?"XR left controller hints":"XR right controller hints",typeof(RectTransform),typeof(Canvas),typeof(CanvasGroup),typeof(CanvasScaler));root.layer=5;root.transform.SetParent(transform,false);
                 var tag=_tags[h]=new Tag{Canvas=root.GetComponent<Canvas>(),Rect=root.GetComponent<RectTransform>(),Group=root.GetComponent<CanvasGroup>()};
+                root.GetComponent<CanvasScaler>().dynamicPixelsPerUnit=4;
                 tag.Canvas.renderMode=RenderMode.WorldSpace;tag.Canvas.worldCamera=c.viewCamera;tag.Rect.localScale=Vector3.one*Scale;tag.Rect.pivot=new Vector2(.5f,0);
-                var plate=root.AddComponent<Image>();plate.sprite=FishingUITheme.PaperSprite;plate.type=Image.Type.Sliced;plate.material=FishingUITheme.WorldMaterial;plate.raycastTarget=false;FishingUITheme.Bind(plate,0);
+                var plate=root.AddComponent<Image>();plate.sprite=FishingUITheme.StorybookPaperSprite;plate.type=Image.Type.Sliced;plate.material=FishingUITheme.WorldMaterial;plate.raycastTarget=false;FishingUITheme.Bind(plate,0);
+                var edge=new GameObject("Gilt star edge",typeof(RectTransform),typeof(Image));edge.layer=5;edge.transform.SetParent(root.transform,false);
+                var er=edge.GetComponent<RectTransform>();er.anchorMin=Vector2.zero;er.anchorMax=Vector2.one;er.offsetMin=er.offsetMax=Vector2.zero;
+                var frame=edge.GetComponent<Image>();frame.sprite=FishingUITheme.GiltFrameSprite;frame.type=Image.Type.Sliced;frame.material=FishingUITheme.WorldMaterial;frame.raycastTarget=false;FishingUITheme.Bind(frame,4);
+                var title=new GameObject("Controller context heading",typeof(RectTransform),typeof(Text));title.layer=5;title.transform.SetParent(root.transform,false);
+                tag.Title=title.GetComponent<Text>();tag.Title.fontSize=27;tag.Title.material=FishingUITheme.WorldMaterial;tag.Title.raycastTarget=false;FishingUITheme.StyleHeading(tag.Title);
+                var titleRect=tag.Title.rectTransform;titleRect.anchorMin=titleRect.anchorMax=titleRect.pivot=new Vector2(0,1);titleRect.anchoredPosition=new Vector2(14,-6);titleRect.sizeDelta=new Vector2(400,44);
                 for(int i=0;i<Slots;i++)
                 {
                     var g=new GameObject("Glyph",typeof(RectTransform),typeof(Image));g.layer=5;g.transform.SetParent(root.transform,false);
-                    var grt=g.GetComponent<RectTransform>();grt.anchorMin=grt.anchorMax=grt.pivot=new Vector2(0,1);grt.anchoredPosition=new Vector2(14,-12-i*40);grt.sizeDelta=new Vector2(36,36);
+                    var grt=g.GetComponent<RectTransform>();grt.anchorMin=grt.anchorMax=grt.pivot=new Vector2(0,1);grt.anchoredPosition=new Vector2(14,-52-i*40);grt.sizeDelta=new Vector2(36,36);
                     tag.Glyphs[i]=g.GetComponent<Image>();tag.Glyphs[i].material=FishingUITheme.WorldMaterial;tag.Glyphs[i].raycastTarget=false;FishingUITheme.Bind(tag.Glyphs[i],4);
                     var t=new GameObject("Label",typeof(RectTransform),typeof(Text));t.layer=5;t.transform.SetParent(root.transform,false);
-                    var trt=t.GetComponent<RectTransform>();trt.anchorMin=trt.anchorMax=trt.pivot=new Vector2(0,1);trt.anchoredPosition=new Vector2(58,-12-i*40);trt.sizeDelta=new Vector2(300,36);
+                    var trt=t.GetComponent<RectTransform>();trt.anchorMin=trt.anchorMax=trt.pivot=new Vector2(0,1);trt.anchoredPosition=new Vector2(58,-52-i*40);trt.sizeDelta=new Vector2(300,36);
                     var text=tag.Labels[i]=t.GetComponent<Text>();text.font=FishingUIFont.Font;text.fontSize=24;text.alignment=TextAnchor.MiddleLeft;text.material=FishingUITheme.WorldMaterial;text.raycastTarget=false;
                     text.horizontalOverflow=HorizontalWrapMode.Overflow;FishingUITheme.Bind(text,2);
                 }
@@ -102,17 +161,17 @@ namespace BoatAttack.Fishing
             {
                 var rows=Rows(context,h==0);
                 // The right tag leads with what A does right here (the desktop "E ..." prompt, in PICO words).
-                if(h==1 && _nearby.Length>0){var list=new System.Collections.Generic.List<(string,string)>{("A",_nearby)};list.AddRange(rows);rows=list.ToArray();}var tag=_tags[h];float width=0;
+                if(h==1 && _nearby.Length>0){var list=new System.Collections.Generic.List<(string,string)>{("A",_nearby)};list.AddRange(rows);rows=list.ToArray();}var tag=_tags[h];tag.Title.text=ContextNames[(int)context]+(h==0?" · 左手":" · 右手");float width=tag.Title.preferredWidth+14;
                 for(int i=0;i<Slots;i++)
                 {
                     bool used=i<rows.Length;tag.Glyphs[i].gameObject.SetActive(false);tag.Labels[i].gameObject.SetActive(used);if(!used)continue;
                     var (key,text)=rows[i];bool glyph=key!="Stick" && key!="Click" && key!="Menu";
                     if(glyph){tag.Glyphs[i].sprite=FishingUITheme.ControllerGlyph(key);tag.Glyphs[i].gameObject.SetActive(true);}
                     tag.Labels[i].text=glyph?text:"【"+KeyName(key,h==0)+"】"+text;
-                    tag.Labels[i].rectTransform.anchoredPosition=new Vector2(glyph?58:14,-12-i*40);
+                    tag.Labels[i].rectTransform.anchoredPosition=new Vector2(glyph?58:14,-52-i*40);
                     width=Mathf.Max(width,tag.Labels[i].rectTransform.anchoredPosition.x+tag.Labels[i].preferredWidth);
                 }
-                tag.Rect.sizeDelta=new Vector2(width+18,rows.Length*40+20);
+                tag.Rect.sizeDelta=new Vector2(width+18,rows.Length*40+60);tag.Title.rectTransform.sizeDelta=new Vector2(width-14,44);
             }
         }
         /// <summary>Validation capture: fills a tag for a context without needing a headset.</summary>
@@ -131,9 +190,10 @@ namespace BoatAttack.Fishing
             {
                 _context=context;Fill(context);
                 string key="FishingXR.Taught."+context;
-                if(PlayerPrefs.GetInt(key,0)==0)
+                if(_c.HasIsolatedProfile?(_taughtContexts&(1<<(int)context))==0:PlayerPrefs.GetInt(key,0)==0)
                 {
-                    PlayerPrefs.SetInt(key,1);PlayerPrefs.Save();_teachUntil=Time.unscaledTime+12;
+                    _taughtContexts|=1<<(int)context;
+                    if(!_c.HasIsolatedProfile){PlayerPrefs.SetInt(key,1);PlayerPrefs.Save();}_teachUntil=Time.unscaledTime+12;
                     if(context!=Context.Notebook && context!=Context.Story)_c.Notice("首次"+ContextNames[(int)context]+" · 手柄上方显示按键；以后抬起手柄看向它即可再次查看。",6);
                 }
             }
@@ -151,7 +211,7 @@ namespace BoatAttack.Fishing
                     tag.Rect.SetPositionAndRotation(position,Quaternion.LookRotation(position-eye.position,Vector3.up));
                 }
                 tag.Alpha=Mathf.MoveTowards(tag.Alpha,show?1:0,Time.unscaledDeltaTime*6);
-                tag.Group.alpha=tag.Alpha;tag.Canvas.gameObject.SetActive(tag.Alpha>0);
+                tag.Group.alpha=tag.Alpha;tag.Canvas.gameObject.SetActive(tag.Alpha>0);if(tag.Alpha>0)FishingUITheme.StyleHeading(tag.Title);
             }
         }
     }

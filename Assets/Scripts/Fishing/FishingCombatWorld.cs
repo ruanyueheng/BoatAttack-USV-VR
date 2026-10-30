@@ -209,6 +209,7 @@ namespace BoatAttack.Fishing
             if(Health>0)return;
             EndChallenge("试炼失利，已安全回港；物品与金币全部保留。");_c.ReturnToHarbor();
         }
+        public void CancelChallenge()=>EndChallenge(null);
         private void EndChallenge(string notice)
         {Challenging=false;Health=100;foreach(var e in _enemies){e.Root.gameObject.SetActive(false);e.Ring.enabled=false;}if(!string.IsNullOrEmpty(notice))_c.Notice(notice,5);}
         private void OnDestroy(){foreach(var item in _owned)if(item!=null)Destroy(item);}

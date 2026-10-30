@@ -44,20 +44,20 @@ namespace BoatAttack.EditorTools
             FeatureHelpers.RefreshFeatures(BuildTargetGroup.Android);
             var xr=OpenXRSettings.GetSettingsForBuildTargetGroup(BuildTargetGroup.Android);
             foreach(var feature in xr.GetFeatures<UnityEngine.XR.OpenXR.Features.OpenXRFeature>())feature.enabled=false;
-            foreach(var id in new[]{"com.unity.openxr.feature.pico","com.unity.openxr.pico.features","com.unity.openxr.feature.input.PICO4Ultratouch","com.unity.openxr.feature.input.PICO4touch",FoveationFeature.featureId})
+            foreach(var id in new[]{"com.unity.openxr.feature.pico","com.unity.openxr.pico.features","com.unity.openxr.feature.input.PICO4Ultratouch","com.unity.openxr.feature.input.PICO4touch",FoveationFeature.featureId,Unity.XR.OpenXR.Features.PICOSupport.PerformanceSettingsFeature.featureId})
             {
                 var feature=FeatureHelpers.GetFeatureWithIdForBuildTarget(BuildTargetGroup.Android,id);
                 if(feature==null)throw new Exception("Missing pinned SDK feature: "+id);feature.enabled=true;EditorUtility.SetDirty(feature);
             }
             xr.renderMode=OpenXRSettings.RenderMode.SinglePassInstanced;EditorUtility.SetDirty(xr);
-            // PICO 4 Ultra GPU budget: fixed foveation and ASTC are the cheapest per-pixel and bandwidth wins.
+            // Light peripheral foveation preserves readability when looking around without turning the head.
             var foveation=Unity.XR.OpenXR.Features.PICOSupport.PICOProjectSetting.GetProjectConfig();
             foveation.foveationEnable=true;foveation.foveatedRenderingMode=FoveationFeature.FoveatedRenderingMode.FixedFoveatedRendering;
-            foveation.foveatedRenderingLevel=FoveationFeature.FoveatedRenderingLevel.Medium;EditorUtility.SetDirty(foveation);
+            foveation.foveatedRenderingLevel=FoveationFeature.FoveatedRenderingLevel.Low;EditorUtility.SetDirty(foveation);
             EditorUserBuildSettings.androidBuildSubtarget=MobileTextureSubtarget.ASTC;
             FishingPicoQuality.Ensure();
             PlayerSettings.bundleVersion=FishingPrototype.Version;
-            PlayerSettings.Android.bundleVersionCode=44;
+            PlayerSettings.Android.bundleVersionCode=52;
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android,ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures=AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion=AndroidSdkVersions.AndroidApiLevel29;
@@ -79,7 +79,8 @@ namespace BoatAttack.EditorTools
                 ConfigureSettings();FishingScriptBinding.ValidateScene();AddressableAssetSettings.BuildPlayerContent(out var content);
                 if(!string.IsNullOrEmpty(content.Error))throw new Exception(content.Error);
                 string output=Path.GetFullPath("Builds/FishingPrototype-v"+FishingPrototype.Version+"-Android/FishingPrototype.apk");Directory.CreateDirectory(Path.GetDirectoryName(output));
-                var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{FishingPrototypeEditor.ScenePath},locationPathName=output,target=BuildTarget.Android,options=BuildOptions.None});
+                // LZ4 blocks support random asset reads without repeatedly inflating loose APK entries.
+                var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{FishingPrototypeEditor.ScenePath},locationPathName=output,target=BuildTarget.Android,options=BuildOptions.CompressWithLz4});
                 if(report.summary.result!=BuildResult.Succeeded)throw new Exception("Android build failed: "+report.summary.result);
                 Debug.Log("[XR-BUILD] PASS: ARM64 APK built: "+output+". Build validation does not certify headset comfort or controller calibration.");EditorApplication.Exit(0);
             }

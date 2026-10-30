@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.44.0";
+        public const string Version = "0.52.0";
         public FishingHandGames HandGames { get; private set; }
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
@@ -126,7 +126,7 @@ namespace BoatAttack.Fishing
             _previousTargetFrameRate=Application.targetFrameRate;
             _xrActive=UnityEngine.XR.XRSettings.isDeviceActive;Application.targetFrameRate=_xrActive?-1:60;
             ReadAcceptanceOptions();
-            Automated = Application.isBatchMode || HasArgument("-fishing-field-capture") || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || HasArgument(FishingPerformanceVoyage.EnableFlag) || HasArgument(FishingFeedbackCapture.EnableFlag) || HasArgument(FishingUICapture.EnableFlag) || HasArgument(FishingStoryCapture.EnableFlag) || HasArgument(FishingFrameProbe.EnableFlag) || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
+            Automated = (Application.isBatchMode && !XRSimulatorRequested) || FishingPicoTour.Requested || HasArgument("-fishing-field-capture") || HasArgument("-fishing-capture") || HasArgument("-fishing-autoplay") || HasArgument(FishingPerformanceVoyage.EnableFlag) || HasArgument(FishingFeedbackCapture.EnableFlag) || HasArgument(FishingUICapture.EnableFlag) || HasArgument(FishingStoryCapture.EnableFlag) || HasArgument(FishingFrameProbe.EnableFlag) || (AcceptanceOptions != null && AcceptanceOptions.Automatic);
             SavePath = AcceptanceOptions != null ? AcceptanceOptions.ProfilePath(Application.temporaryCachePath, false)
                 : Path.Combine(Automated ? Application.temporaryCachePath : Application.persistentDataPath,
                 Automated ? "fishing-test-" + Guid.NewGuid().ToString("N") + ".json" : "boatattack-fishing-v13.json");
@@ -230,6 +230,7 @@ namespace BoatAttack.Fishing
             else if(HasArgument("-fishing-autoplay") || HasArgument("-fishing-capture")) gameObject.AddComponent<FishingAutoplay>().Controller=this;
             if(HasArgument(FishingFeedbackCapture.EnableFlag))gameObject.AddComponent<FishingFeedbackCapture>().Begin(this);
             if(HasArgument(FishingUICapture.EnableFlag))gameObject.AddComponent<FishingUICapture>().Begin(this);
+            if(FishingPicoTour.Requested)gameObject.AddComponent<FishingPicoTour>().Begin(this);
             Debug.Log("[FISHING] Prototype v"+Version+" initialized. Procedural and Hunyuan fish; desktop/XR input.");
         }
 
@@ -287,9 +288,9 @@ namespace BoatAttack.Fishing
                 }
                 Shore.Tick(false);AnimateEquipment();return;
             }
-            bool notebookInput=XRNotebook.Tick(focused && !Automated);
+            bool notebookInput=!Automated && XRNotebook.Tick(focused);
             if(notebookInput || XRNotebook.IsOpen){if(XRNotebook.IsOpen)Hands.ResetInteraction();Shore.Tick(false);AnimateEquipment();return;}
-            bool dockInput=DockConsole.Tick(focused && !Automated && !Ashore);
+            bool dockInput=DockConsole.Tick(focused && !Automated && (!Ashore || HasPendingCatch));
             if(dockInput || DockConsole.BlocksGameplay)Hands.ResetInteraction();
             if(dockInput){Shore.Tick(false);AnimateEquipment();return;}
             if(HasPendingCatch){if(!Automated && focused)ReadPendingDesktop(k);Shore.Tick(false);AnimateEquipment();return;}
@@ -523,7 +524,7 @@ namespace BoatAttack.Fishing
             Anchored=true;ChartExpanded=false;ShowDetails=false;HarborDeskOpen=false;_anchor=Player.engine.RB.position;_anchorRotation=Player.transform.rotation;
             var v=Player.engine.RB.velocity;Player.engine.RB.velocity=new Vector3(0,v.y,0);
             Session.Cancel();_previousPhase=CatchPhase.Idle;
-            Notice("已停船。按住左键后摆，松开甩竿；轻点也可近抛。Q 起航。",7f);
+            Notice(_xrActive?"已停船 · A 快捷拿竿并抛出，或右握把握住竿柄。\n拿竿后按住右扳机蓄力、松开抛竿；按下右摇杆收竿起航。":"已停船。按住左键后摆，松开甩竿；轻点也可近抛。Q 起航。",8f);
         }
         public bool Cast(float power = .55f)
         {
@@ -561,7 +562,10 @@ namespace BoatAttack.Fishing
         public bool Scoop()=>CatchRig!=null && CatchRig.RequestScoop();
         public void LeaveStation()
         {
-            if(Paused || Ashore)return;if(HasPendingCatch){Notice("先将待处理鱼获入箱或放生。",4);return;}Anchored=false;ChartExpanded=true;HarborDeskOpen=false;ShowDetails=false;Session.Cancel();AutomationReel=false;Notice("工具已收起，W 前进，A/D 转向，S 倒航 / Shift 刹车；青色港口按 E 交易。");
+            if(Paused || Ashore)return;if(HasPendingCatch){Notice("先将待处理鱼获入箱或放生。",4);return;}
+            Anchored=false;ChartExpanded=true;HarborDeskOpen=false;ShowDetails=false;Session.Cancel();CastMotion.Reset();AutomationReel=_reeling=false;
+            Hands?.ResetInteraction();CatchRig?.Recover();
+            Notice(UnityEngine.XR.XRSettings.isDeviceActive?"已收竿起航 · 左摇杆前进 / 倒车，右摇杆掌舵，左扳机刹车。":"工具已收起，W 前进，A/D 转向，S 倒航 / Shift 刹车；青色港口按 E 交易。");
         }
         public int Sell()
         {

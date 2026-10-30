@@ -181,7 +181,7 @@ QualitySettings:
     skinWeights: 2
     globalTextureMipmapLimit: 0
     textureMipmapLimitSettings: []
-    anisotropicTextures: 1
+    anisotropicTextures: 2
     antiAliasing: 0
     softParticles: 0
     softVegetation: 1
@@ -195,9 +195,9 @@ QualitySettings:
     enableLODCrossFade: 1
     streamingMipmapsActive: 1
     streamingMipmapsAddAllCameras: 1
-    streamingMipmapsMemoryBudget: 256
+    streamingMipmapsMemoryBudget: 512
     streamingMipmapsRenderersPerFrame: 64
-    streamingMipmapsMaxLevelReduction: 4
+    streamingMipmapsMaxLevelReduction: 2
     streamingMipmapsMaxFileIORequests: 1024
     particleRaycastBudget: 1024
     asyncUploadTimeSlice: 2

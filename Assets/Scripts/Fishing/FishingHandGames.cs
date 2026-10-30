@@ -309,11 +309,7 @@ namespace BoatAttack.Fishing
             }
             return true;
         }
-        private static bool Grip(InputDevice device)
-        {
-            if(device.TryGetFeatureValue(CommonUsages.grip,out float amount))return amount>=.55f;
-            device.TryGetFeatureValue(CommonUsages.gripButton,out bool pressed);return pressed;
-        }
+        private static bool Grip(InputDevice device)=>FishingXRInput.Grip(device);
         public void Present()
         {
             float dt=_visualFrame==Time.frameCount?0:Time.unscaledDeltaTime;_visualFrame=Time.frameCount;

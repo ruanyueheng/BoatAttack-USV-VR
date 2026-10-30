@@ -235,7 +235,7 @@ namespace BoatAttack.Fishing
                 case 3:return key+(LightsOn?"关闭":"打开")+"室内灯";
                 case 4:return key+"坐在沙发上休息";
                 case 5:return key+(TelevisionOn?"关闭":"打开")+"潮汐放映机";
-                case 6:return key+"打开家园储物箱 · 存入 / 取出";
+                case 6:return XRSettings.isDeviceActive?"握住箱盖向上掀 · A 亦可打开储物箱":key+"打开家园储物箱 · 存入 / 取出";
                 default:return null;
             }
         }

@@ -2,12 +2,14 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using Unity.XR.OpenXR.Features.PICOSupport;
 namespace BoatAttack.Fishing
 {
     /// <summary>PICO/Android runtime copy (also on desktop with -fishing-pico-quality for measurement). Project quality assets and desktop settings are never rewritten.</summary>
     public sealed class FishingMobileQuality : MonoBehaviour
     {
         public const string PreviewFlag="-fishing-pico-quality";
+        public const float RenderScale=1f;
         public const float LodBias=.65f;
         public static bool Requested=>Application.platform==RuntimePlatform.Android || System.Array.IndexOf(System.Environment.GetCommandLineArgs(),PreviewFlag)>=0;
         private static bool Has(string flag)=>System.Array.IndexOf(System.Environment.GetCommandLineArgs(),flag)>=0;
@@ -28,14 +30,14 @@ namespace BoatAttack.Fishing
             if(source==null)return;
             _mobile=Instantiate(source);_mobile.name="PICO mobile runtime quality";
             // -pico-keep-* flags exist only to measure each cost separately on desktop.
-            _mobile.renderScale=.85f;_mobile.msaaSampleCount=4;_mobile.shadowDistance=Has("-pico-keep-shadow40")?40:Has("-pico-no-shadows")?0:25;
+            _mobile.renderScale=RenderScale;_mobile.msaaSampleCount=4;_mobile.shadowDistance=Has("-pico-keep-shadow40")?40:Has("-pico-no-shadows")?0:25;
             bool sceneTextures=Has("-pico-keep-depth");
             _mobile.supportsCameraDepthTexture=sceneTextures;_mobile.supportsCameraOpaqueTexture=sceneTextures;
             if(sceneTextures)Shader.DisableKeyword("_WATER_NO_SCENE_TEXTURES");else Shader.EnableKeyword("_WATER_NO_SCENE_TEXTURES");_mobile.shadowCascadeCount=1;_mobile.supportsHDR=false;
             _mobile.maxAdditionalLightsCount=2;
             _mobile.useSRPBatcher=true;
             QualitySettings.renderPipeline=_mobile;_lodBias=QualitySettings.lodBias;QualitySettings.lodBias=LodBias;
-            // shortcut: conservative fixed render scale until on-device GPU timings justify dynamic resolution.
+            // Preserve the headset render target's full resolution; undersampling blurs text and distant detail.
             StartCoroutine(ApplyDetailAfterBuild());
         }
         private IEnumerator WarmShadersAfterBuild()
@@ -49,7 +51,15 @@ namespace BoatAttack.Fishing
             // The world is assembled over the first frames; later-spawned props keep their default visibility.
             for(int i=0;i<5;i++)yield return null;
             if(HeadsetPreview)foreach(var planar in FindObjectsOfType<PlanarReflections>(true))planar.enabled=false;
-            ApplyDetailBudget(gameObject.scene);
+            var detail=ApplyDetailBudget(gameObject.scene);
+            if(PerformanceSettingsFeature.isExtensionEnable)
+            {
+                var cpu=PerformanceSettingsFeature.XrPerfSettingsSetPerformanceLevelEXT(XrPerfSettingsDomainEXT.XR_PERF_SETTINGS_DOMAIN_CPU_EXT,XrPerfSettingsLevelEXT.XR_PERF_SETTINGS_LEVEL_SUSTAINED_HIGH_EXT);
+                var gpu=PerformanceSettingsFeature.XrPerfSettingsSetPerformanceLevelEXT(XrPerfSettingsDomainEXT.XR_PERF_SETTINGS_DOMAIN_GPU_EXT,XrPerfSettingsLevelEXT.XR_PERF_SETTINGS_LEVEL_SUSTAINED_HIGH_EXT);
+                Debug.Log("[PICO-PRESENTATION] sustained performance CPU="+cpu+" GPU="+gpu);
+            }
+            Debug.Log("[PICO-PRESENTATION] version="+FishingPrototype.Version+" renderScale="+_mobile.renderScale+" MSAA="+_mobile.msaaSampleCount
+                +" eyeTexture="+UnityEngine.XR.XRSettings.eyeTextureWidth+"x"+UnityEngine.XR.XRSettings.eyeTextureHeight+" turn="+FishingXRComfort.TurnName+" "+detail);
         }
         private static Transform Foliage(Transform t)
         {

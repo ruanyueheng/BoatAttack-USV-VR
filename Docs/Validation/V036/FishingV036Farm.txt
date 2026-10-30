@@ -1,0 +1,77 @@
+[V036-FARM] CHECK: 仅操作临时隔离存档
+[V036-FARM] CHECK: Real home berth allows the player to reach the persistent watering can
+[V036-FARM] CHECK: The same visible can starts on the well-side stand
+[V036-FARM] CHECK: The actual island mesh has a round opening beneath the well, offset (0.00, 0.00, 0.00)
+[V036-FARM] CHECK: The actual island mesh has a round opening beneath the well, offset (-0.60, 0.00, 0.00)
+[V036-FARM] CHECK: The actual island mesh has a round opening beneath the well, offset (0.60, 0.00, 0.00)
+[V036-FARM] CHECK: The actual island mesh has a round opening beneath the well, offset (0.00, 0.00, 0.60)
+[V036-FARM] CHECK: The actual island mesh has a round opening beneath the well, offset (0.00, 0.00, -0.60)
+[V036-FARM] CHECK: Visible animated well water lies below the stone rim instead of covering grass at ground level
+[V036-FARM] CHECK: The water surface spans the actual shaft opening
+[V036-FARM] CHECK: Masonry and the submerged well floor extend more than five metres below the island
+[V036-FARM] CHECK: Actor capsule can stand at the actual farm target 12
+[V036-FARM] CHECK: Relocated farm stance settles onto its physical floor 12
+[V036-FARM] CHECK: Production farm targeting selects 12
+[V036-FARM] CHECK: Actor capsule can stand at the actual farm target 0
+[V036-FARM] CHECK: Relocated farm stance settles onto its physical floor 0
+[V036-FARM] CHECK: Production farm targeting selects 0
+[V036-FARM] CHECK: A plot cannot create a can or water without picking it up
+[V036-FARM] CHECK: Actor capsule can stand at the actual farm target 15
+[V036-FARM] CHECK: Relocated farm stance settles onto its physical floor 15
+[V036-FARM] CHECK: Production farm targeting selects 15
+[V036-FARM] CHECK: Pickup reaches for the can before ownership changes
+[V036-FARM] CHECK: Cancelled pickup leaves the original can on its stand
+[V036-FARM] CHECK: Farm action reaches its visible animation phase before completion
+[V036-FARM] CHECK: Actual palm reaches the handle at pickup contact, distance 0.65, error 1.116899E-05
+[V036-FARM] CHECK: Farm action reaches its visible animation phase before completion
+[V036-FARM] CHECK: Actual palm reaches the handle at pickup contact, distance 0.7, error 1.590495E-05
+[V036-FARM] CHECK: Unreachable handle rejects pickup before any ownership change at 0.78
+[V036-FARM] CHECK: Unreachable handle rejects pickup before any ownership change at 0.88
+[V036-FARM] CHECK: Unreachable handle rejects pickup before any ownership change at 0.98
+[V036-FARM] CHECK: At least one actual capsule stance reaches the can handle
+[V036-FARM] Farthest accepted tested can distance: 0.7
+[V036-FARM] CHECK: Actor capsule can stand at the actual farm target 15
+[V036-FARM] CHECK: Relocated farm stance settles onto its physical floor 15
+[V036-FARM] CHECK: Production farm targeting selects 15
+[V036-FARM] CHECK: Pickup can be retried after cancellation
+[V036-FARM] CHECK: Farm animation finishes and releases movement
+[V036-FARM] CHECK: Completed pickup carries the original can instead of spawning a prop
+[V036-FARM] CHECK: Solved source wrist follows the watering-can handle
+[V036-FARM] CHECK: Actor capsule can stand at the actual farm target 12
+[V036-FARM] CHECK: Relocated farm stance settles onto its physical floor 12
+[V036-FARM] CHECK: Production farm targeting selects 12
+[V036-FARM] CHECK: Well refill starts without granting water immediately
+[V036-FARM] CHECK: Farm action reaches its visible animation phase before completion
+[V036-FARM] CHECK: The real bucket lowers fully into the shaft water before lifting or granting a refill
+[V036-FARM] CHECK: Farm action reaches its visible animation phase before completion
+[V036-FARM] CHECK: The authored bucket rises and visibly pours into the held can
+[V036-FARM] REFILL camera=(-169.800, 3.753, 0.752) actor=(-169.800, 2.269, 0.700) bucket=(-169.768, 3.396, 1.692) can=(-169.605, 3.235, 0.854)
+[V036-FARM] REFILL bucket bounds=Center: (-169.75, 3.64, 1.47), Extents: (0.38, 0.47, 0.50)
+[V036-FARM] CHECK: The full-size pouring bucket and handle stay outside the first-person eye and near clip plane
+[V036-FARM] CHECK: Interrupted bucket pouring grants no water and retains the carried can
+[V036-FARM] CHECK: The cancelled refill can restart
+[V036-FARM] CHECK: Farm animation finishes and releases movement
+[V036-FARM] CHECK: Only a completed refill fills the bounded, saved water reservoir
+[V036-FARM] CHECK: Refilled ivory can visibly contains water up to its opening
+[V036-FARM] CHECK: Actor capsule can stand at the actual farm target 0
+[V036-FARM] CHECK: Relocated farm stance settles onto its physical floor 0
+[V036-FARM] CHECK: Production farm targeting selects 0
+[V036-FARM] CHECK: Repeated input cannot overlap watering or consume water at its start
+[V036-FARM] CHECK: Farm action reaches its visible animation phase before completion
+[V036-FARM] CHECK: Visible spout water and soil splashes play before the final crop transaction
+[V036-FARM] CHECK: Pausing cancels an unfinished pour without water loss or crop growth
+[V036-FARM] CHECK: Watering restarts with the same carried can
+[V036-FARM] CHECK: Farm animation finishes and releases movement
+[V036-FARM] CHECK: Completion waters one crop and consumes exactly one saved charge
+[V036-FARM] CHECK: A watered crop cannot charge the can again on repeated input
+[V036-FARM] CHECK: Real JSON save preserves the existing water and crop schema
+[V036-FARM] CHECK: Actor capsule can stand at the actual farm target 15
+[V036-FARM] CHECK: Relocated farm stance settles onto its physical floor 15
+[V036-FARM] CHECK: Production farm targeting selects 15
+[V036-FARM] CHECK: Returning the can animates before releasing the handle
+[V036-FARM] CHECK: Farm action reaches its visible animation phase before completion
+[V036-FARM] CHECK: Actual palm remains attached to the handle when the can contacts its stand
+[V036-FARM] CHECK: Farm animation finishes and releases movement
+[V036-FARM] CHECK: The same can rests on the original stand with its remaining water intact
+[V036-FARM] CHECK: Loading a profile safely docks the prop without duplicating or discarding saved water
+[V036-FARM] PASS: v0.36.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.XR;
+using BoatAttack.Fishing;
 
 namespace BoatAttack.VR
 {
@@ -24,7 +25,7 @@ namespace BoatAttack.VR
             {
                 if (left.TryGetFeatureValue(CommonUsages.primary2DAxis, out var axis)) s.throttle = axis.y;
                 if (right.TryGetFeatureValue(CommonUsages.primary2DAxis, out axis)) s.steering = axis.x;
-                left.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out s.boost);
+                s.boost=FishingXRInput.StickClick(left)||FishingXRInput.Grip(left);
             }
             if (leftTracked)
             {
@@ -33,7 +34,7 @@ namespace BoatAttack.VR
             }
             if (rightTracked)
             {
-                right.TryGetFeatureValue(CommonUsages.triggerButton, out s.interact);
+                s.interact=FishingXRInput.Trigger(right);
                 right.TryGetFeatureValue(CommonUsages.primaryButton, out s.pause);
                 right.TryGetFeatureValue(CommonUsages.secondaryButton, out s.map);
             }

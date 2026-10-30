@@ -10,13 +10,14 @@ namespace BoatAttack.Fishing
         public FishingAcceptanceOptions AcceptanceOptions { get; private set; }
         public FishingAcceptance Acceptance { get; private set; }
         public bool HasIsolatedProfile => Automated || AcceptanceOptions != null;
+        public static bool XRSimulatorRequested => Application.isEditor && HasArgument("-fishing-xr-simulator") && HasArgument(FishingAcceptanceOptions.EnableFlag);
 
         private void ReadAcceptanceOptions()
         {
             try
             {
                 AcceptanceOptions = FishingAcceptanceOptions.Parse(Environment.GetCommandLineArgs());
-                if (AcceptanceOptions != null && Application.isBatchMode && !AcceptanceOptions.Smoke)
+                if (AcceptanceOptions != null && Application.isBatchMode && !AcceptanceOptions.Smoke && !XRSimulatorRequested)
                     throw new ArgumentException("Headless acceptance requires -fishing-acceptance-smoke; screenshot capture needs a visible player.");
             }
             catch (ArgumentException)

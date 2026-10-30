@@ -86,6 +86,12 @@ namespace BoatAttack.Fishing
             _palm.gameObject.SetActive(_palmScale > 0);
             if (_palmScale <= 0 || !LeftHand(out p, out q)) return;
             FishingUITheme.StyleMap(_chartMaterial);
+            // A palm-sized chart needs stable land/water contrast even under the night theme.
+            _chartMaterial.SetColor("_Water", new Color(.055f, .14f, .23f));
+            _chartMaterial.SetColor("_Low", new Color(.78f, .72f, .51f));
+            _chartMaterial.SetColor("_Land", new Color(.52f, .72f, .47f));
+            _chartMaterial.SetColor("_High", new Color(.98f, .94f, .81f));
+            _chartMaterial.SetColor("_Unknown", new Color(.14f, .21f, .29f, 1));
             var away = Vector3.ProjectOnPlane(p - eye.position, Vector3.up); if (away.sqrMagnitude < 1e-4f) away = Vector3.ProjectOnPlane(eye.forward, Vector3.up);
             _palm.SetPositionAndRotation(p + Vector3.up * .07f, Quaternion.LookRotation(away.normalized, Vector3.up) * Quaternion.Euler(-30, 0, 0));
             _palm.localScale = Vector3.one * Mathf.SmoothStep(0, 1, _palmScale);

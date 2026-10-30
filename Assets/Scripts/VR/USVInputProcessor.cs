@@ -24,7 +24,8 @@ namespace BoatAttack.VR
             var state = raw;
             state.throttle = Axis(raw.throttle, deadzone);
             state.steering = Axis(raw.steering, deadzone);
-            state.brake = Math.Max(0f, Math.Min(1f, Finite(raw.brake)));
+            // Resting analog triggers can report tiny nonzero values that otherwise disable boost continuously.
+            state.brake = Math.Max(0f, Axis(raw.brake, Math.Min(.03f,Math.Max(0f,Finite(deadzone)))));
             state.boost = raw.boost && state.throttle > 0f && state.brake == 0f;
             state.reset = raw.reset && !_previous.reset;
             state.pause = raw.pause && !_previous.pause;

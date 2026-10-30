@@ -1,0 +1,53 @@
+[V035] CHECK: 仅操作临时隔离存档
+[V035] CHECK: Start labels identify the actual input device
+[V035] CHECK: XR handcraft paper follows the day/night palette and its brush-script title has a glyph outline
+[V035] CHECK: Hands-on approach 0
+[V035] CHECK: Real handcraft can begin 0
+[V035] CHECK: Tabletop camera follows the settled standing eye after a crouched start 0
+[V035] CHECK: Both moving grips remain reachable through the complete motion 0 max error=1.638163E-05
+[V035] CHECK: Source arms remain visible after the final presentation pass 0
+[V035] CHECK: Source palm reaches its moving attachment 0 left=True error=3.371748E-06
+[V035] CHECK: Working hand stays in the real camera view 0 left=True (0.21, 0.58, 0.47)
+[V035] CHECK: Source palm reaches its moving attachment 0 left=False error=2.198111E-06
+[V035] CHECK: Working hand stays in the real camera view 0 left=False (0.67, 0.58, 0.47)
+[V035] CHECK: Instrument stays over the centre of its table 0
+[V035] CHECK: Visible shells tumble and real sand particles fall while shaking
+[V035] CHECK: Receiver remains centred and accumulates the sifted material
+[V035] CHECK: Cancel clears particles and restores the normal body 0
+[V035] CHECK: Hands-on approach 1
+[V035] CHECK: Real handcraft can begin 1
+[V035] CHECK: Tabletop camera follows the settled standing eye after a crouched start 1
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Crank remains on the working hand's side of the reel
+[V035] CHECK: Both moving grips remain reachable through the complete motion 1 max error=1.729809E-05
+[V035] CHECK: Source arms remain visible after the final presentation pass 1
+[V035] CHECK: Source palm reaches its moving attachment 1 left=True error=2.396077E-06
+[V035] CHECK: Working hand stays in the real camera view 1 left=True (0.33, 0.55, 0.46)
+[V035] CHECK: Source palm reaches its moving attachment 1 left=False error=1.587946E-05
+[V035] CHECK: Working hand stays in the real camera view 1 left=False (0.69, 0.55, 0.55)
+[V035] CHECK: Instrument stays over the centre of its table 1
+[V035] CHECK: Continuous flax runs from the supply coil to the turning spindle
+[V035] CHECK: Cancel clears particles and restores the normal body 1
+[V035] PASS: v0.36.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。

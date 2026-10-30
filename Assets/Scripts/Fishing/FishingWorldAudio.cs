@@ -27,17 +27,17 @@ namespace BoatAttack.Fishing
             "StingerDiscover", "StingerTender", "StingerRelic",
             "RealmWindStep", "RealmWindSolve", "RealmWindEcho", "RealmForestStep", "RealmForestSolve", "RealmForestEcho",
             "RealmWreckStep", "RealmWreckSolve", "RealmWreckEcho", "RealmStarsStep", "RealmStarsSolve", "RealmStarsEcho",
-            "SeaFogHorn", "SeaWhaleSpout", "SeaGlow"
+            "SeaFogHorn", "SeaWhaleSpout", "SeaGlow", "SeaMarketTrade", "SeaMarketLoop"
         };
         private static readonly HashSet<string> LoopKeys = new HashSet<string>(StringComparer.Ordinal)
         {
             "BoatScrapeLoop", "FurnaceLoop", "CookSizzleLoop", "RainLoop", "ForestLoop", "WreckLoop",
-            "WindCorridorLoop", "StarsLoop", "WellRopeLoop", "WaterPourLoop", "WaterSprinkleLoop", "TVLoop", "LineTensionLoop"
+            "WindCorridorLoop", "StarsLoop", "WellRopeLoop", "WaterPourLoop", "WaterSprinkleLoop", "TVLoop", "LineTensionLoop", "SeaMarketLoop"
         };
         private sealed class Shot
         {
             public AudioSource Source;
-            public bool BedContact;
+            public bool BedContact, RealmSignature;
         }
         private sealed class LoopVoice
         {
@@ -78,6 +78,8 @@ namespace BoatAttack.Fishing
             && (_c.Prologue == null || !_c.Prologue.Open) && (_c.Home == null || !_c.Home.Sleeping);
         private bool BedContactContext => CommonContext && !_c.Paused && !_c.StartMenuOpen
             && (_c.Prologue == null || !_c.Prologue.Open);
+        private bool RealmSignatureContext => CommonContext && !_c.Paused && !_c.StartMenuOpen
+            && (_c.Home == null || !_c.Home.Sleeping);
 
         public void Build(FishingPrototype controller)
         {
@@ -132,7 +134,7 @@ namespace BoatAttack.Fishing
             || key == "StorageMove" || key == "CraftFinish" || key == "ForgeStrike" || key == "WorkbenchAssemble"
             || key == "LanternSwitch" || key == "TVSwitch" || key == "BagOpen" || key == "BagClose"
             || key == "BookOpen" || key == "BookClose" || key == "CoinGain" || key == "UIPage" || key == "UINotify"
-            || (key != null && key.StartsWith("Stinger", StringComparison.Ordinal));
+            || key == "SeaMarketTrade" || (key != null && key.StartsWith("Stinger", StringComparison.Ordinal));
         private static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
         private static bool Finite(Vector3 value) => Finite(value.x) && Finite(value.y) && Finite(value.z);
 
@@ -143,7 +145,9 @@ namespace BoatAttack.Fishing
         private static readonly string[] RealmThemes = { "Wind", "Forest", "Wreck", "Stars" };
         /// <summary>Per-realm signature timbre. action: "Step" (one mechanism advances), "Solve" (trial ready), "Echo" (shrine echo restored).</summary>
         public bool PlayRealm(int island, string action, Vector3 at, float gain = .5f)
-            => island >= 0 && island < RealmThemes.Length && Play("Realm" + RealmThemes[island] + action, at, gain);
+            => island >= 0 && island < RealmThemes.Length
+                && PlayRecorded("Realm" + RealmThemes[island] + action, at, gain, FishingAudioCategory.Effects, false,
+                    action == "Solve" || action == "Echo", true);
 
         /// <summary>Story beat phrase: "Discover", "Tender" or "Relic". 2D and allowed while a cutscene is open.</summary>
         public bool PlayStinger(string kind) => _c != null && Play("Stinger" + kind, _c.ExplorerPosition, .8f);
@@ -153,10 +157,11 @@ namespace BoatAttack.Fishing
             => _c != null && _c.Home != null && _c.Home.Sleeping
                 && PlayRecorded("CushionCloth", at, .4f, FishingAudioCategory.Effects, true);
 
-        private bool PlayRecorded(string cue, Vector3 at, float gain, FishingAudioCategory category, bool bedContact)
+        private bool PlayRecorded(string cue, Vector3 at, float gain, FishingAudioCategory category, bool bedContact,
+            bool realmSignature = false, bool realmCue = false)
         {
             bool ui = category == FishingAudioCategory.Effects && UiCue(cue);
-            if (!(bedContact ? BedContactContext : ui ? CommonContext : WorldContext) || !Finite(at) || !Finite(gain) || gain <= 0
+            if (!(bedContact ? BedContactContext : realmSignature ? RealmSignatureContext : ui ? CommonContext : WorldContext) || !Finite(at) || !Finite(gain) || gain <= 0
                 || (category != FishingAudioCategory.Effects && category != FishingAudioCategory.Ambient)
                 || (category == FishingAudioCategory.Effects ? _c.EffectsVolume : _c.AmbientVolume) <= 0
                 || cue == null || LoopKeys.Contains(cue)) return false;
@@ -171,11 +176,13 @@ namespace BoatAttack.Fishing
                 if (candidate.Source != null && !candidate.Source.isPlaying) { voice = candidate; break; }
             // Do not steal an audible voice: a crowded instant may omit a quiet detail, never stack without a bound.
             if (voice == null) return false;
-            voice.BedContact = bedContact;
+            voice.BedContact = bedContact; voice.RealmSignature = realmSignature;
+            // Completion phrases must reach the solver and finish over the immediately following story film.
+            voice.Source.spatialBlend = ui || realmSignature ? 0 : 1;
             voice.Source.transform.position = at; voice.Source.clip = clip;
             // Small per-play pitch/gain spread so repeated single-file cues do not sound machine-identical.
             voice.Source.pitch = UnityEngine.Random.Range(.95f, 1.05f); gain *= UnityEngine.Random.Range(.9f, 1f);
-            _c.SetAudioBaseVolume(voice.Source, Mathf.Clamp01(gain) * (ui ? .11f : category == FishingAudioCategory.Ambient ? .13f : .17f));
+            _c.SetAudioBaseVolume(voice.Source, Mathf.Clamp01(gain) * (realmCue ? .5f : ui ? .11f : category == FishingAudioCategory.Ambient ? .13f : .17f));
             voice.Source.Play(); _lastPlay[cue] = now; _plays[cue] = PlayCount(cue) + 1;
             return true;
         }
@@ -236,10 +243,11 @@ namespace BoatAttack.Fishing
             }
             voice.Id = voice.Cue = null; voice.Target = voice.Gain = 0; voice.MaintainedFrame = -1;
         }
-        private void StopWorldVoices(bool preserveBedContact = false)
+        private void StopWorldVoices(bool preserveContext = false)
         {
             foreach (var voice in _effects)
-                if (voice != null && voice.Source != null && !(preserveBedContact && voice.BedContact && BedContactContext)) voice.Source.Stop();
+                if (voice != null && voice.Source != null && !(preserveContext
+                    && ((voice.BedContact && BedContactContext) || (voice.RealmSignature && RealmSignatureContext)))) voice.Source.Stop();
             foreach (var voice in _ambientShots) if (voice != null && voice.Source != null) voice.Source.Stop();
             foreach (var voice in _loops) if (voice != null && voice.Id != null) ReleaseLoop(voice);
         }
