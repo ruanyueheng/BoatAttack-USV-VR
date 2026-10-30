@@ -42,15 +42,16 @@ namespace BoatAttack.Fishing
             if(previous!=Career.Backpack.Selected){CancelWorldAction();FieldWorld?.ClearToolPresentation();}
             BinocularsRaised=false;if(Career.Backpack.Count(FieldItem.Lantern)==0)LanternOn=false;Save();
         }
-        public void MoveFieldItem(int from,int to,bool half=false,bool quick=false)
+        public bool MoveFieldItem(int from,int to,bool half=false,bool quick=false)
         {
-            if(!InventoryOpen)return;
+            if(!InventoryOpen && !(XRNotebook!=null && XRNotebook.InventoryPage))return false;
             if(quick?Career.Backpack.QuickMove(from):Career.Backpack.Move(from,to,half))
-            {BinocularsRaised=false;LanternOn=false;Save();WorldAudio?.Play("StorageMove",ExplorerPosition,.3f);}
+            {BinocularsRaised=false;LanternOn=false;Save();WorldAudio?.Play("StorageMove",ExplorerPosition,.3f);return true;}
+            return false;
         }
         public bool DiscardFieldItem(int slot,FieldItem expected,int count)
         {
-            if(!InventoryOpen || !Career.Backpack.Discard(slot,expected,count))return false;
+            if((!InventoryOpen && !(XRNotebook!=null && XRNotebook.InventoryPage)) || !Career.Backpack.Discard(slot,expected,count))return false;
             LowerFieldTools();Save();Notice("已销毁 "+FishingBackpack.Name(expected)+" ×"+count+"，空格可重新使用。",4);return true;
         }
         public void UseFieldItem()

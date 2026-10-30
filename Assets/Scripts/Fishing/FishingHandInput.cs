@@ -10,7 +10,7 @@ namespace BoatAttack.Fishing
         public bool Reeling { get; private set; }
         private bool _gripReady,_triggerReady,_cranking;
         private float _angle;
-        public void Update(bool available,float grip,bool trigger,bool nearRod,float leftGrip,bool nearCrank,float angle)
+        public void Update(bool available,float grip,bool trigger,bool nearRod,float leftGrip,bool nearCrank,float angle,bool buttonHolding=false)
         {
             Activated=Reeling=false;
             if(!available || !Finite(grip) || !Finite(leftGrip) || !Finite(angle))
@@ -18,7 +18,7 @@ namespace BoatAttack.Fishing
             if(grip<.35f){_gripReady=true;Holding=false;}
             if(!trigger)_triggerReady=true;
             if(grip>.65f && _gripReady && !Holding && nearRod){Holding=true;_gripReady=false;}
-            if(!Holding){_cranking=false;return;}
+            if(!Holding && !buttonHolding){_cranking=false;return;}
             if(trigger && _triggerReady){Activated=true;_triggerReady=false;}
             bool crank=nearCrank && leftGrip>.55f;
             float delta=((angle-_angle)%360+540)%360-180;

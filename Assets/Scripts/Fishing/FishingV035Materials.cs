@@ -23,9 +23,14 @@ namespace BoatAttack.Fishing
         public static void AddLod(MeshRenderer renderer)
         {
             var mesh=renderer.GetComponent<MeshFilter>().sharedMesh;
-            if(mesh==null || !mesh.name.StartsWith("GEO-") || renderer.transform.Find("LOD1")!=null)return;
-            var low=Resources.Load<Mesh>("FishingV044/Scene/"+mesh.name.Substring(4)+"_LOD1");if(low==null)return;
-            var go=new GameObject("LOD1");go.layer=renderer.gameObject.layer;go.isStatic=renderer.gameObject.isStatic;go.transform.SetParent(renderer.transform,false);
+            if(mesh==null || !mesh.name.StartsWith("GEO-"))return;
+            var model=Resources.Load<GameObject>("FishingV044/Scene/"+mesh.name.Substring(4)+"_LOD1");if(model==null)return;
+            var source=model.GetComponentInChildren<MeshFilter>();if(source==null || source.sharedMesh==null)return;
+            var low=source.sharedMesh;var existing=renderer.transform.Find("LOD1");
+            var go=existing!=null?existing.gameObject:new GameObject("LOD1");go.layer=renderer.gameObject.layer;go.isStatic=renderer.gameObject.isStatic;go.transform.SetParent(renderer.transform,false);
+            // Loading a Mesh alone drops its FBX node's axis rotation, which laid all distant scenery on its side.
+            go.transform.localPosition=source.transform.position;go.transform.localRotation=source.transform.rotation;go.transform.localScale=source.transform.lossyScale;
+            if(existing!=null){renderer.GetComponentInParent<LODGroup>()?.RecalculateBounds();return;}
             go.AddComponent<MeshFilter>().sharedMesh=low;var lod=go.AddComponent<MeshRenderer>();lod.sharedMaterials=renderer.sharedMaterials;
             lod.shadowCastingMode=ShadowCastingMode.Off;lod.receiveShadows=renderer.receiveShadows;
             var group=renderer.GetComponentInParent<LODGroup>();if(group==null)group=renderer.gameObject.AddComponent<LODGroup>();

@@ -23,7 +23,11 @@ namespace BoatAttack.Fishing
             BuildCamera(); BuildPalmMap(); BuildFestival();
         }
         private T Own<T>(T asset) where T : Object { _owned.Add(asset); return asset; }
-        private void OnDestroy() { foreach (var o in _owned) if (o != null) Destroy(o); }
+        private void OnDestroy()
+        {
+            foreach (var photo in _album) if (photo.tex != null) Destroy(photo.tex);
+            foreach (var o in _owned) if (o != null) Destroy(o);
+        }
 
         private Transform MeshObject(string name, Mesh mesh, Material material, Transform parent)
         {

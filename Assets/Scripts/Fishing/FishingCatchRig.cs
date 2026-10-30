@@ -100,7 +100,12 @@ namespace BoatAttack.Fishing
         public bool CaptureAndStoreForAutomation()
         {
             if(!_c.HasIsolatedProfile)throw new System.InvalidOperationException("Only isolated fixtures may fast-step the assist");
-            if(!RequestScoop())return false;
+            if(XRSettings.isDeviceActive)
+            {
+                if(_c.Paused || !_c.Anchored || _c.HasPendingCatch || _c.Session.Phase!=CatchPhase.Landing || !_c.Session.CanNet)return false;
+                _assist=true;_assistTime=0;_gate.Reset();_hadSample=false;
+            }
+            else if(!RequestScoop())return false;
             bool captured=false;
             for(int i=0;i<45 && !captured;i++)captured=StepDesktop(.02f);
             if(!_c.HasPendingCatch)return captured;
@@ -231,7 +236,7 @@ namespace BoatAttack.Fishing
             bool tip=_transfer.Step(ordinary,new Vector2(delta.x,delta.z).magnitude,delta.y,Vector3.Dot(rotation*Vector3.up,Vector3.up),speed,dt);
             return tip && _c.ResolveCatch(true);
         }
-        private static bool Grip(InputDevice device){if(device.TryGetFeatureValue(CommonUsages.gripButton,out bool held))return held;return device.TryGetFeatureValue(CommonUsages.grip,out float value) && value>.65f;}
+        private static bool Grip(InputDevice device)=>FishingXRInput.Grip(device,.65f);
         private float _handLandingWait;
         public const float HandLandingTimeout=8f;
         public static bool HandLandingReach(Vector3 palm,Vector3 fish)=>Vector3.Distance(palm,fish)<.2f;

@@ -10,6 +10,18 @@ namespace BoatAttack.Fishing
         private Quaternion _storageLidRest;
         private float _storageLidAngle;
         private float _storageOpening;
+        private readonly FishingPressEdge[] _lidGrip = { new FishingPressEdge(), new FishingPressEdge() };
+        private int _lidHand = -1;
+        private float _lidPalmY, _lidOpeningAtGrab;
+        public Vector3 StorageLidHandle
+        {
+            get
+            {
+                if (StorageLid == null) return Vector3.zero;
+                var b = StorageLid.GetComponent<MeshFilter>().sharedMesh.bounds;
+                return StorageLid.TransformPoint(new Vector3(b.center.x, b.center.y, b.center.z >= 0 ? b.max.z : b.min.z));
+            }
+        }
         private void BuildStorage()
         {
             var p=new Vector3(4.8f,.20f,-2.1f);
@@ -45,12 +57,50 @@ namespace BoatAttack.Fishing
         }
         private void UpdateStorageAnimation()
         {
+            if (_c != null) ReadStorageLidGrip();
             if(_c==null || StorageLid==null || (_c.Paused && !_c.InventoryOpen && !_c.XRNotebook.IsOpen))return;
+            if (_lidHand >= 0) return;
             bool open=ReachInteraction(6) && (_c.InventoryOpen || _c.XRNotebook.IsOpen);
             float next=Mathf.MoveTowards(_storageOpening,open?1:0,(open?Time.unscaledDeltaTime:Time.deltaTime)/.75f);
             if(next==_storageOpening)return;
             if(_storageOpening==0 && open)_c.WorldAudio?.Play("MechanismClick",StorageChest.position,.35f);
             _storageOpening=next;StorageLid.localRotation=_storageLidRest*Quaternion.Euler(_storageLidAngle*Mathf.SmoothStep(0,1,next),0,0);
+        }
+        private void ReadStorageLidGrip()
+        {
+            bool available = XRSettings.isDeviceActive && Application.isFocused;
+            for (int i = 0; i < 2; i++)
+            {
+                var hand = i == 0 ? XRNode.LeftHand : XRNode.RightHand;
+                bool tracked = available && FishingXRTracking.TryPose(_c.viewCamera, hand, out _, out _);
+                Vector3 palm = Vector3.zero;
+                if (tracked) tracked = _c.Hands.TryControllerPalm(i == 0, out palm, out _);
+                var device = InputDevices.GetDeviceAtXRNode(hand);
+                bool held = FishingXRInput.Grip(device, .65f);
+                StepStorageLidGrip(i == 0, tracked, held, palm);
+            }
+        }
+        /// <summary>Grip the real cover edge and lift it; tracking recovery requires a released hand.</summary>
+        public void StepStorageLidGrip(bool left, bool tracked, bool held, Vector3 palm)
+        {
+            int hand = left ? 0 : 1;
+            bool available = tracked && StorageLid != null && ReachInteraction(6) && !_c.Paused && !_c.StoryBlocksGameplay
+                && !_c.ShopBlocksGameplay && !_c.WorldActionBusy && !_c.HasPendingCatch && !_c.InventoryOpen && !_c.JournalOpen && !_c.XRNotebook.IsOpen
+                && !float.IsNaN(palm.sqrMagnitude) && !float.IsInfinity(palm.sqrMagnitude);
+            bool press = _lidGrip[hand].Step(available, held);
+            if (!available || !held) { if (_lidHand == hand) _lidHand = -1; return; }
+            if (press && _lidHand < 0 && Vector3.Distance(palm, StorageLidHandle) < .25f)
+            {
+                _lidHand = hand; _lidPalmY = palm.y; _lidOpeningAtGrab = _storageOpening;
+                _c.WorldAudio?.Play("MechanismClick", StorageLidHandle, .3f);
+            }
+            if (_lidHand != hand) return;
+            // A controller teleport cannot fling the cover open after recentering or tracking loss.
+            if (Mathf.Abs(palm.y - _lidPalmY) > .65f || FishingPrototype.FlatDistance(palm, StorageChest.position) > 1.4f)
+            { _lidHand = -1; _lidGrip[hand].Reset(); return; }
+            _storageOpening = Mathf.Clamp01(_lidOpeningAtGrab + (palm.y - _lidPalmY) / .35f);
+            StorageLid.localRotation = _storageLidRest * Quaternion.Euler(_storageLidAngle * Mathf.SmoothStep(0, 1, _storageOpening), 0, 0);
+            if (_storageOpening >= .7f) { _lidHand = -1; OpenStorage(); }
         }
         public bool TransferStorage(bool deposit,int slot)
         {

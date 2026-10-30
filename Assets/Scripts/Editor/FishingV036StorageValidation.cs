@@ -58,6 +58,19 @@ namespace BoatAttack.EditorTools
                 c.Home.TransferStorage(true,1);yield return null;ScreenCapture.CaptureScreenshot(Path.Combine(output,"desktop-bidirectional-storage.png"));
                 for(int frame=0;frame<6;frame++)yield return null;
                 c.ToggleInventory();FishingV016Validation.Capture(c,output,"home-storage-chest");
+                var prepare=typeof(FishingPrototype).GetMethod("PrepareV036AcceptanceFixture",BindingFlags.NonPublic|BindingFlags.Instance);
+                var validate=typeof(FishingPrototype).GetMethod("ValidateV036AcceptanceFixture",BindingFlags.NonPublic|BindingFlags.Instance);
+                foreach(var selected in new[]{FishingAcceptanceCase.WateringCarry,FishingAcceptanceCase.WellRefill,FishingAcceptanceCase.WateringPour})
+                {
+                    c.CancelWorldAction();c.ReturnToHarbor();
+                    c.RestoreShopTestProfile(FishingAcceptanceCases.CreateCareer(selected).Snapshot());
+                    if(!c.FirstPerson)c.ToggleView();
+                    var fixture=(IEnumerator)prepare.Invoke(c,new object[]{selected});
+                    try{while(fixture.MoveNext())yield return fixture.Current;}finally{(fixture as IDisposable)?.Dispose();}
+                    validate.Invoke(c,new object[]{selected});
+                    Check(c.Farm.CarryingCan && !c.ReachApproachActive,"Published watering fixture reaches its real can/soil/stream state: "+selected);
+                    c.CancelWorldAction();
+                }
             }
             finally{if(c.InventoryOpen)c.ToggleInventory();c.XRNotebook.Close();c.ReturnToHarbor();c.RestoreShopTestProfile(original);}
         }

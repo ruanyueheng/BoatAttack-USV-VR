@@ -84,11 +84,18 @@ namespace BoatAttack.Fishing
         public static string StationAt(int id,float hour,bool festivalEvening)
             =>festivalEvening?"festival":id==5 && hour>=19 && hour<23?"dock":hour>=12 && hour<14?"break":"home";
         // Arm-span clearance (0.5 m at chest height) so gestures don't sink into counters, shelves or railings.
-        private bool Spot(Vector3 seed,out Vector3 feet)
+        private bool Spot(Vector3 seed,int id,out Vector3 feet)
         {
-            if(!_c.Shore.Ground(seed+Vector3.up*.3f,out feet) || !_c.Shore.Clearance(feet))return false;
-            foreach(var col in Physics.OverlapCapsule(feet+Vector3.up*.9f,feet+Vector3.up*1.5f,.5f,~(1<<4|1<<5),QueryTriggerInteraction.Ignore))
-                if(col!=_c.Shore.Body && !col.transform.IsChildOf(_c.Shore.Actor) && !FishingShore.NonSolidSurface(col) && col.GetComponentInParent<FishingResidentBrain>()==null)return false;
+            if(!_c.Shore.Ground(seed+Vector3.up*.3f,out feet))return false;
+            foreach(var col in Physics.OverlapCapsule(feet+Vector3.up*.55f,feet+Vector3.up*1.35f,.5f,~(1<<4|1<<5),QueryTriggerInteraction.Ignore))
+                if(col!=_c.Shore.Body && !col.transform.IsChildOf(_c.Shore.Actor) && !col.transform.IsChildOf(_people[id]) && !FishingShore.NonSolidSurface(col))return false;
+            // Reserve queued destinations as well as occupied spots: off-screen residents have not teleported there yet.
+            for(int other=0;other<_people.Length;other++)
+            {
+                if(other==id || _people[other]==null)continue;
+                var target=Brain(other)?.ScheduledFeet??_people[other].position;
+                if(Mathf.Abs(target.y-feet.y)<1.8f && FishingPrototype.FlatDistance(target,feet)<1.4f)return false;
+            }
             return true;
         }
         /// <summary>Validation: send a resident to a named station now (home/break/dock/festival).</summary>
@@ -96,7 +103,7 @@ namespace BoatAttack.Fishing
         private readonly string[] _forced=new string[6];private bool _forcedInstant;
         private void Schedule()
         {
-            var cal=_c.Career.Calendar;bool fest=FestivalEvening(cal);int n=0;
+            var cal=_c.Career.Calendar;bool fest=FestivalEvening(cal);
             for(int id=0;id<6;id++)
             {
                 var brain=Brain(id);if(brain==null || id==4)continue;
@@ -105,11 +112,18 @@ namespace BoatAttack.Fishing
                 {
                     // Ring around the plaza, >=1.2 m apart, facing the centre; falls back to home if the ground is cluttered.
                     var centre=Plaza!=Vector3.zero?Plaza:_c.TackleShop.transform.TransformPoint(new Vector3(0,.08f,-13)); // open beach in front of the shop until FishingLife sets its plaza
-                    for(int k=0;k<12;k++){var seed=centre+Quaternion.Euler(0,(n+k*3)*51.4f,0)*Vector3.forward*(3.2f+k*.25f);if(Spot(seed,out feet))break;feet=home;}
-                    facing=Quaternion.LookRotation(Flat(centre-feet));work=new[]{"Idle","FoldArms","Talk"};n++;
+                    int participant=id==5?4:id;
+                    for(int k=0;k<48;k++){var seed=centre+Quaternion.Euler(0,participant*72+k%12*30,0)*Vector3.forward*(3.2f+k/12*.6f);if(Spot(seed,id,out feet))break;feet=home;}
+                    facing=Quaternion.LookRotation(Flat(centre-feet));work=new[]{"Idle","FoldArms","Talk"};
                 }
-                else if(station=="break"){if(!Spot(home+Quaternion.Euler(0,id*60,0)*Vector3.forward*3.5f,out feet))feet=home;work=new[]{"FoldArms","Drink","Idle"};}
-                else if(station=="dock"){if(!Spot(_c.TackleShop.transform.TransformPoint(new Vector3(1.5f,.08f,-8.5f)),out feet))feet=home;work=new[]{"Lantern","Idle"};}
+                else if(station=="break"){if(!Spot(home+Quaternion.Euler(0,id*60,0)*Vector3.forward*3.5f,id,out feet))feet=home;work=new[]{"FoldArms","Drink","Idle"};}
+                else if(station=="dock")
+                {
+                    var shop=_c.TackleShop;
+                    foreach(float side in new[]{0f,-1.2f,1.2f,-2.4f,2.4f})
+                        if(Spot(shop.LandingPosition+shop.transform.right*side,id,out feet))break;else feet=home;
+                    facing=Quaternion.LookRotation(Flat(shop.mooringPoint.position-feet));work=new[]{"Lantern","Idle"};
+                }
                 else if(cal.Night){work=new[]{"Lantern","Idle"};station="night";}
                 brain.MoveTo(station,feet,facing,work,_forced[id]!=null && _forcedInstant);
             }

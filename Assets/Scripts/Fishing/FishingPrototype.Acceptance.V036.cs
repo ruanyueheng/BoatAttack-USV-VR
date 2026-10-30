@@ -80,16 +80,16 @@ namespace BoatAttack.Fishing
                         var approach=ApproachV036Farm(15);while(approach.MoveNext())yield return approach.Current;
                         if(!RequestWorldInteraction())throw new InvalidOperationException("Watering fixture cannot pick up the actual well-side can.");
                         float deadline=Time.realtimeSinceStartup+12;
-                        while(Farm.Busy && Time.realtimeSinceStartup<deadline)yield return null;
-                        if(Farm.Busy || !Farm.CarryingCan)throw new InvalidOperationException("Watering fixture pickup never completed.");
+                        while((Farm.Busy || ReachApproachActive) && Time.realtimeSinceStartup<deadline)yield return null;
+                        if(Farm.Busy || ReachApproachActive || !Farm.CarryingCan)throw new InvalidOperationException("Watering fixture pickup never completed.");
                         int target=selected==FishingAcceptanceCase.WellRefill?12:0;
                         approach=ApproachV036Farm(target);while(approach.MoveNext())yield return approach.Current;
                         if(selected!=FishingAcceptanceCase.WateringCarry)
                         {
                             if(!RequestWorldInteraction())throw new InvalidOperationException("Watering fixture cannot start its actual well or soil action.");
                             float phase=selected==FishingAcceptanceCase.WellRefill?.62f:.48f;deadline=Time.realtimeSinceStartup+12;
-                            while(Farm.Busy && Farm.WorkProgress<phase && Time.realtimeSinceStartup<deadline)yield return null;
-                            if(!Farm.Busy || Farm.WorkProgress<phase)throw new InvalidOperationException("Watering fixture missed its visible pouring phase.");
+                            while((ReachApproachActive || Farm.Busy && Farm.WorkProgress<phase) && Time.realtimeSinceStartup<deadline)yield return null;
+                            if(ReachApproachActive || !Farm.Busy || Farm.WorkProgress<phase)throw new InvalidOperationException("Watering fixture missed its visible pouring phase.");
                         }
                     }
                 }
@@ -101,9 +101,11 @@ namespace BoatAttack.Fishing
         }
         private IEnumerator ApproachV036Farm(int id)
         {
-            var p=Farm.Target(id).position+(id==15?Vector3.left*.65f:Vector3.back*(id<12?1.1f:1.3f));p.y=Home.Origin.y;if(id<12)p.x-=.25f;
+            // Match the real path-facing can handle and crank apron used by the world-audio interaction checks.
+            var p=Farm.Target(id).position+(id==15?Vector3.back*.65f:id==12?new Vector3(1.6f,0,.9f):Vector3.back*(id<12?1.1f:1.3f));p.y=Home.Origin.y;if(id<12)p.x-=.25f;
             if(!Shore.Relocate(p,Quaternion.identity))throw new InvalidOperationException("Watering fixture has no supported stance at target "+id);
-            for(int frame=0;frame<4;frame++){Shore.Move(Vector2.zero,false,false,false,.05f);yield return null;}
+            for(int frame=0;frame<30;frame++){Shore.Move(Vector2.zero,false,false,false,.05f);yield return null;if(frame>=3 && Shore.Grounded)break;}
+            if(!Shore.Grounded)throw new InvalidOperationException("Watering fixture did not settle on the physical farm floor at target "+id);
             AimV036AcceptanceCamera(Farm.Aim(id));yield return null;
             if(!Farm.TryTarget(out int found,out _) || found!=id)throw new InvalidOperationException("Watering fixture production targeting selected the wrong object: "+id);
         }

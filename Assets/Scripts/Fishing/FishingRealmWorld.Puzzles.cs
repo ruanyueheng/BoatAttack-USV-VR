@@ -72,7 +72,6 @@ namespace BoatAttack.Fishing
                     _windBridgeOpening[i]=next;var bridge=_windBridges[i];bridge.gameObject.SetActive(next>0 || _windBridgeWanted[i]);
                     bridge.localPosition=Vector3.down*(1-Mathf.SmoothStep(0,1,next))*1.2f;
                     foreach(var collider in _windBridgeColliders[i])collider.enabled=next>=1 && _windBridgeWanted[i];
-                    if(previous==0 && next>0)_c.WorldAudio?.PlayRealm(Island,"Step",bridge.position,.35f);
                 }
             if(Island==1)
             {

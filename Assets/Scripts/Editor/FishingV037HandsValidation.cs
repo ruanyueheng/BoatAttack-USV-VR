@@ -19,7 +19,7 @@ namespace BoatAttack.EditorTools
                 for(int i=0;i<30;i++)cast|=g.Step(true,true,peak*Mathf.Sin(i/29f*Mathf.PI),dt);
                 if(release)cast|=g.Step(true,false,0,dt);return cast?g.Power:-1;
             }
-            Check(Cast(.6f)<0,"A gentle wave under the swing threshold does not cast");
+            Check(Cast(0)>0 && Cast(.6f)>0,"A deliberate trigger charge and release casts even with a stationary wrist");
             Check(Cast(2f)<0==false && Cast(3.5f)>Cast(1.6f),"A forward flick casts, and a faster flick casts farther");
             Check(Cast(3f,false)<0,"Holding the trigger keeps the line until it is released");
             float last=float.NaN,swept=0;

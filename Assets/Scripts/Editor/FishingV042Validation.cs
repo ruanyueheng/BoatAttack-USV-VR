@@ -26,7 +26,7 @@ namespace BoatAttack.EditorTools
             Check(body.shadowCastingMode==UnityEngine.Rendering.ShadowCastingMode.On && !body.forceRenderingOff && character.FirstPersonSkin.forceRenderingOff,"Cinema shows the complete actor and hides the duplicate local arms");
             character.SetFilmPresentation(false);
             Check(body.shadowCastingMode==bodyShadow && body.forceRenderingOff==bodyHidden && character.FirstPersonSkin.forceRenderingOff==handsHidden,"Cinema restores the original local renderer states");
-            float[] lengths={39,19.5f,13,13,13,13,26};int sequenceIndex=0;
+            float[] lengths={51,25.5f,17,17,17,17,34};int sequenceIndex=0;
             foreach(FishingPrologue.Sequence sequence in Enum.GetValues(typeof(FishingPrologue.Sequence)))
             {
                 var clip=Resources.Load<AudioClip>("FishingV042/Story/"+sequence);
@@ -34,6 +34,7 @@ namespace BoatAttack.EditorTools
                 if(c.Prologue.Open)c.Prologue.Finish();
                 var watch=System.Diagnostics.Stopwatch.StartNew();
                 Check(c.Prologue.Begin(sequence),"Production story entry opens "+sequence);watch.Stop();
+                Check(Mathf.Abs(c.Prologue.Duration-clip.length)<.05f,"Timeline and baked music finish together: "+sequence);
                 if(sequence==FishingPrologue.Sequence.Chart)
                 {
                     var camera=c.Prologue.CinemaCamera;

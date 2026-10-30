@@ -12,6 +12,7 @@ namespace BoatAttack.Fishing
     {
         public static int Run(UnityEngine.SceneManagement.Scene scene)
         {
+            if(SystemInfo.graphicsDeviceType==GraphicsDeviceType.Null)return 0;
             var watch=System.Diagnostics.Stopwatch.StartNew();
             var materials=new HashSet<Material>();
             foreach(var root in scene.GetRootGameObjects())

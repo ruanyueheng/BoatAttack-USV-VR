@@ -6,7 +6,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "Assets/Resources/FishingV042/Story"
-RATE, SECONDS = 22050, 6.5
+RATE, SECONDS = 22050, 8.5
 COMMON = [[164.81, 207.65, 246.94], [196, 246.94, 293.66], [220, 277.18, 329.63]]
 INTRO = [[146.83, 220, 293.66], [130.81, 196, 261.63], [116.54, 174.61, 233.08],
          [146.83, 220, 277.18], [164.81, 246.94, 329.63], [146.83, 220, 293.66]]

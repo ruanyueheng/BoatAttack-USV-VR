@@ -46,7 +46,8 @@ namespace BoatAttack.Fishing
             stamp.GetComponent<RectTransform>().sizeDelta=new Vector2(640,320);
             stamp.GetComponent<Canvas>().renderMode=RenderMode.WorldSpace;
             var postage=stamp.GetComponent<Image>();postage.sprite=Stationery("CoastalPostmark");postage.raycastTarget=false;
-            var canvas = new GameObject("Letter paper", typeof(RectTransform), typeof(Canvas), typeof(CanvasGroup));
+            var canvas = new GameObject("Letter paper", typeof(RectTransform), typeof(Canvas), typeof(CanvasGroup),typeof(CanvasScaler));
+            canvas.GetComponent<CanvasScaler>().dynamicPixelsPerUnit=4;
             canvas.layer=5;
             _paper = canvas.transform; _paper.SetParent(_root,false); _paper.localScale = Vector3.one * PaperScale;
             var rect = canvas.GetComponent<RectTransform>(); rect.sizeDelta = new Vector2(760,600);

@@ -56,6 +56,10 @@ internal static class Program
             foreach(float throttle in new[]{0f,-1f,float.NaN,float.PositiveInfinity})
                 Check("Neutral, reverse and invalid thrust cannot boost: "+throttle,!p.Process(new USVInputState {throttle=throttle,boost=true},USVInputSourceKind.Desktop,.12f).boost);
             Check("Braking takes priority over boost",!p.Process(new USVInputState {throttle=1f,boost=true,brake=.1f},USVInputSourceKind.Desktop,.12f).boost);
+            Check("Resting trigger noise cannot disable forward boost",p.Process(new USVInputState {throttle=1f,boost=true,brake=.01f},USVInputSourceKind.XR,.12f).boost);
+            Check("Exact trigger rest deadzone is neutral",p.Process(new USVInputState {throttle=1f,boost=true,brake=.03f},USVInputSourceKind.XR,.12f).brake==0);
+            Check("Deliberate braking still cancels boost",!p.Process(new USVInputState {throttle=1f,boost=true,brake=.1f},USVInputSourceKind.XR,.12f).boost);
+            Check("Full braking remains full strength",p.Process(new USVInputState {brake=1f},USVInputSourceKind.XR,.12f).brake==1);
             Check("Focus or tracking loss clears boost",!p.Process(new USVInputState {throttle=1f,boost=true},USVInputSourceKind.None,.12f).boost);
             Console.WriteLine("TOTAL: " + _passed + " passed. Pure input/render policy logic only; not Unity/device validation.");
             return 0;

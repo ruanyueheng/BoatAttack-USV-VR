@@ -75,6 +75,7 @@ namespace BoatAttack.Fishing
         private Act[] _homeWork;
         private Vector3 _pendingFeet;private Quaternion _pendingFacing;private Act[] _pendingWork;private bool _pending;
         public string Station { get; private set; } = "home";
+        public Vector3 ScheduledFeet => _pending ? _pendingFeet : transform.position;
         /// <summary>
         /// Schedule move. Applied only while the player cannot see it happen (off-screen and >12 m away, or instantly when
         /// <paramref name="now"/>), so residents never slide or path through props; spots are pre-validated by FishingResidents.

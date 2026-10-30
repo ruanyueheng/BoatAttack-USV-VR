@@ -61,9 +61,23 @@ namespace BoatAttack.EditorTools
             Check(room.Find("Echo gate")==null && room.Find("Floor")==null,"Old shared rectangular room and gate removed "+id);
             c.Weather.ApplyEnvironment();c.PresentCharacterFrame();var aim=id==0?new Vector3(-2,3,5):id==1?new Vector3(-5,3,2):id==2?new Vector3(0,.5f,3):new Vector3(0,4,10);
             c.viewCamera.transform.rotation=Quaternion.LookRotation(room.TransformPoint(aim)-c.viewCamera.transform.position);FishingV016Validation.Capture(c,evidence,"sanctuary-player-"+id);CaptureViews(c,id,evidence);
+            string cue="Realm"+new[]{"Wind","Forest","Wreck","Stars"}[id];
+            int steps=c.WorldAudio.PlayCount(cue+"Step"),solves=c.WorldAudio.PlayCount(cue+"Solve");
             var solve=Solve(c,id,evidence);while(solve.MoveNext())yield return solve.Current;
+            Check(c.WorldAudio.PlayCount(cue+"Step")>steps && c.WorldAudio.PlayCount(cue+"Solve")>solves,"Production mechanisms trigger the realm's Step and Solve recordings "+id);
             Check(c.Realms.Trial.Ready,"Different physical puzzle completed "+id);int coins=c.Career.Coins;
-            Check(c.RequestWorldInteraction() && c.Career.Lore.Cleared(id) && c.Career.Coins==coins+90,"First echo reward uses production interaction "+id);yield return null;
+            Check(c.RequestWorldInteraction() && c.Career.Lore.Cleared(id) && c.Career.Coins==coins+90,"First echo reward uses production interaction "+id);
+            var echo=c.WorldAudio.Sources.FirstOrDefault(s=>s.isPlaying && s.clip==FishingWorldAudio.Clip(cue+"Echo"));
+            Check(echo!=null && echo.spatialBlend==0 && !echo.mute && echo.volume>0,"Actual reward starts an audible nonspatial Echo source "+id);
+            int sample=echo.timeSamples;
+            Check(c.Prologue.Begin(FishingPrologue.Relic(id)),"Open the real immediately following reward film "+id);
+            try
+            {
+                var tail=Wait(.25f);while(tail.MoveNext())yield return null;
+                Check(echo.isPlaying && !echo.mute && echo.timeSamples>sample,"Reward Echo continues decoded playback through the film "+id);
+            }
+            finally{c.Prologue.Finish();}
+            yield return null;
             Check(c.RequestWorldInteraction() && c.Career.Coins==coins+90,"Echo reward is never duplicated "+id);
             var back=ReturnRoute(c,id);while(back.MoveNext())yield return back.Current;
             FishingV036PortalValidation.CheckTerminal(c,id);

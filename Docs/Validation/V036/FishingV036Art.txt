@@ -1,0 +1,3 @@
+[V036-ART] CHECK: distinct CC0 chain-hung brass/star-vent lantern, 12742 triangles, three shared materials, 1K textures
+[V036-ART] CHECK: original ivory/gold/sage watering can 7956 triangles; deep-well ground and shaft collision rebuilt
+[V036-ART] PASS: television and distinct Poly Haven hanging fixture imported

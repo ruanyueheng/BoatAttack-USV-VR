@@ -11,6 +11,7 @@ namespace BoatAttack.Fishing
         private FishingHandTarget _left,_right;
         private float _gesture,_hook;
         private readonly FishingCastGesture _castGesture=new FishingCastGesture();
+        private readonly FishingPressEdge _stow=new FishingPressEdge();
         private Vector3 _lastCastPosition;private bool _castSample;
         private int _presentationFrame=-1;
         private FishBeat _lastCue;
@@ -30,7 +31,15 @@ namespace BoatAttack.Fishing
         private static readonly Vector3 RodPalm=new Vector3(.058f,.012f,-.045f);
         private static readonly Quaternion RodPalmRotation=Quaternion.LookRotation(Vector3.down,Vector3.right);
         public static readonly Vector3 XRRestRodPosition=new Vector3(.32f,1.1f,.4f);
-        public bool HoldingRod=>_input.Holding;
+        private bool _buttonRod;
+        public bool HoldingRod=>_buttonRod || _input.Holding;
+        public bool HoldRodForButtons()
+        {
+            if(_c==null || !_c.Anchored || _c.HasPendingCatch || _c.Paused || _c.StoryBlocksGameplay || _c.XRNotebook.IsOpen)return false;
+            bool wasHolding=HoldingRod;
+            if(!_input.Holding)_buttonRod=true;
+            if(!wasHolding)RodHelp();return true;
+        }
         public bool XRReeling=>_input.Reeling || _stickReel>0 || _triggerReel;
         private bool _triggerReel;
         private float _stickAngle=float.NaN,_stickReel;
@@ -75,9 +84,11 @@ namespace BoatAttack.Fishing
         }
         public void ResetInteraction()
         {
+            _buttonRod=false;
             _input.Update(false,0,false,false,0,false,0);_triggerReel=false;
             if(_left!=null)_left.Disable();if(_right!=null)_right.Disable();
             _castGesture.Reset();_castSample=false;_xrSteer=0;_xrFight=false;
+            _stow.Reset();_stickReel=0;_stickAngle=float.NaN;_biteKnock=-1;
             _c?.CastMotion.CancelPreparation();
             _gesture=_hook=_pickupTime=0;if(_pickup!=null)_pickup.SetActive(false);
         }
@@ -85,19 +96,27 @@ namespace BoatAttack.Fishing
         {
             bool available=XRSettings.isDeviceActive && _c.Anchored && !_c.Paused && !_c.HasPendingCatch
                 && !_c.XRSeat.HeadBlocked && !_c.XRNotebook.BlocksGameplay && !_c.StoryBlocksGameplay
-                && _c.Session.Phase!=CatchPhase.Landing && Application.isFocused;
-            if(!available){_input.Update(false,0,false,false,0,false,0);_stickReel=0;_triggerReel=false;_stickAngle=float.NaN;_castGesture.Reset();_castSample=false;_xrSteer=0;_xrFight=false;return;}
+                && Application.isFocused;
+            if(!available)
+            {
+                _buttonRod=false;_input.Update(false,0,false,false,0,false,0);_stickReel=0;_triggerReel=false;_stickAngle=float.NaN;
+                _castGesture.Reset();_castSample=false;_xrSteer=0;_xrFight=false;_stow.Reset();_biteKnock=-1;return;
+            }
             // Read fresh controller poses, not previous-frame palm targets or solved bones.
             bool rightTracked=FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out var rp,out var rq);
             bool leftTracked=FishingXRTracking.TryPose(_c.viewCamera,XRNode.LeftHand,out var lp,out _);
             available=rightTracked && leftTracked;
             if(!available){ResetInteraction();return;}
             var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);var left=InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
-            right.TryGetFeatureValue(CommonUsages.grip,out float grip);right.TryGetFeatureValue(CommonUsages.triggerButton,out bool trigger);
-            left.TryGetFeatureValue(CommonUsages.grip,out float leftGrip);
+            if(_stow.Step(true,FishingXRInput.StickClick(right))){_c.LeaveStation();return;}
+            if(_c.Session.Phase==CatchPhase.Landing){_input.Update(false,0,false,false,0,false,0);_castGesture.Reset();_castSample=false;_triggerReel=false;_stickReel=0;return;}
+            if(!right.TryGetFeatureValue(CommonUsages.grip,out float grip))grip=FishingXRInput.Grip(right)?1:0;
+            if(!left.TryGetFeatureValue(CommonUsages.grip,out float leftGrip))leftGrip=FishingXRInput.Grip(left)?1:0;
+            bool trigger=FishingXRInput.Trigger(right);
             var local=_rod.InverseTransformPoint(lp)-_crank.localPosition;
             float angle=Mathf.Atan2(local.z,-local.y)*Mathf.Rad2Deg;bool wasHolding=HoldingRod;
-            _input.Update(available,grip,trigger,Vector3.Distance(rp,_rod.position)<.24f,leftGrip,Vector3.Distance(lp,_knob.position)<.16f,angle);
+            _input.Update(available,grip,trigger,Vector3.Distance(rp,_rod.position)<.24f,leftGrip,Vector3.Distance(lp,_knob.position)<.16f,angle,_buttonRod);
+            if(_input.Holding)_buttonRod=false; // A physical grip takes ownership again, so releasing it still stows the rod.
             if(_input.Reeling)_crank.localRotation=Quaternion.AngleAxis(-angle,Vector3.right);
             right.TryGetFeatureValue(CommonUsages.primary2DAxis,out var stick);
             // A circling stick keeps reeling ~0.25 s past each sweep so a steady rotation reads as continuous winding.
@@ -106,7 +125,7 @@ namespace BoatAttack.Fishing
             // Simplest reel: hold the rod-hand trigger while fighting (crank and stick circles still work).
             _triggerReel=trigger && HoldingRod && _c.Session.Phase==CatchPhase.Fighting;
             if(_triggerReel)_crank.localRotation*=Quaternion.AngleAxis(-360*Time.deltaTime,Vector3.right);
-            if(HoldingRod && !wasHolding)Haptic(right,.22f);
+            if(HoldingRod && !wasHolding){Haptic(right,.22f);RodHelp();}
             if(HoldingRod && _c.Session.Phase==CatchPhase.Fighting && (_c.Session.Beat!=_lastCue || Time.unscaledTime>=_nextTensionPulse))
             {_lastCue=_c.Session.Beat;_nextTensionPulse=Time.unscaledTime+.18f;Haptic(right,.06f+.4f*_c.Session.Tension);}
             var localPosition=_c.XRSeat.Origin.transform.InverseTransformPoint(rp);
@@ -128,6 +147,7 @@ namespace BoatAttack.Fishing
             bool action=cast?_c.Cast(_castGesture.Power):_input.Activated && _c.Session.Phase==CatchPhase.Bite && _c.Hook();
             if(action)Haptic(right,.3f);
         }
+        private void RodHelp()=>_c.Notice("鱼竿已拿起 · 按住右扳机蓄力，松开抛竿；按下右摇杆收竿起航。",6);
         /// <summary>Two short knocks on the rod hand when a fish bites.</summary>
         public void BiteHaptic(){var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);Haptic(right,.55f);_biteKnock=Time.unscaledTime+.12f;}
         private float _biteKnock=-1;
@@ -216,9 +236,11 @@ namespace BoatAttack.Fishing
                 if((HoldingRod || _c.Session.Phase==CatchPhase.Landing) && rightTracked && _c.Anchored && !_c.HasPendingCatch)
                 {
                     _rod.gameObject.SetActive(true);
-                    var rotation=_right.Palm.rotation*Quaternion.Inverse(RodPalmRotation);
+                    // The rod's +Z follows the tracked grip's +Z; the desktop knuckle frame would pitch it back by 90 degrees.
+                    var palmRotation=Quaternion.Euler(_rightControllerPalmEuler);
+                    var rotation=_right.Palm.rotation*Quaternion.Inverse(palmRotation);
                     _rod.SetPositionAndRotation(_right.Palm.position-rotation*RodPalm,rotation);
-                    _right.SetFromGrip(_rod,RodPalm,RodPalmRotation,.86f);
+                    _right.SetFromGrip(_rod,RodPalm,palmRotation,.86f);
                     RodGripSurface();
                 }
                 return;
@@ -301,6 +323,7 @@ namespace BoatAttack.Fishing
             position+=rotation*(left?_leftControllerPalmOffset:_rightControllerPalmOffset);
             rotation*=Quaternion.Euler(left?_leftControllerPalmEuler:_rightControllerPalmEuler);return true;
         }
+        public Quaternion ControllerGripRotation(Quaternion palmRotation)=>palmRotation*Quaternion.Inverse(Quaternion.Euler(_rightControllerPalmEuler));
         private bool Track(FishingHandTarget hand,XRNode node)
         {
             if(!TryControllerPalm(node==XRNode.LeftHand,out var palm,out var palmFrame)){hand.Disable();return false;}

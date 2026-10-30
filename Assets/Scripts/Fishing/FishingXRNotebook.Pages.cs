@@ -7,10 +7,10 @@ namespace BoatAttack.Fishing
     {
         private readonly string[] _pageContent=new string[9];
         private GameObject _pageDecor;
-        private Text _pageTitle,_pageDate,_pageDetail;
+        private Text _pageTitle,_pageDate,_pageDetail,_pageSubtitle;
         private Image _pageLeaf,_pageLeafEdge;
         private int _pageHover=-1;
-        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤","储物箱 · 存入","储物箱 · 取出","声音混音","家园生态","VR 舒适","操作说明","信件"};
+        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤","储物箱 · 存入","储物箱 · 取出","声音混音","家园生态","VR 舒适","操作说明","信件","相册","照片图鉴","物品与整理","选择目标格","夕照中的金帆","航程存档","航海手札","世界与秘境","沿岸调查"};
 
         private void BuildNotebookPages()
         {
@@ -20,8 +20,8 @@ namespace BoatAttack.Fishing
             var p=_pageDecor.transform;
             HomeImage(p,"Cloth spine",new Rect(13,25,9,730),HomeSage,_homePaperSprite);
             HomeImage(p,"Paper perimeter",new Rect(29,18,1051,758),HomeGold,_homeEdgeSprite);
-            _pageTitle=HomeText(p,new Rect(52,33,600,70),"",42,HomeInk,FishingUITheme.Heading);
-            HomeText(p,new Rect(55,106,620,33),"潮汐手册  /  回潮海",21,HomeMuted);
+            _pageTitle=HomeText(p,new Rect(52,33,600,70),"",42,HomeInk,FishingUITheme.Heading,false);FishingUITheme.StyleHeading(_pageTitle);
+            _pageSubtitle=HomeText(p,new Rect(55,106,620,33),"潮汐手册  /  回潮海",21,HomeMuted);
             _pageDate=HomeText(p,new Rect(651,49,407,40),"",23,HomeInk);_pageDate.alignment=TextAnchor.MiddleRight;
             HomeImage(p,"Header rule",new Rect(42,149,1020,1.5f),HomeGold);
             _pageLeaf=HomeImage(p,"Left journal leaf",new Rect(42,171,375,555),HomeLight,_homePaperSprite);
@@ -30,7 +30,8 @@ namespace BoatAttack.Fishing
             HomeText(p,new Rect(62,680,335,34),"指向卡片，查看完整信息",20,HomeMuted);
             HomeImage(p,"Footer reading strip",new Rect(35,733,1030,43),HomePaper,_homePaperSprite);
             HomeImage(p,"Footer rule",new Rect(42,733,1020,1),HomeGold);
-            var hint=HomeText(p,new Rect(44,741,1018,32),"右手指向  ·  扳机选择  ·  B 返回海湾",20,HomeMuted);hint.alignment=TextAnchor.MiddleRight;
+            var hint=HomeText(p,new Rect(44,741,1018,32),"左握把握住书边  ·  右握把横扫翻页  ·  扳机选择  ·  B 收起",20,HomeMuted);hint.alignment=TextAnchor.MiddleRight;
+            BuildAlbumPreview();
             _pageDecor.SetActive(false);
         }
 
@@ -38,13 +39,15 @@ namespace BoatAttack.Fishing
         {
             _pageDecor.SetActive(true);
             var root=(RectTransform)_canvas.transform;root.sizeDelta=new Vector2(1100,780);root.localScale=Vector3.one*.00105f;
-            _homeScaler.dynamicPixelsPerUnit=3;
+            _homeScaler.dynamicPixelsPerUnit=4;
             var theme=FishingPaperDesign.NotebookTheme(_page);
             var panel=_canvas.GetComponent<Image>();panel.sprite=FishingPaperDesign.Surface(theme);panel.type=Image.Type.Sliced;panel.color=FishingPaperDesign.PaperTint;
-            _pageTitle.font=theme==FishingPaperTheme.Workshop?FishingUIFont.Font:FishingUITheme.Heading;
-            _pageTitle.fontSize=theme==FishingPaperTheme.Workshop?38:45;
+            FishingUITheme.StyleHeading(_pageTitle,theme==FishingPaperTheme.Celestial?1:theme==FishingPaperTheme.Herbarium?2:theme==FishingPaperTheme.DreamSettings?4:0);
+            _pageTitle.fontSize=42;
             _pageTitle.text=_page>=0 && _page<PageTitles.Length?PageTitles[_page]:"潮汐手册";
             _pageDate.text=_c.Career.Calendar.DateLabel+"  /  "+_c.Career.Calendar.TimeLabel;
+            bool guide=_page==11;
+            _pageSubtitle.text=guide?"安全练习 "+(_guideLesson+1)+" / 3  ·  "+(_guideLesson<2?PracticeCount(_guidePracticed)+" / 5 项已完成":"航行与生活") : "潮汐手册  /  回潮海";
             bool chart=_page==12;
             HomeRect(_pageLeaf.rectTransform,new Rect(42,171,chart?620:375,555));HomeRect(_pageLeafEdge.rectTransform,new Rect(42,171,chart?620:375,555));
             HomeRect(_status.rectTransform,new Rect(62,191,chart?580:335,chart?120:471));_status.fontSize=22;_status.color=HomeInk;
@@ -61,13 +64,21 @@ namespace BoatAttack.Fishing
                 var r=i<6?new Rect(442+i%2*316,171+i/2*157,304,144)
                     :i==6?new Rect(442,669,194,57):i==7?new Rect(652,669,220,57):new Rect(888,669,174,57);
                 if(chart && i<6)r=new Rect(686,171+i*79,376,68);
-                var plate=_plates[i];HomeRect(plate.rectTransform,r);plate.sprite=_homePaperSprite;plate.type=Image.Type.Sliced;plate.material=_homeMaterial;
+                var plate=_plates[i];HomeRect(plate.rectTransform,r);plate.sprite=null;plate.type=Image.Type.Simple;plate.material=_homeMaterial;
                 plate.gameObject.SetActive(_pageContent[i]!="—");
+                var border=plate.GetComponent<Outline>()??plate.gameObject.AddComponent<Outline>();border.enabled=true;
+                border.effectColor=FishingUITheme.Blend(new Color(.65f,.48f,.29f,.38f),new Color(.62f,.71f,.77f,.38f));border.effectDistance=new Vector2(1,-1);
                 var box=plate.GetComponent<BoxCollider>();box.size=new Vector3(r.width,r.height,3);box.center=new Vector3(r.width*.5f,-r.height*.5f,0);
-                _homeEdges[i].gameObject.SetActive(true);HomeRect(_homeEdges[i].rectTransform,new Rect(0,0,r.width,r.height));
-                _homeArrows[i].gameObject.SetActive(i<6);HomeRect(_homeArrows[i].rectTransform,new Rect(r.width-34,8,28,48));
+                _homeEdges[i].gameObject.SetActive(false);
+                _homeArrows[i].gameObject.SetActive(i<6 && !guide);HomeRect(_homeArrows[i].rectTransform,new Rect(r.width-34,8,28,48));
                 bool photo=i<6 && _icons[i].gameObject.activeSelf;
-                _homeIcons[i].gameObject.SetActive(i>=6);
+                _homeIcons[i].gameObject.SetActive(i>=6 || guide);
+                if(guide && i<6)
+                {
+                    string glyph=_guideLesson==0?(i<4?new[]{"A","B","X","Y"}[i]:null):_guideLesson==1?(i<2?"Trigger":i<4?"Grip":null):null;
+                    _homeIcons[i].sprite=glyph!=null?FishingUITheme.ControllerGlyph(glyph):FishingUITheme.NavigationIcon(_guideLesson==2?new[]{0,2,7,3,1,8}[i]:2);
+                    _homeIcons[i].color=HomeInk;HomeRect(_homeIcons[i].rectTransform,new Rect(15,14,50,50));
+                }
                 if(i>=6)
                 {
                     bool previous=_pageContent[i]!=null && _pageContent[i].StartsWith("上一");
@@ -79,8 +90,9 @@ namespace BoatAttack.Fishing
                 var content=(_pageContent[i]??"").Split(new[]{'\n'},2);
                 int limit=i>=6?Mathf.FloorToInt((r.width-61)/20):chart?13:photo?7:10;
                 string title=content[0];if(title.Length>limit)title=title.Substring(0,limit-1)+"…";
-                _labels[i].text=title;_labels[i].fontSize=i<6?24:20;_labels[i].color=HomeInk;_labels[i].alignment=TextAnchor.MiddleLeft;
+                _labels[i].text=title;_labels[i].font=i<6?FishingUITheme.Heading:FishingUIFont.Font;_labels[i].lineSpacing=i<6?1:1.12f;_labels[i].fontSize=i<6?24:20;_labels[i].color=HomeInk;_labels[i].alignment=TextAnchor.MiddleLeft;
                 HomeRect(_labels[i].rectTransform,i<6?new Rect(photo?87:16,chart?12:8,photo?181:chart?316:253,41):new Rect(46,7,r.width-59,43));
+                if(guide && i<6)HomeRect(_labels[i].rectTransform,new Rect(78,13,189,41));
                 _homeCaptions[i].gameObject.SetActive(i<6 && !chart);
                 if(i<6)
                 {
@@ -88,29 +100,37 @@ namespace BoatAttack.Fishing
                     int max=photo?24:38;if(body.Length>max)body=body.Substring(0,max-1)+"…";
                     _homeCaptions[i].text=body;_homeCaptions[i].fontSize=21;_homeCaptions[i].color=HomeMuted;
                     HomeRect(_homeCaptions[i].rectTransform,new Rect(16,photo?82:48,272,photo?61:92));
+                    if(guide)
+                    {
+                        body=body.Replace("\n"," · ");if(body.Length>28)body=body.Substring(0,27)+"…";
+                        _homeCaptions[i].text=body;_homeCaptions[i].fontSize=20;_homeCaptions[i].lineSpacing=1.05f;
+                        HomeRect(_homeCaptions[i].rectTransform,new Rect(16,68,272,70));
+                    }
                 }
                 ApplyPageState(i,false,true);
             }
             foreach(var graphic in _canvas.GetComponentsInChildren<Graphic>(true))graphic.material=graphic==_map && _mapPalette!=null?_mapPalette:_homeMaterial;
+            PresentAlbumPage();
             UpdatePagePointer(_pageHover,false);
         }
 
         private void ApplyPageState(int i,bool held,bool instant)
         {
-            bool disabled=_actions[i]==null,hover=i==_pageHover;
+            bool disabled=_actions[i]==null && !(_page==11 && i<6),hover=i==_pageHover;
             Color surface=disabled?FishingUITheme.Disabled:hover?FishingUITheme.Selected:HomeLight;
             if(_page==12 && _pageContent[i]!=null && _pageContent[i].StartsWith("★"))surface=FishingUITheme.Selected;
             float blend=instant?1:1-Mathf.Exp(-Time.unscaledDeltaTime/.08f);
             _plates[i].color=Color.Lerp(_plates[i].color,surface,blend);
             _homeEdges[i].color=disabled?HomeMuted:hover?HomeSage:HomeGold;
-            _labels[i].color=HomeInk;_homeCaptions[i].color=HomeMuted;_homeIcons[i].color=HomeInk;
+            _labels[i].color=HomeInk;_homeCaptions[i].color=HomeMuted;_homeIcons[i].color=_page==11 && i<6 && (_guideLesson==2 || i>=4)?Color.white:HomeInk;
             _homeArrows[i].text=disabled?"–":"›";_homeArrows[i].color=disabled?HomeMuted:HomeInk;
         }
 
         private void UpdatePagePointer(int index,bool held)
         {
             _pageHover=index;
-            bool detail=index>=0 && index<9 && !string.IsNullOrEmpty(_pageContent[index]) && _pageContent[index]!="—";
+            if(_page==AlbumPage){_pageDetail.gameObject.SetActive(false);_status.gameObject.SetActive(true);for(int i=0;i<9;i++)ApplyPageState(i,held,false);return;}
+            bool detail=index>=0 && index<6 && !string.IsNullOrEmpty(_pageContent[index]) && _pageContent[index]!="—";
             _pageDetail.gameObject.SetActive(detail);_status.gameObject.SetActive(!detail);
             if(detail){_pageDetail.text=_pageContent[index];HomeRect(_pageDetail.rectTransform,new Rect(62,191,_page==12?580:335,_page==12?120:471));}
             for(int i=0;i<9;i++)ApplyPageState(i,held,false);

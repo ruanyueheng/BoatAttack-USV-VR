@@ -29,9 +29,9 @@ namespace BoatAttack.EditorTools
                 var frames=new Texture2D[5];
                 for(int k=0;k<5;k++)
                 {
-                    // 在“镜头 × 前/后机位”中均匀抽 5 帧；前机位取 2.9s，后机位取 5.6s（字幕已打完）。
+                    // 在“镜头 × 前/后机位”中均匀抽 5 帧；按镜头比例采样，延长后仍涵盖两个机位。
                     int halves=Mathf.RoundToInt(p.Duration/FishingPrologue.ShotSeconds)*2;int h=Mathf.Min(halves-1,Mathf.RoundToInt(k*(halves-1)/4f));
-                    int shot=h/2;float local=h%2==0?2.9f:5.6f;
+                    int shot=h/2;float local=FishingPrologue.ShotSeconds*(h%2==0?.45f:.86f);
                     p.SeekForCapture(shot*FishingPrologue.ShotSeconds+local);yield return null;
                     Check(subtitle.cachedTextGenerator.lineCount<=2,"Caption fits two lines "+sequence+" shot "+shot);
                     var sunRotation=sun.transform.rotation;var sunColor=sun.color;var fog=RenderSettings.fogColor;
@@ -87,7 +87,12 @@ namespace BoatAttack.EditorTools
                 {
                     int island=sequence-FishingPrologue.Sequence.Wind;
                     var go=Berth(c,FishingIslandWorld.Berth(island));while(go.MoveNext())yield return go.Current;
-                    Check(c.Shore.Relocate(c.Realms.PortalApproach(island),Quaternion.identity) && c.Realms.Enter(island),"Enter realm "+island);
+                    var approach=c.Realms.PortalApproach(island);
+                    Check(c.Shore.Relocate(approach,Quaternion.identity),"Supported clear portal approach for realm "+island+" at "+approach);
+                    Physics.SyncTransforms();
+                    bool target=c.Realms.TryTarget(out int targetId,out var targetObject);
+                    Check(target && targetId==island+8,"Reachable unobstructed entrance for realm "+island+"; feet="+c.Shore.Position+" target="+targetId+" / "+targetObject);
+                    Check(c.Realms.Enter(island),"Enter realm "+island);
                     while(c.Realms.Transitioning)yield return null;yield return null;
                     var echo=c.Realms.Device(3).position;var stand=echo+Vector3.ProjectOnPlane(c.Shore.Position-echo,Vector3.up).normalized*1.6f;
                     c.Shore.Relocate(stand,Quaternion.LookRotation(Vector3.ProjectOnPlane(echo-stand,Vector3.up)));

@@ -19,5 +19,10 @@ internal static class HandInputTests
         s.Update(true,1,true,true,1,true,175);check(!s.Holding,"Tracking recovery requires release");
         s.Update(true,0,false,true,1,true,179);s.Update(true,1,false,true,1,true,179);s.Update(true,1,false,true,1,true,-177);check(s.Reeling,"Crank wraps across 180 degrees");
         s.Update(true,float.NaN,true,true,1,true,0);check(!s.Holding && !s.Activated,"Non-finite grip rejected");
+        s.Update(true,0,false,false,1,true,0,true);
+        s.Update(true,0,true,false,1,true,12,true);check(!s.Holding && s.Activated && s.Reeling,"A-held rod supports trigger strike and physical reel without holding grip");
+        s.Update(true,0,true,false,1,true,24,true);check(!s.Activated,"A-held rod trigger only strikes once per press");
+        s.Update(false,0,true,false,1,true,24,true);
+        s.Update(true,0,true,false,1,true,24,true);check(!s.Activated,"A-held rod cannot strike through tracking recovery with trigger held");
     }
 }

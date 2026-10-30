@@ -1,0 +1,33 @@
+[MOUSE-FISHING] CHECK: 仅操作临时隔离存档
+[MOUSE-FISHING] CHECK: mouse tests use an isolated career
+[MOUSE-FISHING] PRESS: anchored=True phase=Idle held=True down=True ready=True drag=True paused=False story=False shop=False dock=False
+[MOUSE-FISHING] CHECK: actual left press begins a captured desktop cast
+[MOUSE-FISHING] CHECK: closed XR notebook does not erase preparation across held frames
+[MOUSE-FISHING] CHECK: real mouse release launches the float
+[MOUSE-FISHING] CHECK: release returns the desktop cursor
+[MOUSE-FISHING] CHECK: a press that begins on HUD cannot launch a cast
+[MOUSE-FISHING] CHECK: a world-started drag still launches when released over HUD
+[MOUSE-FISHING] CHECK: focus loss cancels the cast and a held return cannot restart it
+[MOUSE-FISHING] CHECK: a fresh tap after recovery casts normally
+[MOUSE-FISHING] CHECK: fresh mouse press hooks and held left button reels
+[MOUSE-FISHING] CHECK: held mouse-right motion steers the rod without spinning the camera
+[MOUSE-FISHING] CHECK: held mouse-left motion bends toward the opposite side
+[MOUSE-FISHING] CHECK: the original spool coil/lip vertices are identified separately from the handle
+[MOUSE-FISHING] CHECK: held input retrieves real line and winds the original spool inward
+[MOUSE-FISHING] CHECK: releasing left lets the fish take line and reverses spool travel
+[MOUSE-FISHING] CHECK: the mouse fight reaches the landing phase
+[MOUSE-FISHING] CHECK: left click lifts a durable undecided live fish before it enters the net
+[MOUSE-FISHING] CHECK: the hand-held fish must be placed in the net before storage
+[MOUSE-FISHING] CHECK: the real left hand reaches the fish grip without stretching the source arm
+[MOUSE-FISHING] CHECK: the right hand keeps the rod during left-hand inspection
+[MOUSE-FISHING] INSPECTION GEOMETRY: eye=(-106.48, 2.41, 16.81) palm=(-106.46, 2.33, 17.08) fish=(-106.46, 2.26, 17.07) viewport=(0.23, 0.38, 0.27) mesh=Center: (-106.46, 2.26, 17.07), Extents: (0.08, 0.12, 0.05)
+[MOUSE-FISHING] CHECK: the left-held live fish is actually visible in first-person view
+[MOUSE-FISHING] CHECK: the production E input starts hand-to-net placement
+[MOUSE-FISHING] CHECK: placement leaves the same live fish in the real net without granting it twice
+[MOUSE-FISHING] CHECK: the right hand visibly supports the net after the rod is stowed
+[MOUSE-FISHING] CHECK: the production F input starts storage without granting the fish early
+[MOUSE-FISHING] CHECK: storage retains the receipt until hand contact
+[MOUSE-FISHING] CHECK: the production storage action commits exactly once
+[MOUSE-FISHING] CHECK: new hand-first workflow survives the existing save format
+[MOUSE-FISHING] EVIDENCE: Logs/MouseFishing/cfb382bf63a7422e8833e3d3a0251932
+[MOUSE-FISHING] PASS: v0.36.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。

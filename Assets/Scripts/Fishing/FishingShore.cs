@@ -46,7 +46,7 @@ namespace BoatAttack.Fishing
         public bool Crouched { get; private set; }
         public float EyeHeight => (Crouched?FishingLocomotion.CrouchingHeight:FishingLocomotion.StandingHeight)-.2f;
         public bool Grounded => Body!=null && Body.isGrounded;
-        public void ResetMoveInput() { _motion.ResetInput(); _xrStick = Vector2.zero; }
+        public void ResetMoveInput() { _motion.ResetInput(); _xrStick = Vector2.zero; ResetClimbHands(); }
 
         private static readonly Vector3[] LandSeeds = { new Vector3(-66,0,-14), new Vector3(42,0,70), new Vector3(94,0,-66), new Vector3(66,0,-94) };
         private static readonly Vector3[] Berths = { new Vector3(-78,0,-14), new Vector3(42,0,84), new Vector3(108,0,-66), new Vector3(66,0,-78) };
@@ -271,10 +271,12 @@ namespace BoatAttack.Fishing
                 var left=InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
                 if(!FishingXRTracking.TryPose(Controller.viewCamera,XRNode.LeftHand,out _,out _) || !FishingXRTracking.TryPose(Controller.viewCamera,XRNode.RightHand,out _,out _))
                 {WalkSpeed=0;ResetMoveInput();return;}
+                ReadClimbHands();
                 left.TryGetFeatureValue(UnityEngine.XR.CommonUsages.primary2DAxis,out input);
                 if(input.magnitude<.18f)input=Vector2.zero;
                 input=_xrStick=FishingXRComfort.Ramp(_xrStick,input,dt,!Climbing && !Swimming);
-                sprint=jump=false;crouch=Controller.XRSeat.PhysicallyCrouched;
+                sprint=FishingXRInput.StickClick(left)||FishingXRInput.Grip(left);
+                jump=FishingXRInput.StickClick(InputDevices.GetDeviceAtXRNode(XRNode.RightHand));crouch=Controller.XRSeat.PhysicallyCrouched;
             }
             Move(input,sprint,jump,crouch,dt);UpdateProximity();
         }
@@ -309,7 +311,7 @@ namespace BoatAttack.Fishing
             if(Swimming){Swim(axes,heading,sprint,jump,dt);return;}
             _motion.Exert(sprint && axes.sqrMagnitude>.01f && !Crouched,axes.sqrMagnitude<.01f,dt);
             sprint &= Stamina>.08f;
-            var velocity=heading*new Vector3(axes.x,0,axes.y)*(XRSettings.isDeviceActive?(Crouched?.9f:FishingXRComfort.WalkSpeed):Crouched?1.25f:sprint?4.4f:2.6f);
+            var velocity=heading*new Vector3(axes.x,0,axes.y)*(XRSettings.isDeviceActive?(Crouched?.9f:FishingXRComfort.WalkSpeed*(sprint?1.7f:1f)):Crouched?1.25f:sprint?4.4f:2.6f);
             var next=Actor.position+velocity*dt;
             // Dry land below permits a gravity-driven descent; walls and slopes still use real collision geometry.
             bool support=WalkingGroundBelow(next,Actor.position.y+.45f,80f,out var floor);

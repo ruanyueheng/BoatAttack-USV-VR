@@ -217,7 +217,7 @@ namespace BoatAttack.Fishing
             if(!_c.Hands.CanPresentTools)return;
             bool tracked=XRSettings.isDeviceActive;float p=WorkProgress;
             _c.Hands.GetToolFrame(out var origin,out _);var frame=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0);
-            var rotation=frame*Quaternion.Inverse(CanPalmRotation);var palm=origin+frame*new Vector3(_c.Shore.Character.HandSide(false)*.14f,-.14f,.42f);
+            var rotation=frame*Quaternion.Inverse(CanPalmRotation);var handRotation=CanPalmRotation;var palm=origin+frame*new Vector3(_c.Shore.Character.HandSide(false)*.14f,-.14f,.42f);
 
             if(Busy && _canWork==FarmWork.Water)
             {
@@ -227,7 +227,8 @@ namespace BoatAttack.Fishing
             if(tracked)
             {
                 if(!_c.Hands.TryControllerPalm(false,out palm,out var palmRotation))return;
-                rotation=palmRotation*Quaternion.Inverse(CanPalmRotation);
+                rotation=_c.Hands.ControllerGripRotation(palmRotation)*Quaternion.Euler(0,-Mathf.Atan2(CanSpout.x,CanSpout.z)*Mathf.Rad2Deg,0);
+                handRotation=Quaternion.Inverse(rotation)*palmRotation;
             }
             var position=palm-rotation*CanPalm;
             if(Busy && _canWork==FarmWork.TakeCan){float take=Ease(.24f,1,p);position=Vector3.Lerp(_startCanPosition,position,take);rotation=Quaternion.Slerp(_startCanRotation,rotation,take);}
@@ -244,7 +245,7 @@ namespace BoatAttack.Fishing
                     _c.Hands.Right.SetPose(Vector3.Lerp(_startRightPalm,_can.TransformPoint(CanPalm),Ease(0,.24f,p)),Quaternion.Slerp(frame,_can.rotation*CanPalmRotation,Ease(0,.24f,p)),Mathf.Lerp(.15f,.75f,Ease(0,.24f,p)));
                 else
                 {
-                    _c.Hands.SetToolTarget(false,_can,CanPalm,CanPalmRotation,.88f,fingers:new FishingFingerPose(.80f,.85f,.88f,.92f,.76f));
+                    _c.Hands.SetToolTarget(false,_can,CanPalm,handRotation,.88f,fingers:new FishingFingerPose(.80f,.85f,.88f,.92f,.76f));
                     _c.Hands.Right.SetGripSurface(_can.TransformPoint(CanHandle+Vector3.left*.065f),_can.TransformPoint(CanHandle+Vector3.right*.085f),.010f);
                 }
                 _c.Hands.Right.SetForearmRoll(.65f);

@@ -18,12 +18,12 @@ namespace BoatAttack.EditorTools
             var comfort=c.XRComfort;Check(comfort!=null,"XR comfort component is built");
             for(int i=0;i<60;i++){typeof(FishingXRComfort).GetMethod("Update",Private).Invoke(comfort,null);typeof(FishingXRHints).GetMethod("LateUpdate",Private).Invoke(c.GetComponent<FishingXRHints>(),null);}
             Check(true,"Sixty non-XR comfort and hint frames run without exceptions");
-            var keys=new[]{"FishingXR.Turn","FishingXR.Teleport","FishingXR.Vignette","FishingXR.Speed","FishingXR.GustComfort"};
+            var keys=new[]{FishingXRComfort.TurnPreference,"FishingXR.Teleport","FishingXR.Vignette","FishingXR.Speed","FishingXR.GustComfort"};
             var saved=keys.Select(k=>PlayerPrefs.HasKey(k)?(int?)PlayerPrefs.GetInt(k):null).ToArray();
             try
             {
                 foreach(var k in keys)PlayerPrefs.DeleteKey(k);
-                Check(FishingXRComfort.TurnMode==FishingXRComfort.Turn.Snap30 && !FishingXRComfort.Teleport && FishingXRComfort.Vignette==2 && FishingXRComfort.GustComfort,"Defaults: 30° snap turn, smooth walk, medium vignette, gusts never push the body");
+                Check(FishingXRComfort.TurnMode==FishingXRComfort.Turn.Smooth && !FishingXRComfort.Teleport && FishingXRComfort.Vignette==2 && FishingXRComfort.GustComfort,"Defaults: smooth turn, smooth walk, medium vignette, gusts never push the body");
                 Check(FishingXRComfort.WalkSpeed<=1.6f && FishingXRComfort.Ramp(Vector2.zero,Vector2.up,.1f,false).magnitude<=.41f,"Walk speed capped at 1.6 m/s and full speed needs at least 0.25 s (acceleration cap)");
                 FishingXRComfort.Teleport=true;
                 Check(FishingXRComfort.Ramp(Vector2.zero,Vector2.up,1,true)==Vector2.zero && FishingXRComfort.Ramp(Vector2.zero,Vector2.up,1,false)==Vector2.up,"Teleport mode removes stick translation, except on ladders and in water");
@@ -47,6 +47,8 @@ namespace BoatAttack.EditorTools
                 }
             foreach(string key in new[]{"A","B","X","Y","Trigger","Grip","Stick","Click","Menu"})Check(used.Contains(key),"Controller hint table uses PICO input "+key);
             Check(24*.0005f/.7f>=Mathf.Deg2Rad*.98f,"Controller tag text (24 px × 0.5 mm) spans about 1° or more at 0.7 m");
+            ValidateGuidance(c);
+            ValidateArtParity(c);
 
             // Every Chinese player-facing literal must read in PICO terms once adapted for XR (desktop HUD-only files excluded).
             var leaks=new System.Collections.Generic.List<string>();var changed=new System.Collections.Generic.List<string>();int scanned=0;
@@ -93,7 +95,75 @@ namespace BoatAttack.EditorTools
             }
             finally{type.GetField("_page",Private).SetValue(notebook,0);type.GetField("_offset",Private).SetValue(notebook,0);notebook.Close();}
             CaptureFirstPerson(c,hints,screen,Path.Combine(evidence,"eye-notebook-and-hints.png"));
+            FishingXRPhysicalValidation.Run(c);
             Debug.Log("[XR-COMFORT] EVIDENCE: "+evidence);
+        }
+        private static void ValidateGuidance(FishingPrototype c)
+        {
+            var text=(Text)typeof(FishingXRNotebook).GetField("_feedbackText",Private).GetValue(c.XRNotebook);
+            var title=(Text)typeof(FishingXRNotebook).GetField("_feedbackTitle",Private).GetValue(c.XRNotebook);
+            var present=typeof(FishingXRNotebook).GetMethod("ApplyGuidanceText",Private);
+            string saved=text.text,savedTitle=title.text;
+            void Fits(string message,string label)
+            {
+                present.Invoke(c.XRNotebook,new object[]{message});
+                Check(title.text+(text.text.Length>0?"\n"+text.text:"")==message && title.preferredHeight<=title.rectTransform.rect.height
+                    && text.preferredHeight<=text.rectTransform.rect.height,label);
+            }
+            var phase=typeof(CatchSession).GetProperty("Phase");var tension=typeof(CatchSession).GetProperty("Tension");
+            var beat=typeof(CatchSession).GetField("_beatTime",Private);
+            var session=new CatchSession();session.Cast(FishKind.Sailfish,false,0,"xr-guidance");
+            try
+            {
+                string guidance=FishingXRHints.Guidance(c);
+                Check(guidance.Contains("B 手册") && !FishingXRText.Forbidden.IsMatch(guidance),"Persistent VR guidance has a help route and uses controller controls");
+                Fits(guidance,"Persistent action, objective and navigation fit the desktop-style two-level guidance without losing text");
+                foreach(CatchPhase p in Enum.GetValues(typeof(CatchPhase)))
+                {
+                    phase.SetValue(session,p);
+                    foreach(bool held in new[]{true,false})
+                    {
+                        string action=FishingXRHints.FishingAction(session,held);
+                        Check(!string.IsNullOrEmpty(action) && !FishingXRText.Forbidden.IsMatch(action),"VR next action covers "+p+" with rod "+held);
+                        Fits(action+"\nB 手册 → 港口事务 → 起锚 / 换饵","VR fishing action fits without truncation: "+p+" with rod "+held);
+                    }
+                }
+                phase.SetValue(session,CatchPhase.Fighting);tension.SetValue(session,.3f);
+                beat.SetValue(session,session.Species.BeatSeconds*.6f);
+                string leap=FishingXRHints.FishingAction(session,true);
+                Check(leap.Contains("跃出水面") && leap.Contains("松开右扳机和左握把"),"Leap warns players to release both supported reeling inputs");
+                beat.SetValue(session,0f);tension.SetValue(session,.9f);
+                Check(FishingXRHints.FishingAction(session,true).Contains("张力过高"),"High tension interrupts the resting fish's reel instruction");
+                tension.SetValue(session,.3f);
+                Check(FishingXRHints.FishingAction(session,true).Contains("按住右扳机收线"),"Rest explains the accessible trigger reeling action");
+            }
+            finally{text.text=saved;title.text=savedTitle;}
+        }
+        private static void ValidateArtParity(FishingPrototype c)
+        {
+            var type=typeof(FishingXRNotebook);var notebook=c.XRNotebook;
+            var canvas=(Canvas)type.GetField("_canvas",Private).GetValue(notebook);
+            var feedback=(Canvas)type.GetField("_feedback",Private).GetValue(notebook);
+            var heading=Resources.Load<Font>("FishingV044/Fonts/NotoSerifSC-SemiBold-Subset");
+            Check(heading!=null && FishingUITheme.Heading==heading && FishingUIFont.Font==Resources.Load<Font>("Fonts/TideSansSC"),"VR shares the desktop's packaged Noto Serif display face and Tide Sans body face");
+            foreach(string field in new[]{"_homeTitle","_pageTitle"})
+            {
+                var text=(Text)type.GetField(field,Private).GetValue(notebook);
+                Check(text.font==heading && text.GetComponent<Outline>()!=null && text.GetComponents<Shadow>().Length==2,"VR title uses the shared serif, letter-edge gilding and separate shadow: "+field);
+            }
+            Check(feedback.GetComponent<Image>().sprite==FishingUITheme.PanelVeilSprite && feedback.GetComponent<CanvasScaler>().dynamicPixelsPerUnit>=4,"Action guidance uses the desktop ReadingVeil art with 4× world text rasterization");
+            Check(canvas.GetComponent<CanvasScaler>().dynamicPixelsPerUnit>=4,"Notebook and dialogue use 4× dynamic text rasterization");
+            foreach(int page in new[]{11,14,16,20,22,23,30})Check(FishingPaperDesign.NotebookTheme(page)==FishingPaperTheme.DreamSettings,"VR settings share the desktop's DreamSettings paper: "+page);
+            var dock=(Canvas)typeof(FishingDockConsole).GetField("_canvas",Private).GetValue(c.DockConsole);
+            Check(dock.GetComponent<Image>().sprite==FishingUITheme.StorybookPaperSprite && dock.GetComponent<CanvasScaler>().dynamicPixelsPerUnit>=4,"Dock transactions use the shared watercolour paper and sharp text");
+            Check(c.Prologue.CinemaScreen.GetComponent<CanvasScaler>().dynamicPixelsPerUnit>=4 && c.Letter.Paper.GetComponent<CanvasScaler>().dynamicPixelsPerUnit>=4,"Cinema subtitles and reading letters retain 4× world text rasterization");
+            foreach(var left in new[]{true,false})
+            {
+                var tag=c.GetComponent<FishingXRHints>().PreviewForValidation(FishingXRHints.Context.Shore,left);
+                Check(tag.GetComponent<Image>().sprite==FishingUITheme.StorybookPaperSprite && tag.GetComponent<CanvasScaler>().dynamicPixelsPerUnit>=4,"Controller tag shares the V044 paper and sharp text: "+left);
+                var text=tag.transform.Find("Controller context heading").GetComponent<Text>();
+                Check(text.font==heading && text.preferredHeight<=text.rectTransform.rect.height,"Controller context serif heading remains readable without clipping");
+            }
         }
         /// <summary>Approximate left-eye frame (no headset in batch): 1.65 m eye on deck, notebook 1.3 m ahead, controller tags at hand height.</summary>
         private static void CaptureFirstPerson(FishingPrototype c,FishingXRHints hints,Canvas notebook,string path)

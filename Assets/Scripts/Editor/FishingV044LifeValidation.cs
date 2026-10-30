@@ -2,8 +2,10 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using BoatAttack.Fishing;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace BoatAttack.EditorTools
 {
@@ -23,9 +25,68 @@ namespace BoatAttack.EditorTools
             var life=c.Life;Check(life!=null,"Life world is built");
             Check(c.AlbumDirectory.StartsWith(Path.GetDirectoryName(Path.GetFullPath(c.SavePath))),"Album lives beside the isolated saves, outside the save JSON");
             if(Directory.Exists(c.AlbumDirectory))Directory.Delete(c.AlbumDirectory,true);
+            life.RefreshAlbum();NotebookChecks(c,dir,false);
             var run=CameraChecks(c,life,dir);while(run.MoveNext())yield return run.Current;
+            NotebookChecks(c,dir,true);
             run=PalmChecks(c,life,dir);while(run.MoveNext())yield return run.Current;
             run=FestivalChecks(c,life,dir);while(run.MoveNext())yield return run.Current;
+        }
+
+        private static void NotebookChecks(FishingPrototype c,string dir,bool withPhotos)
+        {
+            const BindingFlags flags=BindingFlags.Instance|BindingFlags.NonPublic;
+            var book=c.XRNotebook;var type=typeof(FishingXRNotebook);
+            FieldInfo F(string name)=>type.GetField(name,flags);
+            var refresh=type.GetMethod("Refresh",flags);var gestures=type.GetMethod("TickPageGestures",flags);
+            var canvas=(Canvas)F("_canvas").GetValue(book);var rect=(RectTransform)canvas.transform;
+            var actions=(Action[])F("_actions").GetValue(book);var icons=(RawImage[])F("_icons").GetValue(book);
+            var preview=(RawImage)F("_albumPreview").GetValue(book);var status=(Text)F("_status").GetValue(book);
+            var position=rect.position;var rotation=rect.rotation;
+            bool Gesture(bool left,bool right,Pose l,Pose r,float now)=>(bool)gestures.Invoke(book,new object[]{left,right,l,r,now});
+            try
+            {
+                F("_page").SetValue(book,FishingXRNotebook.AlbumPage);F("_offset").SetValue(book,0);refresh.Invoke(book,null);
+                Check(actions[7]!=null && status.text.Contains("相册"),"XR album has a photo-codex link and readable content");
+                if(!withPhotos)
+                {
+                    Check(actions.Take(6).All(a=>a==null) && actions[6]==null && actions[8]==null && !preview.gameObject.activeSelf,"Empty XR album has no stale photo or invalid paging action");
+                    FishingXRPresentationValidation.CaptureCanvas(canvas,Path.Combine(dir,"life-xr-album-empty.png"));return;
+                }
+                var album=c.Life.Album;
+                Check(icons.Take(6).All(i=>i.gameObject.activeSelf && i.texture!=null) && icons[0].texture==album[album.Count-1].tex,"XR album displays the six newest real saved photos");
+                actions[1]();Check(preview.texture==album[album.Count-2].tex && preview.gameObject.activeSelf,"Selecting an XR photograph updates the large preview");
+                Check(Mathf.Abs(icons[0].rectTransform.rect.width/icons[0].rectTransform.rect.height-FishingLifeWorld.PhotoWidth/(float)FishingLifeWorld.PhotoHeight)<.001f,"XR photo thumbnails preserve their original aspect ratio");
+                Check(status.preferredHeight<=status.rectTransform.rect.height,"XR album caption fits its journal leaf");
+                FishingXRPresentationValidation.CaptureCanvas(canvas,Path.Combine(dir,"life-xr-album.png"));
+                actions[8]();Check((int)F("_offset").GetValue(book)==6 && icons[0].texture==album[album.Count-7].tex,"XR next page reaches the next six saved photos");
+                actions[6]();Check((int)F("_offset").GetValue(book)==0 && actions[6]==null,"XR previous page returns to the newest photos and stops at zero");
+                F("_offset").SetValue(book,999);refresh.Invoke(book,null);Check((int)F("_offset").GetValue(book)==30 && actions[8]==null,"XR album clamps stale offsets to its final page");
+                F("_offset").SetValue(book,0);refresh.Invoke(book,null);book.ResetInput();
+                var left=new Pose(rect.TransformPoint(new Vector3(rect.rect.xMin+10,0,0)),rect.rotation);
+                var right=new Pose(rect.TransformPoint(new Vector3(200,0,0)),rect.rotation);
+                Gesture(false,false,left,right,0);Gesture(false,true,left,right,.1f);
+                var sweep=new Pose(rect.TransformPoint(new Vector3(-20,0,0)),rect.rotation);
+                Check(Gesture(false,true,left,sweep,.3f) && (int)F("_offset").GetValue(book)==6,"A gripped right-to-left sweep advances one XR album page");
+                Gesture(false,true,left,new Pose(rect.TransformPoint(new Vector3(-250,0,0)),rect.rotation),.4f);
+                Check((int)F("_offset").GetValue(book)==6,"One grip cannot flip several pages without release");
+                Gesture(false,false,left,right,.5f);Gesture(false,true,left,sweep,.6f);Gesture(false,true,left,right,.8f);
+                Check((int)F("_offset").GetValue(book)==0,"A released-and-regripped left-to-right sweep returns one page");
+                Gesture(false,false,left,right,1);Gesture(false,true,left,right,1.1f);Gesture(false,true,left,sweep,2);
+                Check((int)F("_offset").GetValue(book)==0,"A slow hand movement is not mistaken for a page sweep");
+                Gesture(false,false,left,right,2.1f);Gesture(true,false,left,right,2.2f);var before=rect.position;
+                var moved=new Pose(left.position+Vector3.up*.12f,left.rotation);Gesture(true,false,moved,right,2.3f);
+                Check((bool)F("_notebookHeld").GetValue(book) && Vector3.Distance(rect.position,before+Vector3.up*.12f)<.001f,"Gripping the left book edge carries the notebook with the hand");
+                Gesture(false,false,moved,right,2.4f);Check(!(bool)F("_notebookHeld").GetValue(book),"Releasing the book edge leaves it in world space");
+                book.ResetInput();Gesture(true,true,moved,right,2.5f);
+                Check(!(bool)F("_notebookHeld").GetValue(book) && !(bool)F("_swiping").GetValue(book),"Tracking/input reset requires fresh grip releases before book gestures");
+                F("_page").SetValue(book,FishingXRNotebook.PhotoCodexPage);F("_offset").SetValue(book,0);refresh.Invoke(book,null);
+                var content=(string[])F("_pageContent").GetValue(book);
+                Check(content[0].StartsWith("★ "+FishingPhotoCodex.Name(0)) && status.text.Contains("与桌面相册共用"),"XR photo codex reads the shared discoveries and photographed flags");
+                FishingXRPresentationValidation.CaptureCanvas(canvas,Path.Combine(dir,"life-xr-photo-codex.png"));
+                F("_offset").SetValue(book,12);refresh.Invoke(book,null);
+                Check(actions[8]==null && actions[7]!=null && content[3].Contains(FishingPhotoCodex.Seen(c.Career,15)?FishingPhotoCodex.Name(15):"未见条目"),"XR codex reaches the final entry and retains a home action");
+            }
+            finally{rect.SetPositionAndRotation(position,rotation);F("_page").SetValue(book,0);F("_offset").SetValue(book,0);refresh.Invoke(book,null);book.Close();}
         }
 
         private static void Rules()
@@ -169,6 +230,15 @@ namespace BoatAttack.EditorTools
                 Check(life.PalmMapShown && life.PalmMap.gameObject.activeSelf,"Turning the left palm up shows the chart");
                 var p=life.PalmMap.position;var palm=life.DebugLeftHand.Value.position;Check(p.y>palm.y+.05f && (p-palm).magnitude<.12f,"Chart floats just above the palm");
                 Check(life.PalmPlayerMarker.gameObject.activeSelf && Mathf.Abs(life.PalmPlayerMarker.localPosition.x)<=FishingLifeWorld.ChartWidth*.5f,"Player marker sits on the chart");
+                var chart=life.PalmMap.Find("Palm chart sheet").GetComponent<MeshRenderer>().sharedMaterial;
+                foreach(float daylight in new[]{1f,0f})
+                {
+                    FishingUITheme.Tick(daylight,10);
+                    typeof(FishingLifeWorld).GetMethod("UpdatePalmMap",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(life,null);
+                    var water=chart.GetColor("_Water");var landColor=chart.GetColor("_Land");
+                    Check(landColor.grayscale>water.grayscale+.35f && chart.GetColor("_Unknown").a>.99f,"Palm chart keeps land/water contrast and opaque unknown cells at "+(daylight>0?"day":"night"));
+                }
+                FishingUITheme.Tick(c.Career.Calendar.Daylight,10);
                 // Close-up screenshot from the eye.
                 var lookAt=life.PalmMap.position;
                 eye.SetPositionAndRotation(lookAt+forward*-.28f+Vector3.up*.2f,Quaternion.LookRotation(lookAt-(lookAt+forward*-.28f+Vector3.up*.2f)));

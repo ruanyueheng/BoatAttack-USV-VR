@@ -109,6 +109,10 @@ namespace BoatAttack.EditorTools
                 {
                     c.Residents.SendTo(id,station,true);yield return null;var settle=Wait(1.2f);while(settle.MoveNext())yield return null;
                     Check(OnlySelf(c,npc),"Station spot is clear of props "+id+" "+station);
+                    if(station=="dock")
+                        Check(FishingPrototype.FlatDistance(npc.position,c.TackleShop.LandingPosition)<3
+                            && Vector3.Dot(brain.Home*Vector3.forward,Vector3.ProjectOnPlane(c.TackleShop.mooringPoint.position-npc.position,Vector3.up).normalized)>.9f,
+                            "Lin Zhou watches the actual grounded landing and faces the mooring");
                     Shot(c,npc,evidence,"station-"+id+"-"+station);
                 }
                 c.Residents.SendTo(id,"home",true);yield return null;
@@ -120,7 +124,13 @@ namespace BoatAttack.EditorTools
             Check(open5 && c.Residents.Speech.StartsWith(FishingResidentLines.Text(5,"greet_s3")),"Chapter-aware greeting after all four echoes");
             c.Residents.Close();
             // Festival evening in the scene: everyone gathers, one pair chats, wide and close shots.
-            c.Residents.FreezeSchedule=true;foreach(int id in new[]{0,1,2,3,5})c.Residents.SendTo(id,"festival",true);
+            c.Residents.FreezeSchedule=true;
+            var gathering=new[]{0,1,2,3,5};
+            foreach(int id in gathering)c.Residents.SendTo(id,"festival",false);
+            for(int i=0;i<gathering.Length;i++)for(int j=i+1;j<gathering.Length;j++)
+                Check(FlatDistance(c.Residents.Brain(gathering[i]).ScheduledFeet,c.Residents.Brain(gathering[j]).ScheduledFeet)>=1.4f,
+                    "Queued festival destinations are reserved before residents move "+gathering[i]+" / "+gathering[j]);
+            foreach(int id in gathering)c.Residents.SendTo(id,"festival",true);
             var gather=Wait(1.5f);while(gather.MoveNext())yield return null;
             var ring=new[]{0,1,2,3,5}.Select(i=>c.Residents.Person(i)).ToArray();var centre=ring.Aggregate(Vector3.zero,(v,t)=>v+t.position)/ring.Length;
             for(int i=0;i<ring.Length;i++)for(int j=i+1;j<ring.Length;j++)Check(FlatDistance(ring[i].position,ring[j].position)>=1.2f,"Festival spots keep residents apart "+ring[i].name+" / "+ring[j].name);

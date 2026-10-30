@@ -1,0 +1,175 @@
+{
+  "historicalVersion": "0.36.0",
+  "archivedDate": "2026-10-21",
+  "rerun": false,
+  "sources": [
+    {
+      "source": "Logs/V036/review-rules.log",
+      "sha256": "e71db91600042dc94ea4ba9bfeb26d0a1f147a1b6e48d28a5fe450f38642a09d",
+      "output": "rules.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/V036/review-input.log",
+      "sha256": "d0108eef96180e1a3fdd7570dae6379c621848406f09a6474948242a6d830654",
+      "output": "input.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-final-FishingV036.txt",
+      "sha256": "e408d1c7ebd23d634db1807e468d1c48c13d5d7e9d8b76128f0114c19bed4903",
+      "output": "FishingV036.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-final-FishingV036Farm.txt",
+      "sha256": "918e3b0d7813b63a62748a7c9cf1d613f6afd406ef2fb80e5cc94f1a77bddbbe",
+      "output": "FishingV036Farm.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-final-FishingV036Storage.txt",
+      "sha256": "cca332c9744c75e3e363d8f3a24d973dba79dfc834c54075e6b866b552a64c06",
+      "output": "FishingV036Storage.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-orchard-run.txt",
+      "sha256": "827397b2d0ce6c5f6c721f1bf6270d90233bb2fc80031b3bfd99a2e996afeab8",
+      "output": "FishingV036Orchard.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-portal-run.txt",
+      "sha256": "44f256ed9ab4c00e9323b8dcee1b2b7d6e29a56ad9f80f493ee15c46f6d78f16",
+      "output": "FishingV036Portal.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-ui-run.txt",
+      "sha256": "cd2e7afbc748e100420ad80d6a38090aebdc4adc9c7bc3180a4337a1521eedbe",
+      "output": "FishingV036UI.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-performance-run.txt",
+      "sha256": "20dcb55f7dcb3a8f3501c5bd75972e60c17f3cd316cfe484315df9439ef66fa8",
+      "output": "FishingV036Performance.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-final-FishingV035Farm.txt",
+      "sha256": "9883b35ec580bfed3553ce2e1dc6f1342c7ca0259582fe0cc7fc04be608ab836",
+      "output": "FishingV035Farm.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-final-FishingV035.txt",
+      "sha256": "db84188f698a3da8f7f0e50515191f745c037846344d998e84edbee83571ec7d",
+      "output": "FishingV035.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-final-FishingPickaxe.txt",
+      "sha256": "7d57857f915207e24b76c523beb6691961dfb79cd20a8d103a1108f52f3def3f",
+      "output": "FishingPickaxe.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-final-FishingAngling.txt",
+      "sha256": "f92f696dd52479285e5efbc25cf2bff3d90078a5c8d23db9d56925ee88866668",
+      "output": "FishingAngling.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-final-FishingMouseFishing.txt",
+      "sha256": "b06f7d4bf829483328a632c0a35600f029785b30f3f9646319abcced4c24cd25",
+      "output": "FishingMouseFishing.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-final-FishingV033.txt",
+      "sha256": "60d45be22ef393a9d6d352384663c25c8ed0e780fbbac9d95d888d0b2fbc6bfd",
+      "output": "FishingV033.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-final-FishingSmoke.txt",
+      "sha256": "5f45f79840dd729c8cc41eb1d726c2b3c8f0cdeb40c5799d697127f5236d3703",
+      "output": "FishingSmoke.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-art-run.txt",
+      "sha256": "19197c5705f2be5511713e51e805143f1794e733b06fd1ba80bbea43356c62bb",
+      "output": "FishingV036Art.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-builds-final-run.txt",
+      "sha256": "3753667d5391b41689f7b8b21da7fcebe98496fe623d24c1bca1ae3af1f07199",
+      "output": "builds.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-player-smoke-run.txt",
+      "sha256": "f05a74bd8ae1317603ebea3b73e67ad4981faab00ee686db81b8107a8bab7427",
+      "output": "player-smoke.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-player-capture-wide.txt",
+      "sha256": "441c242fad3f3ecb472782d87fba2fe35f6d77a396328470a9762b9080381c9d",
+      "output": "player-capture-wide.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Logs/v036-player-capture-5x4.txt",
+      "sha256": "6ed7d0323c22d089b691132c47e98570b3ed8a8cbd344c19e93bb427f51869f7",
+      "output": "player-capture-5x4.txt",
+      "method": "selected-result-lines; workspace paths made relative"
+    },
+    {
+      "source": "Builds/v0.36.0-builds.json",
+      "sha256": "34f440d6b6385862785a78f4ac52a327e12242462de99c59ddf52c6b01b592a9",
+      "output": "builds.json",
+      "method": "json; workspace paths made relative"
+    },
+    {
+      "source": "Logs/V036/final-delivery-evidence.json",
+      "sha256": "7d4b3ec2c8de2af2dd68841f6c84fde870ac30183271c455f0762e8e0a3bc14e",
+      "output": "final-delivery-evidence.json",
+      "method": "json; workspace paths made relative"
+    },
+    {
+      "source": "Logs/V036/jev-delivery-claim-audit.json",
+      "sha256": "6552f804e04c77a9e63d165b8f10987a8a24999d267aa1affc9b8be516c4d254",
+      "output": "jev-delivery-claim-audit.json",
+      "method": "json; workspace paths made relative"
+    },
+    {
+      "source": "Logs/V036/route-performance.txt",
+      "sha256": "34b487f2b37ea54a4b1e7b8320126c077ad4b5b6ef82b6cf8343a19b9aabe337",
+      "output": "route-performance.txt",
+      "method": "exact copy"
+    },
+    {
+      "source": "Logs/V036/well-clear-water-depth.png",
+      "sha256": "511f9647233c1befcb52a51e4523b3298b0a498b2bf965e0797ed8240ff5e11a",
+      "output": "well-clear-water-depth.png",
+      "method": "exact copy"
+    },
+    {
+      "source": "Logs/V036/apk-signature.txt",
+      "sha256": "e1b1f30da68be401dec0d7622cce0de21e88ca359f576032f36bf3a58d0cde56",
+      "output": "apk-signature.txt",
+      "method": "exact copy"
+    },
+    {
+      "source": "Logs/V036/apk-prior-signature.txt",
+      "sha256": "48c21c2c85471eb1c6f28cb315308c720f499814966aaf5b7c457f6f138e2549",
+      "output": "apk-prior-signature.txt",
+      "method": "exact copy"
+    }
+  ]
+}

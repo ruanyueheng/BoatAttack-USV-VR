@@ -92,6 +92,7 @@ namespace BoatAttack.Fishing
             Ladder.bottom = new Vector3(0, ground - DeckY, LadderRadius + .45f);
             Ladder.top = new Vector3(0, 0, 2.75f);
             Ladder.topOutset = new Vector3(0, .05f, LadderRadius + .45f - 2.75f);
+            Ladder.rungOffset = Vector3.back * .45f; // the body clears the rails; hands grip the visible ladder itself
             c.Shore.RefreshClimbRoutes();
 
             _oilCan = Part("Lamp oil can", OilCanMesh(), palette, _root, Quaternion.Euler(0, 55, 0) * Vector3.forward * 3.0f);

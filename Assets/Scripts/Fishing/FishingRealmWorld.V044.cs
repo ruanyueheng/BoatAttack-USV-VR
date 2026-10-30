@@ -16,7 +16,8 @@ namespace BoatAttack.Fishing
         public bool HazardsEnabled { get; set; }
         private Vector3 _safeFeet;
         private float _gustClock;
-        private bool _gustWarned,_leakWarned,_wasFlooding;
+        private bool _gustWarned,_leakWarned,_wasFlooding,_audioReady;
+        private int _audioCheckpoint;
         private readonly Transform[] _bannerCloth=new Transform[3],_cranks=new Transform[6];
         private readonly Vector3[] _gustAxis=new Vector3[3];
         private readonly Transform[][] _shells=new Transform[4][];
@@ -85,6 +86,7 @@ namespace BoatAttack.Fishing
         private void EnterV044()
         {
             _safeFeet=_entries[Island].position;_gustClock=0;_gustWarned=_leakWarned=_wasFlooding=false;_twistId=-1;
+            _audioCheckpoint=Trial.Checkpoint;_audioReady=Trial.Ready;
             if(Island==3)PlaceConstellations(Trial);
             if(!_settled[Island]){_settled[Island]=true;foreach(var prop in Room.GetComponentsInChildren<Transform>(true).Where(t=>t.name=="GustBanner" || t.name=="TideGauge" || t.name=="GrabCrank").ToArray())Settle(prop);}
             if(_shells[Island]==null)_shells[Island]=PlaceShells(Room);
@@ -124,7 +126,10 @@ namespace BoatAttack.Fishing
         {
             float dt=Time.deltaTime;var lore=_c.Career.Lore;
             // Each solved stage is engraved immediately; leaving or quitting resumes from it.
-            if(!lore.Cleared(Island) && lore.SaveRealmStage(Island,Trial.Checkpoint)){_c.Save();_c.WorldAudio?.PlayRealm(Island,"Solve",_c.ExplorerPosition+Vector3.up,.5f);}
+            if(!lore.Cleared(Island) && lore.SaveRealmStage(Island,Trial.Checkpoint))_c.Save();
+            if(Trial.Checkpoint>_audioCheckpoint || (Trial.Ready && !_audioReady))
+                _c.WorldAudio?.PlayRealm(Island,"Solve",_c.ExplorerPosition+Vector3.up,.55f);
+            _audioCheckpoint=Trial.Checkpoint;_audioReady=Trial.Ready;
             if(Island==0)
             {
                 _gustClock+=dt;float phase=_gustClock%GustPeriod;bool warn=phase>=GustWarn && phase<GustStart,gust=phase>=GustStart;

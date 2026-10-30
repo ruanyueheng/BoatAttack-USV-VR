@@ -38,7 +38,8 @@ namespace BoatAttack.Fishing
             if(supported.y>.6f)_lastSafe = Actor.position;
             _motion.Reset(); Swimming = Climbing = false; SetCrouch(false, true);
         }
-        public string ClimbHint => Climbing ? "W / S 攀登 · 空格离开绳梯" : NearbyClimb() != null ? "E 攀登绳梯 · 登高观察岛屿" : null;
+        public string ClimbHint => Climbing ? (UnityEngine.XR.XRSettings.isDeviceActive ? "双手交替握住横档，下拉攀登 · 左摇杆上下亦可" : "W / S 攀登 · 空格离开绳梯")
+            : NearbyClimb() != null ? (UnityEngine.XR.XRSettings.isDeviceActive ? "握住绳梯横档，向下拉起身体 · A 亦可攀登" : "E 攀登绳梯 · 登高观察岛屿") : null;
         private FishingClimbRoute NearbyClimb()
         {
             if (!Ashore || Swimming || Controller.Realms == null || Controller.Realms.Inside || _routes == null) return null;
@@ -51,34 +52,38 @@ namespace BoatAttack.Fishing
             if (Controller.Paused || Controller.StoryBlocksGameplay || Controller.ShopBlocksGameplay || Controller.WorldActionBusy || Controller.InventoryOpen || Controller.JournalOpen || Climbing) return false;
             var route = NearbyClimb(); if (route == null) return false;
             _climb = route; _climbProgress = Vector3.Distance(Position, route.Bottom) < Vector3.Distance(Position, route.Top) ? 0 : 1;
-            Climbing = true; Controller.LowerFieldTools(); Controller.CancelWorldAction(); _motion.Reset(); SetCrouch(false, true);
-            Controller.Notice("已握住绳梯 · W / S 上下攀登，空格离开；体力不足时速度降低。", 5); return true;
+            Climbing = true; ResetClimbHands(); Controller.LowerFieldTools(); Controller.CancelWorldAction(); _motion.Reset(); SetCrouch(false, true);
+            Controller.Notice(UnityEngine.XR.XRSettings.isDeviceActive ? "握住横档向下拉，双手交替攀登；左摇杆亦可上下，到端自动离开。"
+                : "已握住绳梯 · W / S 上下攀登，空格离开；体力不足时速度降低。", 5); return true;
         }
         private void Climb(Vector2 input, bool jump, float dt)
         {
-            if (_climb == null) { Climbing = false; return; }
-            if (jump) { Climbing = false; _motion.Reset(); return; }
+            if (_climb == null) { Climbing = false; ResetClimbHands(); return; }
+            if (jump) { Climbing = false; ResetClimbHands(); _motion.Reset(); return; }
             float distance = Vector3.Distance(_climb.Bottom, _climb.ClimbEnd);
-            bool effort = input.y > .1f;
-            _motion.Exert(effort, Mathf.Abs(input.y) < .1f, dt);
             float speed = (Stamina > .08f || input.y < 0 ? 1.8f : .45f) * (UnityEngine.XR.XRSettings.isDeviceActive ? .6f : 1f); // VR: slower vertical vection
-            _climbProgress = Mathf.Clamp01(_climbProgress + input.y * speed * dt / Mathf.Max(.1f, distance));
+            float move = _climbHeld[0] || _climbHeld[1] ? Mathf.Clamp(_handClimbSamples > 0 ? _handClimbDelta / _handClimbSamples : 0, -speed * dt, speed * dt) : input.y * speed * dt;
+            _handClimbDelta = 0; _handClimbSamples = 0;
+            _motion.Exert(move > .001f, Mathf.Abs(move) < .001f, dt);
+            _climbProgress = Mathf.Clamp01(_climbProgress + move / Mathf.Max(.1f, distance));
             // Finish the vertical rungs beside the landing before stepping onto its solid floor.
             var target = Vector3.Lerp(_climb.Bottom, _climb.ClimbEnd, _climbProgress) + Vector3.up * .08f;
-            Body.Move(target - Actor.position); WalkSpeed = Mathf.Abs(input.y) * speed;
+            var previous = Actor.position; Body.Move(target - previous); WalkSpeed = Vector3.Distance(previous, Actor.position) / dt;
+            // A blocked capsule must not build up hidden progress and then jump through the obstruction.
+            _climbProgress = Mathf.Clamp01(Vector3.Dot(Actor.position - Vector3.up * .08f - _climb.Bottom, _climb.ClimbEnd - _climb.Bottom) / Mathf.Max(.01f, distance * distance));
             var forward = Vector3.ProjectOnPlane(_climb.Top - _climb.Bottom, Vector3.up);
             if (forward.sqrMagnitude > .01f) Actor.rotation = Quaternion.LookRotation(forward);
-            if ((input.y > .1f && _climbProgress >= .999f) || (input.y < -.1f && _climbProgress <= .001f))
+            if ((move > .001f && _climbProgress >= .999f) || (move < -.001f && _climbProgress <= .001f))
             {
-                var end = input.y > 0 ? _climb.Top : _climb.Bottom;
-                if (Relocate(end, Actor.rotation)) Controller.Notice("已离开绳梯 · 停步可恢复体力。", 3);
+                var end = move > 0 ? _climb.Top : _climb.Bottom;
+                if (Relocate(end, Actor.rotation)) { ResetClimbHands(); Controller.Notice("已离开绳梯 · 停步可恢复体力。", 3); }
             }
         }
         private void Swim(Vector2 axes, Quaternion heading, bool sprint, bool jump, float dt)
         {
             Swimming = true; SetCrouch(false, true); Controller.LowerFieldTools();
             _motion.Exert(sprint && axes.sqrMagnitude > .01f, axes.sqrMagnitude < .01f, dt);
-            float speed = UnityEngine.XR.XRSettings.isDeviceActive ? 1.2f : sprint && Stamina > .08f ? 2.7f : 1.45f;
+            float speed = UnityEngine.XR.XRSettings.isDeviceActive ? sprint && Stamina > .08f ? 2.1f : 1.2f : sprint && Stamina > .08f ? 2.7f : 1.45f;
             var velocity = heading * new Vector3(axes.x, 0, axes.y) * speed;
             float water = WaterHeight();
             bool climb=jump || UnityEngine.XR.XRSettings.isDeviceActive;
@@ -123,7 +128,7 @@ namespace BoatAttack.Fishing
             _motion.RestoreStamina();Controller.Hands.ReachGesture(Character.HandReferencePosition+Actor.forward*.22f+Vector3.up*.22f);
             Controller.Save();Controller.Notice(item==FieldItem.GrilledFish?"吃下香烤海鱼 · 体力恢复50%":"食用远航口粮 · 体力恢复50%",4);return true;
         }
-        private void ResetTraversal() { Swimming = Climbing = false; _climb = null; }
+        private void ResetTraversal() { Swimming = Climbing = false; _climb = null; ResetClimbHands(); }
         private void OnDestroy() { if (_waterPoint.IsCreated) _waterPoint.Dispose(); }
     }
 }

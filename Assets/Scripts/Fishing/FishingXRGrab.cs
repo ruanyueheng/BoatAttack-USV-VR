@@ -25,8 +25,8 @@ namespace BoatAttack.Fishing
             if(_c==null || !XRSettings.isDeviceActive)return;
             bool ready=_c.Ashore && Application.isFocused && !_c.Paused && !_c.StoryBlocksGameplay && !_c.ShopBlocksGameplay && !_c.XRNotebook.BlocksGameplay
                 && !_c.WorldActionBusy && !_c.XRSeat.HeadBlocked && !_c.Hands.HoldingRod && !_c.Shore.Climbing;
-            InputDevices.GetDeviceAtXRNode(XRNode.RightHand).TryGetFeatureValue(CommonUsages.gripButton,out bool grip);
-            InputDevices.GetDeviceAtXRNode(XRNode.LeftHand).TryGetFeatureValue(CommonUsages.gripButton,out bool leftGrip);
+            bool grip=FishingXRInput.Grip(InputDevices.GetDeviceAtXRNode(XRNode.RightHand));
+            bool leftGrip=FishingXRInput.Grip(InputDevices.GetDeviceAtXRNode(XRNode.LeftHand));
             bool pressed=_grip.Step(ready,grip),leftPressed=_leftGrip.Step(ready,leftGrip);
             if(ready && TryFarmHand(pressed,grip,leftPressed))return;
             if(!pressed || !_c.Hands.TryControllerPalm(false,out var palm,out _))return;

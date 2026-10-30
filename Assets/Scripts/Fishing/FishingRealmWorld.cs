@@ -161,7 +161,7 @@ namespace BoatAttack.Fishing
                 if(ok){_c.LowerFieldTools();_c.FieldWorld.ClearToolPresentation();}
                 _c.Notice(ok?"保持按住并随货箱前进，直到铜台承重。":"先上侧舷打开水阀，将船腹排干。",5);return ok;
             }
-            Refresh();_c.Regions.Chime(id);
+            Refresh();
             _c.Notice(Trial.Ready?"通路已经形成，前往回响所在。":NearbyHint,5);return ok;
         }
         public bool Enter(int island)
@@ -229,6 +229,7 @@ namespace BoatAttack.Fishing
                 if(pad>=0 && pad!=_padInside && !Trial.Ready && !_c.Career.Lore.Cleared(0))
                 {
                     bool ok=Trial.Use(pad);_c.Regions.Chime(pad);
+                    if(ok)_c.WorldAudio?.PlayRealm(Island,"Step",_devices[pad].position,.5f);
                     if(!ok)ResetWindCrossing();
                     else if(round!=Trial.WindRound)ResetWindCrossing();
                     _windBridgeStage=Trial.WindRound>0 && !_windRecovery?3:Mathf.Min(3,Trial.Progress);
@@ -248,7 +249,6 @@ namespace BoatAttack.Fishing
             }
             if(ready!=Trial.Ready || progress!=Trial.Progress || round!=Trial.WindRound || lightStage!=Trial.LightStage)
             {
-                if(Trial.Ready && !ready)_c.WorldAudio?.PlayRealm(Island,"Solve",_devices[3].position,.55f);
                 Refresh();
             }
             TickV044();
@@ -260,7 +260,7 @@ namespace BoatAttack.Fishing
             PresentTrial();
         }
         private static bool HeldAction()
-        {var d=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);d.TryGetFeatureValue(CommonUsages.primaryButton,out bool held);d.TryGetFeatureValue(CommonUsages.gripButton,out bool grip);return held || grip;}
+        {var d=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);d.TryGetFeatureValue(CommonUsages.primaryButton,out bool held);return held || FishingXRInput.Grip(d);}
         private void Refresh()
         {
             bool open=Trial.Ready || _c.Career.Lore.Cleared(Island);
