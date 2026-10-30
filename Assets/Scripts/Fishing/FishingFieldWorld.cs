@@ -251,7 +251,7 @@ namespace BoatAttack.Fishing
         }
         public bool Observe()
         {
-            Sense();if(_candidate==null){_c.Notice("看向附近陆地动物（8m 内）再按 T；望远镜可观察至 22m。Ctrl 蹲下不易惊动动物。",5);return false;}
+            Sense();if(_candidate==null){_c.Notice(UnityEngine.XR.XRSettings.isDeviceActive?"看向无遮挡的陆地动物再按 A；先用右扳机举起望远镜，可观察至 22 米。缓慢接近或轻蹲，不易惊动动物。":"看向附近陆地动物（8m 内）再按 T；望远镜可观察至 22m。Ctrl 蹲下不易惊动动物。",5);return false;}
             return _c.RecordLandAnimal(_candidate.Kind);
         }
         public void ApplyHeldTool(){UpdateLanternGrip();PresentHeldTool();PresentLanternHolster();PresentLanternLight();}

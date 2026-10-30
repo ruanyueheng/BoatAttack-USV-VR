@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.52.0";
+        public const string Version = "0.53.0";
         public FishingHandGames HandGames { get; private set; }
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
@@ -275,7 +275,7 @@ namespace BoatAttack.Fishing
                 Shore.Tick(false);return;
             }
             if(TickItemInspection(k,m,focused)){Shore.Tick(false);AnimateEquipment();return;}
-            if(!xr && !Automated && _input.Current.pause) { if(SaveMenuOpen){if(SaveConfirmation.Length>0)CancelSaveConfirmation();else CloseSaveMenu();}else if(alignmentFrame)Expedition.Cancel();else if(JournalOpen)ToggleJournal();else if(MenuControls){MenuControls=false;SaveSettings();}else TogglePause(); }
+            if(!xr && !Automated && _input.Current.pause) { if(ClassroomMenuOpen)CloseClassroomMenu();else if(SaveMenuOpen){if(SaveConfirmation.Length>0)CancelSaveConfirmation();else CloseSaveMenu();}else if(alignmentFrame)Expedition.Cancel();else if(JournalOpen)ToggleJournal();else if(MenuControls){MenuControls=false;SaveSettings();}else TogglePause(); }
             if(!Automated && focused && k!=null && k.jKey.wasPressedThisFrame && (!Paused || JournalOpen))ToggleJournal();
             TickWorldAction(Time.deltaTime,focused,xr);
             if(WorldActionBlocksGameplay)

@@ -1,6 +1,31 @@
 param([ValidateRange(60,7200)][int]$TimeoutSeconds=3600)
 $ErrorActionPreference='Stop'
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+# Keep both builds on the same ASCII path: Bee can retain the Android alias in its Windows player cache.
+if($repo -match '[^\x00-\x7F]'){
+    $letter=@('R','S','T','U','V','W','X','Y','Z') | Where-Object {-not (Test-Path -LiteralPath ($_+':\'))} | Select-Object -First 1
+    if(-not $letter){throw 'No free R-Z drive is available for the ASCII build path.'}
+    $aliasRoot=$letter+':\';$aliasDrive=$letter+':'
+    & subst.exe $aliasDrive $repo
+    if($LASTEXITCODE -ne 0){throw 'Could not establish the ASCII build alias.'}
+    $token=[Guid]::NewGuid().ToString('N');$marker='Logs/build-alias-'+$token+'.txt'
+    [IO.File]::WriteAllText((Join-Path $repo $marker),$token)
+    try{
+        if((Get-FileHash -LiteralPath (Join-Path $repo '.git/HEAD')).Hash -ne (Get-FileHash -LiteralPath (Join-Path $aliasRoot '.git/HEAD')).Hash){throw 'Build alias points at another repository.'}
+        & (Join-Path $aliasRoot 'Tools/Run-FishingBuilds.ps1') -TimeoutSeconds $TimeoutSeconds
+        $version=([regex]::Match([IO.File]::ReadAllText((Join-Path $repo 'Assets/Scripts/Fishing/FishingPrototype.cs')),'const string Version\s*=\s*"([0-9.]+)"')).Groups[1].Value
+        $manifestPath=Join-Path $repo "Builds/v$version-builds.json"
+        $manifest=Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        $manifest.windowsZip=Join-Path $repo "Builds/FishingPrototype-v$version-Windows.zip"
+        $manifest.androidApk=Join-Path $repo "Builds/FishingPrototype-v$version-Android/FishingPrototype.apk"
+        $manifest | ConvertTo-Json | Set-Content -LiteralPath $manifestPath -Encoding UTF8
+    } finally {
+        $owned=Join-Path $aliasRoot $marker
+        if((Test-Path -LiteralPath $owned) -and [IO.File]::ReadAllText($owned) -eq $token){& subst.exe $aliasDrive /D}
+        else{Write-Warning 'Build alias changed externally; it was not removed.'}
+    }
+    return
+}
 $source=Get-Content -LiteralPath (Join-Path $repo 'Assets/Scripts/Fishing/FishingPrototype.cs') -Raw -Encoding UTF8
 $match=[regex]::Match($source,'const string Version\s*=\s*"([0-9.]+)"')
 if(-not $match.Success){throw 'Cannot read the game version.'}

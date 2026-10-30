@@ -71,6 +71,8 @@ namespace BoatAttack
         {
             if (RB == null) return;
             VelocityMag = RB.velocity.sqrMagnitude;
+            // The voxel hull is underdamped vertically; settle wave/contact jolts before the hull overtakes the stable VR eye.
+            if (stableHull) RB.AddForce(Vector3.up * (-RB.velocity.y * 6f), ForceMode.Acceleration);
             if (engineSound != null) engineSound.pitch = Mathf.Max(VelocityMag * 0.01f, 0.3f);
             if (!_point.IsCreated || !GerstnerWavesJobs.Initialized)
             {

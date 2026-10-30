@@ -21,6 +21,7 @@ namespace BoatAttack.Fishing
             string quote=_itemSlot+":"+item.item+":"+item.count;
             bool discard=item.item!=FieldItem.FieldGuide && !FishingBackpack.IsQuestItem(item.item);
             _status.text=FishingBackpack.Name(item.item)+" ×"+item.count+"\n第 "+(_itemSlot+1)+" 格\n\n整组移动、合并或交换；也可拆出一半。\n销毁须再次确认，航海遗物与自然手册不能销毁。";
+            if(item.item==FieldItem.Binoculars)_status.text+="\n\n"+FishingXRHints.BinocularHelp;
             Set(0,"装备并拿起检视",()=>EquipSlot(_itemSlot));Photo(0,FishingV023Art.Icon(item.item));
             Set(1,"快速转移\n快捷栏 ↔ 储物区",()=>{if(_c.MoveFieldItem(_itemSlot,0,false,true))Open(1);else _c.Notice("另一侧没有可用空间，原物品保留。",4);});
             Set(2,"整组移动 / 合并 / 交换",()=>{_moveHalf=false;Open(MovePage);});
@@ -90,7 +91,7 @@ namespace BoatAttack.Fishing
         }
         private void RefreshNature()
         {
-            _status.text=_natureSelection>=0?NatureDetail(_natureSelection):"自然观察 / 海岸调查\n自然手册或望远镜：看向动物按 A\n海洋生物保持距离，陆地动物缓慢接近\n各区域两项调查回港提交 +25 金币\n"+_c.VisibleMessage;
+            _status.text=_natureSelection>=0?NatureDetail(_natureSelection):"自然观察 / 海岸调查\nY 选望远镜；不在快捷栏时，先到随身行囊装备。\n"+FishingXRHints.BinocularHelp+"\n海洋生物保持距离，陆地动物缓慢接近。\n各区域两项调查回港提交 +25 金币";
             string[] portraits={"FishingV029/TurtleThumbnail","FishingFish/StingrayThumbnail","FishingV031/DolphinPortrait","FishingFish/SardineThumbnail","FishingV029/SeagullThumbnail","FishingV029/RabbitThumbnail","FishingV029/FoxThumbnail","FishingV031/TortoisePortrait","FishingV029/SeagullThumbnail","FishingV029/TurtleThumbnail"};
             for(int i=0;i<6;i++)
             {

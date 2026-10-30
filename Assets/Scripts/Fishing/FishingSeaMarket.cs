@@ -76,6 +76,7 @@ namespace BoatAttack.Fishing
         private Transform _ship, _marker;
         private readonly List<(MarketGoods goods, int phrase, Transform slot, TextMesh label)> _stalls = new List<(MarketGoods, int, Transform, TextMesh)>();
         private int _shownDay = -1, _shownSeason = -1, _shownFestival = -2, _baitDay = -1;
+        private FishingCareer _profile;
         public bool Visible => _ship != null && _ship.gameObject.activeSelf;
         public Vector3 Position => _ship.position;
         public int Trades { get; private set; }
@@ -180,6 +181,7 @@ namespace BoatAttack.Fishing
         private void Update()
         {
             if (_c == null || _c.Career == null || _c.Player == null) return;
+            if(_profile!=_c.Career){_profile=_c.Career;_baitDay=_shownDay=_shownSeason=-1;_shownFestival=-2;_greeted=false;}
             bool show = ShouldShow;
             if (show != Visible) { _ship.gameObject.SetActive(show); if (show) Moor(); }
             if (!show) { Target = null; return; }

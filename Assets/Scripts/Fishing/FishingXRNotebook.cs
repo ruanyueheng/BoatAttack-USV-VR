@@ -29,6 +29,8 @@ namespace BoatAttack.Fishing
         private Canvas _feedback;
         private Text _feedbackText,_feedbackTitle;
         private string _feedbackMessage;
+        private string _feedbackNotice,_feedbackWarning;
+        private float _nextFeedbackText;
         private Quaternion _feedbackYaw;
         private bool _toastFollowing,_feedbackWasVisible;
         private bool _guideLeftReady,_guideRightReady;
@@ -102,14 +104,19 @@ namespace BoatAttack.Fishing
             bool visible=XRSettings.isDeviceActive && _c.XRSeat.Ready && Application.isFocused && !IsOpen
                 && !_c.StartMenuOpen && !_c.Paused && !_c.StoryBlocksGameplay && !_c.DockConsole.Visible;
             _feedback.gameObject.SetActive(visible);if(!visible){_feedbackWasVisible=false;return;}
-            var message=_c.SaveWarning.Length>0?_c.SaveWarning:_c.VisibleMessage;
-            bool fighting=_c.Anchored && (_c.Session.Phase==CatchPhase.Bite || _c.Session.Phase==CatchPhase.Fighting || _c.Session.Phase==CatchPhase.Landing);
-            if(string.IsNullOrEmpty(message) || (fighting && _c.SaveWarning.Length==0))message=FishingXRHints.Guidance(_c);
-            else message+="\n"+FishingXRHints.NotebookHelp;
+            string notice=_c.VisibleMessage,warning=_c.SaveWarning;
+            if(!_feedbackWasVisible || Time.unscaledTime>=_nextFeedbackText || notice!=_feedbackNotice || warning!=_feedbackWarning)
+            {
+                _nextFeedbackText=Time.unscaledTime+.1f;_feedbackNotice=notice;_feedbackWarning=warning;
+                var message=warning.Length>0?warning:notice;
+                bool fighting=_c.Anchored && (_c.Session.Phase==CatchPhase.Bite || _c.Session.Phase==CatchPhase.Fighting || _c.Session.Phase==CatchPhase.Landing);
+                if(string.IsNullOrEmpty(message) || (fighting && warning.Length==0))message=FishingXRHints.Guidance(_c);
+                else message+="\n"+FishingXRHints.NotebookHelp;
+                if(message!=_feedbackMessage){_feedbackMessage=message;ApplyGuidanceText(message);}
+            }
             var forward=Vector3.ProjectOnPlane(_c.viewCamera.transform.forward,Vector3.up);
             var gaze=Quaternion.LookRotation(forward.sqrMagnitude>.1f?forward:_c.XRSeat.Origin.transform.forward,Vector3.up);
             if(!_feedbackWasVisible){_feedbackYaw=gaze;_toastFollowing=false;}_feedbackWasVisible=true;
-            if(message!=_feedbackMessage){_feedbackMessage=message;ApplyGuidanceText(message);}
             _feedbackTitle.color=_c.SaveWarning.Length>0?FishingUITheme.Coral:FishingHUD.CreamInk;
             // Lazy follow: the toast stays put until the gaze leaves it by 35°, then eases back in front.
             if(Quaternion.Angle(_feedbackYaw,gaze)>35)_toastFollowing=true;
@@ -161,6 +168,7 @@ namespace BoatAttack.Fishing
         public void Open(int page=0)
         {
             if(!XRSettings.isDeviceActive)return;
+            if(page!=ClassroomPage)_c.CloseClassroomMenu();
             if(page!=SavePage)CloseSaveSlots();
             if(page!=8 && (!IsOpen || _page!=page))_c.WorldAudio?.Play("UIConfirm",_c.ExplorerPosition,.24f);
             if(!IsOpen)
@@ -175,7 +183,7 @@ namespace BoatAttack.Fishing
             if(page==11){_guideLesson=0;ResetGuidePractice();}
             _canvas.gameObject.SetActive(true);_c.WorkshopWorld.SelectNearby();Refresh();
         }
-        public void Close(){CloseSaveSlots();bool wasOpen=IsOpen;IsOpen=false;_discardQuote="";_bagSelection=-1;if(_canvas!=null)_canvas.gameObject.SetActive(false);if(_ray!=null)_ray.enabled=false;ResetInput();if(wasOpen)_c?.Hands?.ResetInteraction();}
+        public void Close(){_c?.CloseClassroomMenu();CloseSaveSlots();bool wasOpen=IsOpen;IsOpen=false;_discardQuote="";_bagSelection=-1;if(_canvas!=null)_canvas.gameObject.SetActive(false);if(_ray!=null)_ray.enabled=false;ResetInput();if(wasOpen)_c?.Hands?.ResetInteraction();}
         public void ResetInput(){_menu.Reset();_primary.Reset();_board.Reset();_slot.Reset();_trigger.Reset();_turnReady=false;_tipSample=false;MotionReady=false;ResetPageGestures();_guideLeftTrigger.Reset();_guideLeftGrip.Reset();_guideRightGrip.Reset();_guideBoost.Reset();if(_homeDecor!=null)UpdateHomePointer(-1,false);}
         private bool ReArmMotion(Vector2 leftAxis,Vector2 rightAxis,bool boost)
         {
@@ -324,7 +332,7 @@ namespace BoatAttack.Fishing
                 Set(3,"存档 / 读取 / 新航程",OpenSaveSlots);
                 Set(4,"声音混音\nBGM / 音效 / 环境",()=>Open(20));
                 Set(5,"完整手柄教学\n安全练习全部按键",BeginGuide);
-                Set(6,"校准眼高",()=>{_c.XRSeat.Recenter();Close();});
+                Set(6,"日期与物资",OpenClassroomPage);
                 Set(7,"序章 / 环境特效 / 救援",()=>Open(16));Set(8,"返回首页",()=>Open());
             }
             else if(_page==15)
@@ -348,6 +356,7 @@ namespace BoatAttack.Fishing
             else if(_page==20)RefreshAudioPage();
             else if(_page==22)RefreshComfortPage();
             else if(_page==23)RefreshControlsPage();
+            else if(_page==ClassroomPage)RefreshClassroomPage();
             else if(_page==LettersPage)RefreshLettersPage();
             else if(_page==AlbumPage)RefreshAlbumPage();
             else if(_page==PhotoCodexPage)RefreshPhotoCodexPage();
@@ -561,6 +570,7 @@ namespace BoatAttack.Fishing
         private void InteractTracked()
         {
             if(!_c.Ashore){_c.Interact();return;}
+            if(_c.BinocularsRaised && _c.Career.Backpack.Equipped==FieldItem.Binoculars){_c.FieldWorld.Observe();return;}
             if(_c.Combat?.NearbyHint!=null || _c.Voyage?.NearbyHint!=null || _c.HomeEcology?.NearbyHint!=null || _c.Keeper?.NearbyHint!=null || _c.TidalFlat?.NearbyHint!=null){_c.RequestWorldInteraction();return;}
             if(_c.HomeInteractionTargetSelected){_c.RequestWorldInteraction();return;}
             if(_c.Realms.TryTarget(out _,out _)){_c.Realms.Interact();return;}

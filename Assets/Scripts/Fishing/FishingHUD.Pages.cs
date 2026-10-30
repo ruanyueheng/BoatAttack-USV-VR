@@ -46,6 +46,7 @@ namespace BoatAttack.Fishing
         {
             var c=Controller;
             if(!PauseBackdrop())return;
+            if(c.ClassroomMenuOpen){DrawClassroomMenu();return;}
             if(c.MenuControls){DrawMenuControls(new Rect(380,(_height-690)*.5f,1100,690));return;}
             // V044：左侧竖排主选项（当前项金星），右侧羊皮纸放设置开关。
             float top=(_height-560)*.5f;
@@ -73,6 +74,8 @@ namespace BoatAttack.Fishing
             y+=65;
             if(Button(new Rect(x,y,w,47),"世界仪表："+(c.WorldInstruments?"开启":"关闭")))c.ToggleInstruments();
             if(Button(new Rect(x+w+16,y,w,47),"显示模式："+(Screen.fullScreen?"全屏":"窗口")))c.SetFullscreen(!Screen.fullScreen);
+            y+=65;
+            if(Button(new Rect(x,y,w*2+16,47),"日期与物资"))c.OpenClassroomMenu();
             Label(x,r.yMax-36,812,22,"图标：Delapouite / game-icons.net · CC BY 3.0",11,Muted);
         }
     }

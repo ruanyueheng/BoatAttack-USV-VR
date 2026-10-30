@@ -51,9 +51,13 @@ namespace BoatAttack.EditorTools
         [Serializable] private sealed class Button { public int index; public string label; public Vector3 center; }
         [Serializable] private sealed class State
         {
-            public int frame,spot,page,holdCount,health;
+            public int frame,spot,page,holdCount,health,shotsFired,photosTaken,day,coins,marketTrades;
+            public bool classroom,marketVisible;
+            public Vector3 marketPosition;
             public bool xr,focused,isolated,automated,headTracked,leftTracked,rightTracked,seatReady,headBlocked,motionReady,notebook,anchored,ashore,pending;
-            public bool a,b,canLand,netHeld,holdingRod,boostActive,toolActive,carryingCan;
+            public bool a,b,canLand,netHeld,holdingRod,boostActive,toolActive,carryingCan,riflePresented,rifleObstructed,cameraRaised,triggerButton,binocularRaised;
+            public string hintContext;
+            public float triggerValue;
             public float speed,spotDistance,tension,distance,remaining,walkSpeed,stamina,boostHeat;
             public string phase,beat,message,inputSource,profile,rayTarget,detail,feedback,heldItem;
             public Vector3 camera,cameraEuler,boat,boatEuler,left,right,origin,originEuler,landingTarget,netPosition,netEuler,rodPosition,rodForward,rodTip,rightForward,rodPalm,feet,heldUp,heldForward,heldPosition,canUp,canForward;
@@ -202,6 +206,7 @@ namespace BoatAttack.EditorTools
         {
             var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
             right.TryGetFeatureValue(CommonUsages.primaryButton,out bool a);right.TryGetFeatureValue(CommonUsages.secondaryButton,out bool b);
+            right.TryGetFeatureValue(CommonUsages.triggerButton,out bool triggerButton);right.TryGetFeatureValue(CommonUsages.trigger,out float triggerValue);
             FishingXRTracking.TryPose(_c.viewCamera,XRNode.LeftHand,out var left,out _);
             FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out var r,out var q,true);
             string hitName=Physics.Raycast(r,q*Vector3.forward,out var hit,3,1<<5,QueryTriggerInteraction.Collide)?hit.collider.name:"";
@@ -211,6 +216,11 @@ namespace BoatAttack.EditorTools
                 anchored=_c.Anchored,ashore=_c.Ashore,pending=_c.HasPendingCatch,phase=_c.Session.Phase.ToString(),message=_c.VisibleMessage,speed=_c.Speed,spot=_c.Spot,spotDistance=_c.SpotDistance,tension=_c.Session.Tension,distance=_c.Session.Distance,
                 inputSource=USVInputRouter.Instance.ActiveSource.ToString(),input=USVInputRouter.Instance.Current,a=a,b=b,profile=_c.SavePath,
                 holdCount=_c.Career.Count,health=_c.Combat.Health,canLand=_c.Session.CanLand,remaining=_c.Session.Remaining,beat=_c.Session.Beat.ToString(),netHeld=_c.CatchRig.NetHeld,holdingRod=_c.Hands.HoldingRod,
+                shotsFired=_c.RifleHunting.ShotsFired,riflePresented=_c.RifleHunting.Presented,rifleObstructed=_c.RifleHunting.Obstructed,
+                photosTaken=_c.Life.PhotosTaken,cameraRaised=_c.Life.VrRaised,triggerButton=triggerButton,triggerValue=triggerValue,
+                binocularRaised=_c.BinocularsRaised,hintContext=FishingXRHints.Current(_c).ToString(),
+                classroom=_c.ClassroomDemoActive,day=_c.Career.Calendar.Day,coins=_c.Career.Coins,
+                marketVisible=_c.SeaMarket.Visible,marketPosition=_c.SeaMarket.Position,marketTrades=_c.SeaMarket.Trades,
                 feet=_c.Shore.Position,walkSpeed=_c.Shore.WalkSpeed,stamina=_c.Shore.Stamina,boostActive=_c.Boost.Active,boostHeat=_c.Boost.Heat,
                 heldItem=_c.FieldWorld.PresentedItem.ToString(),toolActive=_c.FieldWorld.HeldTool!=null&&_c.FieldWorld.HeldTool.gameObject.activeInHierarchy,
                 heldUp=_c.FieldWorld.HeldTool!=null?_c.FieldWorld.HeldTool.up:Vector3.zero,heldForward=_c.FieldWorld.HeldTool!=null?_c.FieldWorld.HeldTool.forward:Vector3.zero,heldPosition=_c.FieldWorld.HeldTool!=null?_c.FieldWorld.HeldTool.position:Vector3.zero,

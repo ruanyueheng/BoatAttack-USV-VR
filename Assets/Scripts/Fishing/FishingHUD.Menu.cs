@@ -73,6 +73,7 @@ namespace BoatAttack.Fishing
                 Fill(full.x,0,full.width,_height,new Color(.015f,.03f,.045f,c.TitleVoyage.Fade));
                 WorldLabel(new Rect(100,_height-120,900,40),"风已起，向着下一座灯塔。",24,CreamInk,true);return;
             }
+            if(c.ClassroomMenuOpen){DrawClassroomMenu();return;}
             if(c.SaveMenuOpen){DrawSaveSlots();return;}
             if(c.MenuControls){DrawMenuControls(new Rect(380,top+30,1100,690));return;}
             StarlightTrail(new Vector2(510,top+64),new Vector2(740,top+116),new Color(.71f,.50f,.22f,.58f));
@@ -83,6 +84,7 @@ namespace BoatAttack.Fishing
             if(SeaButton(new Rect(120,top+376,310,52),"继续游戏    →",true,c.CanContinue,28))c.ContinueFromMenu();
             WorldLabel(new Rect(120,top+428,500,18),c.CanContinue?"恢复本次航程，不读档、不重新开局":"暂无本次航程 · 请新建或读取存档",13,CreamInk,onPaper:true);
             if(SeaButton(new Rect(120,top+446,278,48),"新建游戏",false,true,26))c.StartFromMenu();
+            if(SeaButton(new Rect(452,top+446,310,48),"日期与物资",false,true,21))c.OpenClassroomMenu();
             if(SeaButton(new Rect(120,top+508,278,48),"读取存档",false,true,26))c.OpenSaveMenu("load");
             if(SeaButton(new Rect(452,top+508,278,48),"手动保存",false,c.CanContinue,23))c.OpenSaveMenu("save");
             if(SeaButton(new Rect(120,top+570,278,48),"设置 / 声音混音",false,true,26)){SettingsTab=2;c.MenuControls=true;}
