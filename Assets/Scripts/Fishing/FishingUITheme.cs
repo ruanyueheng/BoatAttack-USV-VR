@@ -71,9 +71,12 @@ namespace BoatAttack.Fishing
         {
             text.font=Heading;text.fontStyle=FontStyle.Normal;text.lineSpacing=1;text.color=TitleFill(style);
             var shadow=text.GetComponent<Shadow>() ?? text.gameObject.AddComponent<Shadow>();
-            shadow.effectColor=new Color(.025f,.035f,.04f,.50f);shadow.effectDistance=new Vector2(1,-1.5f);shadow.useGraphicAlpha=true;
+            // uGUI dirties the text mesh on same-value color/alpha writes, and tracked titles are styled every frame.
+            var shade=new Color(.025f,.035f,.04f,.50f);if(!shadow.effectColor.Equals(shade))shadow.effectColor=shade;
+            shadow.effectDistance=new Vector2(1,-1.5f);if(!shadow.useGraphicAlpha)shadow.useGraphicAlpha=true;
             var outline=text.GetComponent<Outline>() ?? text.gameObject.AddComponent<Outline>();
-            outline.effectColor=Gold;outline.effectDistance=new Vector2(.65f,-.65f);outline.useGraphicAlpha=true;
+            if(!outline.effectColor.Equals(Gold))outline.effectColor=Gold;
+            outline.effectDistance=new Vector2(.65f,-.65f);if(!outline.useGraphicAlpha)outline.useGraphicAlpha=true;
         }
         private static Texture2D _panelPaper,_panelVeil,_star,_rule,_slot,_titleGlow;
         /// <summary>V044 9-slice surfaces (40px border): cream watercolour paper for reading, night-sky veil for in-world HUD.</summary>

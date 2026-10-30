@@ -235,6 +235,7 @@ namespace BoatAttack.Fishing
                         caption.text=caption.text.TrimEnd('…').Substring(0,caption.text.TrimEnd('…').Length-1)+"…";
                 }
             }
+            if(_page==AlbumPage)PresentAlbumPage(true);
             UpdateDesktopPointer(_desktopHover);
             FitDesktopLabels(_desktopJournal);
         }

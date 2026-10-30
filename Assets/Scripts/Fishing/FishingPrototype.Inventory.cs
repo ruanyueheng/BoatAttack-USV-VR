@@ -41,6 +41,7 @@ namespace BoatAttack.Fishing
             if(!Career.Backpack.Select(slot))return;
             if(previous!=Career.Backpack.Selected){CancelWorldAction();FieldWorld?.ClearToolPresentation();}
             BinocularsRaised=false;if(Career.Backpack.Count(FieldItem.Lantern)==0)LanternOn=false;Save();
+            if(UnityEngine.XR.XRSettings.isDeviceActive && Career.Backpack.Equipped==FieldItem.Binoculars)Notice("望远镜已选中 · "+FishingXRHints.BinocularHelp,7);
         }
         public bool MoveFieldItem(int from,int to,bool half=false,bool quick=false)
         {
@@ -77,7 +78,7 @@ namespace BoatAttack.Fishing
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:RequestHarvest();break;
                 case FieldItem.FieldGuide: OpenFieldGuide();break;
                 case FieldItem.Binoculars:
-                    BinocularsRaised=!BinocularsRaised;Notice(BinocularsRaised?(_xrActive?"望远镜 · A 记录动物 / 扳机放下":"望远镜 · T 记录动物 / F 放下"):"已放下望远镜",3);break;
+                    BinocularsRaised=!BinocularsRaised;Notice(BinocularsRaised?(_xrActive?"望远镜已举起 · "+FishingXRHints.BinocularHelp:"望远镜 · T 记录动物 / F 放下"):"已放下望远镜",5);break;
                 case FieldItem.Lantern:LanternOn=!LanternOn;WorldAudio?.Play("LanternSwitch",ExplorerPosition+Vector3.up,.5f);Notice(LanternOn?"提灯已点亮":"提灯已熄灭",3);break;
                 default:Notice(UnityEngine.XR.XRSettings.isDeviceActive?"Y 换装备，右扳机使用工具。B → 制作查看配方；设施换入快捷栏后按右扳机放置。":"1–9 选择自然手册、望远镜或提灯，再按 F 使用。I → 制作查看配方；工作台 / 熔炉放入快捷栏后 F 放置。",4);break;
             }
