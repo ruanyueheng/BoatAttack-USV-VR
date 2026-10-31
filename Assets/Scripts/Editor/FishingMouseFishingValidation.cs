@@ -117,20 +117,56 @@ namespace BoatAttack.EditorTools
                 // Exercise the real tracked-hand path with synthetic controller poses,
                 // without claiming an attached HMD or sending physical input.
                 Check(c.CatchRig.TryGrabLeftFish(c.ActiveFish.TransformPoint(c.CatchRig.LeftInspectionGrip)),"left grip can take the pending fish back out of its net");
-                var trackedPalm=c.Shore.Character.EyePosition+c.Player.transform.rotation*new Vector3(-.22f,-.12f,.45f);
-                var trackedRotation=c.Player.transform.rotation*Quaternion.Euler(15,25,30);
+                var trackedFrame=Quaternion.Euler(0,c.Shore.Character.transform.eulerAngles.y,0);
+                var trackedPalm=c.Shore.Character.ShoulderPosition(true)+trackedFrame*new Vector3(-.02f,.16f,.30f);
+                var trackedRotation=trackedFrame*FishingCatchRig.GripperPalmRotation;
                 c.CatchRig.ApplyTrackedLeftInspection(trackedPalm,trackedRotation,true,.02f);
-                Check(c.CatchRig.LeftHandInspecting && Vector3.Distance(c.ActiveFish.TransformPoint(c.CatchRig.LeftInspectionGrip),trackedPalm)<.002f,"tracked left inspection attaches the actual fish grip to the calibrated palm");
-                var priorFishRotation=c.ActiveFish.rotation;
+                var gripper=c.CatchRig.FishGripper;
+                Check(c.CatchRig.LeftHandInspecting && gripper!=null && gripper.gameObject.activeInHierarchy && Vector3.Distance(gripper.TransformPoint(FishingCatchRig.GripperPalm),trackedPalm)<.002f,"tracked inspection visibly holds the gripper handle at the calibrated palm");
+                Check(Vector3.Distance(c.ActiveFish.TransformPoint(c.CatchRig.FishMouthLocal),gripper.TransformPoint(FishingCatchRig.GripperJaw))<.002f,"real fish snout touches the metal jaw with no floating gap");
+                Check(Vector3.Distance(FishingContactGeometry.ClosestPoint(gripper,gripper.TransformPoint(FishingCatchRig.GripperJaw)),gripper.TransformPoint(FishingCatchRig.GripperJaw))<.006f,"the rendered metal jaw exists at the fish mouth rather than a missing short arc");
+                Check(Vector3.Dot(c.ActiveFish.rotation*c.CatchRig.FishHeadAxis,Vector3.up)>.99f && c.ActiveFish.position.y<trackedPalm.y-.15f,"the fish hangs head-up below the left hand under gravity");
+                c.Shore.Character.ApplyHandTargets(c.Hands.Left,c.Hands.Right,true);
+                Check(c.Hands.Left.HasGripSurface && Vector3.Distance(c.Shore.Character.PalmPosition(true),gripper.TransformPoint(FishingCatchRig.GripperPalm))<.035f,"the actual rendered hand reaches the real handle and supplies finger contact geometry");
+                var skin=c.Shore.Character.FirstPersonSkin;var desktopSkin=skin.sharedMesh;bool recalc=skin.forceMatrixRecalculationPerRender;
+                skin.sharedMesh=c.Shore.Character.TrackedHandsMesh;skin.forceMatrixRecalculationPerRender=true;
+                var baked=new Mesh();
+                try
+                {
+                    skin.BakeMesh(baked,false);var vertices=baked.vertices;var weights=skin.sharedMesh.boneWeights;var bones=skin.bones;
+                    var visible=new System.Collections.Generic.HashSet<int>(skin.sharedMesh.triangles);
+                    float nearest=float.MaxValue;int samples=0;
+                    var a=c.Hands.Left.GripStart;var ab=c.Hands.Left.GripEnd-a;
+                    foreach(int i in visible)
+                    {
+                        var w=weights[i];
+                        bool hand=(w.weight0>.4f && bones[w.boneIndex0].IsChildOf(c.Shore.Character.LeftWrist))
+                            || (w.weight1>.4f && bones[w.boneIndex1].IsChildOf(c.Shore.Character.LeftWrist));
+                        if(!hand)continue;samples++;
+                        var p=skin.transform.TransformPoint(vertices[i]);
+                        float handleDistance=Vector3.Distance(p,a+ab*Mathf.Clamp01(Vector3.Dot(p-a,ab)/ab.sqrMagnitude));
+                        nearest=Mathf.Min(nearest,handleDistance);
+                    }
+                    Check(samples>20 && nearest<c.Hands.Left.GripRadius+.015f,"visible tracked-hand skinned vertices really touch the rubber handle");
+                }
+                finally{UnityEngine.Object.Destroy(baked);}
+                var cameraPosition=c.viewCamera.transform.position;var cameraRotation=c.viewCamera.transform.rotation;float cameraFov=c.viewCamera.fieldOfView;
+                c.viewCamera.fieldOfView=95; // Wide HMD-like diagnostic framing, not an actual eye projection.
+                c.viewCamera.transform.LookAt(Vector3.Lerp(trackedPalm,c.ActiveFish.position,.55f));
+                FishingV016Validation.Capture(c,output,"tracked-gripper-reference");
+                skin.sharedMesh=desktopSkin;skin.forceMatrixRecalculationPerRender=recalc;
+                c.viewCamera.transform.SetPositionAndRotation(cameraPosition,cameraRotation);c.viewCamera.fieldOfView=cameraFov;
+                var priorHandleRotation=gripper.rotation;
                 trackedPalm+=Vector3.right*.15f;trackedRotation*=Quaternion.Euler(0,0,45);
                 c.CatchRig.ApplyTrackedLeftInspection(trackedPalm,trackedRotation,true,.02f);
-                Check(Vector3.Distance(c.ActiveFish.TransformPoint(c.CatchRig.LeftInspectionGrip),trackedPalm)<.002f && Quaternion.Angle(priorFishRotation,c.ActiveFish.rotation)>30,"turning and moving the controller carries the inspected fish without slipping");
+                Check(Vector3.Distance(gripper.TransformPoint(FishingCatchRig.GripperPalm),trackedPalm)<.002f && Quaternion.Angle(priorHandleRotation,gripper.rotation)>30 && Vector3.Dot(c.ActiveFish.rotation*c.CatchRig.FishHeadAxis,Vector3.up)>.99f,"wrist roll rotates the handle while its swivel keeps the fish hanging downward");
+                Check(Vector3.Distance(c.ActiveFish.TransformPoint(c.CatchRig.FishMouthLocal),gripper.TransformPoint(FishingCatchRig.GripperJaw))<.002f,"mouth and jaw remain joined while the controller turns");
                 c.CatchRig.ApplyTrackedLeftInspection(trackedPalm,trackedRotation,false,.02f);
-                Check(c.CatchRig.Location==FishingCatchRig.Place.Tray && c.HasPendingCatch && c.Career.PendingCatch.fish.id==receipt && c.Career.Count==0,"releasing away from the net safely parks the same fish without settling its receipt");
+                Check(!gripper.gameObject.activeSelf && c.CatchRig.Location==FishingCatchRig.Place.Tray && c.HasPendingCatch && c.Career.PendingCatch.fish.id==receipt && c.Career.Count==0,"releasing away from the net stows the gripper and safely parks the same fish without settling its receipt");
                 Check(c.CatchRig.TryGrabLeftFish(c.ActiveFish.TransformPoint(c.CatchRig.LeftInspectionGrip)),"the same safely parked fish can be grabbed again");
                 c.CatchRig.ApplyTrackedLeftInspection(trackedPalm,trackedRotation,true,0);
                 var trackedMouth=c.LandingNet.TransformPoint(new Vector3(FishingDetailArt.NetMouthOffset,-.13f,0));
-                trackedPalm=trackedMouth+c.ActiveFish.rotation*Vector3.Scale(c.CatchRig.LeftInspectionGrip,c.ActiveFish.lossyScale);
+                trackedPalm=trackedMouth+c.ActiveFish.rotation*Vector3.Scale(c.CatchRig.FishMouthLocal,c.ActiveFish.lossyScale)-gripper.rotation*(FishingCatchRig.GripperJaw-FishingCatchRig.GripperPalm);
                 c.CatchRig.ApplyTrackedLeftInspection(trackedPalm,trackedRotation,true,0);
                 c.CatchRig.ApplyTrackedLeftInspection(trackedPalm,trackedRotation,false,0);
                 Check(c.CatchRig.Location==FishingCatchRig.Place.Net && c.HasPendingCatch && c.Career.Count==0,"releasing a tracked left-held fish over the mouth returns it to the net exactly once");

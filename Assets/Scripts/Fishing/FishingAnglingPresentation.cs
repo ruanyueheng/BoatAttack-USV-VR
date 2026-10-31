@@ -164,7 +164,10 @@ namespace BoatAttack.Fishing
         {
             var dynamics=_tip.parent.GetComponent<FishingRodDynamics>();
             bool fighting=_c.Anchored && (_c.Session.Phase==CatchPhase.Fighting || _c.Session.Phase==CatchPhase.Landing);
-            dynamics?.SetLoad(_c.Session.Tension,Mathf.Clamp(_c.RodControl*.85f+_c.Session.FishDirection*.15f,-1,1),fighting,dt);
+            if(UnityEngine.XR.XRSettings.isDeviceActive)
+                dynamics?.SetLineLoad(_c.Session.Tension,_c.Session.Phase==CatchPhase.Landing?_c.LandingTarget:WaterTarget,_c.Hands.XRReeling,fighting,dt);
+            else
+                dynamics?.SetLoad(_c.Session.Tension,Mathf.Clamp(_c.RodControl*.85f+_c.Session.FishDirection*.15f,-1,1),fighting,dt);
             if(dynamics!=null)
             {
                 float radius=.050f*(.85f+.15f*dynamics.SpoolFill);

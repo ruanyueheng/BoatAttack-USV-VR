@@ -77,14 +77,7 @@ namespace BoatAttack.Fishing
                 FinishTrackedLeftInspection(Vector3.Distance(_c.ActiveFish.position,mouth)<.4f);return;
             }
             _leftLiftTime+=Mathf.Clamp(dt,0,.05f);
-            var fish=_c.ActiveFish;var b=fish.GetComponentInChildren<MeshFilter>().sharedMesh.bounds;
-            var axis=b.size.y>b.size.z?Vector3.up:Vector3.forward;
-            var palmRotation=Quaternion.LookRotation(Vector3.right,Vector3.down);
-            var rotation=palmFrame*Quaternion.Inverse(palmRotation)*Quaternion.FromToRotation(axis,Vector3.up)
-                *Quaternion.AngleAxis(Mathf.Sin(_leftLiftTime*9)*2.5f,axis);
-            fish.SetPositionAndRotation(palm-rotation*Vector3.Scale(LeftInspectionGrip,fish.lossyScale),rotation);
-            _c.Hands.SetToolTarget(true,fish,LeftInspectionGrip,Quaternion.Inverse(rotation)*palmFrame,.65f);
-            _c.Hands.Left.SetFingers(new FishingFingerPose(.60f,.72f,.74f,.72f,.70f));
+            PresentTrackedFishGripper(palm,palmFrame);
             if(Time.unscaledTime>=_nextFishPulse)
             {
                 FishingXRInput.Pulse(InputDevices.GetDeviceAtXRNode(XRNode.LeftHand),.2f+.06f*Mathf.Abs(Mathf.Sin(_leftLiftTime*9)),.055f);
@@ -95,6 +88,7 @@ namespace BoatAttack.Fishing
         private void FinishTrackedLeftInspection(bool net)
         {
             Location=net?Place.Net:Place.Tray;_placingLeft=false;_netHeld=false;
+            HideFishGripper();
             if(net)_c.ActionAudio?.Detail("NetFishPlace",_c.LandingNet.position);
             _c.Notice(net?"活鱼已放入抄网。左握把可再次拿起，A 放入鱼箱。":"活鱼已放到安全托盘。左手靠近鱼按住握把可重新检视，A 可存放。",6);
         }

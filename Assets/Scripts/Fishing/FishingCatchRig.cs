@@ -82,6 +82,7 @@ namespace BoatAttack.Fishing
         internal void ResetForLoad(){_fishId=null;_handFirstCatch=_netCarryPose=false;Recover();_tray.gameObject.SetActive(false);}
         public void Recover()
         {
+            HideFishGripper();
             bool leftInspection=Location==Place.LeftHand;
             _assist=_netHeld=_hadSample=_tipSample=false;_assistTime=_releaseUntil=0;_gate.Reset();_transfer.Reset();_left.Reset();_right.Reset();Location=Place.Tray;
             _placingLeft=false;_leftLiftTime=0;if(leftInspection)Location=Place.Net;
@@ -165,6 +166,7 @@ namespace BoatAttack.Fishing
         public void Apply(float dt)
         {
             if(_c==null || _c.Player==null)return;
+            HideFishGripper();
             bool xr=XRSettings.isDeviceActive;ConfigureLayout(xr);
             if(_c.Paused){if(_netHeld || Location==Place.Hand || Location==Place.LeftHand)Recover();}
             else if(xr)ReadTracked(dt);
