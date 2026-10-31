@@ -333,7 +333,7 @@ namespace BoatAttack.Fishing
                 Set(4,"声音混音\nBGM / 音效 / 环境",()=>Open(20));
                 Set(5,"完整手柄教学\n安全练习全部按键",BeginGuide);
                 Set(6,"日期与物资",OpenClassroomPage);
-                Set(7,"序章 / 环境特效 / 救援",()=>Open(16));Set(8,"返回首页",()=>Open());
+                Set(7,"序章 / 环境特效 / 救援",()=>Open(16));Set(8,"手部/退出",()=>Open(HandAlignmentPage));
             }
             else if(_page==15)
             {
@@ -357,6 +357,13 @@ namespace BoatAttack.Fishing
             else if(_page==22)RefreshComfortPage();
             else if(_page==23)RefreshControlsPage();
             else if(_page==ClassroomPage)RefreshClassroomPage();
+            else if(_page==HandAlignmentPage)RefreshHandAlignment();
+            else if(_page==QuitPage)
+            {
+                _status.text="退出游戏？\n将尝试自动保存当前航程。\n尚未入箱的鱼获不会计入存档。\n取消后可继续游戏。\n"+_c.SaveWarning;
+                Set(0,"确认退出游戏",()=>_c.QuitGame());Set(1,"取消 / 返回设置",()=>Open(14));Set(7,"返回设置",()=>Open(14));
+                Set(8,"返回首页",()=>Open());
+            }
             else if(_page==LettersPage)RefreshLettersPage();
             else if(_page==AlbumPage)RefreshAlbumPage();
             else if(_page==PhotoCodexPage)RefreshPhotoCodexPage();

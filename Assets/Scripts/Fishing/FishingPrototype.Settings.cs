@@ -110,6 +110,18 @@ namespace BoatAttack.Fishing
             PlayerPrefs.Save();
         }
         public void SaveSettings(){if(!HasIsolatedProfile)PlayerPrefs.Save();}
+        public bool QuitGame()
+        {
+            Save();SaveSettings();
+            if(CanContinue && !string.IsNullOrEmpty(SaveWarning))
+            {Notice("保存失败，暂未退出。请检查存档空间后重试。",8);return false;}
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying=false;
+#else
+            Application.Quit();
+#endif
+            return true;
+        }
         private void InitializeSettings()
         {
             CoastPresentation=gameObject.AddComponent<FishingCoastalPresentation>();CoastPresentation.Build(this);

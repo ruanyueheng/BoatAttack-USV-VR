@@ -45,6 +45,7 @@ namespace BoatAttack.Fishing
 
         private void Update()
         {
+            if(Controller==null || !Controller.MenuControls)_exitConfirmation=false;
             if(Controller==null || !Controller.JournalOpen){_journalDrawn=false;_journalOrderOpen=false;}
             if(Controller==null || !Controller.Paused)ReleasePauseBackdrop();
             FishingXRText.Tick();

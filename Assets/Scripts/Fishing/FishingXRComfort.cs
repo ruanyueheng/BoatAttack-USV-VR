@@ -13,10 +13,10 @@ namespace BoatAttack.Fishing
         public static bool Teleport{get=>PlayerPrefs.GetInt("FishingXR.Teleport",0)==1;set=>Save("FishingXR.Teleport",value?1:0);}
         /// <summary>0 off … 3 strong; default 2.</summary>
         public static int Vignette{get=>Mathf.Clamp(PlayerPrefs.GetInt("FishingXR.Vignette",2),0,3);set=>Save("FishingXR.Vignette",Mathf.Clamp(value,0,3));}
-        /// <summary>0 slow 1.0 / 1 medium 1.3 / 2 normal 1.6 m/s.</summary>
+        /// <summary>0 slow 1.3 / 1 medium 2.2 / 2 fast 3.0 m/s.</summary>
         public static int SpeedLevel{get=>Mathf.Clamp(PlayerPrefs.GetInt("FishingXR.Speed",1),0,2);set=>Save("FishingXR.Speed",Mathf.Clamp(value,0,2));}
         public static bool GustComfort{get=>PlayerPrefs.GetInt("FishingXR.GustComfort",1)==1;set=>Save("FishingXR.GustComfort",value?1:0);}
-        public static float WalkSpeed=>SpeedLevel==0?1f:SpeedLevel==1?1.3f:1.6f;
+        public static float WalkSpeed=>SpeedLevel==0?1.3f:SpeedLevel==1?2.2f:3f;
         public const float SmoothTurnSpeed=75,StickRamp=4,TeleportRange=6;
         public static float SnapDegrees=>TurnMode==Turn.Snap45?45:30;
         public static float SmoothTurnDegrees(float axis,float dt)
@@ -29,7 +29,7 @@ namespace BoatAttack.Fishing
         public static float GustSpeed(float desktop)=>XRSettings.isDeviceActive?.35f:desktop;
         public static string TurnName=>TurnMode==Turn.Smooth?"平滑转向":"分段转向 "+SnapDegrees+"°";
         public static string VignetteName=>new[]{"关闭","轻","中","强"}[Vignette];
-        public static string SpeedName=>new[]{"慢 1.0","中 1.3","标准 1.6"}[SpeedLevel]+" m/s";
+        public static string SpeedName=>new[]{"慢 1.3","中 2.2","快 3.0"}[SpeedLevel]+" m/s";
         private static void Save(string key,int value){PlayerPrefs.SetInt(key,value);PlayerPrefs.Save();}
         /// <summary>Ramped stick (acceleration cap); teleport mode removes stick translation except on ladders/in water.</summary>
         public static Vector2 Ramp(Vector2 previous,Vector2 stick,float dt,bool allowTeleportZero)

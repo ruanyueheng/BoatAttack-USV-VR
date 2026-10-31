@@ -26,6 +26,7 @@ namespace BoatAttack.EditorTools
         private static readonly Type Conformance=Type.GetType("UnityEngine.XR.OpenXR.Features.ConformanceAutomation.ConformanceAutomationFeature, Unity.XR.OpenXR.Features.ConformanceAutomation");
         private static readonly string Root=Path.GetFullPath("Logs/XRSimulator");
         private static readonly Dictionary<OpenXRFeature,bool> Features=new Dictionary<OpenXRFeature,bool>();
+        private static readonly Dictionary<string,float?> Calibration=new Dictionary<string,float?>();
         private static FishingPrototype _c;
         private static OpenXRLoader _loader;
         private static MethodInfo _pump;
@@ -58,7 +59,7 @@ namespace BoatAttack.EditorTools
             public bool a,b,canLand,netHeld,holdingRod,boostActive,toolActive,carryingCan,riflePresented,rifleObstructed,cameraRaised,triggerButton,binocularRaised;
             public string hintContext,marketTarget;
             public Vector3 home;
-            public float triggerValue;
+            public float triggerValue,leftPalmRoll,rightPalmRoll;
             public float speed,spotDistance,tension,distance,remaining,walkSpeed,stamina,boostHeat;
             public string phase,beat,message,inputSource,profile,rayTarget,detail,feedback,heldItem;
             public Vector3 camera,cameraEuler,boat,boatEuler,left,right,origin,originEuler,landingTarget,netPosition,netEuler,rodPosition,rodForward,rodTip,rightForward,rodPalm,feet,heldUp,heldForward,heldPosition,canUp,canForward;
@@ -95,6 +96,7 @@ namespace BoatAttack.EditorTools
         {
             Require(Mock!=null && Conformance!=null,"Installed OpenXR testing features are missing.");
             Require(_c.HasIsolatedProfile && !_c.Automated,"Simulator must use real input and an isolated acceptance profile.");
+            foreach(var key in new[]{"FishingXR.LeftPalmRoll","FishingXR.RightPalmRoll"})Calibration[key]=PlayerPrefs.HasKey(key)?PlayerPrefs.GetFloat(key):(float?)null;
             _c.Acceptance.enabled=false;
             foreach(var f in OpenXRSettings.Instance.GetFeatures<OpenXRFeature>())
             {
@@ -227,6 +229,7 @@ namespace BoatAttack.EditorTools
                 shotsFired=_c.RifleHunting.ShotsFired,riflePresented=_c.RifleHunting.Presented,rifleObstructed=_c.RifleHunting.Obstructed,
                 photosTaken=_c.Life.PhotosTaken,cameraRaised=_c.Life.VrRaised,triggerButton=triggerButton,triggerValue=triggerValue,
                 binocularRaised=_c.BinocularsRaised,hintContext=FishingXRHints.Current(_c).ToString(),
+                leftPalmRoll=FishingHands.ControllerRoll(true),rightPalmRoll=FishingHands.ControllerRoll(false),
                 classroom=_c.ClassroomDemoActive,day=_c.Career.Calendar.Day,coins=_c.Career.Coins,
                 marketVisible=_c.SeaMarket.Visible,marketPosition=_c.SeaMarket.Position,marketTrades=_c.SeaMarket.Trades,
                 home=_c.Home.Origin,marketTarget=_c.SeaMarket.Target?.ToString()??"",
@@ -261,6 +264,8 @@ namespace BoatAttack.EditorTools
         }
         private static void Cleanup()
         {
+            foreach(var entry in Calibration){if(entry.Value.HasValue)PlayerPrefs.SetFloat(entry.Key,entry.Value.Value);else PlayerPrefs.DeleteKey(entry.Key);}
+            if(Calibration.Count>0){Calibration.Clear();PlayerPrefs.Save();}
             if(_loader!=null){if(_started)_loader.Stop();_loader.Deinitialize();Object.DestroyImmediate(_loader);}
             foreach(var pair in Features)if(pair.Key!=null)pair.Key.enabled=pair.Value;Features.Clear();
             if(USVInputRouter.Instance!=null && _started)USVInputRouter.Instance.Settings.editorMode=_previousMode;
