@@ -4,7 +4,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingXRNotebook
     {
-        public const int HandAlignmentPage=35,QuitPage=36;
+        public const int HandAlignmentPage=35,QuitPage=36,CreativePage=37;
         /// <summary>Pulls a world panel in front of scenery, never closer than 0.8 m.</summary>
         private static float ClearDistance(Vector3 eye,Vector3 direction,float distance)
         {
@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
         }
         private void RefreshHandAlignment()
         {
-            _status.text="手部倾角对齐（自动保存）\n左手："+FishingHands.ControllerRoll(true).ToString("0")+"°\n右手："+FishingHands.ControllerRoll(false).ToString("0")+"°\n加减角度可朝相反方向修正。\n放松手腕，调整到虚拟手与现实手一致。\n校准时可收起手册观察手和持握工具。";
+            _status.text="手部倾角对齐（自动保存）\n左手："+FishingHands.ControllerRoll(true).ToString("0")+"°\n右手："+FishingHands.ControllerRoll(false).ToString("0")+"°\n按身体前后方向修正左右侧倾。\n加减角度可朝相反方向修正。\n放松手腕，调整到虚拟手与现实手一致。\n校准时可收起手册观察手和持握工具。";
             Set(0,"左手 +5°",()=>{FishingHands.SetControllerRoll(true,FishingHands.ControllerRoll(true)+5);Refresh();});
             Set(1,"左手 -5°",()=>{FishingHands.SetControllerRoll(true,FishingHands.ControllerRoll(true)-5);Refresh();});
             Set(2,"右手 +5°",()=>{FishingHands.SetControllerRoll(false,FishingHands.ControllerRoll(false)+5);Refresh();});

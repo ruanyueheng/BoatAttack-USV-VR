@@ -21,7 +21,7 @@ namespace BoatAttack.Fishing
                 new Vector4(edge,edge,edge,edge));
         }
         public static FishingPaperTheme NotebookTheme(int page)
-            =>page==11 || page==14 || page==16 || page==20 || page==22 || page==23 || page==30 || page==FishingXRNotebook.HandAlignmentPage || page==FishingXRNotebook.QuitPage?FishingPaperTheme.DreamSettings
+            =>page==11 || page==14 || page==16 || page==20 || page==22 || page==23 || page==30 || page==FishingXRNotebook.HandAlignmentPage || page==FishingXRNotebook.QuitPage || page==FishingXRNotebook.CreativePage?FishingPaperTheme.DreamSettings
             :page==3 || page==10 || page==15 || page==25 || page==26?FishingPaperTheme.Herbarium
             :page==0 || page==6 || page==9 || page==12?FishingPaperTheme.Celestial:FishingPaperTheme.Workshop;
         public static Sprite Vellum=>Load(ref _vellum,"Vellum",new Vector4(32,32,32,32));

@@ -16,15 +16,28 @@ namespace BoatAttack.EditorTools
         public static void Run(FishingPrototype c)
         {
             var comfort=c.XRComfort;Check(comfort!=null,"XR comfort component is built");
+            var creative=new FishingCareer();
+            Check(!creative.CreativeMode && !creative.Upgrade(UpgradeTrack.Line),"Normal zero wallet cannot buy an upgrade");
+            creative.SetCreativeMode(true);
+            Check(creative.CoinDisplay=="∞" && creative.Upgrade(UpgradeTrack.Line) && creative.Coins==0,"Creative upgrade succeeds without minting or spending real coins");
+            Check(creative.BuyHuntingRifle() && creative.BuySupply(1) && creative.BuyFarmSeeds() && creative.Coins==0,"Creative rifle, supplies and seeds share the free-purchase policy");
+            Check(!creative.BuyHuntingRifle() && !creative.BuySupply(-1) && !creative.SpendCoins(-1),"Creative mode keeps duplicate and invalid purchase guards");
+            Check(FishingCareer.TryRestore(creative.Snapshot(),out var restored) && restored.Coins==0 && !restored.CreativeMode && restored.Backpack.Count(FieldItem.HuntingRifle)==1,"Snapshot retains actual wallet and purchased gear without persisting creative mode");
+            creative.SetCreativeMode(false);Check(!creative.Upgrade(UpgradeTrack.Reel) && creative.Coins==0,"Turning creative mode off restores normal payment rules");
             foreach(bool left in new[]{true,false})
             {
-                string key=left?"FishingXR.LeftPalmRoll":"FishingXR.RightPalmRoll";
+                string key=left?"FishingXR.LeftPalmXY":"FishingXR.RightPalmXY";
                 bool existed=PlayerPrefs.HasKey(key);float previous=PlayerPrefs.GetFloat(key);
                 try
                 {
                     PlayerPrefs.DeleteKey(key);Check(FishingHands.ControllerRoll(left)==30,"Default wrist roll compensates the reported 30 degree left tilt");
                     var tracked=Quaternion.Euler(17,64,-12);
-                    Check(Quaternion.Angle(FishingHands.AlignControllerRotation(left,tracked),tracked*Quaternion.AngleAxis(30,Vector3.forward))<.1f,"Roll correction follows the controller local frame for either hand");
+                    var frame=Quaternion.Euler(0,64,0);
+                    var correction=FishingHands.AlignControllerRotation(left,tracked,frame)*Quaternion.Inverse(tracked);
+                    Check(Quaternion.Angle(correction,Quaternion.AngleAxis(30,frame*Vector3.forward))<.1f,"Side tilt uses character XY plane rather than the tracked controller axis");
+                    var down=Quaternion.Euler(90,0,0);
+                    Check(Quaternion.Angle(FishingHands.AlignControllerRotation(left,down,frame)*Quaternion.Inverse(down),correction)<.1f,"Pointing a controller down cannot turn XY calibration into XZ yaw");
+                    Check(Vector3.Distance(correction*(frame*Vector3.forward),frame*Vector3.forward)<.001f,"XY side tilt preserves the character forward axis");
                     FishingHands.SetControllerRoll(left,-15);
                     Check(FishingHands.ControllerRoll(left)==-15,"Hand calibration supports reversing the correction");
                     FishingHands.SetControllerRoll(left,float.NaN);Check(FishingHands.ControllerRoll(left)==-15,"Invalid calibration does not corrupt saved alignment");

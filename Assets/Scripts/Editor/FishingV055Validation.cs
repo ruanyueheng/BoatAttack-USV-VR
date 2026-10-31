@@ -32,15 +32,14 @@ namespace BoatAttack.EditorTools
             var labels=(Text[])typeof(FishingXRNotebook).GetField("_labels",Private).GetValue(book);
             var actions=(Action[])typeof(FishingXRNotebook).GetField("_actions",Private).GetValue(book);
             int originalPage=(int)page.GetValue(book);
-            var keys=new[]{"FishingXR.LeftPalmRoll","FishingXR.RightPalmRoll"};
+            var keys=new[]{"FishingXR.LeftPalmXY","FishingXR.RightPalmXY"};
             var existed=new[]{PlayerPrefs.HasKey(keys[0]),PlayerPrefs.HasKey(keys[1])};
             var values=new[]{PlayerPrefs.GetFloat(keys[0]),PlayerPrefs.GetFloat(keys[1])};
             string directory=Path.GetFullPath("Logs/V055/Visual");Directory.CreateDirectory(directory);
             try
             {
-                Check(FishingXRNotebook.ClassroomPage!=FishingXRNotebook.HandAlignmentPage && FishingXRNotebook.ClassroomPage!=FishingXRNotebook.QuitPage
-                    && FishingXRNotebook.HandAlignmentPage!=FishingXRNotebook.QuitPage,"Voyage date, hand alignment and quit pages have independent IDs");
-                foreach(int selected in new[]{14,FishingXRNotebook.ClassroomPage,FishingXRNotebook.HandAlignmentPage,FishingXRNotebook.QuitPage})
+                Check(new System.Collections.Generic.HashSet<int>{FishingXRNotebook.ClassroomPage,FishingXRNotebook.HandAlignmentPage,FishingXRNotebook.QuitPage,FishingXRNotebook.CreativePage}.Count==4,"Voyage date, hand alignment, quit and creative pages have independent IDs");
+                foreach(int selected in new[]{14,FishingXRNotebook.ClassroomPage,FishingXRNotebook.HandAlignmentPage,FishingXRNotebook.QuitPage,FishingXRNotebook.CreativePage})
                 {
                     page.SetValue(book,selected);refresh.Invoke(book,null);Canvas.ForceUpdateCanvases();
                     Check(status.preferredHeight<=status.rectTransform.rect.height,"Merged settings text fits page "+selected);
@@ -57,6 +56,15 @@ namespace BoatAttack.EditorTools
                         actions[5]();Check(FishingHands.ControllerRoll(true)==0 && FishingHands.ControllerRoll(false)==0,"Zero calibration remains reachable");
                     }
                     if(selected==FishingXRNotebook.QuitPage)Check(title.text=="退出游戏" && labels[1].text.Contains("取消"),"Exit requires a separate confirmation page with cancellation");
+                    if(selected==FishingXRNotebook.CreativePage)
+                    {
+                        Check(title.text=="创造模式" && !c.CreativeMode,"Creative mode is a separate page and starts disabled");
+                        int balance=c.Career.Coins;actions[0]();
+                        Check(c.CreativeMode && c.Career.CreativeMode && c.Career.CoinDisplay=="∞" && c.Career.Coins==balance,"The real creative page action changes policy and display without replacing the wallet");
+                        var data=c.Career.Snapshot();c.RestoreShopTestProfile(data);
+                        Check(c.Career.CreativeMode && c.Career.Coins==balance,"Loading a career during this session preserves the chosen purchasing policy");
+                        actions[0]();Check(!c.CreativeMode && !c.Career.CreativeMode && c.Career.Coins==balance,"The real page action restores normal pricing and the actual wallet");
+                    }
                     FishingXRPresentationValidation.CaptureCanvas((Canvas)typeof(FishingXRNotebook).GetField("_canvas",Private).GetValue(book),Path.Combine(directory,"settings-"+selected+".png"));
                 }
             }

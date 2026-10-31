@@ -333,7 +333,7 @@ namespace BoatAttack.Fishing
                 Set(4,"声音混音\nBGM / 音效 / 环境",()=>Open(20));
                 Set(5,"完整手柄教学\n安全练习全部按键",BeginGuide);
                 Set(6,"日期与物资",OpenClassroomPage);
-                Set(7,"序章 / 环境特效 / 救援",()=>Open(16));Set(8,"手部/退出",()=>Open(HandAlignmentPage));
+                Set(7,"创造/帮助",()=>Open(CreativePage));Set(8,"手部/退出",()=>Open(HandAlignmentPage));
             }
             else if(_page==15)
             {
@@ -358,6 +358,12 @@ namespace BoatAttack.Fishing
             else if(_page==23)RefreshControlsPage();
             else if(_page==ClassroomPage)RefreshClassroomPage();
             else if(_page==HandAlignmentPage)RefreshHandAlignment();
+            else if(_page==CreativePage)
+            {
+                _status.text="创造模式 · 无限金币测试\n当前："+(_c.CreativeMode?"开启":"关闭")+"\n真实金币："+_c.Career.Coins+"\n开启后购买不扣金币；关闭恢复正常计费。\n背包容量及解锁条件仍有效。\n测试获得的物品与升级正常保存。\n重新启动游戏默认关闭。";
+                Set(0,"创造模式："+(_c.CreativeMode?"开\n点击关闭":"关\n点击开启"),()=>{_c.SetCreativeMode(!_c.CreativeMode);Refresh();});
+                Set(1,"序章 / 环境特效 / 救援",()=>Open(16));Set(7,"返回设置",()=>Open(14));Set(8,"返回首页",()=>Open());
+            }
             else if(_page==QuitPage)
             {
                 _status.text="退出游戏？\n将尝试自动保存当前航程。\n尚未入箱的鱼获不会计入存档。\n取消后可继续游戏。\n"+_c.SaveWarning;

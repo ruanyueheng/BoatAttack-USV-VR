@@ -64,6 +64,14 @@ namespace BoatAttack.EditorTools
             capture=Capture(c,dir,"market-receipt",p+Vector3.up*1.7f,checkout.transform.position,checkout);
             try{while(capture.MoveNext())yield return capture.Current;}finally{(capture as IDisposable)?.Dispose();}
             balance=c.Career.Coins;Check(!market.Trade(MarketGoods.Keepsake) && c.Career.Coins==balance,"a collected keepsake cannot charge the player twice");
+            int seeds=c.Career.Backpack.Count(FieldItem.TurnipSeeds);c.SetCreativeMode(true);
+            try
+            {
+                Check(market.Trade(MarketGoods.Seeds) && c.Career.Coins==balance && c.Career.Backpack.Count(FieldItem.TurnipSeeds)==seeds+3,"The real market supplies stock in creative mode without charging the real wallet");
+                Check(checkout.text.Contains("∞"),"The new market receipt displays the creative wallet instead of a misleading finite balance");
+            }
+            finally{c.SetCreativeMode(false);}
+            Check(market.Trade(MarketGoods.Seeds) && c.Career.Coins==balance-FishingSeaMarket.SeedPrice,"Disabling creative mode restores the normal market charge");balance=c.Career.Coins;
             c.TogglePause();Look(ship.Find("Stall Seeds 1").GetComponentInChildren<TextMesh>().transform.position);
             Check(!market.TryInteract() && c.Career.Coins==balance,"paused or modal input cannot spend market coins");c.TogglePause();
             Check(!market.Trade((MarketGoods)99) && !market.Trade(MarketGoods.Letter,99) && c.Career.Coins==balance,"invalid market choices have no economic side effects");

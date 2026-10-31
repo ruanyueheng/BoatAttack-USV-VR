@@ -106,8 +106,8 @@ namespace BoatAttack.Fishing
         public bool BuySupply(int product)
         {
             int cost = FishingSupplies.Price(product);
-            if (cost <= 0 || Coins < cost || !Backpack.TryAdd(FishingSupplies.Items[product], FishingSupplies.Quantity(product))) return false;
-            Coins -= cost; return true;
+            if (cost <= 0 || !CanAfford(cost) || !Backpack.TryAdd(FishingSupplies.Items[product], FishingSupplies.Quantity(product))) return false;
+            SpendCoins(cost); return true;
         }
         public int DiscoverIsland(int island) { if(Coins>100000000-10)return 0;int pay = Adventure.Discover(island); Coins += pay; return pay; }
         public int OpenIslandTreasure(int island) { if(Coins>100000000-40)return 0;int pay = Adventure.OpenTreasure(island); Coins += pay; return pay; }

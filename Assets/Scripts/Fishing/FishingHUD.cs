@@ -217,7 +217,7 @@ namespace BoatAttack.Fishing
                 Label(x, y + 26, 260, 20, effect, 13, Muted);
                 bool locked=career.SpecializationBlocked(track);
                 string label = locked ? "专精互斥" : cost > 0 ? cost + " 金币" : "已满级";
-                if (Button(new Rect(x + w - 136, y + 4, 136, 38), label, !locked && cost > 0 && career.Coins >= cost, false, 15)) c.BuyUpgrade(track);
+                if (Button(new Rect(x + w - 136, y + 4, 136, 38), label, !locked && cost > 0 && career.CanAfford(cost), false, 15)) c.BuyUpgrade(track);
             }
             if(Button(layout.Footer,c.Expedition.PortLabel,true,false,13))c.Expedition.PortAction();
         }

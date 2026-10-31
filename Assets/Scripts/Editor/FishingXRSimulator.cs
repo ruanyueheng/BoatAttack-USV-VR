@@ -53,7 +53,8 @@ namespace BoatAttack.EditorTools
         [Serializable] private sealed class State
         {
             public int frame,spot,page,holdCount,health,shotsFired,photosTaken,day,coins,marketTrades;
-            public bool classroom,marketVisible;
+            public bool classroom,marketVisible,creativeMode;
+            public string coinDisplay;
             public Vector3 marketPosition;
             public bool xr,focused,isolated,automated,headTracked,leftTracked,rightTracked,seatReady,headBlocked,motionReady,notebook,anchored,ashore,pending;
             public bool a,b,canLand,netHeld,holdingRod,boostActive,toolActive,carryingCan,riflePresented,rifleObstructed,cameraRaised,triggerButton,binocularRaised;
@@ -96,7 +97,7 @@ namespace BoatAttack.EditorTools
         {
             Require(Mock!=null && Conformance!=null,"Installed OpenXR testing features are missing.");
             Require(_c.HasIsolatedProfile && !_c.Automated,"Simulator must use real input and an isolated acceptance profile.");
-            foreach(var key in new[]{"FishingXR.LeftPalmRoll","FishingXR.RightPalmRoll"})Calibration[key]=PlayerPrefs.HasKey(key)?PlayerPrefs.GetFloat(key):(float?)null;
+            foreach(var key in new[]{"FishingXR.LeftPalmXY","FishingXR.RightPalmXY"})Calibration[key]=PlayerPrefs.HasKey(key)?PlayerPrefs.GetFloat(key):(float?)null;
             _c.Acceptance.enabled=false;
             foreach(var f in OpenXRSettings.Instance.GetFeatures<OpenXRFeature>())
             {
@@ -230,7 +231,7 @@ namespace BoatAttack.EditorTools
                 photosTaken=_c.Life.PhotosTaken,cameraRaised=_c.Life.VrRaised,triggerButton=triggerButton,triggerValue=triggerValue,
                 binocularRaised=_c.BinocularsRaised,hintContext=FishingXRHints.Current(_c).ToString(),
                 leftPalmRoll=FishingHands.ControllerRoll(true),rightPalmRoll=FishingHands.ControllerRoll(false),
-                classroom=_c.ClassroomDemoActive,day=_c.Career.Calendar.Day,coins=_c.Career.Coins,
+                classroom=_c.ClassroomDemoActive,day=_c.Career.Calendar.Day,coins=_c.Career.Coins,creativeMode=_c.CreativeMode,coinDisplay=_c.Career.CoinDisplay,
                 marketVisible=_c.SeaMarket.Visible,marketPosition=_c.SeaMarket.Position,marketTrades=_c.SeaMarket.Trades,
                 home=_c.Home.Origin,marketTarget=_c.SeaMarket.Target?.ToString()??"",
                 marketLabels=_c.SeaMarket.transform.Find("V044 roaming market ship").GetComponentsInChildren<TextMesh>().Select(t=>new Button{label=t.text,center=t.transform.position}).ToArray(),

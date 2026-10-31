@@ -42,7 +42,14 @@ namespace BoatAttack.Fishing
         public Material[] fishMaterials;
         public Material wood, cream, dark, orange, teal, lineMaterial;
         public Boat Player { get; private set; }
-        public FishingCareer Career { get; private set; }
+        private FishingCareer _career;
+        public FishingCareer Career { get=>_career; private set { _career=value;_career?.SetCreativeMode(CreativeMode); } }
+        public bool CreativeMode { get; private set; }
+        public void SetCreativeMode(bool enabled)
+        {
+            CreativeMode=enabled;Career?.SetCreativeMode(enabled);
+            Notice(enabled?"创造模式：无限金币购买已开启，背包容量及解锁条件仍有效。":"创造模式已关闭，恢复正常金币计费。",6);
+        }
         public CatchSession Session { get; } = new CatchSession();
         public bool Anchored { get; private set; }
         public USVBoost Boost { get; } = new USVBoost();
@@ -601,7 +608,7 @@ namespace BoatAttack.Fishing
                 Fleet.Refresh();Save();if(track==UpgradeTrack.Hold)RefreshHold();ActionAudio?.Detail("ShopPurchase",ExplorerPosition+Vector3.up*.7f);Effects?.Celebrate(ExplorerPosition+Vector3.up*.3f);WorldAudio?.Play("RareShimmer",ExplorerPosition+Vector3.up*.7f,.4f);
                 int level=Career.Level(track);
                 if(ShopOpen)Hands.ReachGesture(Shore.Character.HandReferencePosition+Shore.Actor.forward*.28f);
-                Notice(FishingText.UpgradeName(track)+" 升至 Lv."+level+" · "+FishingText.UpgradeEffect(track,level)+" · 花费 "+cost+" 金币，余额 "+Career.Coins,7f);
+                Notice(FishingText.UpgradeName(track)+" 升至 Lv."+level+" · "+FishingText.UpgradeEffect(track,level)+" · "+(CreativeMode?"创造模式免费购买":"花费 "+cost+" 金币，余额 "+Career.Coins),7f);
             }
             else Notice("需要 "+cost+" 金币。先捕鱼、返港出售或交付委托吧。");
             return ok;

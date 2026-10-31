@@ -6,6 +6,19 @@ internal static class AdventureTests
 {
     public static void Run(Action<bool,string> check)
     {
+        var creative=new FishingCareer();
+        check(!creative.CreativeMode && !creative.Upgrade(UpgradeTrack.Line),"Creative: a new zero wallet still follows normal payment rules");
+        creative.SetCreativeMode(true);
+        check(creative.CoinDisplay=="∞" && creative.Upgrade(UpgradeTrack.Line) && creative.Coins==0,"Creative: upgrades use a session policy without minting coins");
+        check(creative.BuyHuntingRifle() && creative.BuySupply(1) && creative.BuyFarmSeeds() && creative.SpendCoins(30) && creative.Coins==0,"Creative: rifle, supplies, seeds and shared spending follow the same free-purchase policy");
+        check(!creative.BuyHuntingRifle() && !creative.BuySupply(-1) && !creative.SpendCoins(-1),"Creative: duplicate and invalid purchases remain rejected");
+        check(FishingCareer.TryRestore(creative.Snapshot(),out var restoredCreative) && !restoredCreative.CreativeMode && restoredCreative.Coins==0 && restoredCreative.Backpack.Count(FieldItem.HuntingRifle)==1,"Creative: saves retain real coins and acquired items, never the mode flag");
+        creative.SetCreativeMode(false);
+        check(!creative.Upgrade(UpgradeTrack.Reel) && creative.Coins==0,"Creative: disabling the mode restores normal charging");
+        var ecologyData=FishingClassroomDemo.Create().Snapshot();ecologyData.coins=0;ecologyData.homeEcology.aquariumLevel=1;
+        check(FishingCareer.TryRestore(ecologyData,out var ecologyCreative),"Creative: populated home fixture remains a valid normal save");
+        ecologyCreative.SetCreativeMode(true);
+        check(ecologyCreative.UpgradeAquarium() && ecologyCreative.UpgradeAnimalHabitat(LandAnimalKind.Rabbit) && ecologyCreative.Coins==0,"Creative: unlocked home upgrades also respect the real zero wallet");
         var legacy=new FishingCareer().Snapshot();legacy.version=9;legacy.coins=300;legacy.rodLevel=1;
         check(FishingCareer.TryRestore(legacy,out var c) && c.LineLevel==1 && c.EngineLevel==0 && !c.Adventure.Visited(0),"V18: v9 preserves money/gear with no invented island rewards");
         check(c.Upgrade(UpgradeTrack.Engine) && c.Coins==220 && c.EngineLevel==1,"V18: engine uses shared coin wallet");

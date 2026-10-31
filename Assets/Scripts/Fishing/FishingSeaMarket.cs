@@ -277,7 +277,7 @@ namespace BoatAttack.Fishing
             if(Time.unscaledTime<_feedbackUntil)text+=_feedback;
             else if(Target.HasValue)text+=FishingSeaMarket.Name(Target.Value,_c.Career.Calendar.Season,Festival)+" · "+(Sold(Target.Value)?"已购":PurchaseAction(Target.Value));
             else text+=_c.Speed>=2.5f?"靠近挂商品牌的一侧 · 按住 Shift 减速":"靠近挂商品牌的一侧\n注视货牌 · 按 E 购买 · 无需登船";
-            text+="\n余额 "+_c.Career.Coins+" 金币";
+            text+="\n余额 "+_c.Career.CoinDisplay+" 金币";
             if(_checkout.text!=FishingXRText.Adapt(text))FishingXRText.Bind(_checkout,text);
         }
         private void Feedback(string text)
@@ -301,7 +301,7 @@ namespace BoatAttack.Fishing
                     text = ok ? FishingSeaMarket.BaitNames[season] + "：今天之内抛竿更容易遇到稀有鱼。" : "金币不够。"; break;
                 case MarketGoods.Seeds:
                     var item = season < 2 ? FieldItem.TurnipSeeds : FieldItem.FishFeed;
-                    ok = career.Coins >= FishingSeaMarket.SeedPrice && career.Backpack.TryAdd(item, 3) && career.SpendSeaCoins(FishingSeaMarket.SeedPrice);
+                    ok = career.CanAfford(FishingSeaMarket.SeedPrice) && career.Backpack.TryAdd(item, 3) && career.SpendSeaCoins(FishingSeaMarket.SeedPrice);
                     text = ok ? "买下 " + FishingSeaMarket.Name(g, season, festival) + "。" : "金币不够，或者背包满了。"; break;
                 case MarketGoods.Souvenir:
                 case MarketGoods.Keepsake:
@@ -338,8 +338,7 @@ namespace BoatAttack.Fishing
     {
         public bool SpendSeaCoins(int amount)
         {
-            if (amount < 0 || Coins < amount) return false;
-            Coins -= amount; return true;
+            return SpendCoins(amount);
         }
         /// <summary>Sells every pearl-variant catch at double value; returns coins paid.</summary>
         public int SellRareToMarket()
