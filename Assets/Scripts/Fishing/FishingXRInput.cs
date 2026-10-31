@@ -6,6 +6,17 @@ namespace BoatAttack.Fishing
     /// <summary>OpenXR/PICO controller reads with analog fallbacks used by the whole VR game.</summary>
     public static class FishingXRInput
     {
+        public const float HapticStrengthMultiplier=1.7f;
+        public const float HapticDurationMultiplier=1.5f;
+        public static float HapticAmplitude(float strength)=>float.IsNaN(strength) || float.IsInfinity(strength)?0:Mathf.Clamp(strength*HapticStrengthMultiplier,0,.95f);
+        public static float HapticSeconds(float duration)=>float.IsNaN(duration) || float.IsInfinity(duration)?0:Mathf.Clamp(duration*HapticDurationMultiplier,0,.3f);
+        public static bool Pulse(InputDevice device,float strength,float duration)
+        {
+            float amplitude=HapticAmplitude(strength),seconds=HapticSeconds(duration);
+            if(amplitude<=0 || seconds<=0 || !Application.isFocused || !XRSettings.isDeviceActive
+                || !device.TryGetHapticCapabilities(out var caps) || !caps.supportsImpulse)return false;
+            return device.SendHapticImpulse(0,amplitude,seconds);
+        }
         public static bool Grip(InputDevice device, float threshold = .55f)
         {
             bool pressed = false;

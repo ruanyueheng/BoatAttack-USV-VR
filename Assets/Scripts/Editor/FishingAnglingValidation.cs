@@ -108,6 +108,8 @@ namespace BoatAttack.EditorTools
                 FishingV016Validation.Capture(c, output, "02-loaded-rod");
                 for(int i=0;i<60;i++)dynamics.SetLoad(.95f,.6f,true,.02f);
                 FishingV016Validation.Capture(c,output,"02b-rod-load-visual-test");
+                for(int i=0;i<60;i++)dynamics.SetLineLoad(.25f,c.Angling.WaterTarget,true,true,.02f);
+                FishingV016Validation.Capture(c,output,"02c-tracked-line-load");
                 var audio = (AudioSource)typeof(FishingAnglingPresentation)
                     .GetField("_reelAudio", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(c.Angling);
                 Check(audio != null && audio.clip != null && audio.loop && !audio.playOnAwake,
@@ -264,6 +266,47 @@ namespace BoatAttack.EditorTools
             for (int i = 0; i < crankMeshes.Length; i++)
                 crankUntouched &= SameVertices(crankMeshes[i].sharedMesh.vertices, crankVertices[i]);
             Check(crankUntouched, "Flexible blank deformation never moves, twists or rewrites the reel/crank");
+            CheckTrackedLineLoad(c,dynamics,restTip);
+        }
+
+        private static void CheckTrackedLineLoad(FishingPrototype c,FishingRodDynamics dynamics,Vector3 restTip)
+        {
+            var rod=c.Hands.Rod;var originalRotation=rod.rotation;
+            var crankPosition=c.Hands.Crank.localPosition;var crankRotation=c.Hands.Crank.localRotation;
+            try
+            {
+                var pull=rod.rotation*Vector3.down;
+                var target=rod.TransformPoint(restTip)+pull*4;
+                for(int i=0;i<80;i++)dynamics.SetLineLoad(.2f,target,true,true,.02f);
+                float modest=Mathf.Sqrt(dynamics.CurrentBend*dynamics.CurrentBend+dynamics.CurrentSideBend*dynamics.CurrentSideBend);
+                Check(modest>.55f && rod.InverseTransformPoint(dynamics.Tip.position).y<restTip.y-.35f,
+                    "A tracked rod visibly loads while retrieving a fish at ordinary, non-breaking tension");
+                for(int i=0;i<80;i++)dynamics.SetLineLoad(.85f,target,true,true,.02f);
+                float loaded=Mathf.Sqrt(dynamics.CurrentBend*dynamics.CurrentBend+dynamics.CurrentSideBend*dynamics.CurrentSideBend);
+                Check(loaded>modest+.15f && loaded<1.35f,"Increasing actual line tension deepens the bounded arc instead of stretching the blank");
+                for(int i=0;i<80;i++)dynamics.SetLineLoad(.2f,target,false,true,.02f);
+                float paying=Mathf.Sqrt(dynamics.CurrentBend*dynamics.CurrentBend+dynamics.CurrentSideBend*dynamics.CurrentSideBend);
+                Check(paying<modest-.1f,"Releasing the reel reduces opposing preload smoothly while retaining the taut fish's load");
+                // Same world-space line target, but a rolled controller. Local -Y is no
+                // longer the load direction; the blank must still follow the actual line.
+                rod.rotation=originalRotation*Quaternion.AngleAxis(90,Vector3.forward);
+                for(int i=0;i<80;i++)dynamics.SetLineLoad(.2f,target,true,true,.02f);
+                var displacement=dynamics.Tip.position-rod.TransformPoint(restTip);
+                Check(Mathf.Abs(dynamics.CurrentSideBend)>.55f && Vector3.Dot(displacement,pull)>.2f,
+                    "Rolling the tracked grip cannot turn the rod's bend away from the world-space fish-line pull");
+                var tip=dynamics.Tip.position;float down=dynamics.CurrentBend,side=dynamics.CurrentSideBend;
+                dynamics.SetLineLoad(1,target,true,true,0);
+                dynamics.SetLineLoad(1,new Vector3(float.NaN,0,0),true,true,.1f);
+                Check(tip==dynamics.Tip.position && down==dynamics.CurrentBend && side==dynamics.CurrentSideBend,
+                    "Paused or invalid tracked line samples cannot move the spring or corrupt its tip");
+                for(int i=0;i<100;i++)dynamics.SetLineLoad(0,target,false,false,.05f);
+                Check(dynamics.CurrentBend==0 && dynamics.CurrentSideBend==0
+                    && Vector3.Distance(rod.InverseTransformPoint(dynamics.Tip.position),restTip)<.00001f,
+                    "Ending a tracked fight fully unloads the same blank without leaving a bent rest pose");
+                Check(c.Hands.Crank.localPosition==crankPosition && Quaternion.Angle(c.Hands.Crank.localRotation,crankRotation)<.001f,
+                    "Tracked line loads preserve the reel's grip-space mounting");
+            }
+            finally{rod.rotation=originalRotation;}
         }
 
         private static bool SameVertices(Vector3[] a, Vector3[] b)

@@ -353,7 +353,7 @@ namespace BoatAttack.Fishing
             _trace.SetPosition(0,Muzzle);_trace.SetPosition(1,end);_trace.enabled=true;
             _lastShot=(_lastShot+1)%_shots.Length;_shot=_shots[_lastShot];
             if(!_c.QuietMode)_audio.PlayOneShot(_shot);
-            if(tracked && device.TryGetHapticCapabilities(out var capabilities) && capabilities.supportsImpulse)device.SendHapticImpulse(0,.25f,.06f);
+            if(tracked && device.TryGetHapticCapabilities(out var capabilities) && capabilities.supportsImpulse)FishingXRInput.Pulse(device,.25f,.06f);
             return true;
         }
         public bool TryLootTarget(out FishingFieldWorld.Animal target)

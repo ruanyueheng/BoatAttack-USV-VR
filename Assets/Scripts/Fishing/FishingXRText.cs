@@ -29,7 +29,7 @@ namespace BoatAttack.Fishing
         {
             (Key("WASD"),"左摇杆"),(new Regex("方向键"),"左摇杆"),(Key("Shift"),"左扳机"),(Key("Ctrl"),"真实下蹲"),
             (Key("Esc"),"B"),(Key("Tab"),"事务面板"),(Key("Enter"),"A"),
-            (Key("E"),"A"),(Key("T"),"A"),(Key("G"),"X"),(Key("F"),"右扳机"),(Key("L"),"左扳机"),(Key("Q"),"事务面板"),(Key("R"),"手册"),
+            (Key("E"),"A"),(Key("T"),"A"),(Key("G"),"X"),(Key("F"),"右扳机"),(Key("L"),"右扳机"),(Key("Q"),"事务面板"),(Key("R"),"手册"),
             (Key("I"),"手册"),(new Regex(@"(?<![A-Za-z0-9])J\s*查看"),"在手册中查看"),(Key("J"),"手册"),(new Regex("空格"),"A"),(Key("Space"),"A"),(Key("M"),"手册"),(Key("N"),"手册"),(Key("O"),"手册"),(Key("U"),"手册"),(Key("P"),"右扳机"),(Key("F1"),"求助石 A"),
             (new Regex("左键"),"右扳机"),(new Regex("右键"),"左握把"),(new Regex("鼠标"),"手柄"),(new Regex("数字键"),"Y"),
         };

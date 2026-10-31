@@ -51,7 +51,7 @@ namespace BoatAttack.Fishing
             if(leftHand)
             {
                 CatchRig.StartLeftInspection(_fish.transform.position);
-                if(UnityEngine.XR.XRSettings.isDeviceActive){DockConsole.Show();Notice("钓到了！按 A 放入鱼箱，或在眼前收获卡选择放生；处理后可继续抛竿。",9);return true;}
+                if(UnityEngine.XR.XRSettings.isDeviceActive){DockConsole.Hide();Notice("左手握住活鱼检视。移到抄网口松开左握把，或按 A 放入抄网；再按 A 入鱼箱。",9);return true;}
                 Notice("左手检视活鱼。E 放入抄网，之后可入箱或放生。",7);return true;
             }
             Notice(special?"特别收获！可以拿起观察测量；普通鱼也可直接倾网入箱。":"鱼已入网：可直接倾网入箱，或拿起观察。",7);return true;

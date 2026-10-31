@@ -152,7 +152,7 @@ namespace BoatAttack.Fishing
         public void BiteHaptic(){var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);Haptic(right,.55f);_biteKnock=Time.unscaledTime+.12f;}
         private float _biteKnock=-1;
         private static void Haptic(InputDevice device,float strength)
-        {if(device.TryGetHapticCapabilities(out var capabilities) && capabilities.supportsImpulse)device.SendHapticImpulse(0,strength,.04f);}
+        {if(device.TryGetHapticCapabilities(out var capabilities) && capabilities.supportsImpulse)FishingXRInput.Pulse(device,strength,.04f);}
         public void ReachGesture(Vector3 target){_gesture=.55f;_gestureTarget=target;}
         public void HookGesture(){_hook=.32f;}
         /// <summary>Shoulder-centre origin in BOTH desktop views; TP camera position never enters tool placement.</summary>

@@ -557,7 +557,7 @@ namespace BoatAttack.Fishing
                 var device = InputDevices.GetDeviceAtXRNode(left ? XRNode.LeftHand : XRNode.RightHand);
                 device.TryGetFeatureValue(UnityEngine.XR.CommonUsages.grip, out float grip); if (grip < .6f) continue;
                 for (int i = 0; i < _parcels.Length; i++)
-                    if (_parcels[i].gameObject.activeSelf && Vector3.Distance(_parcels[i].position + Vector3.up * .15f, palm) < .35f && OpenParcel(i)) { device.SendHapticImpulse(0, .4f, .08f); return; }
+                    if (_parcels[i].gameObject.activeSelf && Vector3.Distance(_parcels[i].position + Vector3.up * .15f, palm) < .35f && OpenParcel(i)) { FishingXRInput.Pulse(device,.4f, .08f); return; }
             }
         }
         private void OnDestroy() { foreach (var o in _owned) if (o != null) Destroy(o); }

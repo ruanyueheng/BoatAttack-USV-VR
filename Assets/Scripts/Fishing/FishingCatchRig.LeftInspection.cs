@@ -45,8 +45,8 @@ namespace BoatAttack.Fishing
         }
         public void StartLeftInspection(Vector3 start)
         {
-            if(!_c.HasPendingCatch || _c.Paused || XRSettings.isDeviceActive)return;
-            if(_c.Hands.Rod.gameObject.activeInHierarchy)CaptureNetCarryPose();
+            if(!_c.HasPendingCatch || _c.Paused)return;
+            if(!XRSettings.isDeviceActive && _c.Hands.Rod.gameObject.activeInHierarchy)CaptureNetCarryPose();
             if(_fishId!=_c.Career.PendingCatch.fish.id){_fishId=_c.Career.PendingCatch.fish.id;_c.RestorePendingFishVisual();}
             Location=Place.LeftHand;_handFirstCatch=true;_placingLeft=false;_leftLiftTime=_leftPlaceTime=0;_leftPoseFrame=-1;
             _leftStartLocal=_c.Player.transform.InverseTransformPoint(start);_c.MeasureCatch();
@@ -54,9 +54,43 @@ namespace BoatAttack.Fishing
         public bool PlaceLeftFishInNet()
         {
             if(!LeftHandInspecting || _c.Paused || _placingLeft)return false;
+            if(XRSettings.isDeviceActive){FinishTrackedLeftInspection(true);return true;}
             CaptureNetCarryPose();
             _placingLeft=true;_leftPlaceTime=0;_leftStartLocal=_c.Player.transform.InverseTransformPoint(_c.ActiveFish.position);
             return true;
+        }
+        public bool TryGrabLeftFish(Vector3 palm)
+        {
+            if(!_c.HasPendingCatch || _c.Paused || LeftHandInspecting || _netHeld || Location==Place.Hand)return false;
+            if(Vector3.Distance(palm,FishingContactGeometry.ClosestPoint(_c.ActiveFish,palm))>.22f)return false;
+            StartLeftInspection(_c.ActiveFish.position);_c.DockConsole.Hide();
+            FishingXRInput.Pulse(InputDevices.GetDeviceAtXRNode(XRNode.LeftHand),.38f,.08f);
+            return LeftHandInspecting;
+        }
+        /// <summary>Uses the same calibrated palm as the visible hand; releasing never awards or deletes a fish.</summary>
+        public void ApplyTrackedLeftInspection(Vector3 palm,Quaternion palmFrame,bool held,float dt)
+        {
+            if(!LeftHandInspecting || _c.Paused)return;
+            if(!held)
+            {
+                var mouth=_c.LandingNet.TransformPoint(new Vector3(FishingDetailArt.NetMouthOffset,-.13f,0));
+                FinishTrackedLeftInspection(Vector3.Distance(_c.ActiveFish.position,mouth)<.4f);return;
+            }
+            _leftLiftTime+=Mathf.Clamp(dt,0,.05f);
+            PresentTrackedFishGripper(palm,palmFrame);
+            if(Time.unscaledTime>=_nextFishPulse)
+            {
+                FishingXRInput.Pulse(InputDevices.GetDeviceAtXRNode(XRNode.LeftHand),.2f+.06f*Mathf.Abs(Mathf.Sin(_leftLiftTime*9)),.055f);
+                _nextFishPulse=Time.unscaledTime+.55f;
+            }
+        }
+        private float _nextFishPulse;
+        private void FinishTrackedLeftInspection(bool net)
+        {
+            Location=net?Place.Net:Place.Tray;_placingLeft=false;_netHeld=false;
+            HideFishGripper();
+            if(net)_c.ActionAudio?.Detail("NetFishPlace",_c.LandingNet.position);
+            _c.Notice(net?"活鱼已放入抄网。左握把可再次拿起，A 放入鱼箱。":"活鱼已放到安全托盘。左手靠近鱼按住握把可重新检视，A 可存放。",6);
         }
         public bool ToggleLeftInspection()
         {

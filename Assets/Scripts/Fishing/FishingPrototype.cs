@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.55.0";
+        public const string Version = "0.56.0";
         public FishingHandGames HandGames { get; private set; }
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
@@ -43,7 +43,7 @@ namespace BoatAttack.Fishing
         public Material wood, cream, dark, orange, teal, lineMaterial;
         public Boat Player { get; private set; }
         private FishingCareer _career;
-        public FishingCareer Career { get=>_career; private set { _career=value;LanternOn=false;_career?.SetCreativeMode(CreativeMode); } }
+        public FishingCareer Career { get=>_career; private set { _career=value;LanternOn=false;LanternEquipped=false;_career?.SetCreativeMode(CreativeMode); } }
         public bool CreativeMode { get; private set; }
         public void SetCreativeMode(bool enabled)
         {
