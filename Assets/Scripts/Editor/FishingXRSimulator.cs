@@ -55,6 +55,10 @@ namespace BoatAttack.EditorTools
             public int frame,spot,page,holdCount,health,shotsFired,photosTaken,day,coins,marketTrades;
             public bool classroom,marketVisible,creativeMode,lanternOn,lanternLightEnabled,lanternHolstered,lanternHeld;
             public Vector3 lanternHangPoint;
+            public bool lanternEquipped,leftInspecting,gripperVisible,dockVisible,rodReeling;
+            public string catchLocation,pendingId;
+            public float rodBend,rodSideBend;
+            public Vector3 leftPalm,rightPalm,fishPosition,fishMouth,fishHead,gripperPalm,gripperJaw,rodDeformedTip,rodUnloadedTip,lineStart,lineTarget;
             public string coinDisplay;
             public Vector3 marketPosition;
             public bool xr,focused,isolated,automated,headTracked,leftTracked,rightTracked,seatReady,headBlocked,motionReady,notebook,anchored,ashore,pending;
@@ -222,6 +226,11 @@ namespace BoatAttack.EditorTools
             FishingXRTracking.TryPose(_c.viewCamera,XRNode.LeftHand,out var left,out _);
             FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out var r,out var q,true);
             string hitName=Physics.Raycast(r,q*Vector3.forward,out var hit,3,1<<5,QueryTriggerInteraction.Collide)?hit.collider.name:"";
+            _c.Hands.TryControllerPalm(true,out var lp,out _);_c.Hands.TryControllerPalm(false,out var rp,out _);
+            bool fishReady=_c.HasPendingCatch && _c.ActiveFish!=null;var gripper=_c.CatchRig.FishGripper;
+            var dynamics=_c.Hands.Rod.GetComponent<FishingRodDynamics>();
+            var restTip=dynamics!=null?(Vector3)typeof(FishingRodDynamics).GetField("_restTip",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(dynamics):Vector3.zero;
+            var fishingLine=(LineRenderer)typeof(FishingAnglingPresentation).GetField("_line",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.Angling);
             var s=new State{frame=Time.frameCount,xr=XRSettings.isDeviceActive,focused=Application.isFocused,isolated=_c.HasIsolatedProfile,automated=_c.Automated,
                 headTracked=Tracked(XRNode.Head),leftTracked=Tracked(XRNode.LeftHand),rightTracked=Tracked(XRNode.RightHand),seatReady=_c.XRSeat.Ready,headBlocked=_c.XRSeat.HeadBlocked,
                 motionReady=_c.XRNotebook.MotionReady,notebook=_c.XRNotebook.IsOpen,page=(int)typeof(FishingXRNotebook).GetField("_page",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.XRNotebook),
@@ -236,6 +245,14 @@ namespace BoatAttack.EditorTools
                 lanternOn=_c.LanternOn,lanternLightEnabled=_c.FieldWorld.LanternLight!=null && _c.FieldWorld.LanternLight.enabled,
                 lanternHolstered=_c.FieldWorld.HolsteredLantern!=null && _c.FieldWorld.HolsteredLantern.gameObject.activeInHierarchy,
                 lanternHeld=_c.FieldWorld.LanternHeld,lanternHangPoint=_c.FieldWorld.HolsteredLantern!=null?_c.FieldWorld.HolsteredLantern.TransformPoint(FishingFieldWorld.LanternHangPoint):Vector3.zero,
+                lanternEquipped=_c.LanternEquipped,leftInspecting=_c.CatchRig.LeftHandInspecting,gripperVisible=gripper!=null && gripper.gameObject.activeInHierarchy,dockVisible=_c.DockConsole.Visible,
+                catchLocation=_c.CatchRig.Location.ToString(),pendingId=fishReady?_c.Career.PendingCatch.fish.id:"",leftPalm=lp,rightPalm=rp,
+                fishPosition=fishReady?_c.ActiveFish.position:Vector3.zero,fishMouth=fishReady?_c.ActiveFish.TransformPoint(_c.CatchRig.FishMouthLocal):Vector3.zero,
+                fishHead=fishReady?_c.ActiveFish.rotation*_c.CatchRig.FishHeadAxis:Vector3.zero,
+                gripperPalm=gripper!=null?gripper.TransformPoint(FishingCatchRig.GripperPalm):Vector3.zero,gripperJaw=gripper!=null?gripper.TransformPoint(FishingCatchRig.GripperJaw):Vector3.zero,
+                rodBend=dynamics!=null?dynamics.CurrentBend:0,rodSideBend=dynamics!=null?dynamics.CurrentSideBend:0,rodReeling=_c.Hands.XRReeling,
+                rodDeformedTip=dynamics!=null?dynamics.Tip.position:Vector3.zero,rodUnloadedTip=_c.Hands.Rod.TransformPoint(restTip),
+                lineStart=fishingLine!=null && fishingLine.positionCount>0?fishingLine.GetPosition(0):Vector3.zero,lineTarget=_c.Session.Phase==CatchPhase.Landing?_c.LandingTarget:_c.Angling.WaterTarget,
                 marketVisible=_c.SeaMarket.Visible,marketPosition=_c.SeaMarket.Position,marketTrades=_c.SeaMarket.Trades,
                 home=_c.Home.Origin,marketTarget=_c.SeaMarket.Target?.ToString()??"",
                 marketLabels=_c.SeaMarket.transform.Find("V044 roaming market ship").GetComponentsInChildren<TextMesh>().Select(t=>new Button{label=t.text,center=t.transform.position}).ToArray(),

@@ -86,6 +86,7 @@ namespace BoatAttack.Fishing
         public bool ResolvePendingFromPrimary()
         {
             if(!_c.HasPendingCatch || _c.Paused)return false;
+            if(_c.CatchRig.LeftHandInspecting)return _c.CatchRig.PlaceLeftFishInNet();
             Show();
             bool legend=FishingSpecies.Of(_c.Career.PendingCatch.fish.kind).Legendary;
             return Press(legend && _c.Career.PendingCatch.measured?FishingDockAction.Release:FishingDockAction.Store);

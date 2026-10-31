@@ -54,7 +54,7 @@ namespace BoatAttack.Fishing
                         _c.Effects?.Burst(target,new Color(.91f,.73f,.44f));
                         _c.Notice("获得"+FishingAnimalLoot.Description(_huntTarget.Kind,true)+" · 熔炉可烤肉；动物继续游玩 5 分钟后恢复。",5);
                         var device=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
-                        if(tracked && device.TryGetHapticCapabilities(out var h) && h.supportsImpulse)device.SendHapticImpulse(0,.35f,.06f);
+                        if(tracked && device.TryGetHapticCapabilities(out var h) && h.supportsImpulse)FishingXRInput.Pulse(device,.35f,.06f);
                     }
                     else _c.Notice("背包已满或动物正在恢复，本次没有消耗。",3);
                     CancelHunt();_nextHunt=Time.time+.65f;

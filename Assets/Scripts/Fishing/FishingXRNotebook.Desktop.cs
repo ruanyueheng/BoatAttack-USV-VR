@@ -133,7 +133,7 @@ namespace BoatAttack.Fishing
             _bagDiscard=DesktopButton(_desktopBag.transform,"Windows confirmed discard",140,new Rect(32,567,210,35),"销毁选中物品…",DiscardDesktopBagSelection,20);_bagDiscardLabel=_bagDiscard.GetComponentInChildren<Text>();
             _bagInspect=DesktopButton(_desktopBag.transform,"Windows inspect item",141,new Rect(257,567,190,35),"拿起检视",()=>{if(_bagSelection>=0)_c.InspectFieldItem(_bagSelection);},20);
             _bagEquip=DesktopButton(_desktopBag.transform,"VR number-key equivalent",142,new Rect(465,567,155,35),"装备选中物品",()=>
-            {if(_bagSelection<0)return;int slot=_bagSelection;if(slot>=FishingBackpack.HotbarCount){if(!_c.MoveFieldItem(slot,_c.Career.Backpack.Selected))return;slot=_c.Career.Backpack.Selected;}_c.SelectFieldSlot(slot);Close();},20);
+            {if(_bagSelection<0)return;if(_c.Career.Backpack.At(_bagSelection).item==FieldItem.Lantern && _c.LanternEquipped){_c.StowLantern();Close();return;}int slot=_bagSelection;if(slot>=FishingBackpack.HotbarCount){if(!_c.MoveFieldItem(slot,_c.Career.Backpack.Selected))return;slot=_c.Career.Backpack.Selected;}_c.SelectFieldSlot(slot);Close();},20);
             HomeImage(_desktopBag.transform,"Windows manual divider",new Rect(658,105,1,495),DesktopRule,null,false);
             DesktopText(_desktopBag.transform,"Windows field manual heading",new Rect(696,109,290,30),"野外手册",26,FishingUITheme.Sage,true);
             for(int i=0;i<3;i++)
@@ -308,6 +308,7 @@ namespace BoatAttack.Fishing
             string quote=_bagSelection+":"+selected.item+":"+selected.count;bool discard=selected.count>0 && selected.item!=FieldItem.FieldGuide && !FishingBackpack.IsQuestItem(selected.item);
             _bagDiscardLabel.text=_discardQuote==quote?"确认永久销毁 ×"+selected.count:"销毁选中物品…";_bagDiscard.color=discard?FishingUITheme.Light:FishingUITheme.Disabled;
             _bagInspect.color=_bagEquip.color=selected.count>0?FishingUITheme.Light:FishingUITheme.Disabled;
+            _bagEquip.GetComponentInChildren<Text>().text=selected.item==FieldItem.Lantern?(_c.LanternEquipped?"熄灯并收回":"装备到腰侧"):"装备选中物品";
             string[] notes={"野兔掉落兔肉和兔毛。","赤狐掉落狐狸肉和狐皮。","龟类掉落海龟肉和龟壳；海鸥掉落肉和羽毛。"};
             for(int i=0;i<3;i++)_bagNotes[i].text=(bag.Seen((LandAnimalKind)i)?"已记录 · ":"待观察 · ")+FishingBackpack.AnimalName((LandAnimalKind)i)+"\n"+notes[i];
             FitDesktopLabels(_desktopBag);

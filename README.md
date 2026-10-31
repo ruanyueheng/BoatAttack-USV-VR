@@ -1,6 +1,6 @@
-# BoatAttack USV VR — v0.55.0 手部校准与家园集市整合
+# BoatAttack USV VR — v0.56.0 夹鱼检视与受力竿弯整合
 
-本版整合同学 [PR #59](https://github.com/ruanyueheng/BoatAttack-USV-VR/pull/59) 截至 `f9ec22f8` 的角色 XY 手部校准、创造模式、提灯常亮/独立开关、移动/船速调节和确认退出，同时保留 [PR #60](https://github.com/ruanyueheng/BoatAttack-USV-VR/pull/60) 的全部家园与海上集市修复。日期与物资、校准、退出和创造页已解决编号与入口冲突。详见[0.55 整合与验证](Docs/VALIDATION_V055.md)。
+本版在已合并的 0.55 上，同步同学 [PR #59](https://github.com/ruanyueheng/BoatAttack-USV-VR/pull/59) 截至 `984a6cf3` 的新增改动：左手夹鱼器与重力悬挂检视、随实际鱼线方向弯曲的 VR 鱼竿、统一震动倍率、提灯显式收回背包和左扳机岸上疾跑。补齐实际背包网格的收灯入口，保留原手部校准、创造模式、航程日期、速度调节、确认退出及 [PR #60](https://github.com/ruanyueheng/BoatAttack-USV-VR/pull/60) 的家园集市修复。详见[0.56 整合与验证](Docs/VALIDATION_V056.md)和[0.55 验证记录](Docs/VALIDATION_V055.md)。
 
 本版重做萝卜幼苗与种子袋、奶油漆墙面、五类动物住所及栏内活动，补齐菜园与限定商船实体碰撞，并完善商品价格、注视选择和 A 键购买。修复进入 VR 后商品牌变空、驻钓时购买被抛竿抢占及世界文字透墙。详见[0.54 验证与购买方法](Docs/VALIDATION_V054.md)。
 

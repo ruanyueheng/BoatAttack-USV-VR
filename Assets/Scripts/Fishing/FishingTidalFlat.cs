@@ -334,7 +334,7 @@ namespace BoatAttack.Fishing
         }
         private static void Haptic(float amplitude, float seconds)
         {
-            foreach (var node in new[] { XRNode.LeftHand, XRNode.RightHand }) InputDevices.GetDeviceAtXRNode(node).SendHapticImpulse(0, amplitude, seconds);
+            foreach (var node in new[] { XRNode.LeftHand, XRNode.RightHand }) FishingXRInput.Pulse(InputDevices.GetDeviceAtXRNode(node),amplitude, seconds);
         }
 
         private int Nearest(Vector3 from, float reach)
@@ -385,7 +385,7 @@ namespace BoatAttack.Fishing
                 int i = -1; float nearest = .3f;
                 for (int k = 0; k < FishingTide.ItemCount; k++)
                     if (_items[k].gameObject.activeInHierarchy && Vector3.Distance(_items[k].position, palm) < nearest) { nearest = Vector3.Distance(_items[k].position, palm); i = k; }
-                if (i >= 0 && Collect(i)) InputDevices.GetDeviceAtXRNode(left ? XRNode.LeftHand : XRNode.RightHand).SendHapticImpulse(0, .4f, .08f);
+                if (i >= 0 && Collect(i)) FishingXRInput.Pulse(InputDevices.GetDeviceAtXRNode(left ? XRNode.LeftHand : XRNode.RightHand),.4f, .08f);
             }
         }
         private void OnDestroy() { foreach (var o in _owned) if (o != null) Destroy(o); }

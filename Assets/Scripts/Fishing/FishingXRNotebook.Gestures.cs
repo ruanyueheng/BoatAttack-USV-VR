@@ -25,7 +25,7 @@ namespace BoatAttack.Fishing
                     _notebookHeld=true;_following=false;
                     _holdOffset=Quaternion.Inverse(left.rotation)*(rect.position-left.position);
                     _holdRotation=Quaternion.Inverse(left.rotation)*rect.rotation;
-                    InputDevices.GetDeviceAtXRNode(XRNode.LeftHand).SendHapticImpulse(0,.18f,.04f);
+                    FishingXRInput.Pulse(InputDevices.GetDeviceAtXRNode(XRNode.LeftHand),.18f,.04f);
                 }
             }
             if(_notebookHeld)rect.SetPositionAndRotation(left.position+left.rotation*_holdOffset,left.rotation*_holdRotation);
@@ -46,7 +46,7 @@ namespace BoatAttack.Fishing
             {
                 _offset=next;Refresh();_pageOpenedAt=now;
                 _c.WorldAudio?.Play("UIPage",_c.ExplorerPosition,.3f);
-                InputDevices.GetDeviceAtXRNode(XRNode.RightHand).SendHapticImpulse(0,.18f,.04f);
+                FishingXRInput.Pulse(InputDevices.GetDeviceAtXRNode(XRNode.RightHand),.18f,.04f);
             }
             return true;
         }

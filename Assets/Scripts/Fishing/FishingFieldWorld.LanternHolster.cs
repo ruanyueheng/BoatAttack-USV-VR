@@ -22,7 +22,7 @@ namespace BoatAttack.Fishing
                 && _c.Hands.TryControllerPalm(false,out _,out _) && !_c.Shore.Swimming && !_c.Shore.Climbing;
             var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);bool grip=FishingXRInput.Grip(right);
             bool grab=_lanternGrip.Step(ready,grip);
-            if(!ready || !grip || _c.Career.Backpack.Equipped!=FieldItem.Lantern)_lanternInHand=false;
+            if(!ready || !grip || !_c.LanternEquipped || _c.Career.Backpack.Equipped!=FieldItem.Lantern)_lanternInHand=false;
             if(!grab || _holsteredLantern==null || !_holsteredLantern.gameObject.activeInHierarchy || !_c.Hands.TryControllerPalm(false,out var palm,out _))return;
             if(Vector3.Distance(palm,_holsteredLantern.TransformPoint(LanternHangPoint))>.22f)return;
             var bag=_c.Career.Backpack;int slot=-1;
@@ -34,7 +34,7 @@ namespace BoatAttack.Fishing
 
         private void PresentLanternHolster()
         {
-            bool visible=_c.Ashore && _c.Career.Backpack.Count(FieldItem.Lantern)>0 && !LanternHeld && !_c.Shore.Swimming && !_c.Shore.Climbing
+            bool visible=_c.Ashore && _c.LanternEquipped && _c.Career.Backpack.Count(FieldItem.Lantern)>0 && !LanternHeld && !_c.Shore.Swimming && !_c.Shore.Climbing
                 && !_c.Home.Sleeping && !_c.Prologue.Open && !_c.Letter.Open && !_c.Realms.Transitioning;
             if(_holsteredLantern==null && visible)
             {

@@ -73,6 +73,7 @@ namespace BoatAttack.Fishing
             bool tool=FishingBackpack.Defined(item) && item!=FieldItem.Empty && (item!=FieldItem.HuntingRifle || _c.InspectingItem);
             bool visible=(_c.Ashore || _c.InspectingItem) && !_c.StoryBlocksGameplay && !_c.Shore.Swimming && !_c.Shore.Climbing && (_c.XRNotebook==null || !_c.XRNotebook.BlocksGameplay) && _c.Hands.CanPresentTools && !_c.ShopBlocksGameplay && !_c.Hands.HasGesture && !_c.Hands.PresentingPickup && !_c.Expedition.Aligning && !_c.ActionSuppressesHeldTool && tool;
             if(item==FieldItem.Lantern && XRSettings.isDeviceActive && !_lanternInHand && !_c.InspectingItem && !preview)visible=false;
+            if(item==FieldItem.Lantern && !_c.LanternEquipped && !_c.InspectingItem && !preview)visible=false;
             _held.gameObject.SetActive(visible);_lamp.enabled=false;
             PresentedItem=visible?item:FieldItem.Empty;
             if(!visible)return;

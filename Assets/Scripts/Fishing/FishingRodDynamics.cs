@@ -43,7 +43,7 @@ namespace BoatAttack.Fishing
             SpoolTurns+=woundMeters/(2*Mathf.PI*.049f);SpoolFill=Mathf.Clamp01(fill);_spoolDirty=true;
         }
 
-        /// <summary>Main downward bend in radians, not an accumulated vertex displacement.</summary>
+        /// <summary>Bend toward rod-local -Y in radians, not an accumulated vertex displacement.</summary>
         public float CurrentBend { get; private set; }
         public float CurrentSideBend { get; private set; }
         public float FlexibleLength { get; private set; }
@@ -118,17 +118,43 @@ namespace BoatAttack.Fishing
         /// <param name="deltaTime">Gameplay time; zero completely freezes mesh and spring state.</param>
         public void SetLoad(float tension, float side, bool fighting, float deltaTime)
         {
-            if (_root == null || Tip == null || !Finite(deltaTime) || deltaTime <= 0) return;
             tension = Finite(tension) ? Mathf.Clamp01(tension) : 0;
             side = Finite(side) ? Mathf.Clamp(side, -1, 1) : 0;
-            if (!fighting && CurrentBend == 0 && CurrentSideBend == 0 && !_spoolDirty) return;
             float target = fighting ? .10f + .95f * Mathf.SmoothStep(0, 1, tension) : 0;
             float targetSide = fighting ? side * (.04f + .12f * tension) : 0;
+            SpringTo(target,targetSide,fighting,deltaTime);
+        }
+
+        /// <summary>
+        /// A tracked grip may be rolled or pointed anywhere: bend toward the real line load,
+        /// never an assumed controller-local "down". Reeling maintains a visible opposing
+        /// preload even when the catch rules' normalized line tension is modest.
+        /// </summary>
+        public void SetLineLoad(float tension,Vector3 lineTarget,bool reeling,bool fighting,float deltaTime)
+        {
+            if(_root==null || Tip==null || !Finite(lineTarget.x) || !Finite(lineTarget.y) || !Finite(lineTarget.z))return;
+            if(!fighting){SpringTo(0,0,false,deltaTime);return;}
+            tension=Finite(tension)?Mathf.Clamp01(tension):0;
+            var pull=_root.InverseTransformDirection(lineTarget-Tip.position).normalized;
+            var transverse=new Vector2(pull.x,pull.y);
+            float across=Mathf.Clamp01(transverse.magnitude);
+            var direction=across>.001f?transverse/across:Vector2.down;
+            // The flexible blank carries a taut fish before the line is near breaking.
+            // A smaller transverse component reduces the moment when the angler points
+            // directly along the line. The circular centreline keeps its authored length.
+            float angle=(.22f+.85f*Mathf.Sqrt(tension)+(reeling?.17f:0))*(.55f+.45f*across);
+            SpringTo(-direction.y*angle,direction.x*angle,true,deltaTime);
+        }
+
+        private void SpringTo(float target,float targetSide,bool fighting,float deltaTime)
+        {
+            if (_root == null || Tip == null || !Finite(deltaTime) || deltaTime <= 0) return;
+            if (!fighting && CurrentBend == 0 && CurrentSideBend == 0 && !_spoolDirty) return;
             float step = Mathf.Min(deltaTime, .1f);
             float smooth = fighting ? .16f : .28f;
             CurrentBend = Mathf.SmoothDamp(CurrentBend, target, ref _bendVelocity, smooth, Mathf.Infinity, step);
             CurrentSideBend = Mathf.SmoothDamp(CurrentSideBend, targetSide, ref _sideVelocity, smooth, Mathf.Infinity, step);
-            if (!fighting && CurrentBend < .00005f && Mathf.Abs(CurrentSideBend) < .00005f)
+            if (!fighting && Mathf.Abs(CurrentBend) < .00005f && Mathf.Abs(CurrentSideBend) < .00005f)
                 CurrentBend = CurrentSideBend = _bendVelocity = _sideVelocity = 0;
             ApplyBend();
         }

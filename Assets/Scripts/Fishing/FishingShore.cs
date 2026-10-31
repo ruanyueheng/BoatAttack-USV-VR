@@ -275,7 +275,7 @@ namespace BoatAttack.Fishing
                 left.TryGetFeatureValue(UnityEngine.XR.CommonUsages.primary2DAxis,out input);
                 if(input.magnitude<.18f)input=Vector2.zero;
                 input=_xrStick=FishingXRComfort.Ramp(_xrStick,input,dt,!Climbing && !Swimming);
-                sprint=FishingXRInput.StickClick(left)||FishingXRInput.Grip(left);
+                sprint=FishingXRInput.StickClick(left)||FishingXRInput.Grip(left)||FishingXRInput.Trigger(left);
                 jump=FishingXRInput.StickClick(InputDevices.GetDeviceAtXRNode(XRNode.RightHand));crouch=Controller.XRSeat.PhysicallyCrouched;
             }
             Move(input,sprint,jump,crouch,dt);UpdateProximity();
