@@ -53,7 +53,8 @@ namespace BoatAttack.EditorTools
         [Serializable] private sealed class State
         {
             public int frame,spot,page,holdCount,health,shotsFired,photosTaken,day,coins,marketTrades;
-            public bool classroom,marketVisible,creativeMode;
+            public bool classroom,marketVisible,creativeMode,lanternOn,lanternLightEnabled,lanternHolstered,lanternHeld;
+            public Vector3 lanternHangPoint;
             public string coinDisplay;
             public Vector3 marketPosition;
             public bool xr,focused,isolated,automated,headTracked,leftTracked,rightTracked,seatReady,headBlocked,motionReady,notebook,anchored,ashore,pending;
@@ -232,6 +233,9 @@ namespace BoatAttack.EditorTools
                 binocularRaised=_c.BinocularsRaised,hintContext=FishingXRHints.Current(_c).ToString(),
                 leftPalmRoll=FishingHands.ControllerRoll(true),rightPalmRoll=FishingHands.ControllerRoll(false),
                 classroom=_c.ClassroomDemoActive,day=_c.Career.Calendar.Day,coins=_c.Career.Coins,creativeMode=_c.CreativeMode,coinDisplay=_c.Career.CoinDisplay,
+                lanternOn=_c.LanternOn,lanternLightEnabled=_c.FieldWorld.LanternLight!=null && _c.FieldWorld.LanternLight.enabled,
+                lanternHolstered=_c.FieldWorld.HolsteredLantern!=null && _c.FieldWorld.HolsteredLantern.gameObject.activeInHierarchy,
+                lanternHeld=_c.FieldWorld.LanternHeld,lanternHangPoint=_c.FieldWorld.HolsteredLantern!=null?_c.FieldWorld.HolsteredLantern.TransformPoint(FishingFieldWorld.LanternHangPoint):Vector3.zero,
                 marketVisible=_c.SeaMarket.Visible,marketPosition=_c.SeaMarket.Position,marketTrades=_c.SeaMarket.Trades,
                 home=_c.Home.Origin,marketTarget=_c.SeaMarket.Target?.ToString()??"",
                 marketLabels=_c.SeaMarket.transform.Find("V044 roaming market ship").GetComponentsInChildren<TextMesh>().Select(t=>new Button{label=t.text,center=t.transform.position}).ToArray(),

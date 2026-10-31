@@ -135,7 +135,7 @@ namespace BoatAttack.Fishing
             if(detail)
             {
                 _pageDetail.text=_pageContent[index];_pageDetail.fontSize=22;
-                HomeRect(_pageDetail.rectTransform,new Rect(62,191,_page==12?580:335,_page==12?120:_page==23?515:471));
+                HomeRect(_pageDetail.rectTransform,new Rect(62,191,_page==12?580:335,_page==12?120:_page==23?525:471));
                 if(_page==23)while(_pageDetail.fontSize>20 && _pageDetail.preferredHeight>_pageDetail.rectTransform.rect.height)_pageDetail.fontSize--;
             }
             for(int i=0;i<9;i++)ApplyPageState(i,held,false);

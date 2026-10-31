@@ -94,7 +94,7 @@ namespace BoatAttack.Fishing
             }
             if(Button(new Rect(984,735,290,31),"家园生态 · 鱼缸 / 活捉 / 繁殖",true,false,15)){OpenHomeEcologyPage();return;}
             Label(984,592,290,30,"工具使用",21,Gold,true);
-            Label(984,628,290,104,"手册 F 翻开 · T 观察 · 望远镜 F\n提灯 F 点亮 · 夜间照路\n猎矛 蹲下接近，F 刺击\n生兽肉 + 燃料 → 熔炉炭烤",15,Muted);
+            Label(984,628,290,104,"手册 F 翻开 · T 观察 · 望远镜 F\n提灯 L 开关 · 收起后挂腰照路\n猎矛 蹲下接近，F 刺击\n生兽肉 + 燃料 → 熔炉炭烤",15,Muted);
         }
         private void DrawFieldSlot(Rect r,int index,bool equipped,bool source)
         {

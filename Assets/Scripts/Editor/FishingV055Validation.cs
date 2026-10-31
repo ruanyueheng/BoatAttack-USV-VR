@@ -16,7 +16,8 @@ namespace BoatAttack.EditorTools
         private static void Check(bool ok,string message){if(!ok)throw new InvalidOperationException(message);Debug.Log("[V055] CHECK: "+message);}
         public static IEnumerator Checks(FishingPrototype c)
         {
-            foreach(var checks in new[]{FishingV025Validation.Checks(c),Integration(c),FishingV054Validation.Checks(c),FishingV053BoatValidation.Checks(c)})
+            // Measure the hull before scene fixtures change the calendar, water and player state.
+            foreach(var checks in new[]{FishingV053BoatValidation.Checks(c),FishingV025Validation.Checks(c),Integration(c),FishingLanternValidation.Checks(c),FishingV054Validation.Checks(c)})
             {
                 try{while(checks.MoveNext())yield return checks.Current;}
                 finally{(checks as IDisposable)?.Dispose();}

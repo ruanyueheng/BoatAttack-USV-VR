@@ -207,7 +207,8 @@ namespace BoatAttack.Fishing
                 _held.rotation=palmFrame*Quaternion.Inverse(rightRotation);
                 var controller=_c.Hands.ControllerGripRotation(palmFrame);
                 if(pick)_held.rotation=controller*Quaternion.Euler(90,0,0); // Imported work-tool shafts use +Y; the tracked handle points along +Z.
-                else if(item==FieldItem.Binoculars || item==FieldItem.HuntingSpear || item==FieldItem.Lantern || facility)_held.rotation=controller;
+                else if(item==FieldItem.Lantern)_held.rotation=Quaternion.Euler(0,controller.eulerAngles.y,0); // Suspended lantern stays upright under its handle.
+                else if(item==FieldItem.Binoculars || item==FieldItem.HuntingSpear || facility)_held.rotation=controller;
                 rightRotation=Quaternion.Inverse(_held.rotation)*palmFrame;
                 _held.position=palm-_held.rotation*(rightPalm*scale);
                 twoHands=twoHands && _c.Hands.Left.Visible && Vector3.Distance(_c.Hands.Left.Palm.position,_held.TransformPoint(leftPalm))<.18f;
