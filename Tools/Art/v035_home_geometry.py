@@ -312,12 +312,19 @@ def radish_parts():
     return _RADISH_PARTS
 
 def turnips(stage):
+    if stage==0:
+        # Young radishes have two rounded cotyledons, not miniature mature foliage.
+        for x in [-.48,.48]:
+            for z in [-.48,.48]:
+                tube([(x,.10,z),(x,.17,z)],.009,8,6)
+                for side in [-1,1]:rock((x+side*.064,.177,z),(.075,.018,.047),9,2)
+                leaf((x,.17,z),(x+.025,.225,z+.035),.018,8)
+        return
     # CC0 Kenney Food Kit radish silhouette; reuse the coastal atlas in all growth stages.
     parts,junction,scale=radish_parts();amount=(.32,.65,1)[stage]
     for x in [-.48,.48]:
         for z in [-.48,.48]:
             for points,foliage,color in parts:
-                if stage==0 and not foliage:continue
                 p=[(x+a*scale*amount,(b-junction)*scale*amount+.12+stage*.015,z+c*scale*amount) for a,b,c in points]
                 tile=(8 if color[1]>.35 else 9) if foliage else (11 if color[0]>color[1]*1.2 else 10)
                 mesh(p,[tuple(range(len(p)))],tile)

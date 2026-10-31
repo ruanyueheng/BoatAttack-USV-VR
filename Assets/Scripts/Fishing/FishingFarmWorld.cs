@@ -40,6 +40,7 @@ namespace BoatAttack.Fishing
             {
                 var t=new GameObject(pair.Item1==12?"海风水井":pair.Item1==13?"种子工作台":"收获木箱").transform;t.SetParent(Root,false);t.localPosition=pair.Item2;_targets[pair.Item1]=t;
             }
+            BuildSeedPackets();
             FishingV019Art.Sign("回潮菜园\n翻土播种 → 井边拿壶打水 → 提壶浇灌\n每天浇水 · 三夜成熟 · 空壶放回井边",Root,new Vector3(9,1.7f,-11.3f),.021f,new Color(.98f,.91f,.72f));
             _hoe=Model("GardenHoe",Root,Vector3.zero,false);_hoe.gameObject.SetActive(false);
             _rake=Instantiate(Resources.Load<GameObject>("FishingFeedbackTools/Rake"),Root).transform;_rake.name="Garden player rake";_rakeMaterial=new Material(c.PaletteShader);foreach(var r in _rake.GetComponentsInChildren<Renderer>())r.sharedMaterial=_rakeMaterial;_rake.gameObject.SetActive(false);
@@ -151,6 +152,6 @@ namespace BoatAttack.Fishing
                 _c.Hands.Right.SetForearmRoll(.65f);
             }
         }
-        private void OnDestroy(){if(_rakeMaterial!=null)Destroy(_rakeMaterial);if(_dry!=null)Destroy(_dry);if(_wet!=null)Destroy(_wet);DestroyCanPresentation();}
+        private void OnDestroy(){if(_rakeMaterial!=null)Destroy(_rakeMaterial);if(_dry!=null)Destroy(_dry);if(_wet!=null)Destroy(_wet);DestroyCanPresentation();DestroySeedPackets();}
     }
 }

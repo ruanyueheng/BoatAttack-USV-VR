@@ -46,7 +46,9 @@ namespace BoatAttack.Fishing
         private static bool _boundXR;
         public static void Bind(UnityEngine.TextMesh label,string source)
         {
-            Bound.Add((label,source));label.text=Adapt(source,_boundXR=XRSettings.isDeviceActive);
+            int index=Bound.FindIndex(binding=>binding.label==label);
+            if(index<0)Bound.Add((label,source));else Bound[index]=(label,source);
+            label.text=Adapt(source,XRSettings.isDeviceActive);
             label.GetComponent<FishingWorldSign>()?.Refit();
         }
         /// <summary>Call once per frame (cheap bool compare); refreshes bound labels only when the XR state flips.</summary>

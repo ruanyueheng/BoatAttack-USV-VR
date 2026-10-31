@@ -96,7 +96,7 @@ namespace BoatAttack.Fishing
             FishingArt.Shape("Market sign board",PrimitiveType.Cube,dock,new Vector3(0,2.60f,-1.78f),new Vector3(2.9f,0.61f,0.08f),c.dark);
             var font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var sign=new GameObject("Market name",typeof(TextMesh));sign.transform.SetParent(dock,false);sign.transform.localPosition=new Vector3(0,2.6f,-1.84f);sign.transform.localRotation=Quaternion.identity;
-            var text=sign.GetComponent<TextMesh>();text.text="TIDE & FIN";text.font=font;text.fontSize=64;text.characterSize=0.058f;text.anchor=TextAnchor.MiddleCenter;text.color=new Color(0.95f,0.85f,0.6f);sign.GetComponent<MeshRenderer>().sharedMaterial=font.material;
+            var text=sign.GetComponent<TextMesh>();text.text="TIDE & FIN";text.font=font;text.fontSize=64;text.characterSize=0.058f;text.anchor=TextAnchor.MiddleCenter;text.color=new Color(0.95f,0.85f,0.6f);FishingWorldText.Apply(text);
         }
     }
 }

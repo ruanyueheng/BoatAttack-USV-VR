@@ -74,6 +74,11 @@ namespace BoatAttack.Fishing
         private FishingPrototype _c;
         private readonly List<Object> _owned = new List<Object>();
         private Transform _ship, _marker;
+        private Rigidbody _hullBody;
+        private Quaternion _mooringRotation;
+        private TextMesh _checkout;
+        private string _feedback="";
+        private float _feedbackUntil,_nextPrompt;
         private readonly List<(MarketGoods goods, int phrase, Transform slot, TextMesh label)> _stalls = new List<(MarketGoods, int, Transform, TextMesh)>();
         private int _shownDay = -1, _shownSeason = -1, _shownFestival = -2, _baitDay = -1;
         private FishingCareer _profile;
@@ -108,6 +113,18 @@ namespace BoatAttack.Fishing
                 foreach (var t in _ship.GetComponentsInChildren<Transform>()) if (t.name == name) return _ship.InverseTransformPoint(t.position);
                 return fallback;
             }
+            // Coarse compound hull follows the water without recooking the painted render mesh.
+            _hullBody=_ship.gameObject.AddComponent<Rigidbody>();_hullBody.isKinematic=true;_hullBody.useGravity=false;
+            _hullBody.interpolation=RigidbodyInterpolation.Interpolate;
+            _hullBody.collisionDetectionMode=CollisionDetectionMode.ContinuousSpeculative;
+            float deck=Mount("Owner",new Vector3(-1.2f,1.95f,.5f)).y;
+            var hullMaterial=new PhysicMaterial("Market hull contact"){dynamicFriction=.15f,staticFriction=.15f,bounciness=0};_owned.Add(hullMaterial);
+            for(int i=0;i<5;i++)
+            {
+                var hull=new GameObject("Solid market hull "+i).AddComponent<BoxCollider>();hull.transform.SetParent(_ship,false);
+                hull.center=new Vector3(0,deck-1.65f,(i-2)*3.2f);
+                hull.size=new Vector3(i==0 || i==4?3.8f:i==2?6.2f:5.9f,3.3f,3.3f);hull.sharedMaterial=hullMaterial;
+            }
             Vector3 lanternA = Mount("LanternA", new Vector3(0, 8.6f, 4)), lanternB = Mount("LanternB", new Vector3(0, 8.6f, -4));
             // Lantern strings between the masts and a tall lantern visible across the bay.
             for (int i = 0; i < 9; i++)
@@ -133,12 +150,13 @@ namespace BoatAttack.Fishing
                     var crate = new GameObject("Stall crate", typeof(MeshFilter), typeof(MeshRenderer)); crate.transform.SetParent(slot, false);
                     crate.GetComponent<MeshFilter>().sharedMesh = stallMesh; crate.GetComponent<MeshRenderer>().sharedMaterial = palette;
                 }
-                var label = FishingV019Art.Sign("", slot, new Vector3(0, .8f, 0), .02f, new Color(.95f, .9f, .78f));
+                var label = FishingV019Art.Sign("", slot, i<5?new Vector3(-1.85f,.65f,0):new Vector3(0,.8f,0), .02f, new Color(.95f, .9f, .78f));
                 label.transform.localRotation = Quaternion.Euler(0, -90, 0);
                 if (i >= 5) label.transform.localRotation = Quaternion.Euler(0, 180, 0);
                 _stalls.Add((goods[i], i - 5, slot, label));
             }
-            FishingV019Art.Sign(FishingSeaMarket.Owner + " · 海上集市", _ship, new Vector3(-2.4f, 4.2f, 0), .03f, new Color(.95f, .9f, .78f)).transform.localRotation = Quaternion.Euler(0, -90, 0);
+            _checkout=FishingV019Art.Sign("",_ship,new Vector3(-3.55f,4.4f,0),.022f,new Color(.95f,.9f,.78f));
+            _checkout.name="Market purchase instructions";_checkout.transform.localRotation=Quaternion.Euler(0,-90,0);
             // scene-art opened a port-side window in front of this mount so traders see her from the skiff.
             var owner = Mount("Owner", new Vector3(-1.2f, 1.95f, 0.5f));
             // Stand the merchant on the deck surface under the mount, not inside counters.
@@ -181,16 +199,21 @@ namespace BoatAttack.Fishing
         private void Update()
         {
             if (_c == null || _c.Career == null || _c.Player == null) return;
-            if(_profile!=_c.Career){_profile=_c.Career;_baitDay=_shownDay=_shownSeason=-1;_shownFestival=-2;_greeted=false;}
+            if(_profile!=_c.Career){_profile=_c.Career;_baitDay=_shownDay=_shownSeason=-1;_shownFestival=-2;_greeted=false;_feedback="";_feedbackUntil=0;}
             bool show = ShouldShow;
             if (show != Visible) { _ship.gameObject.SetActive(show); if (show) Moor(); }
             if (!show) { Target = null; return; }
             var cal = _c.Career.Calendar;
             if (_shownDay != cal.Day) Moor();
             if (_shownSeason != cal.Season || _shownFestival != Festival) Relabel();
-            var p = _ship.position; p.y = Mathf.Sin(Time.time * .7f) * .08f; _ship.position = p;
-            _ship.localRotation = Quaternion.Euler(Mathf.Sin(Time.time * .5f) * 1.2f, _ship.localEulerAngles.y, Mathf.Sin(Time.time * .6f) * 1.5f);
             Gaze();
+        }
+        private void FixedUpdate()
+        {
+            if(!Visible || _hullBody==null)return;
+            var p=_hullBody.position;p.y=Mathf.Sin(Time.time*.7f)*.08f;
+            _hullBody.MovePosition(p);
+            _hullBody.MoveRotation(_mooringRotation*Quaternion.Euler(Mathf.Sin(Time.time*.5f)*1.2f,0,Mathf.Sin(Time.time*.6f)*1.5f));
         }
         private void Moor()
         {
@@ -205,6 +228,7 @@ namespace BoatAttack.Fishing
                 if (clear && FishingSeaEventWorld.OpenWater(q, 12)) { best = q; break; }
             }
             _ship.position = best; _ship.rotation = Quaternion.LookRotation(Vector3.Cross(Vector3.up, spot - best).normalized);
+            _mooringRotation=_ship.rotation;_hullBody.position=best;_hullBody.rotation=_mooringRotation;
             Relabel();
         }
         private void Relabel()
@@ -215,31 +239,59 @@ namespace BoatAttack.Fishing
                 bool offered = s.goods != MarketGoods.Keepsake || _shownFestival >= 0;
                 s.slot.gameObject.SetActive(offered);
                 int price = FishingSeaMarket.Price(s.goods);
-                s.label.text = FishingSeaMarket.Name(s.goods, _shownSeason, _shownFestival) + (price > 0 ? "\n" + price + " 金币" : s.goods == MarketGoods.Letter ? "\n“" + FishingSeaMarket.Phrases[s.phrase] + "”" : "");
+                string text=FishingSeaMarket.Name(s.goods,_shownSeason,_shownFestival)+(price>0?"\n"+price+" 金币":s.goods==MarketGoods.Letter?"\n“"+FishingSeaMarket.Phrases[s.phrase]+"”":"");
+                if(Sold(s.goods))text+=" · 已购";
+                else if(Target==s.goods && (s.goods!=MarketGoods.Letter || TargetPhrase==s.phrase))text+="\n"+PurchaseAction(s.goods);
+                FishingXRText.Bind(s.label,text);
             }
         }
-        private bool InReach => !_c.Ashore && Visible && FishingPrototype.FlatDistance(_c.Player.transform.position, _ship.position) < 14 && _c.Speed < 2.5f;
+        private bool Sold(MarketGoods g)=>g==MarketGoods.Bait?_baitDay==_c.Career.Calendar.Day
+            :g==MarketGoods.Souvenir?FishingSeaMarket.Bit(_c.Career.Lore.SeaPost,FishingSeaMarket.SouvenirBit+_c.Career.Calendar.Season)==1
+            :g==MarketGoods.Keepsake && Festival>=0 && FishingSeaMarket.Bit(_c.Career.Lore.SeaPost,FishingSeaMarket.KeepsakeBit+Festival)==1;
+        private static string PurchaseAction(MarketGoods goods)=>goods==MarketGoods.Buyback?"按 E 出售":goods==MarketGoods.Letter?"按 E 寄出":"按 E 购买";
+        private bool InReach => !_c.Ashore && Visible && !_c.Paused && !_c.HasPendingCatch && !_c.StoryBlocksGameplay
+            && !_c.WorldActionBlocksGameplay && !_c.InventoryOpen && !_c.JournalOpen && !_c.ShopBlocksGameplay
+            && (_c.XRNotebook==null || !_c.XRNotebook.BlocksGameplay) && (_c.DockConsole==null || !_c.DockConsole.BlocksGameplay)
+            && _c.Session.Phase==CatchPhase.Idle && FishingPrototype.FlatDistance(_c.Player.transform.position, _ship.position) < 14 && _c.Speed < 2.5f;
         private void Gaze()
         {
+            var previous=Target;int phrase=TargetPhrase;
             Target = null; _marker.gameObject.SetActive(false);
-            if (!InReach) { if (_greeted && Merchant != null) Merchant.ShowBark("bye"); _greeted = false; return; }
+            if (!InReach) { if (_greeted && Merchant != null) Merchant.ShowBark("bye"); _greeted = false;if(previous!=null)Relabel();RefreshPrompt();return; }
             if (!_greeted && Merchant != null) { _greeted = true; Merchant.ShowBark(Random.value < .5f ? "hail_1" : "season_" + _c.Career.Calendar.Season); }
-            var eye = _c.viewCamera.transform; float best = .97f;
+            var eye = _c.viewCamera.transform; float best = .985f;
             foreach (var s in _stalls)
             {
                 if (!s.slot.gameObject.activeSelf) continue;
-                float dot = Vector3.Dot(eye.forward, (s.slot.position - eye.position).normalized);
-                if (dot > best) { best = dot; Target = s.goods; TargetPhrase = s.phrase; _marker.position = s.slot.position + Vector3.up * 1.35f; }
+                float dot = Vector3.Dot(eye.forward, (s.label.transform.position - eye.position).normalized);
+                if (dot > best && _c.Shore.ClearSight(eye.position,s.label.transform.position,s.slot))
+                { best = dot; Target = s.goods; TargetPhrase = s.phrase; _marker.position = s.label.transform.position + Vector3.up * .55f; }
             }
-            if (Target == null) { best = -1; foreach (var s in _stalls) if (s.slot.gameObject.activeSelf) { float dot = Vector3.Dot(eye.forward, (s.slot.position - eye.position).normalized); if (dot > best) { best = dot; Target = s.goods; TargetPhrase = s.phrase; _marker.position = s.slot.position + Vector3.up * 1.35f; } } }
-            _marker.gameObject.SetActive(true);
+            _marker.gameObject.SetActive(Target!=null);
+            if(previous!=Target || phrase!=TargetPhrase)Relabel();RefreshPrompt();
+        }
+        private void RefreshPrompt()
+        {
+            if(Time.unscaledTime<_nextPrompt)return;_nextPrompt=Time.unscaledTime+.1f;
+            string text=FishingSeaMarket.Owner+" · 海上集市\n";
+            if(Time.unscaledTime<_feedbackUntil)text+=_feedback;
+            else if(Target.HasValue)text+=FishingSeaMarket.Name(Target.Value,_c.Career.Calendar.Season,Festival)+" · "+(Sold(Target.Value)?"已购":PurchaseAction(Target.Value));
+            else text+=_c.Speed>=2.5f?"靠近挂商品牌的一侧 · 按住 Shift 减速":"靠近挂商品牌的一侧\n注视货牌 · 按 E 购买 · 无需登船";
+            text+="\n余额 "+_c.Career.Coins+" 金币";
+            if(_checkout.text!=FishingXRText.Adapt(text))FishingXRText.Bind(_checkout,text);
+        }
+        private void Feedback(string text)
+        {
+            _feedback=text;_feedbackUntil=Time.unscaledTime+6;_nextPrompt=0;RefreshPrompt();
         }
 
         /// <summary>Interact hook: true when the press was spent on the market.</summary>
-        public bool TryInteract() { if (!InReach || Target == null) return false; Trade(Target.Value, TargetPhrase); return true; }
+        public bool TryInteract() { Gaze();if (!InReach || Target == null) return false; Trade(Target.Value, TargetPhrase); return true; }
         public bool Trade(MarketGoods g, int phrase = 0)
         {
             var career = _c.Career; var lore = career.Lore; var cal = career.Calendar; int season = cal.Season, festival = Festival;
+            if(g<MarketGoods.Bait || g>MarketGoods.Letter || (g==MarketGoods.Keepsake && festival<0) || (g==MarketGoods.Letter && (phrase<0 || phrase>=FishingSeaMarket.Phrases.Length)))
+            {Feedback("今天没有这件商品。");return false;}
             string text; bool ok = true;
             switch (g)
             {
@@ -273,6 +325,7 @@ namespace BoatAttack.Fishing
             if (ok && Merchant != null) Merchant.ShowBark(Trades % 2 == 0 ? "deal_1" : "deal_2");
             if (ok) { Trades++; _c.Save(); _c.WorldAudio?.Play("SeaMarketTrade", _c.viewCamera.transform.position + _c.viewCamera.transform.forward * 2, .6f); _c.Effects?.Celebrate(_marker.position); }
             if (!FishingSeaEventWorld.Vr && text.Length > 0) _c.Notice(text, 6);
+            Feedback(text);
             Relabel();
             return ok;
         }

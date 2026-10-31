@@ -515,6 +515,7 @@ namespace BoatAttack.Fishing
             if(slotEdge){_c.SelectFieldSlot((_c.Career.Backpack.Selected+1)%9);return true;}
             if(action && !_c.XRSeat.HeadBlocked)
             {
+                if(!_c.Ashore && _c.SeaMarket.TryInteract())return true;
                 if(!_c.Ashore && _c.Anchored)
                 {if(_c.Hands.HoldRodForButtons()){if(_c.Session.Phase==CatchPhase.Bite)_c.Hook();else if(_c.CanChangeBait)_c.Cast();}}
                 else if(_c.Hands.HoldingRod){if(_c.Session.Phase==CatchPhase.Bite)_c.Hook();else _c.Cast();}

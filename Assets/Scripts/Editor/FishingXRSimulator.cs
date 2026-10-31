@@ -56,14 +56,15 @@ namespace BoatAttack.EditorTools
             public Vector3 marketPosition;
             public bool xr,focused,isolated,automated,headTracked,leftTracked,rightTracked,seatReady,headBlocked,motionReady,notebook,anchored,ashore,pending;
             public bool a,b,canLand,netHeld,holdingRod,boostActive,toolActive,carryingCan,riflePresented,rifleObstructed,cameraRaised,triggerButton,binocularRaised;
-            public string hintContext;
+            public string hintContext,marketTarget;
+            public Vector3 home;
             public float triggerValue;
             public float speed,spotDistance,tension,distance,remaining,walkSpeed,stamina,boostHeat;
             public string phase,beat,message,inputSource,profile,rayTarget,detail,feedback,heldItem;
             public Vector3 camera,cameraEuler,boat,boatEuler,left,right,origin,originEuler,landingTarget,netPosition,netEuler,rodPosition,rodForward,rodTip,rightForward,rodPalm,feet,heldUp,heldForward,heldPosition,canUp,canForward;
             public Vector3[] fishingSpots;
             public USVInputState input;
-            public Button[] buttons;
+            public Button[] buttons,marketLabels;
         }
 
         static FishingXRSimulator()
@@ -135,7 +136,14 @@ namespace BoatAttack.EditorTools
                 var file=Path.Combine(Root,"command.json");var written=File.GetLastWriteTimeUtc(file);
                 if(written!=_lastWrite)
                 {
-                    var next=JsonUtility.FromJson<Command>(File.ReadAllText(file));
+                    string json;
+                    try
+                    {
+                        using(var stream=new FileStream(file,FileMode.Open,FileAccess.Read,FileShare.ReadWrite|FileShare.Delete))
+                        using(var reader=new StreamReader(stream))json=reader.ReadToEnd();
+                    }
+                    catch(IOException ex) when((ex.HResult&0xffff)==32 || (ex.HResult&0xffff)==33){return;}
+                    var next=JsonUtility.FromJson<Command>(json);
                     Validate(next);
                     if(!string.IsNullOrEmpty(next.fixture) && next.fixture!=_command.fixture)
                     {
@@ -221,6 +229,8 @@ namespace BoatAttack.EditorTools
                 binocularRaised=_c.BinocularsRaised,hintContext=FishingXRHints.Current(_c).ToString(),
                 classroom=_c.ClassroomDemoActive,day=_c.Career.Calendar.Day,coins=_c.Career.Coins,
                 marketVisible=_c.SeaMarket.Visible,marketPosition=_c.SeaMarket.Position,marketTrades=_c.SeaMarket.Trades,
+                home=_c.Home.Origin,marketTarget=_c.SeaMarket.Target?.ToString()??"",
+                marketLabels=_c.SeaMarket.transform.Find("V044 roaming market ship").GetComponentsInChildren<TextMesh>().Select(t=>new Button{label=t.text,center=t.transform.position}).ToArray(),
                 feet=_c.Shore.Position,walkSpeed=_c.Shore.WalkSpeed,stamina=_c.Shore.Stamina,boostActive=_c.Boost.Active,boostHeat=_c.Boost.Heat,
                 heldItem=_c.FieldWorld.PresentedItem.ToString(),toolActive=_c.FieldWorld.HeldTool!=null&&_c.FieldWorld.HeldTool.gameObject.activeInHierarchy,
                 heldUp=_c.FieldWorld.HeldTool!=null?_c.FieldWorld.HeldTool.up:Vector3.zero,heldForward=_c.FieldWorld.HeldTool!=null?_c.FieldWorld.HeldTool.forward:Vector3.zero,heldPosition=_c.FieldWorld.HeldTool!=null?_c.FieldWorld.HeldTool.position:Vector3.zero,
@@ -237,7 +247,7 @@ namespace BoatAttack.EditorTools
         {
             _mirror.CopyFrom(_c.viewCamera);_mirror.enabled=false;_mirror.stereoTargetEye=StereoTargetEyeMask.None;
             _mirror.transform.SetPositionAndRotation(_c.viewCamera.transform.position,_c.viewCamera.transform.rotation);
-            _mirror.targetTexture=_target;_mirror.fieldOfView=80;_mirror.aspect=1280f/720;_mirror.ResetProjectionMatrix();
+            _mirror.targetTexture=_target;_mirror.fieldOfView=80;_mirror.aspect=1280f/720;_mirror.ResetProjectionMatrix();_mirror.ResetWorldToCameraMatrix();
             _mirror.GetUniversalAdditionalCameraData().allowXRRendering=false;
             var previous=RenderTexture.active;
             try
