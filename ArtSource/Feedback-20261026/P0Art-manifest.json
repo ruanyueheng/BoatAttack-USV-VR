@@ -39,9 +39,9 @@
     },
     {
       "name": "Turnip0",
-      "triangles": 416,
-      "vertices": 1248,
-      "fbxSha256": "3f3e03913264b9f5b8e5a7f9a480949c8f353d4b89395f383a7bd91defa3d143"
+      "triangles": 784,
+      "vertices": 444,
+      "fbxSha256": "8722d848c3edce2a286f59ee2dadbe6fc1713903216b73f8dca8498e3797340b"
     },
     {
       "name": "Turnip1",
@@ -77,5 +77,6 @@
   "pending": "Unity P0-ART, hunting, farm and V039 home acceptance",
   "originalRadishSource": "ArtSource/V019/Kenney/food-kit/Models/GLB format/radish.glb",
   "akFbxSha256": "aadd06a13925a1925fc7db0eadea1fcd70c0add32e6c8be067151427c1122460",
-  "homeTipRepair": "Forty fence posts now use one apex with a triangle fan; 560 zero-area triangles removed without changing silhouette."
+  "homeTipRepair": "Forty fence posts now use one apex with a triangle fan; 560 zero-area triangles removed without changing silhouette.",
+  "seedlingRepairV054": "Four low double-cotyledon sprouts; mature Turnip1/2 sources unchanged."
 }

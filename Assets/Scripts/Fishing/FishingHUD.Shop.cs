@@ -18,7 +18,7 @@ namespace BoatAttack.Fishing
             var c=Controller;var r=new Rect(270,Mathf.Max(20,(_height-680)*.5f),1060,680);
             MenuSheet(r);Label(r.x+30,r.y+16,680,46,Spaced("潮汐钓具店"),32,Color.white,true);
             Label(r.x+255,r.y+33,390,22,"TIDE & TACKLE  /  远航的准备",14,Muted);
-            Label(new Rect(r.xMax-250,r.y+28,220,35),c.Career.Coins+" 金币",23,Gold,true,TextAnchor.MiddleRight);
+            Label(new Rect(r.xMax-250,r.y+28,220,35),c.Career.CoinDisplay+" 金币",23,Gold,true,TextAnchor.MiddleRight);
             int categories=FishingSupplies.CategoryCount+3;float tabWidth=(r.width-60)/categories;
             for(int i=0;i<categories;i++)
             {
@@ -47,7 +47,7 @@ namespace BoatAttack.Fishing
                 else if(!supplies)Label(x+108,y+80,650,22,cost>0?FishingText.UpgradeEffect(track,level)+" → "+FishingText.UpgradeEffect(track,level+1):FishingText.UpgradeEffect(track,level),14,Mint);
                 bool owned=rifle && c.Career.Backpack.Count(FieldItem.HuntingRifle)>0;
                 bool locked=!rifle && !supplies && c.Career.SpecializationBlocked(track);
-                bool affordable=!owned && !locked && cost>0 && c.Career.Coins>=cost;
+                bool affordable=!owned && !locked && cost>0 && c.Career.CanAfford(cost);
                 var buy=new Rect(x+w-180,y+(supplies?76:15),164,32);
                 if(Button(buy,owned?"已持有":locked?"专精互斥":cost<=0?"已满级":"购买 "+cost+" 金币",affordable,affordable,15))
                 {if(rifle)c.TackleShop.BuyRifle();else if(supplies)c.TackleShop.BuySupply(product);else c.TackleShop.Buy(track);}

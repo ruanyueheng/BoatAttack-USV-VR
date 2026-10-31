@@ -4,6 +4,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingXRNotebook
     {
+        public const int HandAlignmentPage=35,QuitPage=36,CreativePage=37;
         /// <summary>Pulls a world panel in front of scenery, never closer than 0.8 m.</summary>
         private static float ClearDistance(Vector3 eye,Vector3 direction,float distance)
         {
@@ -22,6 +23,18 @@ namespace BoatAttack.Fishing
             Set(5,"秘境阵风\n"+(FishingXRComfort.GustComfort?"舒适：不推动身体":"慢速推动"),()=>{FishingXRComfort.GustComfort=!FishingXRComfort.GustComfort;Refresh();});
             Set(6,"校准眼高",()=>{_c.XRSeat.Recenter();Close();});
             Set(7,"操作说明\n各情境按键表",()=>Open(23));Set(8,"返回设置",()=>Open(14));
+        }
+        private void RefreshHandAlignment()
+        {
+            _status.text="手部倾角对齐（自动保存）\n左手："+FishingHands.ControllerRoll(true).ToString("0")+"°\n右手："+FishingHands.ControllerRoll(false).ToString("0")+"°\n按身体前后方向修正左右侧倾。\n加减角度可朝相反方向修正。\n放松手腕，调整到虚拟手与现实手一致。\n校准时可收起手册观察手和持握工具。";
+            Set(0,"左手 +5°",()=>{FishingHands.SetControllerRoll(true,FishingHands.ControllerRoll(true)+5);Refresh();});
+            Set(1,"左手 -5°",()=>{FishingHands.SetControllerRoll(true,FishingHands.ControllerRoll(true)-5);Refresh();});
+            Set(2,"右手 +5°",()=>{FishingHands.SetControllerRoll(false,FishingHands.ControllerRoll(false)+5);Refresh();});
+            Set(3,"右手 -5°",()=>{FishingHands.SetControllerRoll(false,FishingHands.ControllerRoll(false)-5);Refresh();});
+            Set(4,"恢复默认 +30°",()=>{FishingHands.SetControllerRoll(true,30);FishingHands.SetControllerRoll(false,30);Refresh();});
+            Set(5,"清零倾角补偿",()=>{FishingHands.SetControllerRoll(true,0);FishingHands.SetControllerRoll(false,0);Refresh();});
+            Set(6,"校准眼高",()=>{_c.XRSeat.Recenter();Close();});
+            Set(7,"退出游戏",()=>Open(QuitPage));Set(8,"返回设置",()=>Open(14));
         }
         private void RefreshControlsPage()
         {

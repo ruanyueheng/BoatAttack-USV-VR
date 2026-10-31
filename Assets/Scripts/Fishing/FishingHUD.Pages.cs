@@ -61,7 +61,7 @@ namespace BoatAttack.Fishing
             if(PauseOption(ref oy,"读取存档",true))c.OpenSaveMenu("load");
             if(PauseOption(ref oy,"快速回家",true))c.ReturnHome();
             if(PauseOption(ref oy,"返回开始菜单",!c.HasPendingCatch))c.OpenStartMenu();
-            if(PauseOption(ref oy,"退出游戏",true))Application.Quit();
+            if(PauseOption(ref oy,"退出游戏",true)){c.MenuControls=true;_exitConfirmation=true;}
             var r=new Rect(640,top,880,560);MenuSheet(r,false);
             ChapterImage(new Rect(r.x+24,r.y+22,r.width-48,150),7);
             float x=r.x+34,y=r.y+196,w=398;

@@ -30,7 +30,11 @@ namespace BoatAttack.EditorTools
                 input.SetValue(router,default(USVInputState));
                 float settle=Time.time+5;while(Time.time<settle)yield return null;
                 float baseline=rb.position.y;
-                if(phase==2)rb.AddForce(Vector3.up*7,ForceMode.VelocityChange);
+                if(phase==2)
+                {
+                    // Apply the same vertical input regardless of the current wave's buoyant velocity.
+                    rb.velocity=new Vector3(rb.velocity.x,0,rb.velocity.z);rb.AddForce(Vector3.up*7,ForceMode.VelocityChange);
+                }
                 input.SetValue(router,new USVInputState{throttle=phase<2?1:0,boost=phase==1});
                 float until=Time.time+6,minEye=float.MaxValue,maxRise=0,maxVertical=0,speed=0;bool boosted=false;
                 while(Time.time<until)

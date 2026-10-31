@@ -38,7 +38,7 @@ namespace BoatAttack.Fishing
             var c = Controller.Career;
             var r = Layout.Pocket;
             PocketIcon(new Rect(r.x+10,r.y+2,32,32),FishingUITheme.Coins,Gold);
-            WorldLabel(new Rect(r.x + 43, r.y, 104, r.height), Memo(2,c.Coins,h=>h.Controller.Career.Coins.ToString("N0", CultureInfo.InvariantCulture)), 16, Gold, true, TextAnchor.MiddleLeft);
+            WorldLabel(new Rect(r.x + 43, r.y, 104, r.height), c.CreativeMode?"∞":Memo(2,c.Coins,h=>h.Controller.Career.Coins.ToString("N0", CultureInfo.InvariantCulture)), 16, Gold, true, TextAnchor.MiddleLeft);
             PocketIcon(new Rect(r.x+160,r.y+2,32,32),FishingUITheme.FishBox,Mint);
             WorldLabel(new Rect(r.x + 201, r.y, 97, r.height), c.Count + "/" + c.Capacity, 18, c.Count == c.Capacity ? Danger : Color.white, false, TextAnchor.MiddleLeft);
         }

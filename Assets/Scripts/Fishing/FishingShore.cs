@@ -311,7 +311,7 @@ namespace BoatAttack.Fishing
             if(Swimming){Swim(axes,heading,sprint,jump,dt);return;}
             _motion.Exert(sprint && axes.sqrMagnitude>.01f && !Crouched,axes.sqrMagnitude<.01f,dt);
             sprint &= Stamina>.08f;
-            var velocity=heading*new Vector3(axes.x,0,axes.y)*(XRSettings.isDeviceActive?(Crouched?.9f:FishingXRComfort.WalkSpeed*(sprint?1.7f:1f)):Crouched?1.25f:sprint?4.4f:2.6f);
+            var velocity=heading*new Vector3(axes.x,0,axes.y)*(XRSettings.isDeviceActive?(Crouched?.9f:FishingXRComfort.WalkSpeed*(sprint?1.7f:1f)):Crouched?1.25f:sprint?5.8f:3.4f);
             var next=Actor.position+velocity*dt;
             // Dry land below permits a gravity-driven descent; walls and slopes still use real collision geometry.
             bool support=WalkingGroundBelow(next,Actor.position.y+.45f,80f,out var floor);

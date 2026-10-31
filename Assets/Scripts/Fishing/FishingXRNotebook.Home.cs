@@ -153,7 +153,7 @@ namespace BoatAttack.Fishing
             FishingUITheme.StyleHeading(_homeTitle);
             _homeWeather.text=BayClimate.Name(_c.Weather.Climate.Current)+"  ·  "+day.TideName;
             _canvas.GetComponent<Image>().color=FishingPaperDesign.PaperTint;
-            _homeWallet.text="金币    "+_c.Career.Coins;
+            _homeWallet.text="金币    "+_c.Career.CoinDisplay;
             _homeCapacity.text="鱼箱 "+_c.Career.Count+"/"+_c.Career.Capacity+" · 行囊 "+bag.UsedSlots+"/36";
             _homeEquipment.text="当前装备  ·  "+FishingBackpack.Name(bag.Equipped);
             _homeMessage.text=_c.VisibleMessage;

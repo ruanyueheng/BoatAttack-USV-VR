@@ -77,6 +77,7 @@ namespace BoatAttack.Fishing
             _lamp.type=LightType.Point;_lamp.color=new Color(1,.67f,.30f);_lamp.range=11;_lamp.intensity=2.6f;
             _lamp.shadows=UnityEngine.XR.XRSettings.isDeviceActive?LightShadows.None:LightShadows.Soft;
             _lamp.shadowStrength=.72f;_lamp.shadowBias=.035f;_lamp.shadowNormalBias=.12f;_lamp.renderMode=LightRenderMode.ForcePixel;
+            _lamp.enabled=false;
             RefreshPickups();Debug.Log("[FIELD] Built "+_pickups.Count+" pickups and "+_animals.Count+" ground-constrained land animals.");
         }
         private Transform MeshObject(string name,Mesh mesh)

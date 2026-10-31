@@ -12,7 +12,8 @@ namespace BoatAttack.Fishing
             {
                 if(renderer.name=="LOD1")continue;
                 var mesh=renderer.GetComponent<MeshFilter>().sharedMesh;var materials=new Material[mesh.subMeshCount];var own=Override(mesh);
-                for(int i=0;i<materials.Length;i++)materials[i]=own!=null?own:allFoliage || i==1?leaves:hard;
+                for(int i=0;i<materials.Length;i++)materials[i]=mesh.name=="GEO-CottageShell" && i==1
+                    ?Resources.Load<Material>("FishingV035/HomeLimewash"):own!=null?own:allFoliage || i==1?leaves:hard;
                 renderer.sharedMaterials=materials;if(lod)AddLod(renderer);
             }
         }

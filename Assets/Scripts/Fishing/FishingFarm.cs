@@ -91,8 +91,8 @@ namespace BoatAttack.Fishing
         public FishingFarm Farm {get;private set;}=new FishingFarm();
         public bool BuyFarmSeeds()
         {
-            if(Coins<12 || !Backpack.TryAdd(FieldItem.TurnipSeeds,6))return false;
-            Coins-=12;return true;
+            if(!CanAfford(12) || !Backpack.TryAdd(FieldItem.TurnipSeeds,6))return false;
+            SpendCoins(12);return true;
         }
         public int SellTurnips()
         {

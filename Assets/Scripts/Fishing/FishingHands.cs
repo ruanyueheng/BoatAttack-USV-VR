@@ -321,8 +321,22 @@ namespace BoatAttack.Fishing
             if(_c==null)return false;
             if(!FishingXRTracking.TryPose(_c.viewCamera,left?XRNode.LeftHand:XRNode.RightHand,out position,out rotation))return false;
             position+=rotation*(left?_leftControllerPalmOffset:_rightControllerPalmOffset);
-            rotation*=Quaternion.Euler(left?_leftControllerPalmEuler:_rightControllerPalmEuler);return true;
+            var bodyFrame=Quaternion.Euler(0,(_c.Ashore?_c.Shore.Actor:_c.Player.transform).eulerAngles.y,0);
+            rotation=AlignControllerRotation(left,rotation,bodyFrame)*Quaternion.Euler(left?_leftControllerPalmEuler:_rightControllerPalmEuler);return true;
         }
+        // Side tilt in the character's XY plane, independent of the controller pointing direction.
+        public static float ControllerRoll(bool left)
+        {
+            float value=PlayerPrefs.GetFloat(left?"FishingXR.LeftPalmXY":"FishingXR.RightPalmXY",30f);
+            return float.IsNaN(value)||float.IsInfinity(value)?30f:Mathf.Clamp(value,-90,90);
+        }
+        public static void SetControllerRoll(bool left,float degrees)
+        {
+            if(float.IsNaN(degrees)||float.IsInfinity(degrees))return;
+            PlayerPrefs.SetFloat(left?"FishingXR.LeftPalmXY":"FishingXR.RightPalmXY",Mathf.Clamp(degrees,-90,90));PlayerPrefs.Save();
+        }
+        public static Quaternion AlignControllerRotation(bool left,Quaternion tracked,Quaternion characterFrame)
+            =>Quaternion.AngleAxis(ControllerRoll(left),characterFrame*Vector3.forward)*tracked;
         public Quaternion ControllerGripRotation(Quaternion palmRotation)=>palmRotation*Quaternion.Inverse(Quaternion.Euler(_rightControllerPalmEuler));
         private bool Track(FishingHandTarget hand,XRNode node)
         {

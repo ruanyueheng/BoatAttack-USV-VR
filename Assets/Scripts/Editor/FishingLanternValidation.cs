@@ -34,6 +34,17 @@ namespace BoatAttack.EditorTools
                 Check(Vector3.Distance(light.transform.position,held.TransformPoint(FishingFieldWorld.LanternLightPoint))<.002f,"light follows the actual held lantern chamber");
                 c.SelectFieldSlot(0);c.PresentCharacterFrame();var holster=c.FieldWorld.HolsteredLantern;
                 Check(holster!=null && holster.gameObject.activeSelf && !c.FieldWorld.LanternHeld,"Idle lamp hangs at the waist after switching away");
+                Check(c.LanternOn && light.enabled && Vector3.Distance(light.transform.position,holster.TransformPoint(FishingFieldWorld.LanternLightPoint))<.002f,"switching tools keeps the waist light on at its actual chamber");
+                c.LowerFieldTools();c.PresentCharacterFrame();
+                Check(c.LanternOn && light.enabled,"stowing tools for gathering does not extinguish the belt light");
+                Check(c.ToggleLantern(),"dedicated switch works without selecting the lantern");c.PresentCharacterFrame();
+                var waistBlock=new MaterialPropertyBlock();holster.GetComponent<Renderer>().GetPropertyBlock(waistBlock,1);
+                Check(!c.LanternOn && !light.enabled && !c.FieldWorld.LanternSpill.enabled && ColourEnergy(waistBlock.GetColor("_EmissionColor"))==0,"waist switch extinguishes both real lights and the panes");
+                Check(c.ToggleLantern(),"dedicated switch relights the belt lantern");c.PresentCharacterFrame();
+                Check(light.intensity>=2 && light.shadows==LightShadows.None && c.FieldWorld.LanternSpill.enabled,"mobile-safe point and spill lights keep visible illumination without self-shadowing");
+                c.TogglePause();Check(!c.ToggleLantern() && c.LanternOn,"pause cannot toggle the lamp");c.TogglePause();
+                var edge=new FishingPressEdge();
+                Check(!edge.Step(false,true) && !edge.Step(true,true) && !edge.Step(true,false) && edge.Step(true,true) && !edge.Step(true,true),"switch fires once per press and requires release after blocked input");
                 foreach(bool crouch in new[]{false,true})
                 {
                     c.Shore.SetCrouch(crouch);
@@ -54,6 +65,19 @@ namespace BoatAttack.EditorTools
                 Check(!light.enabled && ColourEnergy(block.GetColor("_EmissionColor"))==0,"F extinguishes direct light and pane emission");
                 Check(c.InspectFieldItem(slot),"explicit inspection can still lift the source lamp");c.PresentCharacterFrame();
                 Check(c.FieldWorld.LanternHeld && !holster.gameObject.activeSelf,"inspection shows exactly one lantern");c.EndItemInspection();
+                c.SelectFieldSlot(0);c.PresentCharacterFrame();
+                Check(c.ToggleLantern(),"independent light can be enabled after inspection");c.PresentCharacterFrame();
+                // The same target must receive actual light from a waist-mounted lamp.
+                plate.transform.SetPositionAndRotation(light.transform.position+c.Shore.Actor.forward*.85f,c.Shore.Actor.rotation);
+                c.viewCamera.transform.LookAt(plate.transform.position);Physics.SyncTransforms();
+                float waistLit=CaptureLightTarget(c,output,"waist-light-on");
+                Check(c.ToggleLantern(),"independent waist switch turns off");c.PresentCharacterFrame();c.viewCamera.transform.LookAt(plate.transform.position);
+                float waistDark=CaptureLightTarget(c,output,"waist-light-off");
+                Check(waistLit>waistDark+.025f,"waist-mounted lamp really illuminates nearby coastal material");
+                Check(c.ToggleLantern(),"lamp on before removing last owned copy");
+                for(int i=0;i<FishingBackpack.SlotCount;i++){var s=c.Career.Backpack.At(i);if(s.item==FieldItem.Lantern)c.Career.Backpack.Discard(i,s.item,s.count);}
+                c.LowerFieldTools();c.PresentCharacterFrame();
+                Check(!c.ToggleLantern() && !c.LanternOn && !light.enabled && !holster.gameObject.activeSelf,"no ghost light or hanging model after removing the last lantern");
             }
             finally
             {

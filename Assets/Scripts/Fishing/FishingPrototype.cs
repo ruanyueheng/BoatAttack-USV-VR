@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.53.0";
+        public const string Version = "0.55.0";
         public FishingHandGames HandGames { get; private set; }
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
@@ -42,7 +42,14 @@ namespace BoatAttack.Fishing
         public Material[] fishMaterials;
         public Material wood, cream, dark, orange, teal, lineMaterial;
         public Boat Player { get; private set; }
-        public FishingCareer Career { get; private set; }
+        private FishingCareer _career;
+        public FishingCareer Career { get=>_career; private set { _career=value;LanternOn=false;_career?.SetCreativeMode(CreativeMode); } }
+        public bool CreativeMode { get; private set; }
+        public void SetCreativeMode(bool enabled)
+        {
+            CreativeMode=enabled;Career?.SetCreativeMode(enabled);
+            Notice(enabled?"创造模式：无限金币购买已开启，背包容量及解锁条件仍有效。":"创造模式已关闭，恢复正常金币计费。",6);
+        }
         public CatchSession Session { get; } = new CatchSession();
         public bool Anchored { get; private set; }
         public USVBoost Boost { get; } = new USVBoost();
@@ -514,7 +521,7 @@ namespace BoatAttack.Fishing
                 if(!hadComponent && Career.Expedition.Has(FishingExpedition.ComponentFound))Hands.PresentPickup();
                 return;
             }
-            if(!Anchored && SeaMarket!=null && SeaMarket.TryInteract())return; // V044 海上集市船：注视货品按 E / A 交易
+            if(SeaMarket!=null && SeaMarket.TryInteract())return;
             UpdateNearestSpot();
             if(Anchored){if(Session.Phase==CatchPhase.Landing)Scoop();return;}
             if(AtHarbor){int voyage=Islands.CompleteAtHarbor();int survey=ClaimShoreRewards();if(Career.OrderReady)DeliverOrder();else if((survey==0 && voyage==0) || Career.SaleValue>0)Sell();return;}
@@ -601,7 +608,7 @@ namespace BoatAttack.Fishing
                 Fleet.Refresh();Save();if(track==UpgradeTrack.Hold)RefreshHold();ActionAudio?.Detail("ShopPurchase",ExplorerPosition+Vector3.up*.7f);Effects?.Celebrate(ExplorerPosition+Vector3.up*.3f);WorldAudio?.Play("RareShimmer",ExplorerPosition+Vector3.up*.7f,.4f);
                 int level=Career.Level(track);
                 if(ShopOpen)Hands.ReachGesture(Shore.Character.HandReferencePosition+Shore.Actor.forward*.28f);
-                Notice(FishingText.UpgradeName(track)+" 升至 Lv."+level+" · "+FishingText.UpgradeEffect(track,level)+" · 花费 "+cost+" 金币，余额 "+Career.Coins,7f);
+                Notice(FishingText.UpgradeName(track)+" 升至 Lv."+level+" · "+FishingText.UpgradeEffect(track,level)+" · "+(CreativeMode?"创造模式免费购买":"花费 "+cost+" 金币，余额 "+Career.Coins),7f);
             }
             else Notice("需要 "+cost+" 金币。先捕鱼、返港出售或交付委托吧。");
             return ok;

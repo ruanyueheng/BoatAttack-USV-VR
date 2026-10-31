@@ -16,6 +16,36 @@ namespace BoatAttack.EditorTools
         public static void Run(FishingPrototype c)
         {
             var comfort=c.XRComfort;Check(comfort!=null,"XR comfort component is built");
+            var creative=new FishingCareer();
+            Check(!creative.CreativeMode && !creative.Upgrade(UpgradeTrack.Line),"Normal zero wallet cannot buy an upgrade");
+            creative.SetCreativeMode(true);
+            Check(creative.CoinDisplay=="∞" && creative.Upgrade(UpgradeTrack.Line) && creative.Coins==0,"Creative upgrade succeeds without minting or spending real coins");
+            Check(creative.BuyHuntingRifle() && creative.BuySupply(1) && creative.BuyFarmSeeds() && creative.Coins==0,"Creative rifle, supplies and seeds share the free-purchase policy");
+            Check(!creative.BuyHuntingRifle() && !creative.BuySupply(-1) && !creative.SpendCoins(-1),"Creative mode keeps duplicate and invalid purchase guards");
+            Check(FishingCareer.TryRestore(creative.Snapshot(),out var restored) && restored.Coins==0 && !restored.CreativeMode && restored.Backpack.Count(FieldItem.HuntingRifle)==1,"Snapshot retains actual wallet and purchased gear without persisting creative mode");
+            creative.SetCreativeMode(false);Check(!creative.Upgrade(UpgradeTrack.Reel) && creative.Coins==0,"Turning creative mode off restores normal payment rules");
+            foreach(bool left in new[]{true,false})
+            {
+                string key=left?"FishingXR.LeftPalmXY":"FishingXR.RightPalmXY";
+                bool existed=PlayerPrefs.HasKey(key);float previous=PlayerPrefs.GetFloat(key);
+                try
+                {
+                    PlayerPrefs.DeleteKey(key);Check(FishingHands.ControllerRoll(left)==30,"Default wrist roll compensates the reported 30 degree left tilt");
+                    var tracked=Quaternion.Euler(17,64,-12);
+                    var frame=Quaternion.Euler(0,64,0);
+                    var correction=FishingHands.AlignControllerRotation(left,tracked,frame)*Quaternion.Inverse(tracked);
+                    Check(Quaternion.Angle(correction,Quaternion.AngleAxis(30,frame*Vector3.forward))<.1f,"Side tilt uses character XY plane rather than the tracked controller axis");
+                    var down=Quaternion.Euler(90,0,0);
+                    Check(Quaternion.Angle(FishingHands.AlignControllerRotation(left,down,frame)*Quaternion.Inverse(down),correction)<.1f,"Pointing a controller down cannot turn XY calibration into XZ yaw");
+                    Check(Vector3.Distance(correction*(frame*Vector3.forward),frame*Vector3.forward)<.001f,"XY side tilt preserves the character forward axis");
+                    FishingHands.SetControllerRoll(left,-15);
+                    Check(FishingHands.ControllerRoll(left)==-15,"Hand calibration supports reversing the correction");
+                    FishingHands.SetControllerRoll(left,float.NaN);Check(FishingHands.ControllerRoll(left)==-15,"Invalid calibration does not corrupt saved alignment");
+                    FishingHands.SetControllerRoll(left,200);Check(FishingHands.ControllerRoll(left)==90,"Calibration stays within its supported angle range");
+                }
+                finally{if(existed)PlayerPrefs.SetFloat(key,previous);else PlayerPrefs.DeleteKey(key);PlayerPrefs.Save();}
+            }
+            Check(Mathf.Abs(FishingFleet.Power(0)-14.3f)<.001f && Mathf.Abs(FishingFleet.SpeedLimit(2)-22.1f)<.001f,"Travel tuning increases boat power and speed limits by thirty percent");
             for(int i=0;i<60;i++){typeof(FishingXRComfort).GetMethod("Update",Private).Invoke(comfort,null);typeof(FishingXRHints).GetMethod("LateUpdate",Private).Invoke(c.GetComponent<FishingXRHints>(),null);}
             Check(true,"Sixty non-XR comfort and hint frames run without exceptions");
             var keys=new[]{FishingXRComfort.TurnPreference,"FishingXR.Teleport","FishingXR.Vignette","FishingXR.Speed","FishingXR.GustComfort"};
@@ -24,7 +54,9 @@ namespace BoatAttack.EditorTools
             {
                 foreach(var k in keys)PlayerPrefs.DeleteKey(k);
                 Check(FishingXRComfort.TurnMode==FishingXRComfort.Turn.Smooth && !FishingXRComfort.Teleport && FishingXRComfort.Vignette==2 && FishingXRComfort.GustComfort,"Defaults: smooth turn, smooth walk, medium vignette, gusts never push the body");
-                Check(FishingXRComfort.WalkSpeed<=1.6f && FishingXRComfort.Ramp(Vector2.zero,Vector2.up,.1f,false).magnitude<=.41f,"Walk speed capped at 1.6 m/s and full speed needs at least 0.25 s (acceleration cap)");
+                Check(Mathf.Abs(FishingXRComfort.WalkSpeed-2.2f)<.001f && FishingXRComfort.Ramp(Vector2.zero,Vector2.up,.1f,false).magnitude<=.41f,"Default travel speed is 2.2 m/s while stick acceleration remains capped");
+                FishingXRComfort.SpeedLevel=0;Check(Mathf.Abs(FishingXRComfort.WalkSpeed-1.3f)<.001f,"Slow travel option remains available");
+                FishingXRComfort.SpeedLevel=2;Check(Mathf.Abs(FishingXRComfort.WalkSpeed-3f)<.001f,"Fast travel option is 3 m/s");
                 FishingXRComfort.Teleport=true;
                 Check(FishingXRComfort.Ramp(Vector2.zero,Vector2.up,1,true)==Vector2.zero && FishingXRComfort.Ramp(Vector2.zero,Vector2.up,1,false)==Vector2.up,"Teleport mode removes stick translation, except on ladders and in water");
                 FishingXRComfort.TurnMode=FishingXRComfort.Turn.Snap45;Check(FishingXRComfort.SnapDegrees==45,"45° snap turn option");
@@ -87,7 +119,7 @@ namespace BoatAttack.EditorTools
                     {
                         type.GetMethod("UpdatePagePointer",Private).Invoke(notebook,new object[]{0,false});
                         var detail=(Text)type.GetField("_pageDetail",Private).GetValue(notebook);
-                        Check(detail.gameObject.activeSelf && detail.preferredHeight<=detail.rectTransform.rect.height,"操作说明 detail lists every key of a context without overflow");
+                        Check(detail.gameObject.activeSelf && detail.preferredHeight<=detail.rectTransform.rect.height,"操作说明 detail lists every key of a context without overflow: "+detail.preferredHeight+" / "+detail.rectTransform.rect.height);
                         FishingXRPresentationValidation.CaptureCanvas(screen,Path.Combine(evidence,"notebook-controls-detail.png"));
                         type.GetMethod("UpdatePagePointer",Private).Invoke(notebook,new object[]{-1,false});
                     }

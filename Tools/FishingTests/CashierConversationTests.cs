@@ -19,8 +19,9 @@ internal static class CashierConversationTests
         dialogue.Choose(0);check(dialogue.Speech(career,false).Contains("铁镐头 ×1") && dialogue.Speech(career,false).Contains("木棍 ×2"),"Cashier tool costs derive from current production recipe data");
         dialogue.Begin(false);dialogue.Choose(2);dialogue.Choose(2);
         check(dialogue.Topic==CashierTopic.Lantern && dialogue.Speech(career,false).Contains("铁锭 ×2") && dialogue.Speech(career,false).Contains("玻璃 ×2") && dialogue.Speech(career,false).Contains("木炭 ×1"),"Cashier lamp recipe derives its real metal, glass and charcoal inputs");
-        check(dialogue.Speech(career,false).Contains("F 点亮") && dialogue.Speech(career,true).Contains("右扳机"),"Cashier controls are specific to desktop or Pico");
-        check(dialogue.Speech(career,true).Contains("腰间提灯") && dialogue.Speech(career,true).Contains("右握把") && dialogue.Speech(career,true).Contains("松手挂回"),"Cashier explains lifting and returning the actual waist lantern");
+        string desktopLamp=dialogue.Speech(career,false),xrLamp=dialogue.Speech(career,true);
+        check(desktopLamp.Contains("L") && desktopLamp.Contains("F") && xrLamp.Contains("左扳机") && xrLamp.Contains("右握把") && !xrLamp.Contains("F"),"Cashier explains the desktop lantern keys and dedicated Pico switch/grip controls");
+        check(xrLamp.Contains("腰间") && xrLamp.Contains("提环") && xrLamp.Contains("右握把") && xrLamp.Contains("松手挂回"),"Cashier explains lifting and returning the actual waist lantern");
         dialogue.Begin(false);dialogue.Choose(3);dialogue.Choose(1);
         check(dialogue.Topic==CashierTopic.Home && dialogue.Choose(0)==CashierConversationAction.NavigateHome,"Cashier can request home's actual waypoint");
         dialogue.Choose(1);var sailing=dialogue.Speech(career,true);

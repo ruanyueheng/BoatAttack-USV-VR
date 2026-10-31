@@ -21,6 +21,7 @@ namespace BoatAttack.Fishing
         private readonly RawImage[] _icons=new RawImage[9];
         private readonly Action[] _actions=new Action[9];
         private readonly FishingPressEdge _menu=new FishingPressEdge(),_primary=new FishingPressEdge(),_board=new FishingPressEdge(),_slot=new FishingPressEdge(),_trigger=new FishingPressEdge();
+        private readonly FishingPressEdge _lanternSwitch=new FishingPressEdge();
         private LineRenderer _ray;
         private int _page,_offset;
         private int _presentedPage=-1;
@@ -184,7 +185,7 @@ namespace BoatAttack.Fishing
             _canvas.gameObject.SetActive(true);_c.WorkshopWorld.SelectNearby();Refresh();
         }
         public void Close(){_c?.CloseClassroomMenu();CloseSaveSlots();bool wasOpen=IsOpen;IsOpen=false;_discardQuote="";_bagSelection=-1;if(_canvas!=null)_canvas.gameObject.SetActive(false);if(_ray!=null)_ray.enabled=false;ResetInput();if(wasOpen)_c?.Hands?.ResetInteraction();}
-        public void ResetInput(){_menu.Reset();_primary.Reset();_board.Reset();_slot.Reset();_trigger.Reset();_turnReady=false;_tipSample=false;MotionReady=false;ResetPageGestures();_guideLeftTrigger.Reset();_guideLeftGrip.Reset();_guideRightGrip.Reset();_guideBoost.Reset();if(_homeDecor!=null)UpdateHomePointer(-1,false);}
+        public void ResetInput(){_menu.Reset();_primary.Reset();_board.Reset();_slot.Reset();_trigger.Reset();_lanternSwitch.Reset();_turnReady=false;_tipSample=false;MotionReady=false;ResetPageGestures();_guideLeftTrigger.Reset();_guideLeftGrip.Reset();_guideRightGrip.Reset();_guideBoost.Reset();if(_homeDecor!=null)UpdateHomePointer(-1,false);}
         private bool ReArmMotion(Vector2 leftAxis,Vector2 rightAxis,bool boost)
         {
             if(!MotionReady && leftAxis.sqrMagnitude<.18f*.18f && rightAxis.sqrMagnitude<.18f*.18f && !boost)MotionReady=true;
@@ -333,7 +334,7 @@ namespace BoatAttack.Fishing
                 Set(4,"声音混音\nBGM / 音效 / 环境",()=>Open(20));
                 Set(5,"完整手柄教学\n安全练习全部按键",BeginGuide);
                 Set(6,"日期与物资",OpenClassroomPage);
-                Set(7,"序章 / 环境特效 / 救援",()=>Open(16));Set(8,"返回首页",()=>Open());
+                Set(7,"创造/帮助",()=>Open(CreativePage));Set(8,"手部/退出",()=>Open(HandAlignmentPage));
             }
             else if(_page==15)
             {
@@ -357,6 +358,19 @@ namespace BoatAttack.Fishing
             else if(_page==22)RefreshComfortPage();
             else if(_page==23)RefreshControlsPage();
             else if(_page==ClassroomPage)RefreshClassroomPage();
+            else if(_page==HandAlignmentPage)RefreshHandAlignment();
+            else if(_page==CreativePage)
+            {
+                _status.text="创造模式 · 无限金币测试\n当前："+(_c.CreativeMode?"开启":"关闭")+"\n真实金币："+_c.Career.Coins+"\n开启后购买不扣金币；关闭恢复正常计费。\n背包容量及解锁条件仍有效。\n测试获得的物品与升级正常保存。\n重新启动游戏默认关闭。";
+                Set(0,"创造模式："+(_c.CreativeMode?"开\n点击关闭":"关\n点击开启"),()=>{_c.SetCreativeMode(!_c.CreativeMode);Refresh();});
+                Set(1,"序章 / 环境特效 / 救援",()=>Open(16));Set(7,"返回设置",()=>Open(14));Set(8,"返回首页",()=>Open());
+            }
+            else if(_page==QuitPage)
+            {
+                _status.text="退出游戏？\n将尝试自动保存当前航程。\n尚未入箱的鱼获不会计入存档。\n取消后可继续游戏。\n"+_c.SaveWarning;
+                Set(0,"确认退出游戏",()=>_c.QuitGame());Set(1,"取消 / 返回设置",()=>Open(14));Set(7,"返回设置",()=>Open(14));
+                Set(8,"返回首页",()=>Open());
+            }
             else if(_page==LettersPage)RefreshLettersPage();
             else if(_page==AlbumPage)RefreshAlbumPage();
             else if(_page==PhotoCodexPage)RefreshPhotoCodexPage();
@@ -388,7 +402,7 @@ namespace BoatAttack.Fishing
         }
         private static readonly string[][] GuideCards={
             new[]{"右 A · 互动\n靠近目标 / 对话\n持竿：抛竿 / 提竿","右 B · 手册\n打开 / 关闭\n也可收起事务面板","左 X · 上下船\n靠近岸边且低速\n岸上返回泊船","左 Y · 换装备\n依次切换 1–9 格\n背包可换入物品","左摇杆\n船上前进 / 倒车\n岸上各方向行走","右摇杆\n船上转向\n岸上默认平滑转身\n机关中转动转盘"},
-            new[]{"右扳机\n射线点击界面\n岸上使用工具\n钓鱼：按住蓄力，松开抛竿","左扳机\n船上刹车\n岸上无额外功能","右握把\n靠近鱼竿握住\n松开后放下\n靠近鱼获抓取\n靠近腰间提灯拿起","左握把\n靠近轮柄握住\n转动手腕收线\n靠近鱼获抓取","按下左摇杆\n向前航行时加速\n留意过热冷却","按下右摇杆\n钓鱼：收竿起航\n岸上：跳跃 / 攀低台"},
+            new[]{"右扳机\n射线点击界面\n岸上使用工具\n钓鱼：按住蓄力，松开抛竿","左扳机\n船上刹车\n岸上开关腰间提灯","右握把\n靠近鱼竿握住\n松开后放下\n靠近鱼获抓取\n靠近腰间提灯拿起，松手挂回","左握把\n靠近轮柄握住\n转动手腕收线\n靠近鱼获抓取","按下左摇杆\n向前航行时加速\n留意过热冷却","按下右摇杆\n钓鱼：收竿起航\n岸上：跳跃 / 攀低台"},
             new[]{"钓鱼\n右扳机按住蓄力，松开抛竿\n咬钩按右扳机 / A 提竿\n按下右摇杆收竿起航","搏鱼\n按住右扳机或左握把转轮收线\n持竿手反向横移控鱼\n跃水松开扳机和左握把","抄网 / 鱼获\n左手抄网套住举起\n握把拿鱼慢放鱼箱\n事务面板存放 / 放生","岸上探索\nA 与居民 / 机关互动\nY 换镐、猎枪或灯\n右扳机使用工具","制作 / 锻造\n右扳机放置设施\n靠近按 A 打开\n手册制作并领取成品","随时求助\nB → 设置重看教学\n校准眼高 / 救援返港\n序章可随时重播"}};
         private void ResetGuidePractice(){_guidePracticed=0;_guideLeftReady=_guideRightReady=false;ResetInput();}
         private bool GuideReady=>_guideLesson==2 || _guidePracticed==31;
@@ -444,7 +458,10 @@ namespace BoatAttack.Fishing
                 slot=bag.Selected;
             }
 
-            _c.SelectFieldSlot(slot);Close();_c.InspectFieldItem(slot);
+            bool lantern=bag.At(slot).item==FieldItem.Lantern;
+            _c.SelectFieldSlot(slot);Close();
+            if(lantern)_c.Notice("提灯已挂在右侧腰间。左扳机开关；右握把靠近提环拿起，松手挂回。",7);
+            else _c.InspectFieldItem(slot);
         }
         public bool Tick(bool allow)
         {
@@ -464,6 +481,10 @@ namespace BoatAttack.Fishing
             bool trigger=FishingXRInput.Trigger(pointer);left.TryGetFeatureValue(CommonUsages.primaryButton,out bool board);left.TryGetFeatureValue(CommonUsages.secondaryButton,out bool slot);
             right.TryGetFeatureValue(CommonUsages.primary2DAxis,out var axis);
             bool action=_primary.Step(rightTracked,primary),boardEdge=_board.Step(leftTracked,board),slotEdge=_slot.Step(leftTracked,slot),click=_trigger.Step(true,trigger);
+            bool lanternReady=leftTracked && rightTracked && MotionReady && !IsOpen && _c.Ashore && !_c.Paused
+                && !_c.StoryBlocksGameplay && !_c.ShopBlocksGameplay && !_c.WorldActionBusy && !_c.InspectingItem
+                && !_c.XRSeat.HeadBlocked && !_c.Hands.HoldingRod && !_c.Shore.Swimming && !_c.Shore.Climbing;
+            bool lanternClick=_lanternSwitch.Step(lanternReady,FishingXRInput.Trigger(left));
             if(_menu.Step(true,menu)){if(_c.Expedition.Aligning)_c.Expedition.Cancel();else if(IsOpen)Close();else if(_c.DockConsole.Visible)_c.DockConsole.Hide();else Open();return true;}
             if(IsOpen)
             {
@@ -508,6 +529,7 @@ namespace BoatAttack.Fishing
             if(!ReArmMotion(leftAxis,axis,boost)){_c.Notice("请松开双摇杆和左摇杆按压，再继续移动或使用工具。",2);return true;}
             if(_c.Paused){if(action)_c.TogglePause();return true;}
             if(_c.Expedition.Aligning){_c.Expedition.Dial.Rotate(axis.x*Time.unscaledDeltaTime*45);if(action)_c.Expedition.Confirm();return true;}
+            if(lanternClick){_c.ToggleLantern();return true;}
             if(Mathf.Abs(axis.x)<.25f)_turnReady=true;
             if(_c.Ashore && FishingXRComfort.TurnMode==FishingXRComfort.Turn.Smooth){_c.XRSeat.SnapTurn(FishingXRComfort.SmoothTurnDegrees(axis.x,Time.deltaTime));}
             else if(_c.Ashore && _turnReady && Mathf.Abs(axis.x)>.7f){_c.XRSeat.SnapTurn(Mathf.Sign(axis.x)*FishingXRComfort.SnapDegrees);_turnReady=false;}
@@ -515,6 +537,7 @@ namespace BoatAttack.Fishing
             if(slotEdge){_c.SelectFieldSlot((_c.Career.Backpack.Selected+1)%9);return true;}
             if(action && !_c.XRSeat.HeadBlocked)
             {
+                if(!_c.Ashore && _c.SeaMarket.TryInteract())return true;
                 if(!_c.Ashore && _c.Anchored)
                 {if(_c.Hands.HoldRodForButtons()){if(_c.Session.Phase==CatchPhase.Bite)_c.Hook();else if(_c.CanChangeBait)_c.Cast();}}
                 else if(_c.Hands.HoldingRod){if(_c.Session.Phase==CatchPhase.Bite)_c.Hook();else _c.Cast();}
