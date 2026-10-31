@@ -25,7 +25,7 @@ namespace BoatAttack.Fishing
         }
         private void RefreshHandAlignment()
         {
-            _status.text="手部倾角对齐（自动保存）\n左手："+FishingHands.ControllerRoll(true).ToString("0")+"°\n右手："+FishingHands.ControllerRoll(false).ToString("0")+"°\n正值向左倾，负值向右倾。\n放松手腕，调整到虚拟手与现实手一致。\n校准时可收起手册观察手和持握工具。";
+            _status.text="手部 XY 平面对齐（自动保存）\nX 左右，Y 上下，Z 角色前后。\n绕角色 Z 轴左右侧倾。\n左手："+FishingHands.ControllerRoll(true).ToString("0")+"°\n右手："+FishingHands.ControllerRoll(false).ToString("0")+"°\n正值向左，负值向右。\n放松手腕，收起手册检查持握效果。";
             Set(0,"左手向左 +5°",()=>{FishingHands.SetControllerRoll(true,FishingHands.ControllerRoll(true)+5);Refresh();});
             Set(1,"左手向右 -5°",()=>{FishingHands.SetControllerRoll(true,FishingHands.ControllerRoll(true)-5);Refresh();});
             Set(2,"右手向左 +5°",()=>{FishingHands.SetControllerRoll(false,FishingHands.ControllerRoll(false)+5);Refresh();});

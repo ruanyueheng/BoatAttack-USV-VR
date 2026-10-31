@@ -247,7 +247,7 @@ namespace BoatAttack.Fishing
                     text = ok ? FishingSeaMarket.BaitNames[season] + "：今天之内抛竿更容易遇到稀有鱼。" : "金币不够。"; break;
                 case MarketGoods.Seeds:
                     var item = season < 2 ? FieldItem.TurnipSeeds : FieldItem.FishFeed;
-                    ok = career.Coins >= FishingSeaMarket.SeedPrice && career.Backpack.TryAdd(item, 3) && career.SpendSeaCoins(FishingSeaMarket.SeedPrice);
+                    ok = career.CanAfford(FishingSeaMarket.SeedPrice) && career.Backpack.TryAdd(item, 3) && career.SpendSeaCoins(FishingSeaMarket.SeedPrice);
                     text = ok ? "买下 " + FishingSeaMarket.Name(g, season, festival) + "。" : "金币不够，或者背包满了。"; break;
                 case MarketGoods.Souvenir:
                 case MarketGoods.Keepsake:
@@ -283,8 +283,7 @@ namespace BoatAttack.Fishing
     {
         public bool SpendSeaCoins(int amount)
         {
-            if (amount < 0 || Coins < amount) return false;
-            Coins -= amount; return true;
+            return SpendCoins(amount);
         }
         /// <summary>Sells every pearl-variant catch at double value; returns coins paid.</summary>
         public int SellRareToMarket()

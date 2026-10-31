@@ -276,6 +276,17 @@ namespace BoatAttack.Fishing
         private static readonly int[,] UpgradeCosts = { { 30, 90 }, { 40, 100 }, { 50, 120 }, { 80, 180 }, { 65, 150 }, { 90, 220 } };
 
         public int Coins { get; private set; }
+        // Session-only purchasing policy; never replaces or serializes the real wallet.
+        public bool CreativeMode { get; private set; }
+        public string CoinDisplay => CreativeMode ? "∞" : Coins.ToString();
+        public void SetCreativeMode(bool enabled) => CreativeMode=enabled;
+        public bool CanAfford(int amount) => amount>=0 && (CreativeMode || Coins>=amount);
+        public bool SpendCoins(int amount)
+        {
+            if(!CanAfford(amount))return false;
+            if(!CreativeMode)Coins-=amount;
+            return true;
+        }
         public FishingExpedition Expedition { get; private set; } = new FishingExpedition();
         public int ShoreTaskMask { get; private set; }
         public int ShoreRewardMask { get; private set; }
@@ -385,8 +396,8 @@ namespace BoatAttack.Fishing
         public bool Upgrade(UpgradeTrack track)
         {
             int cost = NextUpgradeCost(track);
-            if (cost <= 0 || Coins < cost || SpecializationBlocked(track)) return false;
-            Coins -= cost;
+            if (cost <= 0 || !CanAfford(cost) || SpecializationBlocked(track)) return false;
+            SpendCoins(cost);
             if (track == UpgradeTrack.Line) LineLevel++;
             else if (track == UpgradeTrack.Reel) ReelLevel++;
             else if (track == UpgradeTrack.Hold) HoldLevel++;

@@ -130,6 +130,7 @@ namespace BoatAttack.Fishing
             QuietRule(r.x,r.y+36,r.width-36);
             string[] tabs={"操作","画面","声音混音"};
             for(int i=0;i<3;i++)if(SeaButton(new Rect(r.x+i*170,r.y+58,150,50),tabs[i],SettingsTab==i,true,26))SettingsTab=i;
+            if(SeaButton(new Rect(r.x+550,r.y+58,390,50),"创造模式："+(c.CreativeMode?"开启 · 无限金币":"关闭"),c.CreativeMode,true,23))c.SetCreativeMode(!c.CreativeMode);
             float x=r.x,y=r.y+152;
             if(SettingsTab==0)
             {

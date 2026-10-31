@@ -109,8 +109,8 @@ namespace BoatAttack.Fishing
         }
         public bool UpgradeAquarium()
         {
-            if(AquariumLevel!=1 || !Lore.BlueprintUnlocked(2) || Coins<AquariumUpgradeCost)return false;
-            Coins-=AquariumUpgradeCost;_ecology.aquariumLevel=2;return true;
+            if(AquariumLevel!=1 || !Lore.BlueprintUnlocked(2) || !CanAfford(AquariumUpgradeCost))return false;
+            SpendCoins(AquariumUpgradeCost);_ecology.aquariumLevel=2;return true;
         }
         public bool BuildAnimalHabitat(LandAnimalKind kind)
         {
@@ -119,8 +119,8 @@ namespace BoatAttack.Fishing
         }
         public bool UpgradeAnimalHabitat(LandAnimalKind kind)
         {
-            if(!AnimalKindValid(kind) || HabitatLevel(kind)!=1 || !Lore.BlueprintUnlocked(1) || Coins<HabitatUpgradeCost)return false;
-            Coins-=HabitatUpgradeCost;_ecology.habitatLevels[(int)kind]=2;return true;
+            if(!AnimalKindValid(kind) || HabitatLevel(kind)!=1 || !Lore.BlueprintUnlocked(1) || !CanAfford(HabitatUpgradeCost))return false;
+            SpendCoins(HabitatUpgradeCost);_ecology.habitatLevels[(int)kind]=2;return true;
         }
 
         public bool DisplayFish(string id)

@@ -199,7 +199,7 @@ namespace BoatAttack.Fishing
             _status.fontSize=23;
             _map.gameObject.SetActive(_page==12 && _map.texture!=null);
             var day=_c.Career.Calendar;var bag=_c.Career.Backpack;
-            _status.text=BayClimate.Name(_c.Weather.Climate.Current)+"\n金币 "+_c.Career.Coins+"\n行囊 "+bag.UsedSlots+" / 36\n装备："+FishingBackpack.Name(bag.Equipped)+"\n"+_c.VisibleMessage;
+            _status.text=BayClimate.Name(_c.Weather.Climate.Current)+"\n金币 "+_c.Career.CoinDisplay+"\n行囊 "+bag.UsedSlots+" / 36\n装备："+FishingBackpack.Name(bag.Equipped)+"\n"+_c.VisibleMessage;
             for(int i=0;i<9;i++)Set(i,"—",null);
             if(_page==21)RefreshHomeEcology();
             else if(_page==0)
@@ -261,7 +261,7 @@ namespace BoatAttack.Fishing
             }
             else if(_page==5)
             {
-                _status.text="海湾百货 · "+FishingSupplies.CategoryName(_offset/FishingSupplies.CategorySize)+" · 金币 "+_c.Career.Coins+"\n港口或店内柜台可购买\n用品进入背包；船舶升级立即生效\n"+_c.Message;
+                _status.text="海湾百货 · "+FishingSupplies.CategoryName(_offset/FishingSupplies.CategorySize)+" · 金币 "+_c.Career.CoinDisplay+"\n港口或店内柜台可购买\n用品进入背包；船舶升级立即生效\n"+_c.Message;
                 for(int i=0;i<6;i++)
                 {
                     int product=_offset+i;if(product>=FishingSupplies.Items.Length)break;
@@ -325,7 +325,7 @@ namespace BoatAttack.Fishing
                 Set(4,"声音混音\nBGM / 音效 / 环境",()=>Open(20));
                 Set(5,"完整手柄教学\n安全练习全部按键",BeginGuide);
                 Set(6,"手部对齐 / 校准眼高",()=>Open(34));
-                Set(7,"序章 / 环境特效 / 救援",()=>Open(16));Set(8,"退出游戏",()=>Open(35));
+                Set(7,"创造模式 / 航行帮助",()=>Open(36));Set(8,"退出游戏",()=>Open(35));
             }
             else if(_page==15)
             {
@@ -349,6 +349,12 @@ namespace BoatAttack.Fishing
             else if(_page==22)RefreshComfortPage();
             else if(_page==23)RefreshControlsPage();
             else if(_page==34)RefreshHandAlignment();
+            else if(_page==36)
+            {
+                _status.text="创造模式 · 无限金币测试\n当前："+(_c.CreativeMode?"开启":"关闭")+"\n真实金币："+_c.Career.Coins+"\n开启后购买不扣金币；关闭恢复正常计费。\n背包容量及解锁条件仍有效。\n测试获得的物品与升级正常保存。\n重新启动游戏默认关闭。";
+                Set(0,"创造模式："+(_c.CreativeMode?"开\n点击关闭":"关\n点击开启"),()=>{_c.SetCreativeMode(!_c.CreativeMode);Refresh();});
+                Set(1,"序章 / 环境特效 / 救援",()=>Open(16));Set(7,"返回设置",()=>Open(14));Set(8,"返回首页",()=>Open());
+            }
             else if(_page==35)
             {
                 _status.text="退出游戏？\n将尝试自动保存当前航程。\n尚未入箱的鱼获不会计入存档。\n取消后可继续游戏。";
@@ -367,7 +373,7 @@ namespace BoatAttack.Fishing
             else if(_page==SurveyPage)RefreshSurvey();
             else
             {
-                _status.text="二级载重 / 动力 / 操控专精三选一\n其他两项可升至一级；旧升级保留\n金币 "+_c.Career.Coins;
+                _status.text="二级载重 / 动力 / 操控专精三选一\n其他两项可升至一级；旧升级保留\n金币 "+_c.Career.CoinDisplay;
                 for(int i=0;i<6;i++){var track=(UpgradeTrack)i;bool locked=_c.Career.SpecializationBlocked(track);Set(i,FishingText.UpgradeName(track)+" Lv."+_c.Career.Level(track)+"\n"+(locked?"专精互斥":_c.Career.NextUpgradeCost(track)+" 金币"),locked?null:(Action)(()=>{_c.BuyUpgrade(track);Refresh();}));}
                 Set(6,"购买探索用品",()=>Open(5));
                 Set(7,_c.TackleShop.NearCounter?"店员介绍 / 故事":"返回首页",_c.TackleShop.NearCounter?(Action)(()=>_c.Residents.Talk(4)):(Action)(()=>Open()));Set(8,"关闭",Close);

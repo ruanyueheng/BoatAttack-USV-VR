@@ -43,8 +43,8 @@ namespace BoatAttack.Fishing
         public static int HuntingRiflePrice=>3*UpgradeCost(UpgradeTrack.Line,0);
         public bool BuyHuntingRifle()
         {
-            if(Coins<HuntingRiflePrice || Backpack.Count(FieldItem.HuntingRifle)>0 || !Backpack.TryAdd(FieldItem.HuntingRifle,1))return false;
-            Coins-=HuntingRiflePrice;return true;
+            if(!CanAfford(HuntingRiflePrice) || Backpack.Count(FieldItem.HuntingRifle)>0 || !Backpack.TryAdd(FieldItem.HuntingRifle,1))return false;
+            SpendCoins(HuntingRiflePrice);return true;
         }
         public HuntedAnimalData HuntedAnimal(int id)
         {

@@ -74,7 +74,7 @@ namespace BoatAttack.Fishing
                 case FishingDockAction.MarkOrder:return _c.AtHarbor && !_c.Career.OrderMarked;
                 case FishingDockAction.Deliver:return _c.AtHarbor && _c.Career.OrderReady;
                 case FishingDockAction.Sell:return _c.AtHarbor && _c.Career.SaleValue>0;
-                case FishingDockAction.UpgradeLine:return _c.AtHarbor && _c.Career.NextUpgradeCost(UpgradeTrack.Line)>0 && _c.Career.Coins>=_c.Career.NextUpgradeCost(UpgradeTrack.Line);
+                case FishingDockAction.UpgradeLine:return _c.AtHarbor && _c.Career.NextUpgradeCost(UpgradeTrack.Line)>0 && _c.Career.CanAfford(_c.Career.NextUpgradeCost(UpgradeTrack.Line));
                 case FishingDockAction.NextWaypoint:return !_c.HasPendingCatch;
                 case FishingDockAction.Anchor:return !_c.Ashore && !_c.HasPendingCatch && (_c.Anchored || (!_c.AtHarbor && _c.SpotDistance<=22 && _c.Speed<=3));
                 case FishingDockAction.Store:return _c.HasPendingCatch;
