@@ -74,10 +74,19 @@ namespace BoatAttack.EditorTools
                 Check(c.ToggleLantern(),"independent waist switch turns off");c.PresentCharacterFrame();c.viewCamera.transform.LookAt(plate.transform.position);
                 float waistDark=CaptureLightTarget(c,output,"waist-light-off");
                 Check(waistLit>waistDark+.025f,"waist-mounted lamp really illuminates nearby coastal material");
+                c.StowLantern();c.PresentCharacterFrame();
+                Check(!c.LanternEquipped && !c.LanternOn && !holster.gameObject.activeSelf && !light.enabled && !c.FieldWorld.LanternSpill.enabled && c.Career.Backpack.Count(FieldItem.Lantern)>0,"stowing removes the waist model and both lights while retaining the owned item");
+                c.SelectFieldSlot(slot);c.PresentCharacterFrame();
+                Check(c.LanternEquipped,"equipping a stored lantern restores its wearable state");
+                c.CycleFieldSlot();c.PresentCharacterFrame();
+                Check(!c.LanternEquipped && !c.LanternOn && !holster.gameObject.activeSelf && c.Career.Backpack.Equipped!=FieldItem.Lantern,"the actual Y equipment action stows the selected lantern and switches away without re-equipping it");
+                c.SelectFieldSlot(slot);
                 Check(c.ToggleLantern(),"lamp on before removing last owned copy");
                 for(int i=0;i<FishingBackpack.SlotCount;i++){var s=c.Career.Backpack.At(i);if(s.item==FieldItem.Lantern)c.Career.Backpack.Discard(i,s.item,s.count);}
                 c.LowerFieldTools();c.PresentCharacterFrame();
                 Check(!c.ToggleLantern() && !c.LanternOn && !light.enabled && !holster.gameObject.activeSelf,"no ghost light or hanging model after removing the last lantern");
+                Check(Mathf.Abs(FishingXRInput.HapticAmplitude(.3f)-.51f)<.001f && Mathf.Abs(FishingXRInput.HapticSeconds(.04f)-.06f)<.001f,"controller feedback is 1.7 times stronger and 1.5 times longer");
+                Check(FishingXRInput.HapticAmplitude(1)==.95f && FishingXRInput.HapticAmplitude(float.NaN)==0 && FishingXRInput.HapticSeconds(float.PositiveInfinity)==0 && FishingXRInput.HapticAmplitude(-1)==0,"feedback clamps strong pulses and rejects invalid inputs");
             }
             finally
             {

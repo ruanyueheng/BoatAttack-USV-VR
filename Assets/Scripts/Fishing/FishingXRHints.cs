@@ -19,8 +19,8 @@ namespace BoatAttack.Fishing
             switch(context)
             {
                 case Context.Shore:return left
-                    ?new[]{("Stick",FishingXRComfort.Teleport?"前推瞄准 · 松开瞬移":"行走"),("Grip","移动时按住疾跑"),("Trigger","提灯开关（挂腰也有效）"),("X","上船（靠近泊船）"),("Y","切换装备"),("Menu","手册")}
-                    :new[]{("Stick",FishingXRComfort.TurnName+" · 按下跳跃"),("A","互动 / 对话 / 攀爬"),("Trigger","使用工具 / 确认信标"),("Grip","拾取 / 提灯 / 摇树 / 掀箱盖"),("B","手册")};
+                    ?new[]{("Stick",FishingXRComfort.Teleport?"前推瞄准 · 松开瞬移":"行走"),("Grip","移动时按住疾跑"),("Trigger","移动时按住疾跑"),("X","上船（靠近泊船）"),("Y","切换装备 · 收回当前提灯"),("Menu","手册")}
+                    :new[]{("Stick",FishingXRComfort.TurnName+" · 按下跳跃"),("A","互动 / 对话 / 攀爬"),("Trigger","使用工具 / 提灯开关 / 确认信标"),("Grip","拾取 / 提灯 / 摇树 / 掀箱盖"),("B","手册")};
                 case Context.Boat:return left
                     ?new[]{("Stick","前推油门 · 后拉倒车"),("Grip","按住加速"),("Click","按下左摇杆亦可加速"),("Trigger","刹车"),("X","靠岸低速时上岸")}
                     :new[]{("Stick","左右掌舵"),("A","钓点驻钓 / 互动"),("B","手册 / 收起面板")};

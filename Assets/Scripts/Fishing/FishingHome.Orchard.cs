@@ -156,7 +156,7 @@ namespace BoatAttack.Fishing
         private void OrchardHaptic(InputDevice hand,float strength,float duration)
         {
             if(Time.unscaledTime<_orchardHapticAt || !hand.isValid || !hand.TryGetHapticCapabilities(out var cap) || !cap.supportsImpulse)return;
-            hand.SendHapticImpulse(0,Mathf.Clamp(strength,0,.28f),Mathf.Clamp(duration,0,.07f));_orchardHapticAt=Time.unscaledTime+.16f;
+            FishingXRInput.Pulse(hand,Mathf.Clamp(strength,0,.28f),Mathf.Clamp(duration,0,.07f));_orchardHapticAt=Time.unscaledTime+.16f;
         }
         private void OrchardBonk()
         {

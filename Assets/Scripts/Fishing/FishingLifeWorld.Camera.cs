@@ -150,7 +150,7 @@ namespace BoatAttack.Fishing
         private static void Haptic()
         {
             var hand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
-            if (hand.TryGetHapticCapabilities(out var caps) && caps.supportsImpulse) hand.SendHapticImpulse(0, .35f, .05f);
+            if (hand.TryGetHapticCapabilities(out var caps) && caps.supportsImpulse) FishingXRInput.Pulse(hand,.35f, .05f);
         }
         private string SaveToAlbum(byte[] jpg, int entry)
         {

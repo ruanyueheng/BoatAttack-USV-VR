@@ -114,6 +114,27 @@ namespace BoatAttack.EditorTools
                     && c.HasPendingCatch && c.Career.PendingCatch.fish.id==receipt && c.Career.Count==0,"placement leaves the same live fish in the real net without granting it twice");
                 Check(c.Hands.Right.Visible && Vector3.Distance(c.Shore.Character.PalmPosition(false),c.LandingNet.TransformPoint(new Vector3(.05f,.035f,0)))<.035f,"the right hand visibly supports the net after the rod is stowed");
                 FishingV016Validation.Capture(c,output,"live-fish-in-net");
+                // Exercise the real tracked-hand path with synthetic controller poses,
+                // without claiming an attached HMD or sending physical input.
+                Check(c.CatchRig.TryGrabLeftFish(c.ActiveFish.TransformPoint(c.CatchRig.LeftInspectionGrip)),"left grip can take the pending fish back out of its net");
+                var trackedPalm=c.Shore.Character.EyePosition+c.Player.transform.rotation*new Vector3(-.22f,-.12f,.45f);
+                var trackedRotation=c.Player.transform.rotation*Quaternion.Euler(15,25,30);
+                c.CatchRig.ApplyTrackedLeftInspection(trackedPalm,trackedRotation,true,.02f);
+                Check(c.CatchRig.LeftHandInspecting && Vector3.Distance(c.ActiveFish.TransformPoint(c.CatchRig.LeftInspectionGrip),trackedPalm)<.002f,"tracked left inspection attaches the actual fish grip to the calibrated palm");
+                var priorFishRotation=c.ActiveFish.rotation;
+                trackedPalm+=Vector3.right*.15f;trackedRotation*=Quaternion.Euler(0,0,45);
+                c.CatchRig.ApplyTrackedLeftInspection(trackedPalm,trackedRotation,true,.02f);
+                Check(Vector3.Distance(c.ActiveFish.TransformPoint(c.CatchRig.LeftInspectionGrip),trackedPalm)<.002f && Quaternion.Angle(priorFishRotation,c.ActiveFish.rotation)>30,"turning and moving the controller carries the inspected fish without slipping");
+                c.CatchRig.ApplyTrackedLeftInspection(trackedPalm,trackedRotation,false,.02f);
+                Check(c.CatchRig.Location==FishingCatchRig.Place.Tray && c.HasPendingCatch && c.Career.PendingCatch.fish.id==receipt && c.Career.Count==0,"releasing away from the net safely parks the same fish without settling its receipt");
+                Check(c.CatchRig.TryGrabLeftFish(c.ActiveFish.TransformPoint(c.CatchRig.LeftInspectionGrip)),"the same safely parked fish can be grabbed again");
+                c.CatchRig.ApplyTrackedLeftInspection(trackedPalm,trackedRotation,true,0);
+                var trackedMouth=c.LandingNet.TransformPoint(new Vector3(FishingDetailArt.NetMouthOffset,-.13f,0));
+                trackedPalm=trackedMouth+c.ActiveFish.rotation*Vector3.Scale(c.CatchRig.LeftInspectionGrip,c.ActiveFish.lossyScale);
+                c.CatchRig.ApplyTrackedLeftInspection(trackedPalm,trackedRotation,true,0);
+                c.CatchRig.ApplyTrackedLeftInspection(trackedPalm,trackedRotation,false,0);
+                Check(c.CatchRig.Location==FishingCatchRig.Place.Net && c.HasPendingCatch && c.Career.Count==0,"releasing a tracked left-held fish over the mouth returns it to the net exactly once");
+                c.PresentCharacterFrame();
                 InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.F));InputFrame();
                 typeof(FishingPrototype).GetMethod("ReadPendingDesktop",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(c,new object[]{keyboard});
                 Check(c.WorldActionBusy && c.Actions.Kind==FishingActionKind.Store && c.Career.Count==0,

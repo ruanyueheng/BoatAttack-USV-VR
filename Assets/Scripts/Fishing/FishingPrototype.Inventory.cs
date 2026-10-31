@@ -7,18 +7,38 @@ namespace BoatAttack.Fishing
         public bool InventoryOpen { get; private set; }
         public bool BinocularsRaised { get; private set; }
         public bool LanternOn { get; private set; }
+        public bool LanternEquipped { get; private set; }
         private bool _workshopReceipt;
         internal void NotifyWorkshopTransaction(){_workshopReceipt=true;}
         public FishingWorkshopWorld WorkshopWorld { get; private set; }
         public FishingFieldWorld FieldWorld { get; private set; }
         public FishingRifleHunting RifleHunting { get; private set; }
         // Stowing a hand tool must not extinguish the independent belt lantern.
-        public void LowerFieldTools(){BinocularsRaised=false;if(Career==null || Career.Backpack.Count(FieldItem.Lantern)==0)LanternOn=false;}
+        public void LowerFieldTools(){BinocularsRaised=false;if(Career==null || Career.Backpack.Count(FieldItem.Lantern)==0){LanternOn=false;LanternEquipped=false;}}
+        public void StowLantern()
+        {
+            LanternOn=false;LanternEquipped=false;EndItemInspection();FieldWorld?.ClearToolPresentation();
+            WorldAudio?.Play("StorageMove",ExplorerPosition,.3f);
+            Notice("提灯已熄灭并收回背包，右手已腾空。B → 背包可重新装备到腰侧。",5);
+        }
+        public void CycleFieldSlot()
+        {
+            if(Career==null || ShopBlocksGameplay || StoryBlocksGameplay)return;
+            var bag=Career.Backpack;bool stow=bag.Equipped==FieldItem.Lantern && LanternEquipped;
+            if(stow)StowLantern();
+            for(int i=1;i<=FishingBackpack.HotbarCount;i++)
+            {
+                int next=(bag.Selected+i)%FishingBackpack.HotbarCount;
+                if(stow && bag.At(next).item==FieldItem.Lantern)continue;
+                SelectFieldSlot(next);break;
+            }
+        }
         public bool ToggleLantern()
         {
             if(Paused || ShopBlocksGameplay || StoryBlocksGameplay || WorldActionBlocksGameplay || !Ashore || Expedition.Aligning
                 || Shore.Swimming || Shore.Climbing || (XRNotebook!=null && XRNotebook.IsOpen))return false;
             if(Career.Backpack.Count(FieldItem.Lantern)==0){Notice("先购买或制作一盏提灯，放在背包里即可挂到腰侧。",4);return false;}
+            LanternEquipped=true;
             LanternOn=!LanternOn;
             WorldAudio?.Play("LanternSwitch",ExplorerPosition+Vector3.up,.5f);
             Notice(LanternOn?"提灯已点亮 · 松开右握把挂回腰侧，继续照路":"提灯已熄灭",4);
@@ -50,6 +70,7 @@ namespace BoatAttack.Fishing
             int previous=Career.Backpack.Selected;
             EndItemInspection();
             if(!Career.Backpack.Select(slot))return;
+            if(Career.Backpack.Equipped==FieldItem.Lantern)LanternEquipped=true;
             if(previous!=Career.Backpack.Selected){CancelWorldAction();FieldWorld?.ClearToolPresentation();}
             BinocularsRaised=false;if(Career.Backpack.Count(FieldItem.Lantern)==0)LanternOn=false;Save();
         }

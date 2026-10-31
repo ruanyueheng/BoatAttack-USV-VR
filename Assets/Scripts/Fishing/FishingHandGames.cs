@@ -294,7 +294,7 @@ namespace BoatAttack.Fishing
                 if(step && Time.unscaledTime>=_audioAt)
                 {_audioAt=Time.unscaledTime+.9f;_c.WorldAudio?.Play(_index==3?"ForgeStrike":"HandcraftRub",_rightGrip.position,.28f);}
                 if(step && Time.unscaledTime>=_hapticAt && device.isValid && device.TryGetHapticCapabilities(out var cap) && cap.supportsImpulse)
-                {device.SendHapticImpulse(0,Mathf.Clamp(.12f+_motionSpeed*.12f,.12f,.24f),.035f);_hapticAt=Time.unscaledTime+.16f;}
+                {FishingXRInput.Pulse(device,Mathf.Clamp(.12f+_motionSpeed*.12f,.12f,.24f),.035f);_hapticAt=Time.unscaledTime+.16f;}
             }
             int percent=Mathf.RoundToInt(_task.Progress*100);
             if(percent!=_lastPercent || !tracked)

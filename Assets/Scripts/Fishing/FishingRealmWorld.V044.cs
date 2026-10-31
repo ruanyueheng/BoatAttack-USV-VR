@@ -205,7 +205,7 @@ namespace BoatAttack.Fishing
             }
             (Quaternion.Inverse(_twistLast)*frame).ToAngleAxis(out float angle,out var axis);_twistLast=frame;
             if(angle>180)angle-=360;_twistAngle+=angle*Vector3.Dot(axis,Vector3.forward);
-            if(Mathf.Abs(_twistAngle)>=80){_twistAngle=0;Operate(_twistId);d.SendHapticImpulse(0,.4f,.08f);}
+            if(Mathf.Abs(_twistAngle)>=80){_twistAngle=0;Operate(_twistId);FishingXRInput.Pulse(d,.4f,.08f);}
         }
     }
 }

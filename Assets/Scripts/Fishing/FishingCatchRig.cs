@@ -123,7 +123,7 @@ namespace BoatAttack.Fishing
             if(caught)
             {
                 _assist=false;Location=Place.Net;bool accepted=_c.BeginNetCatch();
-                if(accepted && XRSettings.isDeviceActive){var hand=InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);if(hand.TryGetHapticCapabilities(out var caps) && caps.supportsImpulse)hand.SendHapticImpulse(0,.22f,.06f);}
+                if(accepted && XRSettings.isDeviceActive){var hand=InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);if(hand.TryGetHapticCapabilities(out var caps) && caps.supportsImpulse)FishingXRInput.Pulse(hand,.22f,.06f);}
                 return accepted;
             }
             return false;
@@ -193,7 +193,7 @@ namespace BoatAttack.Fishing
             var pending=_c.Career.PendingCatch;
             if(_fishId!=pending.fish.id){_fishId=pending.fish.id;_c.RestorePendingFishVisual();}
             var fish=_c.ActiveFish;fish.gameObject.SetActive(true);
-            if(!xr && Location==Place.LeftHand){ApplyLeftInspection(dt);return;}
+            if(Location==Place.LeftHand){if(!xr)ApplyLeftInspection(dt);return;}
             Vector3 pos;Quaternion rot;
             if(Location==Place.Hand)
             {
@@ -244,30 +244,32 @@ namespace BoatAttack.Fishing
         {
             var left=InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
             Vector3 lp=Vector3.zero;Quaternion lq=Quaternion.identity;
-            bool valid=Application.isFocused && FishingXRTracking.TryPose(_c.viewCamera,XRNode.LeftHand,out lp,out lq)
-                && FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out _,out _);
+            bool valid=Application.isFocused && _c.Hands.TryControllerPalm(true,out lp,out lq)
+                && _c.Hands.TryControllerPalm(false,out _,out _);
             if(!valid || _c.DockConsole.BlocksGameplay || _c.XRNotebook.BlocksGameplay || _c.StoryBlocksGameplay || _c.XRSeat.HeadBlocked){Recover();return;}
             bool lg=Grip(left),rg=Grip(right);
             bool grabNet=_left.Step(true,lg),grabFish=_right.Step(true,rg);
-            if(grabNet && _c.Anchored && (_c.Session.Phase==CatchPhase.Landing || _c.HasPendingCatch) && Vector3.Distance(lp,_c.LandingNet.position)<.35f)_netHeld=true;
+            bool tookFish=grabNet && TryGrabLeftFish(lp);
+            if(!tookFish && !LeftHandInspecting && grabNet && _c.Anchored && (_c.Session.Phase==CatchPhase.Landing || _c.HasPendingCatch) && Vector3.Distance(lp,_c.LandingNet.position)<.35f)_netHeld=true;
             if(!lg)_netHeld=false;
             // An empty left hand closing on the hanging fish lands it; left alone it is landed after 8 s.
-            if(_c.Session.Phase==CatchPhase.Landing && !_netHeld)
+            if(!_c.HasPendingCatch && _c.Session.Phase==CatchPhase.Landing && !_netHeld)
             {
                 _handLandingWait+=dt;
                 if((grabNet && HandLandingReach(lp,_c.LandingTarget)) || _handLandingWait>=HandLandingTimeout)
-                {_handLandingWait=0;if(_c.BeginHandCatch() && left.TryGetHapticCapabilities(out var cap) && cap.supportsImpulse)left.SendHapticImpulse(0,.3f,.08f);}
+                {_handLandingWait=0;if(_c.BeginHandCatch())FishingXRInput.Pulse(left,.38f,.08f);}
             }
             else _handLandingWait=0;
             if(_netHeld)
             {
                 // The pole's +X axis points along the controller's forward axis.
-                var rotation=lq*Quaternion.Euler(0,-90,0);
+                var rotation=_c.Hands.ControllerGripRotation(lq)*Quaternion.Euler(0,-90,0);
                 var center=lp+rotation*new Vector3(FishingDetailArt.NetMouthOffset,0,0);
                 ApplyNetPose(center,rotation,dt);
                 TryTipIntoBox(center,rotation,dt);
             }
-            FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out var rp,out var rq);
+            if(LeftHandInspecting){ApplyTrackedLeftInspection(lp,lq,lg,dt);return;}
+            _c.Hands.TryControllerPalm(false,out var rp,out var rq);
             if(_c.HasPendingCatch && grabFish && Vector3.Distance(rp,_c.ActiveFish.position)<.35f){PrepareHandAction();_c.MeasureCatch();}
             if(Location==Place.Hand && !rg)
             {
