@@ -43,7 +43,7 @@ namespace BoatAttack.Fishing
         public Material wood, cream, dark, orange, teal, lineMaterial;
         public Boat Player { get; private set; }
         private FishingCareer _career;
-        public FishingCareer Career { get=>_career; private set { _career=value;_career?.SetCreativeMode(CreativeMode); } }
+        public FishingCareer Career { get=>_career; private set { _career=value;LanternOn=false;_career?.SetCreativeMode(CreativeMode); } }
         public bool CreativeMode { get; private set; }
         public void SetCreativeMode(bool enabled)
         {

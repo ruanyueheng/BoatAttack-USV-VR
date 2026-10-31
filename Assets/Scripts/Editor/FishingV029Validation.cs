@@ -115,7 +115,7 @@ namespace BoatAttack.EditorTools
                 for(int i=0;i<20;i++)yield return null;c.FieldWorld.ApplyHeldTool();
                 var lights=c.FieldWorld.GetComponentsInChildren<Light>().Where(l=>l.enabled).ToArray();
                 Check(lights.Any(l=>l.type==LightType.Point && l.range>=10 && l.intensity>.4f) && lights.Any(l=>l.type==LightType.Spot),"Night lantern has a warm local light and soft ground spill");
-                Capture(c,evidence,"lantern-night");c.LowerFieldTools();yield return null;yield return null;Capture(c,evidence,"lantern-off");
+                Capture(c,evidence,"lantern-night");c.ToggleLantern();yield return null;yield return null;Capture(c,evidence,"lantern-off");
                 c.ReturnToHarbor();c.SetDayNight(false);c.MoveToSpotForAutomation(0);c.Interact();yield return null;
                 var swimmer=c.Ecology.FindCreatureForValidation(MarineKind.Turtle);var first=swimmer.position;float radius=FishingPrototype.FlatDistance(first,c.fishingSpots[0]);float radialChange=0;
                 float capture=Time.captureDeltaTime;int jumps=c.Ecology.FishJumpCount;
