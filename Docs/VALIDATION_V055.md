@@ -20,7 +20,7 @@
 
 | 项目 | 结果 |
 | --- | --- |
-| 编译、纯规则与输入 | FAST-COMPILE PASS；4844 项规则、74 项输入通过，`Logs/V055/rules-latest.log`、`input.log` |
+| 编译、纯规则与输入 | FAST-COMPILE PASS；4844 项规则、74 项输入通过，`Logs/V055/rules-final.log`、`input-final-check.log`；店员提灯说明断言对应桌面 L/F 和 PICO 左扳机、右握把、提环与松手归位 |
 | 综合 Unity 专项 | `Logs/usv-validation-7193120281b54219a7a7597d2e966c1c.log` PASS，包含最终提灯更新 |
 | 菜单整合 | 三个页号独立；日期页、左右手独立微调、默认/清零、确认/取消均有实际操作检查；状态文字高度检查通过 |
 | 退出保护 | 实际使用不可写的存档路径测试保存失败，确认游戏仍运行；无有效活动槽时也阻止退出；桌面关闭设置清除旧确认 |
