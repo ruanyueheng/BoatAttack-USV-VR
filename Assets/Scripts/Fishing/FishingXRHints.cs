@@ -188,7 +188,7 @@ namespace BoatAttack.Fishing
         private void LateUpdate()
         {
             if(_c==null)return;
-            bool xr=XRSettings.isDeviceActive && _c.XRSeat!=null && _c.XRSeat.Ready && Application.isFocused && !_c.Paused;
+            bool xr=XRSettings.isDeviceActive && _c.XRSeat!=null && _c.XRSeat.Ready && Application.isFocused && !_c.Paused && !_c.HandGames.Active;
             if(!xr){foreach(var tag in _tags)tag.Canvas.gameObject.SetActive(false);return;}
             var context=Current(_c);
             string nearby=context==Context.Shore || context==Context.Realm?FishingXRText.Adapt(_c.WorldInteractionTitle??"",true).TrimStart():"";

@@ -35,12 +35,19 @@ namespace BoatAttack.Fishing
             if(!_sample){_x=x;_y=y;_angle=angle;_sample=true;return false;}
             // Tracking teleports, jitter and long frame gaps must never count as deliberate gestures.
             if(Math.Abs(x-_x)>.30f || Math.Abs(y-_y)>.30f){Release();return false;}
+            if(Kind==FishingHandTaskKind.Forge)
+            {
+                _x=x;_y=y;
+                if(y>=.075f)_direction=1;
+                if(_direction!=1 || y>.025f || _cooldown>0)return false;
+                _direction=0;_cooldown=.16f;Strokes++;return true;
+            }
             if(Kind!=FishingHandTaskKind.Winder)
             {
-                bool vertical=Kind==FishingHandTaskKind.Forge;float delta=vertical?y-_y:x-_x;int direction=delta>=0?1:-1;
-                if(direction==_direction){if(vertical)_y=y;else _x=x;return false;}
+                float delta=x-_x;int direction=delta>=0?1:-1;
+                if(direction==_direction){_x=x;return false;}
                 if(Math.Abs(delta)<.075f || _cooldown>0)return false;
-                _direction=direction;_x=x;_y=y;_cooldown=.16f;if(!vertical || direction<0){Strokes++;return true;}return false;
+                _direction=direction;_x=x;_y=y;_cooldown=.16f;Strokes++;return true;
             }
             float change=angle-_angle;
             if(change>180)change-=360;if(change< -180)change+=360;

@@ -47,6 +47,7 @@ namespace BoatAttack.EditorTools
             public bool a,b,x,y,leftClick,rightClick;
             public float leftTrigger,rightTrigger,leftGrip,rightGrip;
             public string capture,fixture,equip;
+            public int table=-1;
             public bool stop;
         }
         [Serializable] private sealed class Button { public int index; public string label; public Vector3 center; }
@@ -72,6 +73,9 @@ namespace BoatAttack.EditorTools
             public Vector3[] fishingSpots;
             public USVInputState input;
             public Button[] buttons,marketLabels;
+            public bool handcraftActive;
+            public int handcraftKind,handcraftStrokes,driftwood,planks,ironIngots,pickHeads,gunParts;
+            public Vector3 toolGrip,toolContact,workPoint,toolEuler;
         }
 
         static FishingXRSimulator()
@@ -168,6 +172,15 @@ namespace BoatAttack.EditorTools
                         if(slot>=FishingBackpack.HotbarCount){Require(bag.Move(slot,bag.Selected),"Cannot equip fixture.");slot=bag.Selected;}
                         _c.SelectFieldSlot(slot);
                     }
+                    if(next.table>=2 && next.table!=_command.table)
+                    {
+                        Require(_c.HasIsolatedProfile && _c.Ashore,"Handcraft fixture requires an isolated shore profile.");
+                        _c.HandGames.Cancel();var station=_c.HandGames.Station(next.table);
+                        Require(_c.Shore.Relocate(_c.HandGames.Approach(next.table),Quaternion.LookRotation(-station.forward)),"No supported handcraft approach.");
+                        var item=next.table==2?FieldItem.Driftwood:FieldItem.IronIngot;int needed=next.table==2?1:6;
+                        if(_c.Career.Backpack.Count(item)<needed)Require(_c.Career.Backpack.TryAdd(item,needed-_c.Career.Backpack.Count(item)),"Handcraft fixture material does not fit.");
+                        _c.View.ResetLook();
+                    }
                     _command=next;_lastWrite=written;
                     if(next.stop){SessionState.SetBool(Key,false);Cleanup();EditorApplication.Exit(0);return;}
                     EditorWindow.GetWindow(Type.GetType("UnityEditor.GameView,UnityEditor")).Focus();
@@ -190,6 +203,7 @@ namespace BoatAttack.EditorTools
         private static void Validate(Command c)
         {
             Require(c!=null,"Missing command.");
+            Require(c.table==-1 || c.table==2 || c.table==3,"Unknown handcraft table fixture.");
             foreach(var v in new[]{c.head,c.headEuler,c.left,c.right,c.leftEuler,c.rightEuler,new Vector3(c.leftStick.x,c.leftStick.y,c.leftTrigger),new Vector3(c.rightStick.x,c.rightStick.y,c.rightTrigger),new Vector3(c.leftGrip,c.rightGrip,0)})
                 Require(!float.IsNaN(v.sqrMagnitude) && !float.IsInfinity(v.sqrMagnitude) && v.magnitude<1000,"Non-finite/out-of-range simulator input.");
             Require(string.IsNullOrEmpty(c.capture) || (c.capture.Length<65 && c.capture.All(ch=>char.IsLetterOrDigit(ch)||ch=='-'||ch=='_')),"Capture name must be a filename stem.");
@@ -254,6 +268,9 @@ namespace BoatAttack.EditorTools
                 rodDeformedTip=dynamics!=null?dynamics.Tip.position:Vector3.zero,rodUnloadedTip=_c.Hands.Rod.TransformPoint(restTip),
                 lineStart=fishingLine!=null && fishingLine.positionCount>0?fishingLine.GetPosition(0):Vector3.zero,lineTarget=_c.Session.Phase==CatchPhase.Landing?_c.LandingTarget:_c.Angling.WaterTarget,
                 marketVisible=_c.SeaMarket.Visible,marketPosition=_c.SeaMarket.Position,marketTrades=_c.SeaMarket.Trades,
+                handcraftActive=_c.HandGames.Active,handcraftKind=_c.HandGames.Active?(int)_c.HandGames.Task.Kind:-1,handcraftStrokes=_c.HandGames.Task?.Strokes??0,
+                driftwood=_c.Career.Backpack.Count(FieldItem.Driftwood),planks=_c.Career.Backpack.Count(FieldItem.Plank),ironIngots=_c.Career.Backpack.Count(FieldItem.IronIngot),pickHeads=_c.Career.Backpack.Count(FieldItem.IronPickHead),gunParts=_c.Career.Backpack.Count(FieldItem.GunParts),
+                toolGrip=_c.HandGames.HandlePoint,toolContact=_c.HandGames.ToolContact,workPoint=_c.HandGames.WorkPoint,toolEuler=_c.HandGames.Active?_c.HandGames.ActiveTool.eulerAngles:Vector3.zero,
                 home=_c.Home.Origin,marketTarget=_c.SeaMarket.Target?.ToString()??"",
                 marketLabels=_c.SeaMarket.transform.Find("V044 roaming market ship").GetComponentsInChildren<TextMesh>().Select(t=>new Button{label=t.text,center=t.transform.position}).ToArray(),
                 feet=_c.Shore.Position,walkSpeed=_c.Shore.WalkSpeed,stamina=_c.Shore.Stamina,boostActive=_c.Boost.Active,boostHeat=_c.Boost.Heat,

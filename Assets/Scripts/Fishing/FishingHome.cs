@@ -168,12 +168,15 @@ namespace BoatAttack.Fishing
         }
         internal void RelocateClearedStations()
         {
-            if(_shoreCopy==null)return;
+            var voyage=GetComponent<FishingWreckRouteClearance>();
+            if(_shoreCopy==null && (voyage==null || !voyage.Cleared))return;
             var ground=transform.Find("V035 Home HomeLand").GetComponentInChildren<MeshCollider>();bool moved=false;
             foreach(var station in _c.WorkshopWorld.State.Stations)
             {
                 // A rotated 0.7 by 0.55 metre half-footprint fits inside this 0.9 metre radius.
-                if(station.permanent || !_changedShoreArea.Overlaps(new Rect(station.x-.9f,station.z-.9f,1.8f,1.8f)))continue;
+                var footprint=new Rect(station.x-.9f,station.z-.9f,1.8f,1.8f);
+                if(station.permanent || !(_shoreCopy!=null && _changedShoreArea.Overlaps(footprint)
+                    || voyage!=null && voyage.Cleared && FishingWreckRouteClearance.Area.Overlaps(footprint)))continue;
                 var previous=new Vector3(station.x,station.y,station.z);
                 if(_c.WorkshopWorld.FitStationFoot(previous,out var support,station.yaw) && support.y<=previous.y+.03f)continue;
                 bool placed=false;

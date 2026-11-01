@@ -30,10 +30,9 @@ namespace BoatAttack.EditorTools
             stops.Add(("home",c.Home.Berth));
             var rows=new List<string>{"route,sample,suspect,path,mesh,components,minY,gap,reason"};var bad=new HashSet<string>();
             Gaps.Clear();
-            Check(!c.WaterRoute.ClearPoint(new Vector3(-260,0,-150)),"Original mainland interior cannot be mistaken for navigable water");
-            Check(!c.WaterRoute.ClearSegment(new Vector3(-260,0,-270),new Vector3(-260,0,-140)),"A route cannot cross beneath the original terrain's cut edge");
-            Check(Physics.Linecast(new Vector3(-260,1,-270),new Vector3(-260,1,-240),out var edgeHit,~(1<<4),QueryTriggerInteraction.Ignore)
-                && edgeHit.collider.name=="Terrain cut-edge collision","Original terrain's open cut edge also blocks manual boats");
+            Check(c.WaterRoute.ClearPoint(new Vector3(-260,0,-150)),"Removed southwest mainland is navigable water");
+            Check(c.WaterRoute.ClearSegment(new Vector3(-260,0,-270),new Vector3(-260,0,-140)),"Southwest voyage crosses the removed cut edge without invisible collision");
+            Check(!Physics.Linecast(new Vector3(-260,1,-270),new Vector3(-260,1,-240),~(1<<4),QueryTriggerInteraction.Ignore),"Removed terrain cut edge does not block manual boats");
             foreach(var t in Terrain.activeTerrains)
             {
                 var tc=t.GetComponent<TerrainCollider>();
