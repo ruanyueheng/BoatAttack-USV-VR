@@ -201,11 +201,12 @@ namespace BoatAttack.Fishing
             var day=_c.Career.Calendar;var bag=_c.Career.Backpack;
             _status.text=BayClimate.Name(_c.Weather.Climate.Current)+"\n金币 "+_c.Career.CoinDisplay+"\n行囊 "+bag.UsedSlots+" / 36\n装备："+FishingBackpack.Name(bag.Equipped)+"\n"+_c.VisibleMessage;
             for(int i=0;i<9;i++)Set(i,"—",null);
-            if(_page==21)RefreshHomeEcology();
+            if(_page==FishSalesPage)RefreshFishSales();
+            else if(_page==21)RefreshHomeEcology();
             else if(_page==0)
             {
                 Set(0,"背包 / 装备",()=>Open(1));Set(1,"制作 / 熔炉 / 锻造",()=>Open(2));Set(2,"航海图 / 航点",()=>Open(12));
-                Set(3,"日历 / 图鉴 / 观察",()=>Open(10));Set(4,"港口事务 / 委托",()=>Open(7));Set(5,"百货 / 装备升级",()=>Open(4));
+                Set(3,"日历 / 图鉴 / 观察",()=>Open(10));Set(4,"卖鱼 / 港口委托",OpenFishSales);Set(5,"百货 / 装备升级",()=>Open(4));
                 Set(6,"潮汐回响 / 群岛",()=>Open(9));Set(7,"设置 / 手柄教学",()=>Open(14));Set(8,"快速回家",()=>_c.ReturnHome());
             }
             else if(_page==1)
@@ -247,6 +248,7 @@ namespace BoatAttack.Fishing
                 _status.fontSize=18;
                 for(int i=0;i<_c.Residents.ChoiceCount;i++){int choice=i;Set(i,_c.Residents.Choice(i),()=>{_c.Residents.Choose(choice);Refresh();});}
                 if(_c.Residents.ActiveId==4)Set(6,"查看商品",()=>_c.Residents.BrowseCashierGoods());
+                if(_c.Residents.ActiveId==4)Set(7,"我要卖鱼 / 鱼货回收",()=>{_c.Residents.Close();OpenFishSales();});
                 Set(8,"结束交谈",()=>_c.Residents.Close());
             }
             else if(_page==9)
@@ -282,12 +284,12 @@ namespace BoatAttack.Fishing
             else if(_page==7)
             {
                 _status.text="港口事务 · 鱼箱 "+_c.Career.Count+" / "+_c.Career.Capacity+"\n委托「"+_c.Career.CurrentOrder.Name+"」"+(_c.Career.OrderReady?" · 可交付":" · 待集齐")+"\n"+FishingSurvey.Goal(_c.Career)+"\n"+FishingSurvey.Checklist(_c.Career)+"\n"+_c.VisibleMessage;
-                Set(0,"船上事务 / 起锚\n交易 / 存放 / 放生",!_c.Ashore?(Action)(()=>{Close();_c.DockConsole.Show();}):null);
+                Set(0,"卖鱼 / 鱼货回收\n港口或钓具店柜台",OpenFishSales);
                 Set(1,"鱼箱 / 委托需求",()=>Open(13));Set(2,"领取炉内成品",()=>_c.WorkshopWorld.Collect());
                 Set(3,"旧港信标任务",()=>{Close();_c.Expedition.PortAction();});
                 Set(4,"切换鱼饵",()=>{Close();_c.CycleBait();});
                 Set(5,"提交群岛航记",()=>{Close();_c.Islands.CompleteAtHarbor();});
-                Set(6,"收回选中设施",()=>_c.WorkshopWorld.Remove());
+                Set(6,_c.Ashore?"收回选中设施":"船上事务 / 起锚",()=>{if(_c.Ashore)_c.WorkshopWorld.Remove();else{Close();_c.DockConsole.Show();}});
                 Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
             }
             else if(_page==11)RefreshGuide();
@@ -310,10 +312,11 @@ namespace BoatAttack.Fishing
                 var order=_c.Career.CurrentOrder;
                 _status.fontSize=20;_status.text="鱼箱 "+_c.Career.Count+" / "+_c.Career.Capacity+" · 货值 "+_c.Career.HoldValue+" 金币\n委托「"+order.Name+"」 · 奖金 "+order.Bonus+"\n";
                 for(int i=0;i<order.LineCount;i++){var line=order.Line(i);_status.text+=FishingSpecies.Name(line.Kind)+" ×"+line.Count+(line.Rare?" 珍珠":"")+(line.MinGrams>0?" ≥"+FishingText.Weight(line.MinGrams):"")+"\n";}
-                _status.text+="普通出售保留委托鱼货 · 港口事务页交易";
+                _status.text+="普通出售保留委托鱼货 · 首页卖鱼卡片交易";
                 for(int i=0;i<6;i++)
                 {int index=_offset+i;if(index>=_c.Career.Count)break;var fish=_c.Career.Inventory[index];Set(i,FishingSpecies.Name(fish.kind)+(fish.rare?" · 珍珠":"")+"\n"+FishingText.Weight(fish.grams)+" · "+fish.value+" 金币",null);Photo(i,Resources.Load<Texture2D>("FishingFish/"+fish.kind+"Thumbnail"));}
                 Pager(_c.Career.Count);
+                Set(6,"卖鱼 / 鱼货回收",OpenFishSales);
             }
             else if(_page==14)
             {
@@ -351,9 +354,10 @@ namespace BoatAttack.Fishing
             else if(_page==34)RefreshHandAlignment();
             else if(_page==36)
             {
-                _status.text="创造模式 · 无限金币测试\n当前："+(_c.CreativeMode?"开启":"关闭")+"\n真实金币："+_c.Career.Coins+"\n开启后购买不扣金币；关闭恢复正常计费。\n背包容量及解锁条件仍有效。\n测试获得的物品与升级正常保存。\n重新启动游戏默认关闭。";
+                _status.text="创造模式 · 无限金币测试\n当前："+(_c.CreativeMode?"开启":"关闭")+"\n真实金币："+_c.Career.Coins+"\n开启后购买和升级不扣金币。\n可在安全位置免费升级甲板、发动机等。\n背包容量及专精互斥仍有效。\n开关会在本机记住，关闭后恢复正常计费。";
                 Set(0,"创造模式："+(_c.CreativeMode?"开\n点击关闭":"关\n点击开启"),()=>{_c.SetCreativeMode(!_c.CreativeMode);Refresh();});
                 Set(1,"序章 / 环境特效 / 救援",()=>Open(16));Set(7,"返回设置",()=>Open(14));Set(8,"返回首页",()=>Open());
+                Set(2,(_c.CreativeMode?"免费升级钓具 / 船舶":"钓具 / 船舶升级")+"\n包括甲板、发动机、舵",()=>Open(4));Set(3,"百货 / 测试用品",()=>Open(5));Set(4,"卖鱼 / 回收导航",OpenFishSales);
             }
             else if(_page==35)
             {
@@ -374,7 +378,7 @@ namespace BoatAttack.Fishing
             else
             {
                 _status.text="二级载重 / 动力 / 操控专精三选一\n其他两项可升至一级；旧升级保留\n金币 "+_c.Career.CoinDisplay;
-                for(int i=0;i<6;i++){var track=(UpgradeTrack)i;bool locked=_c.Career.SpecializationBlocked(track);Set(i,FishingText.UpgradeName(track)+" Lv."+_c.Career.Level(track)+"\n"+(locked?"专精互斥":_c.Career.NextUpgradeCost(track)+" 金币"),locked?null:(Action)(()=>{_c.BuyUpgrade(track);Refresh();}));}
+                for(int i=0;i<6;i++){var track=(UpgradeTrack)i;bool available=!_c.Career.SpecializationBlocked(track) && _c.Career.NextUpgradeCost(track)>0;Set(i,FishingText.UpgradeName(track)+" Lv."+_c.Career.Level(track)+"\n"+_c.Career.UpgradePurchaseLabel(track),available?(Action)(()=>{_c.BuyUpgrade(track);Refresh();}):null);}
                 Set(6,"购买探索用品",()=>Open(5));
                 Set(7,_c.TackleShop.NearCounter?"店员介绍 / 故事":"返回首页",_c.TackleShop.NearCounter?(Action)(()=>_c.Residents.Talk(4)):(Action)(()=>Open()));Set(8,"关闭",Close);
             }
@@ -533,6 +537,7 @@ namespace BoatAttack.Fishing
         private void UseTrackedTool()
         {
             if(_c.InspectingItem){_c.EndItemInspection();return;}
+            if(_c.Career.Backpack.Equipped==FieldItem.Binoculars){_c.UseFieldItem();return;}
             if(_c.Islands.TryTarget(out int islandTarget,out _) && islandTarget%3==2){_c.Islands.ConfirmNearby();return;}
             var item=_c.Career.Backpack.Equipped;
             if(item==FieldItem.Rake)

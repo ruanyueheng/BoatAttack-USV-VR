@@ -70,6 +70,7 @@ namespace BoatAttack.Fishing
             DressCounter();
             Sign("航海设备  /  船只升级",new Vector3(-2.9f,2.22f,-2.28f));Sign("探索工具  /  制作补给",new Vector3(2.9f,2.22f,-2.28f));
             Sign("TIDE & TACKLE  ·  海湾用品",new Vector3(0,2.9f,4.75f));
+            Sign("鱼货回收\n"+(UnityEngine.XR.XRSettings.isDeviceActive?"B → 卖鱼与委托":"柜台也可出售鱼货"),new Vector3(0,2.55f,-2.3f));
             FishingV019Art.Spawn("Telescope",transform,new Vector3(-4.55f,.53f,-3.65f),.64f);
             FishingV019Art.Spawn("chest",transform,new Vector3(4.55f,.53f,-3.65f),.74f,180);
             var light=new GameObject("Chandlery warm pendant").AddComponent<Light>();light.transform.SetParent(transform,false);light.transform.localPosition=new Vector3(0,2.7f,-.3f);

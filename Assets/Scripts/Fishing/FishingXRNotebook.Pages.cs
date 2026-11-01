@@ -10,7 +10,7 @@ namespace BoatAttack.Fishing
         private Text _pageTitle,_pageDate,_pageDetail,_pageSubtitle;
         private Image _pageLeaf,_pageLeafEdge;
         private int _pageHover=-1;
-        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤","储物箱 · 存入","储物箱 · 取出","声音混音","家园生态","VR 舒适","操作说明","信件","相册","照片图鉴","物品与整理","选择目标格","夕照中的金帆","航程存档","航海手札","世界与秘境","沿岸调查"};
+        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤","储物箱 · 存入","储物箱 · 取出","声音混音","家园生态","VR 舒适","操作说明","信件","相册","照片图鉴","物品与整理","选择目标格","夕照中的金帆","航程存档","航海手札","世界与秘境","沿岸调查","手部对齐","退出游戏","创造模式","卖鱼回收"};
 
         private void BuildNotebookPages()
         {
@@ -132,7 +132,12 @@ namespace BoatAttack.Fishing
             if(_page==AlbumPage){_pageDetail.gameObject.SetActive(false);_status.gameObject.SetActive(true);for(int i=0;i<9;i++)ApplyPageState(i,held,false);return;}
             bool detail=index>=0 && index<6 && !string.IsNullOrEmpty(_pageContent[index]) && _pageContent[index]!="—";
             _pageDetail.gameObject.SetActive(detail);_status.gameObject.SetActive(!detail);
-            if(detail){_pageDetail.text=_pageContent[index];HomeRect(_pageDetail.rectTransform,new Rect(62,191,_page==12?580:335,_page==12?120:471));}
+            if(detail)
+            {
+                _pageDetail.text=_pageContent[index];HomeRect(_pageDetail.rectTransform,new Rect(62,191,_page==12?580:335,_page==12?120:471));
+                _pageDetail.fontSize=22;
+                while(_pageDetail.fontSize>20 && _pageDetail.preferredHeight>_pageDetail.rectTransform.rect.height)_pageDetail.fontSize--;
+            }
             for(int i=0;i<9;i++)ApplyPageState(i,held,false);
         }
     }

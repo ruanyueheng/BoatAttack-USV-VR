@@ -29,7 +29,8 @@ namespace BoatAttack.Fishing
         private static readonly string[] DesktopTabs={"鱼获图鉴","传说线索","自然观察","海岸调查","海湾日历","群岛航记","世界与秘境","相册图鉴","信件"};
         private static readonly int[] DesktopPages={10,29,15,33,3,6,32,25,24};
         private static readonly string[] DesktopChapters={"海的收藏","夕照中的金帆","与万物相遇","沿着潮线走","听潮与候风","寄自远方的信","找回四段回响","镜头里的回潮海","漂流瓶与回信"};
-        private bool DesktopJournalPage=>_page==10 || _page==29 || _page==15 || _page==33 || _page==3 || _page==6 || _page==9 || _page==32 || _page==25 || _page==26 || _page==24 || _page==31;
+        // The photo album has a dedicated 16:9 layout and large selected-photo preview.
+        private bool DesktopJournalPage=>_page==10 || _page==29 || _page==15 || _page==33 || _page==3 || _page==6 || _page==9 || _page==32 || _page==26 || _page==24 || _page==31;
         private static Color DesktopRule=>FishingUITheme.Blend(new Color(.65f,.48f,.29f,.38f),new Color(.62f,.71f,.77f,.38f));
 
         private Text DesktopText(Transform parent,string name,Rect rect,string text,int size,Color color,bool heading=false)

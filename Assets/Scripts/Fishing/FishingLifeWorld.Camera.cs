@@ -95,7 +95,9 @@ namespace BoatAttack.Fishing
         private void UpdateVrCamera()
         {
             bool raised = false;
-            if (Vr && CanUseCamera && !_c.Hands.HoldingRod && !_c.Anchored && RightHand(out var p, out var q))
+            // Equipped binoculars own the near-eye gesture and trigger; never replace them with a film camera.
+            if (Vr && CanUseCamera && _c.Career.Backpack.Equipped!=FieldItem.Binoculars && !_c.InspectingItem
+                && !_c.Hands.HoldingRod && !_c.Anchored && RightHand(out var p, out var q))
             {
                 var eye = _c.viewCamera.transform;
                 raised = RaisedToEye(eye.position, eye.forward, p);

@@ -387,6 +387,12 @@ namespace BoatAttack.Fishing
             => level < 0 || level >= MaxLevel || !Enum.IsDefined(typeof(UpgradeTrack), track) ? 0 : UpgradeCosts[(int)track, level];
 
         public int NextUpgradeCost(UpgradeTrack track) => UpgradeCost(track, Level(track));
+        public string UpgradePurchaseLabel(UpgradeTrack track)
+        {
+            if(SpecializationBlocked(track))return "专精互斥";
+            int cost=NextUpgradeCost(track);
+            return cost<=0?"已满级":CreativeMode?"创造模式免费":cost+" 金币";
+        }
 
         public bool SpecializationBlocked(UpgradeTrack track) => Level(track) == 1
             && ((track == UpgradeTrack.Hold && (EngineLevel == 2 || RudderLevel == 2))

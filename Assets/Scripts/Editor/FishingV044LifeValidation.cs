@@ -6,6 +6,7 @@ using System.Reflection;
 using BoatAttack.Fishing;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Rendering.Universal;
 
 namespace BoatAttack.EditorTools
 {
@@ -30,6 +31,7 @@ namespace BoatAttack.EditorTools
             NotebookChecks(c,dir,true);
             run=PalmChecks(c,life,dir);while(run.MoveNext())yield return run.Current;
             run=FestivalChecks(c,life,dir);while(run.MoveNext())yield return run.Current;
+            run=BinocularChecks(c,life,dir);while(run.MoveNext())yield return run.Current;
         }
 
         private static void NotebookChecks(FishingPrototype c,string dir,bool withPhotos)
@@ -213,6 +215,73 @@ namespace BoatAttack.EditorTools
             Debug.Log("[V044-LIFE] album journal page index "+albumPage);
         }
 
+        private static IEnumerator BinocularChecks(FishingPrototype c,FishingLifeWorld life,string dir)
+        {
+            var land=Land(c);while(land.MoveNext())yield return land.Current;
+            var snapshot=c.Career.Snapshot();var eye=c.viewCamera.transform;var position=eye.position;var rotation=eye.rotation;
+            float fov=c.viewCamera.fieldOfView,zoom=c.View.BinocularMagnification;
+            GameObject target=null;Material material=null;Mesh mesh=null;
+            try
+            {
+                Check(c.Career.Backpack.TryAdd(FieldItem.Binoculars,1),"Isolated profile owns binoculars for the XR optics regression");
+                var bag=c.Career.Backpack;int slot=Enumerable.Range(0,FishingBackpack.SlotCount).First(i=>bag.At(i).item==FieldItem.Binoculars);
+                if(slot>=FishingBackpack.HotbarCount){Check(bag.Move(slot,1),"Binoculars enter the selectable hotbar");slot=1;}
+                c.SelectFieldSlot(slot);c.UseFieldItem();
+                Check(c.BinocularsRaised,"The production use action activates binocular observation");
+                FishingLifeWorld.ForceVr=true;life.DebugRightHand=new Pose(eye.position+eye.forward*.1f,eye.rotation);
+                int taken=life.PhotosTaken;
+                var cameraTick=typeof(FishingLifeWorld).GetMethod("UpdateVrCamera",BindingFlags.Instance|BindingFlags.NonPublic);
+                cameraTick.Invoke(life,null);life.DebugPressShutter();cameraTick.Invoke(life,null);
+                Check(!life.VrRaised && life.PhotosTaken==taken,"Binocular equipment prevents the near-eye film-camera gesture and shutter from taking over");
+                eye.SetPositionAndRotation(new Vector3(0,300,0),Quaternion.identity);c.viewCamera.fieldOfView=69;
+                var projection=c.viewCamera.projectionMatrix;
+                c.View.AdjustMagnification(-100);
+                var optics=life.Binoculars;Check(optics!=null,"The real life world builds the XR binocular optics component");
+                optics.PresentForValidation(true);
+                Check(optics.Active && optics.OpticalWindow.gameObject.activeSelf && optics.OpticalCamera.enabled
+                    && optics.OpticalTexture.width==FishingXRBinoculars.Width && optics.OpticalCamera.stereoTargetEye==UnityEngine.StereoTargetEyeMask.None,
+                    "Tracked binocular mode displays a local lens with its independent bounded-resolution camera");
+                Check((optics.OpticalCamera.cullingMask&(1<<5))==0 && !optics.OpticalCamera.GetUniversalAdditionalCameraData().allowXRRendering,
+                    "The optical camera excludes its own overlay and cannot render recursively into either HMD eye");
+                target=GameObject.CreatePrimitive(PrimitiveType.Cube);target.name="Binocular real-world scale target";
+                target.transform.position=eye.position+eye.forward*12;target.transform.localScale=new Vector3(.5f,.5f,.05f);
+                mesh=UnityEngine.Object.Instantiate(target.GetComponent<MeshFilter>().sharedMesh);mesh.colors=Enumerable.Repeat(Color.white,mesh.vertexCount).ToArray();target.GetComponent<MeshFilter>().sharedMesh=mesh;
+                material=new Material(c.PaletteShader);material.SetColor("_BaseColor",Color.magenta);material.SetFloat("_Unlit",1);target.GetComponent<Renderer>().sharedMaterial=material;
+                optics.OpticalCamera.Render();int small=OpticalTargetPixels(optics.OpticalTexture);
+                float lowFov=optics.OpticalCamera.fieldOfView;
+                for(int i=0;i<30;i++)optics.ReadZoomAxis(Vector2.up,10+i*.31f);
+                optics.OpticalCamera.Render();int large=OpticalTargetPixels(optics.OpticalTexture);
+                Check(c.View.BinocularMagnification==8 && optics.OpticalCamera.fieldOfView<lowFov*.3f
+                    && small>100 && large>small*8,"2x to 8x enlarges a real distant target in the rendered optical texture");
+                Check(Mathf.Abs(c.viewCamera.fieldOfView-69)<.001f && c.viewCamera.projectionMatrix==projection,
+                    "Magnification leaves the main/HMD camera projection untouched");
+                FishingV016Validation.Capture(c,dir,"life-xr-binocular-8x");
+                optics.PresentForValidation(false);
+                Check(!optics.Active && !optics.OpticalCamera.enabled && !optics.OpticalWindow.gameObject.activeSelf,
+                    "Tracking loss immediately hides the lens and stops its render camera");
+                optics.PresentForValidation(true);c.TogglePause();optics.PresentForValidation(true);
+                Check(!optics.Active && !optics.OpticalCamera.enabled,"Pause cannot leave binocular rendering or zoom input active");c.TogglePause();
+                c.SelectFieldSlot(0);optics.PresentForValidation(true);
+                Check(!optics.Active && !optics.OpticalWindow.gameObject.activeSelf,"Switching equipment clears the optical window");
+            }
+            finally
+            {
+                FishingLifeWorld.ForceVr=false;life.DebugRightHand=null;life.Binoculars.PresentForValidation(false);
+                if(c.Paused)c.TogglePause();c.RestoreShopTestProfile(snapshot);c.View.AdjustMagnification(-100);c.View.AdjustMagnification((zoom-2)*2);
+                eye.SetPositionAndRotation(position,rotation);c.viewCamera.fieldOfView=fov;
+                if(target!=null)UnityEngine.Object.Destroy(target);if(material!=null)UnityEngine.Object.Destroy(material);if(mesh!=null)UnityEngine.Object.Destroy(mesh);
+            }
+        }
+        private static int OpticalTargetPixels(RenderTexture rt)
+        {
+            var active=RenderTexture.active;var image=new Texture2D(rt.width,rt.height,TextureFormat.RGB24,false);
+            try
+            {
+                RenderTexture.active=rt;image.ReadPixels(new Rect(0,0,rt.width,rt.height),0,0);image.Apply();
+                return image.GetPixels().Count(p=>p.r>.5f && p.b>.5f && p.g<.2f);
+            }
+            finally{RenderTexture.active=active;UnityEngine.Object.Destroy(image);}
+        }
         private static IEnumerator PalmChecks(FishingPrototype c,FishingLifeWorld life,string dir)
         {
             FishingLifeWorld.ForceVr=true;

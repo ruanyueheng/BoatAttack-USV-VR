@@ -49,7 +49,8 @@ namespace BoatAttack.Fishing
                 bool locked=!rifle && !supplies && c.Career.SpecializationBlocked(track);
                 bool affordable=!owned && !locked && cost>0 && c.Career.CanAfford(cost);
                 var buy=new Rect(x+w-180,y+(supplies?76:15),164,32);
-                if(Button(buy,owned?"已持有":locked?"专精互斥":cost<=0?"已满级":"购买 "+cost+" 金币",affordable,affordable,15))
+                string buyLabel=owned?"已持有":!rifle && !supplies?c.Career.UpgradePurchaseLabel(track):cost<=0?"已满级":c.CreativeMode?"创造模式免费":"购买 "+cost+" 金币";
+                if(Button(buy,buyLabel,affordable,affordable,15))
                 {if(rifle)c.TackleShop.BuyRifle();else if(supplies)c.TackleShop.BuySupply(product);else c.TackleShop.Buy(track);}
 
                 if(supplies)Label(x+108,y+83,190,22,"已有 "+c.Career.Backpack.Count(FishingSupplies.Items[product]),14,Mint);
@@ -57,7 +58,8 @@ namespace BoatAttack.Fishing
             Fill(r.x+30,r.y+548,r.width-60,1,Hairline);
             Label(r.x+30,r.y+565,r.width-60,30,c.VisibleMessage,14,Gold);
             if(Button(new Rect(r.x+30,r.y+618,196,38),"与汐禾交谈",true,false,15))c.Residents.Talk(4);
-            Label(r.x+248,r.y+626,570,23,"二级载重 / 动力 / 操控专精三选一 · 自动保存",14,Muted);
+            if(Button(new Rect(r.x+240,r.y+618,196,38),"卖鱼 / 再次点击确认",c.CanSellFish && c.Career.SaleValue>0,false,15))c.XRNotebook.ConfirmFishSale(false);
+            Label(r.x+450,r.y+626,350,23,"二级船舶专精三选一 · 自动保存",14,Muted);
             if(Button(new Rect(r.xMax-196,r.yMax-62,166,38),"E / Esc 关闭",true,false,15))c.ToggleShop();
         }
     }
