@@ -67,7 +67,7 @@ namespace BoatAttack.Fishing
             var go=new GameObject("Encounter label",typeof(TextMesh));go.transform.SetParent(parent,false);go.transform.localPosition=local;
             var text=go.GetComponent<TextMesh>();FishingXRText.Bind(text,value);text.font=FishingUIFont.Font;text.fontSize=48;text.characterSize=scale;
             text.anchor=TextAnchor.MiddleCenter;text.alignment=TextAlignment.Center;text.color=new Color(1,.94f,.75f);
-            if(text.font!=null)go.GetComponent<MeshRenderer>().sharedMaterial=text.font.material;
+            if(text.font!=null)FishingWorldText.Apply(text);
             return text;
         }
         private Enemy CreateEnemy(bool boss)

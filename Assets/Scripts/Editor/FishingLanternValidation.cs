@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Reflection;
 using BoatAttack.Fishing;
 using UnityEngine;
 namespace BoatAttack.EditorTools
@@ -78,6 +79,19 @@ namespace BoatAttack.EditorTools
                 Check(!c.LanternEquipped && !c.LanternOn && !holster.gameObject.activeSelf && !light.enabled && !c.FieldWorld.LanternSpill.enabled && c.Career.Backpack.Count(FieldItem.Lantern)>0,"stowing removes the waist model and both lights while retaining the owned item");
                 c.SelectFieldSlot(slot);c.PresentCharacterFrame();
                 Check(c.LanternEquipped,"equipping a stored lantern restores its wearable state");
+                var notebook=c.XRNotebook;var flags=BindingFlags.Instance|BindingFlags.NonPublic;
+                var selection=typeof(FishingXRNotebook).GetField("_bagSelection",flags);
+                var present=typeof(FishingXRNotebook).GetMethod("PresentDesktopBag",flags);
+                var equip=(UnityEngine.UI.Image)typeof(FishingXRNotebook).GetField("_bagEquip",flags).GetValue(notebook);
+                var equipText=equip.GetComponentInChildren<UnityEngine.UI.Text>();
+                selection.SetValue(notebook,slot);present.Invoke(notebook,null);
+                Check(equipText.text=="熄灯并收回" && equipText.preferredWidth<=equipText.rectTransform.rect.width,"the visible backpack stow action fits its button on one line");
+                equip.GetComponent<FishingNotebookButton>().Command();c.PresentCharacterFrame();
+                Check(!c.LanternEquipped && !holster.gameObject.activeSelf && c.Career.Backpack.Count(FieldItem.Lantern)>0,"the real backpack button stows without deleting the owned lamp");
+                selection.SetValue(notebook,slot);present.Invoke(notebook,null);
+                Check(equipText.text=="装备到腰侧" && equipText.preferredWidth<=equipText.rectTransform.rect.width,"the backpack re-equip action fits its button on one line");
+                equip.GetComponent<FishingNotebookButton>().Command();c.PresentCharacterFrame();
+                Check(c.LanternEquipped && (c.FieldWorld.LanternHeld || holster.gameObject.activeSelf),"the real backpack button restores the lantern presentation");
                 c.CycleFieldSlot();c.PresentCharacterFrame();
                 Check(!c.LanternEquipped && !c.LanternOn && !holster.gameObject.activeSelf && c.Career.Backpack.Equipped!=FieldItem.Lantern,"the actual Y equipment action stows the selected lantern and switches away without re-equipping it");
                 c.SelectFieldSlot(slot);

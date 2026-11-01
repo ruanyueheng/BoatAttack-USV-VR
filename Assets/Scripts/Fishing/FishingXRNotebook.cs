@@ -29,6 +29,8 @@ namespace BoatAttack.Fishing
         private Canvas _feedback;
         private Text _feedbackText,_feedbackTitle;
         private string _feedbackMessage;
+        private string _feedbackNotice,_feedbackWarning;
+        private float _nextFeedbackText;
         private Quaternion _feedbackYaw;
         private bool _toastFollowing,_feedbackWasVisible;
         private bool _guideLeftReady,_guideRightReady;
@@ -102,14 +104,19 @@ namespace BoatAttack.Fishing
             bool visible=XRSettings.isDeviceActive && _c.XRSeat.Ready && Application.isFocused && !IsOpen
                 && !_c.StartMenuOpen && !_c.Paused && !_c.StoryBlocksGameplay && !_c.DockConsole.Visible;
             _feedback.gameObject.SetActive(visible);if(!visible){_feedbackWasVisible=false;return;}
-            var message=_c.SaveWarning.Length>0?_c.SaveWarning:_c.VisibleMessage;
-            bool fighting=_c.Anchored && (_c.Session.Phase==CatchPhase.Bite || _c.Session.Phase==CatchPhase.Fighting || _c.Session.Phase==CatchPhase.Landing);
-            if(string.IsNullOrEmpty(message) || (fighting && _c.SaveWarning.Length==0))message=FishingXRHints.Guidance(_c);
-            else message+="\n"+FishingXRHints.NotebookHelp;
+            string notice=_c.VisibleMessage,warning=_c.SaveWarning;
+            if(!_feedbackWasVisible || Time.unscaledTime>=_nextFeedbackText || notice!=_feedbackNotice || warning!=_feedbackWarning)
+            {
+                _nextFeedbackText=Time.unscaledTime+.1f;_feedbackNotice=notice;_feedbackWarning=warning;
+                var message=warning.Length>0?warning:notice;
+                bool fighting=_c.Anchored && (_c.Session.Phase==CatchPhase.Bite || _c.Session.Phase==CatchPhase.Fighting || _c.Session.Phase==CatchPhase.Landing);
+                if(string.IsNullOrEmpty(message) || (fighting && warning.Length==0))message=FishingXRHints.Guidance(_c);
+                else message+="\n"+FishingXRHints.NotebookHelp;
+                if(message!=_feedbackMessage){_feedbackMessage=message;ApplyGuidanceText(message);}
+            }
             var forward=Vector3.ProjectOnPlane(_c.viewCamera.transform.forward,Vector3.up);
             var gaze=Quaternion.LookRotation(forward.sqrMagnitude>.1f?forward:_c.XRSeat.Origin.transform.forward,Vector3.up);
             if(!_feedbackWasVisible){_feedbackYaw=gaze;_toastFollowing=false;}_feedbackWasVisible=true;
-            if(message!=_feedbackMessage){_feedbackMessage=message;ApplyGuidanceText(message);}
             _feedbackTitle.color=_c.SaveWarning.Length>0?FishingUITheme.Coral:FishingHUD.CreamInk;
             // Lazy follow: the toast stays put until the gaze leaves it by 35°, then eases back in front.
             if(Quaternion.Angle(_feedbackYaw,gaze)>35)_toastFollowing=true;
@@ -161,6 +168,7 @@ namespace BoatAttack.Fishing
         public void Open(int page=0)
         {
             if(!XRSettings.isDeviceActive)return;
+            if(page!=ClassroomPage)_c.CloseClassroomMenu();
             if(page!=SavePage)CloseSaveSlots();
             if(page!=8 && (!IsOpen || _page!=page))_c.WorldAudio?.Play("UIConfirm",_c.ExplorerPosition,.24f);
             if(!IsOpen)
@@ -175,7 +183,7 @@ namespace BoatAttack.Fishing
             if(page==11){_guideLesson=0;ResetGuidePractice();}
             _canvas.gameObject.SetActive(true);_c.WorkshopWorld.SelectNearby();Refresh();
         }
-        public void Close(){CloseSaveSlots();bool wasOpen=IsOpen;IsOpen=false;_discardQuote="";_bagSelection=-1;if(_canvas!=null)_canvas.gameObject.SetActive(false);if(_ray!=null)_ray.enabled=false;ResetInput();if(wasOpen)_c?.Hands?.ResetInteraction();}
+        public void Close(){_c?.CloseClassroomMenu();CloseSaveSlots();bool wasOpen=IsOpen;IsOpen=false;_discardQuote="";_bagSelection=-1;if(_canvas!=null)_canvas.gameObject.SetActive(false);if(_ray!=null)_ray.enabled=false;ResetInput();if(wasOpen)_c?.Hands?.ResetInteraction();}
         public void ResetInput(){_menu.Reset();_primary.Reset();_board.Reset();_slot.Reset();_trigger.Reset();_turnReady=false;_tipSample=false;MotionReady=false;ResetPageGestures();_guideLeftTrigger.Reset();_guideLeftGrip.Reset();_guideRightGrip.Reset();_guideBoost.Reset();if(_homeDecor!=null)UpdateHomePointer(-1,false);}
         private bool ReArmMotion(Vector2 leftAxis,Vector2 rightAxis,bool boost)
         {
@@ -199,7 +207,7 @@ namespace BoatAttack.Fishing
             _status.fontSize=23;
             _map.gameObject.SetActive(_page==12 && _map.texture!=null);
             var day=_c.Career.Calendar;var bag=_c.Career.Backpack;
-            _status.text=BayClimate.Name(_c.Weather.Climate.Current)+"\n金币 "+_c.Career.CoinDisplay+"\n行囊 "+bag.UsedSlots+" / 36\n装备："+FishingBackpack.Name(bag.Equipped)+"\n"+_c.VisibleMessage;
+            _status.text=BayClimate.Name(_c.Weather.Climate.Current)+"\n金币 "+_c.Career.Coins+"\n行囊 "+bag.UsedSlots+" / 36\n装备："+FishingBackpack.Name(bag.Equipped)+"\n"+_c.VisibleMessage;
             for(int i=0;i<9;i++)Set(i,"—",null);
             if(_page==FishSalesPage)RefreshFishSales();
             else if(_page==21)RefreshHomeEcology();
@@ -263,7 +271,7 @@ namespace BoatAttack.Fishing
             }
             else if(_page==5)
             {
-                _status.text="海湾百货 · "+FishingSupplies.CategoryName(_offset/FishingSupplies.CategorySize)+" · 金币 "+_c.Career.CoinDisplay+"\n港口或店内柜台可购买\n用品进入背包；船舶升级立即生效\n"+_c.Message;
+                _status.text="海湾百货 · "+FishingSupplies.CategoryName(_offset/FishingSupplies.CategorySize)+" · 金币 "+_c.Career.Coins+"\n港口或店内柜台可购买\n用品进入背包；船舶升级立即生效\n"+_c.Message;
                 for(int i=0;i<6;i++)
                 {
                     int product=_offset+i;if(product>=FishingSupplies.Items.Length)break;
@@ -327,8 +335,8 @@ namespace BoatAttack.Fishing
                 Set(3,"存档 / 读取 / 新航程",OpenSaveSlots);
                 Set(4,"声音混音\nBGM / 音效 / 环境",()=>Open(20));
                 Set(5,"完整手柄教学\n安全练习全部按键",BeginGuide);
-                Set(6,"手部对齐 / 校准眼高",()=>Open(34));
-                Set(7,"创造模式 / 航行帮助",()=>Open(36));Set(8,"退出游戏",()=>Open(35));
+                Set(6,"日期与物资",OpenClassroomPage);
+                Set(7,"创造/帮助",()=>Open(CreativePage));Set(8,"手部/退出",()=>Open(HandAlignmentPage));
             }
             else if(_page==15)
             {
@@ -351,17 +359,18 @@ namespace BoatAttack.Fishing
             else if(_page==20)RefreshAudioPage();
             else if(_page==22)RefreshComfortPage();
             else if(_page==23)RefreshControlsPage();
-            else if(_page==34)RefreshHandAlignment();
-            else if(_page==36)
+            else if(_page==ClassroomPage)RefreshClassroomPage();
+            else if(_page==HandAlignmentPage)RefreshHandAlignment();
+            else if(_page==CreativePage)
             {
                 _status.text="创造模式 · 无限金币测试\n当前："+(_c.CreativeMode?"开启":"关闭")+"\n真实金币："+_c.Career.Coins+"\n开启后购买和升级不扣金币。\n可在安全位置免费升级甲板、发动机等。\n背包容量及专精互斥仍有效。\n开关会在本机记住，关闭后恢复正常计费。";
                 Set(0,"创造模式："+(_c.CreativeMode?"开\n点击关闭":"关\n点击开启"),()=>{_c.SetCreativeMode(!_c.CreativeMode);Refresh();});
                 Set(1,"序章 / 环境特效 / 救援",()=>Open(16));Set(7,"返回设置",()=>Open(14));Set(8,"返回首页",()=>Open());
                 Set(2,(_c.CreativeMode?"免费升级钓具 / 船舶":"钓具 / 船舶升级")+"\n包括甲板、发动机、舵",()=>Open(4));Set(3,"百货 / 测试用品",()=>Open(5));Set(4,"卖鱼 / 回收导航",OpenFishSales);
             }
-            else if(_page==35)
+            else if(_page==QuitPage)
             {
-                _status.text="退出游戏？\n将尝试自动保存当前航程。\n尚未入箱的鱼获不会计入存档。\n取消后可继续游戏。";
+                _status.text="退出游戏？\n将尝试自动保存当前航程。\n尚未入箱的鱼获不会计入存档。\n取消后可继续游戏。\n"+_c.SaveWarning;
                 Set(0,"确认退出游戏",()=>_c.QuitGame());Set(1,"取消 / 返回设置",()=>Open(14));Set(7,"返回设置",()=>Open(14));
                 Set(8,"返回首页",()=>Open());
             }
@@ -528,6 +537,7 @@ namespace BoatAttack.Fishing
             if(slotEdge){_c.CycleFieldSlot();return true;}
             if(action && !_c.XRSeat.HeadBlocked)
             {
+                if(!_c.Ashore && _c.SeaMarket.TryInteract())return true;
                 if(!_c.Ashore && _c.Anchored)
                 {if(_c.Hands.HoldRodForButtons()){if(_c.Session.Phase==CatchPhase.Bite)_c.Hook();else if(_c.CanChangeBait)_c.Cast();}}
                 else if(_c.Hands.HoldingRod){if(_c.Session.Phase==CatchPhase.Bite)_c.Hook();else _c.Cast();}
@@ -584,6 +594,7 @@ namespace BoatAttack.Fishing
         private void InteractTracked()
         {
             if(!_c.Ashore){_c.Interact();return;}
+            if((_c.BinocularsRaised || _c.Life?.Binoculars!=null && _c.Life.Binoculars.Active) && _c.Career.Backpack.Equipped==FieldItem.Binoculars){_c.FieldWorld.Observe();return;}
             if(_c.Combat?.NearbyHint!=null || _c.Voyage?.NearbyHint!=null || _c.HomeEcology?.NearbyHint!=null || _c.Keeper?.NearbyHint!=null || _c.TidalFlat?.NearbyHint!=null){_c.RequestWorldInteraction();return;}
             if(_c.HomeInteractionTargetSelected){_c.RequestWorldInteraction();return;}
             if(_c.Realms.TryTarget(out _,out _)){_c.Realms.Interact();return;}

@@ -1,4 +1,8 @@
-# BoatAttack USV VR — v0.44.0 绘本海岸与四境回响
+# BoatAttack USV VR — v0.56.0 夹鱼检视与受力竿弯整合
+
+本版在已合并的 0.55 上，同步同学 [PR #59](https://github.com/ruanyueheng/BoatAttack-USV-VR/pull/59) 截至 `984a6cf3` 的新增改动：左手夹鱼器与重力悬挂检视、随实际鱼线方向弯曲的 VR 鱼竿、统一震动倍率、提灯显式收回背包和左扳机岸上疾跑。补齐实际背包网格的收灯入口，保留原手部校准、创造模式、航程日期、速度调节、确认退出及 [PR #60](https://github.com/ruanyueheng/BoatAttack-USV-VR/pull/60) 的家园集市修复。详见[0.56 整合与验证](Docs/VALIDATION_V056.md)和[0.55 验证记录](Docs/VALIDATION_V055.md)。
+
+本版重做萝卜幼苗与种子袋、奶油漆墙面、五类动物住所及栏内活动，补齐菜园与限定商船实体碰撞，并完善商品价格、注视选择和 A 键购买。修复进入 VR 后商品牌变空、驻钓时购买被抛竿抢占及世界文字透墙。详见[0.54 验证与购买方法](Docs/VALIDATION_V054.md)。
 
 本版整合新的界面、四境机关、居民动作与配音、海上事件、守灯/潮汐、相机图鉴及 VR 交互；补齐古树、风车、沉船、灯塔，并修复航线穿入旧地形和家园泊位净空。详见[第44版改动](Docs/CHANGELOG_V044.md)、[验证与遗留](Docs/VALIDATION_V044.md)和[VR操作/实机清单](Docs/VR_CONTROLS_V044.md)。
 

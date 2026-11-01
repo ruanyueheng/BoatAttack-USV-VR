@@ -6,7 +6,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingXRNotebook
     {
-        public const int FishSalesPage=37;
+        public const int FishSalesPage=38;
         private string _fishSaleQuote;
         private float _fishSaleUntil;
         private FishingCareer _fishSaleProfile;

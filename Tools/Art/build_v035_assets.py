@@ -499,6 +499,12 @@ def build(name):
             foliage=bpy.data.materials['MAT-V035 coastal craftsmanship'].copy();foliage.name='MAT-V035 living foliage';foliage.use_backface_culling=False
         data.materials.append(foliage)
         for face,tile in zip(data.polygons,TILES):face.material_index=1 if tile in leaf_tiles else 0
+    if name=='CottageShell':
+        plaster=bpy.data.materials.new('MAT-V054 warm limewash');plaster.use_nodes=True
+        bsdf=next(n for n in plaster.node_tree.nodes if n.type=='BSDF_PRINCIPLED')
+        bsdf.inputs['Base Color'].default_value=(.83,.79,.67,1);bsdf.inputs['Roughness'].default_value=.92
+        data.materials.clear();data.materials.append(bpy.data.materials['MAT-V035 coastal craftsmanship']);data.materials.append(plaster)
+        for face,tile in zip(data.polygons,TILES):face.material_index=1 if tile==0 and face.center.z>.22 else 0
     colors=data.color_attributes.new(name='V035 wind weights',type='BYTE_COLOR',domain='CORNER')
     for face,tile in zip(data.polygons,TILES):
         color=(1,1,1,1 if tile in (8,9,10,11) else 0)

@@ -114,7 +114,7 @@ namespace BoatAttack.Fishing
         public bool QuitGame()
         {
             Save();SaveSettings();
-            if(CanContinue && ActiveSaveSlot>=0 && !string.IsNullOrEmpty(SaveWarning))
+            if(CanContinue && !string.IsNullOrEmpty(SaveWarning))
             {Notice("保存失败，暂未退出。请检查存档空间后重试。",8);return false;}
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying=false;

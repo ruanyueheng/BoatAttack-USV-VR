@@ -11,19 +11,21 @@ namespace BoatAttack.Fishing
         private FishingPrototype _c;
         private Transform _display,_net;
         private readonly List<UnityEngine.Object> _owned=new List<UnityEngine.Object>();
-        private readonly List<Transform> _fish=new List<Transform>(),_pets=new List<Transform>();
+        private readonly List<Transform> _fish=new List<Transform>();
+        private sealed class Pet { public Transform Root;public LandAnimalKind Kind;public int Id,Slot; }
+        private readonly List<Pet> _pets=new List<Pet>();
         private readonly Dictionary<int,Transform> _traps=new Dictionary<int,Transform>();
         private FishingCareer _profile;
         private int _day=-1,_sourceCount,_growthDays;
         private Material _glass;
         private Vector3 _heartPoint;
-        private float _trapAt,_heartUntil;
+        private float _trapAt,_heartUntil,_petTime;
         private Transform _hearts;
         public LandAnimalKind TrapKind=LandAnimalKind.Rabbit;
         public int Page;
         public bool NearHome=>_c.Ashore && FishingPrototype.FlatDistance(_c.ExplorerPosition,_c.Home.Origin)<22 && !_c.Shore.Swimming && !_c.Shore.Climbing;
         public Vector3 AquariumPosition=>_c.Home.Origin+new Vector3(2,.25f,-1.5f);
-        public Vector3 HabitatPosition(LandAnimalKind kind)=>_c.Home.Origin+new Vector3(-10+(int)kind*4,0,7.5f);
+        public Vector3 HabitatPosition(LandAnimalKind kind)=>_c.Home.Origin+new Vector3(-7.5f+(int)kind*4,0,7.5f);
         public void Build(FishingPrototype c){_c=c;Refresh();}
         private bool Active=>_c!=null && !_c.Paused && !_c.XRNotebook.BlocksGameplay && !_c.DockConsole.BlocksGameplay
             && !_c.ShopBlocksGameplay && !_c.StoryBlocksGameplay && (Application.isFocused || _c.Automated);
@@ -37,17 +39,38 @@ namespace BoatAttack.Fishing
             {
                 float t=Time.time*.5f+i*1.8f;var f=_fish[i];f.localPosition=new Vector3(Mathf.Sin(t)*.8f,.7f+(i%2)*.25f,Mathf.Cos(t)*.27f);f.localRotation=Quaternion.Slerp(f.localRotation,Quaternion.Euler(0,Mathf.Cos(t)>0?90:270,0),Mathf.Min(1,Time.deltaTime*3));
             }
-            for(int i=0;i<_pets.Count;i++)if(_pets[i]!=null && Active)_pets[i].localRotation=Quaternion.Euler(0,Mathf.Sin(Time.time*.35f+i)*35,0);
+            if(Active)AnimatePets(Time.deltaTime);
             if(_hearts!=null){_hearts.gameObject.SetActive(Time.time<_heartUntil);_hearts.position=_heartPoint+Vector3.up*(1.1f+(1-(_heartUntil-Time.time)/3)*.5f);_hearts.rotation=Quaternion.LookRotation(_hearts.position-_c.viewCamera.transform.position);}
+        }
+        private void AnimatePets(float delta)
+        {
+            _petTime+=delta;
+            foreach(var pet in _pets)
+            {
+                if(pet.Root==null)continue;
+                float rate=pet.Kind==LandAnimalKind.Tortoise?.045f:pet.Kind==LandAnimalKind.SeaTurtle?.07f:pet.Kind==LandAnimalKind.Rabbit?.18f:.13f;
+                float phase=Mathf.Repeat(_petTime*rate+pet.Id*.37f,2),leg=phase<1?1:-1,progress=Mathf.Min(1,(phase%1)/.65f);
+                var anchor=new Vector3(-1.04f+pet.Slot%4*.53f,.08f,1.16f+(pet.Slot/4)*.75f);
+                var offset=new Vector3(0,0,.10f);
+                var point=anchor+offset*(leg*Mathf.Lerp(-1,1,Mathf.SmoothStep(0,1,progress)));
+                float moving=progress<1?1:0;
+                float hop=pet.Kind==LandAnimalKind.Rabbit?.065f:pet.Kind==LandAnimalKind.Tortoise || pet.Kind==LandAnimalKind.SeaTurtle?.005f:.018f;
+                point.y+=Mathf.Abs(Mathf.Sin(progress*Mathf.PI*6))*hop*moving;
+                pet.Root.localPosition=point;
+                float yaw=Mathf.Atan2(offset.x*leg,offset.z*leg)*Mathf.Rad2Deg;
+                var facing=Quaternion.Euler(0,yaw+Mathf.Sin(_petTime*1.4f+pet.Id)*8*(1-moving),0);
+                pet.Root.localRotation=Quaternion.Slerp(pet.Root.localRotation,facing,Mathf.Min(1,delta*5));
+            }
         }
         public string NearbyHint
         {
             get
             {
                 if(!_c.Ashore)return null;
-                if(NearHome && Vector3.Distance(_c.ExplorerPosition,AquariumPosition)<2.4f)return "E 家园水族箱 · 展示、喂养与成长";
-                for(int i=0;i<5;i++)if(NearHome && Vector3.Distance(_c.ExplorerPosition,HabitatPosition((LandAnimalKind)i))<2.5f)return "E "+FishingCareer.HabitatName((LandAnimalKind)i)+" · 饲养与繁殖";
-                return NearbyTrap()!=null?"E 诱捕笼 · 上饵、收取或收回":null;
+                string key=XRSettings.isDeviceActive?"A ":"E ";
+                if(NearHome && Vector3.Distance(_c.ExplorerPosition,AquariumPosition)<2.4f)return key+"家园水族箱 · 展示、喂养与成长";
+                for(int i=0;i<5;i++)if(NearHome && Vector3.Distance(_c.ExplorerPosition,HabitatPosition((LandAnimalKind)i)+Vector3.forward*1.5f)<2.5f)return key+FishingCareer.HabitatName((LandAnimalKind)i)+" · 饲养与繁殖";
+                return NearbyTrap()!=null?key+"诱捕笼 · 上饵、收取或收回":null;
             }
         }
         public bool TryInteract(){if(NearbyHint==null)return false;Open();return true;}
@@ -177,17 +200,6 @@ namespace BoatAttack.Fishing
             foreach(var c in go.GetComponentsInChildren<Collider>())Destroy(c);
             if(resource=="FishingProps/CrateBody" || resource=="FishingV023/Items/Plank")foreach(var r in go.GetComponentsInChildren<Renderer>())r.sharedMaterial=_c.wood;return go.transform;
         }
-        private Transform FittedModel(string resource,Transform parent,Vector3 center,Vector3 size,bool solid=false)
-        {
-            var part=Model(resource,parent,center);if(part==null)return null;
-            var renderers=part.GetComponentsInChildren<Renderer>();if(renderers.Length==0)return part;
-            if(resource=="FishingV023/Items/Glass")foreach(var renderer in renderers){renderer.sharedMaterial=_glass;renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;}
-            var bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);
-            part.localScale=Vector3.Scale(part.localScale,new Vector3(size.x/Mathf.Max(.001f,bounds.size.x),size.y/Mathf.Max(.001f,bounds.size.y),size.z/Mathf.Max(.001f,bounds.size.z)));
-            bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);part.position+=parent.TransformPoint(center)-bounds.center;
-            if(solid){var box=parent.gameObject.AddComponent<BoxCollider>();box.center=center;box.size=size;}
-            return part;
-        }
         private void Pane(Transform parent,Vector3 center,Vector3 size,Material material=null)
         {
             var pane=GameObject.CreatePrimitive(PrimitiveType.Cube);Destroy(pane.GetComponent<Collider>());pane.name=material==null?"Aquarium glass pane":material.name;
@@ -230,19 +242,13 @@ namespace BoatAttack.Fishing
                 var kind=(LandAnimalKind)i;var root=new GameObject(FishingCareer.HabitatName(kind)).transform;root.SetParent(_display,false);var desired=HabitatPosition(kind);if(_c.Shore.Ground(new Vector3(desired.x,0,desired.z),out var ground))desired.y=ground.y;root.position=desired;
                 if(_profile.HabitatLevel(kind)>0)
                 {
-                    if(kind==LandAnimalKind.Rabbit || kind==LandAnimalKind.Fox)
-                    {
-                        FittedModel("FishingProps/CrateBody",root,new Vector3(0,.35f,0),new Vector3(1,.7f,.7f),true);
-                        foreach(float side in new[]{-1f,1f}){var roof=FittedModel("FishingV023/Items/Plank",root,new Vector3(side*.28f,.82f,0),new Vector3(.7f,.08f,1));if(roof!=null)roof.localRotation=Quaternion.Euler(0,0,side*-25);}
-                    }
-                    foreach(float x in new[]{-1.3f,1.3f})foreach(float z in new[]{-.5f,2.3f})FittedModel("FishingV023/Items/Plank",root,new Vector3(x,.35f,z),new Vector3(.1f,.7f,.1f),true);
-                    foreach(float z in new[]{-.5f,2.3f})FittedModel("FishingV023/Items/Plank",root,new Vector3(0,.4f,z),new Vector3(2.6f,.1f,.08f),true);
-                    foreach(float x in new[]{-1.3f,1.3f})FittedModel("FishingV023/Items/Plank",root,new Vector3(x,.4f,.9f),new Vector3(.08f,.1f,2.8f),true);
-                    if(kind==LandAnimalKind.Gull)FittedModel("FishingV023/Items/Plank",root,new Vector3(0,.9f,.8f),new Vector3(2.1f,.08f,.08f));
-                    if(kind==LandAnimalKind.SeaTurtle)
-                    {var water=FittedModel("FishingV023/Items/Glass",root,new Vector3(0,.09f,.9f),new Vector3(2.3f,.08f,2.4f));if(water!=null)foreach(var r in water.GetComponentsInChildren<Renderer>()){var block=new MaterialPropertyBlock();block.SetColor("_BaseColor",new Color(.2f,.6f,.75f,.3f));r.SetPropertyBlock(block);}}
+                    var mesh=FishingHomeHabitatArt.Build(kind,_profile.HabitatLevel(kind));_owned.Add(mesh);
+                    var shell=new GameObject("Shelter, exercise run and feeding station",typeof(MeshFilter),typeof(MeshRenderer));shell.transform.SetParent(root,false);
+                    shell.GetComponent<MeshFilter>().sharedMesh=mesh;shell.GetComponent<MeshRenderer>().sharedMaterial=FishingArt.Palette(_owned,_c.PaletteShader,"Coastal animal habitats",.12f,.04f);
+                    FishingHomeHabitatArt.AddCollision(root);
                 }
-                FishingV019Art.Sign(FishingCareer.HabitatName(kind),root,Vector3.up*1.3f,.011f,new Color(.85f,.92f,.82f));
+                string habitatLabel=FishingCareer.HabitatName(kind)+" · "+_profile.HousedAnimalCount(kind)+"/"+_profile.HabitatCapacity(kind);
+                FishingV019Art.Sign(habitatLabel,root,new Vector3(0,1.24f,2.6f),.011f,new Color(.85f,.92f,.82f));
                 int slot=0;
                 foreach(var a in _profile.HomeAnimals)if(a.housed && a.kind==kind)
                 {
@@ -253,11 +259,36 @@ namespace BoatAttack.Fishing
                         foreach(var col in pet.GetComponentsInChildren<Collider>())Destroy(col);
                         break;
                     }
-                    if(pet!=null){pet.localPosition=new Vector3((slot%4-1.5f)*.5f,.08f,1+(slot/4)*.55f);pet.localScale*=_profile.AnimalAdult(a.id)?.5f:.28f;_pets.Add(pet);}slot++;
+                    if(pet!=null)
+                    {
+                        var actor=new GameObject("Housed "+kind+" #"+a.id).transform;actor.SetParent(root,false);pet.SetParent(actor,false);pet.localPosition=Vector3.zero;
+                        var bounds=PetBounds(actor);
+                        float span=(kind==LandAnimalKind.Fox || kind==LandAnimalKind.SeaTurtle?.52f:.46f)*(_profile.AnimalAdult(a.id)?1:.6f);
+                        // Fit the turning diameter: a square turtle grows wider in its AABB halfway through a turn.
+                        pet.localScale*=span/Mathf.Max(.001f,new Vector2(bounds.size.x,bounds.size.z).magnitude);
+                        bounds=PetBounds(actor);pet.localPosition-=new Vector3(bounds.center.x,bounds.min.y,bounds.center.z);
+                        _pets.Add(new Pet{Root=actor,Kind=kind,Id=a.id,Slot=slot});
+                    }
+                    slot++;
                 }
             }
+            AnimatePets(0);
             foreach(var t in _profile.AnimalTraps){var trap=Model("FishingProps/CrateBody",_display,new Vector3(t.x,t.y,t.z),.45f);if(trap!=null){_traps[t.id]=trap;FishingV019Art.Sign(t.animalId>0?"已捕获":t.baited?"诱饵就绪":"空诱捕笼",trap,Vector3.up*1.3f,.018f,new Color(.85f,.92f,.82f));}}
             _hearts=FishingV019Art.Sign("♥  ♥",_display,_c.Home.Origin+new Vector3(0,1.5f,7.5f),.035f,new Color(1,.35f,.45f)).transform;
+        }
+        private static Bounds PetBounds(Transform actor)
+        {
+            var result=new Bounds();bool first=true;
+            foreach(var filter in actor.GetComponentsInChildren<MeshFilter>())
+            {
+                var bounds=filter.sharedMesh.bounds;var matrix=actor.worldToLocalMatrix*filter.transform.localToWorldMatrix;
+                for(int i=0;i<8;i++)
+                {
+                    var corner=matrix.MultiplyPoint3x4(bounds.center+Vector3.Scale(bounds.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1)));
+                    if(first){result=new Bounds(corner,Vector3.zero);first=false;}else result.Encapsulate(corner);
+                }
+            }
+            return result;
         }
         private void PresentNet()
         {

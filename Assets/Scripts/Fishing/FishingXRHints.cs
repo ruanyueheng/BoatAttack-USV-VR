@@ -11,19 +11,21 @@ namespace BoatAttack.Fishing
     public sealed class FishingXRHints : MonoBehaviour
     {
         public const string NotebookHelp="B 手册：地图 / 背包 / 设置与救援";
-        public enum Context { Shore, Boat, Fishing, Notebook, Story, Realm, Align, Climb, Camera, Craft }
-        public static readonly string[] ContextNames={"岸上行走","船上驾驶","驻钓 / 搏鱼","手册 / 菜单","对话 / 信件 / 过场","秘境机关","信标校准","攀爬绳梯","相机取景","手工 / 锻造"};
+        public const string CameraHelp="相机无需装备。右手举到眼前 22 厘米内，右扳机拍照；放下手收起。\n先收竿起航，用 Y 换下猎枪 / 望远镜；照片见 B → 航海手札 → 相册。";
+        public const string BinocularHelp="双手握住望远镜举到眼前，通过镜筒观察；移开或松握退出。\n右摇杆上下调倍，看向 22 米内陆地动物，A 记录；B → 航海手札 → 自然观察查看记录。";
+        public enum Context { Shore, Boat, Fishing, Notebook, Story, Realm, Align, Climb, Camera, Craft, Binocular }
+        public static readonly string[] ContextNames={"岸上行走","船上驾驶","驻钓 / 搏鱼","手册 / 菜单","对话 / 信件 / 过场","秘境机关","信标校准","攀爬绳梯","相机取景","手工 / 锻造","望远镜观察"};
         /// <summary>key: A B X Y Trigger Grip use PICO glyphs; Stick / Click / Menu are drawn as text.</summary>
         public static (string key,string text)[] Rows(Context context,bool left)
         {
             switch(context)
             {
                 case Context.Shore:return left
-                    ?new[]{("Stick",FishingXRComfort.Teleport?"前推瞄准 · 松开瞬移":"行走"),("Grip","疾跑（左扳机也可）"),("X","靠近泊船上船"),("Y","换装备 / 提灯入包"),("Menu","手册")}
-                    :new[]{("Stick",FishingXRComfort.TurnName+" · 按下跳跃"),("A","互动 / 对话 / 攀爬"),("Trigger","工具 / 提灯 / 确认信标"),("Grip","拾取 / 提灯 / 摇树 / 掀箱盖"),("B","手册")};
+                    ?new[]{("Stick",FishingXRComfort.Teleport?"前推瞄准 · 松开瞬移":"行走"),("Grip","移动时按住疾跑"),("Trigger","移动时按住疾跑"),("X","上船（靠近泊船）"),("Y","换装 / 收灯"),("Menu","手册")}
+                    :new[]{("Stick",FishingXRComfort.TurnName+" · 按下跳跃"),("A","互动 / 对话 / 攀爬"),("Trigger","工具 / 提灯开关 / 信标"),("Grip","拾取 / 提灯 / 摇树 / 掀箱盖"),("Trigger","右手举到眼前 22 厘米：拍照"),("B","手册")};
                 case Context.Boat:return left
                     ?new[]{("Stick","前推油门 · 后拉倒车"),("Grip","按住加速"),("Click","按下左摇杆亦可加速"),("Trigger","刹车"),("X","靠岸低速时上岸")}
-                    :new[]{("Stick","左右掌舵"),("A","钓点驻钓 / 互动"),("B","手册 / 收起面板")};
+                    :new[]{("Stick","左右掌舵"),("A","钓点驻钓 / 互动"),("Trigger","右手举到眼前 22 厘米：拍照"),("B","手册 / 收起面板")};
                 case Context.Fishing:return left
                     ?new[]{("Grip","握轮柄 · 转腕收线"),("Grip","鱼跃出水：松开"),("Grip","抄网 / 抓鱼")}
                     :new[]{("Grip","握竿，松开放下"),("Trigger","按住蓄力 · 松开抛竿 · 遛鱼按住收线"),("A","快捷抛竿 / 咬钩提竿"),("Click","收竿起航"),("B","手册 / 收起面板")};
@@ -44,7 +46,10 @@ namespace BoatAttack.Fishing
                     :new[]{("Grip","握住下一横档 · 下拉攀登"),("A","到端自动离开")};
                 case Context.Camera:return left
                     ?new[]{("Stick","可继续行走")}
-                    :new[]{("Trigger","拍照"),("B","收起 / 手册")};
+                    :new[]{("Trigger","拍照 · 放下右手收起相机"),("B","手册 → 航海手札 → 相册")};
+                case Context.Binocular:return left
+                    ?new[]{("Grip","握住镜筒，双手举到眼前"),("Y","切换装备"),("Stick","可缓慢接近动物")}
+                    :new[]{("Grip","握住镜筒 · 移开或松握退出"),("Stick","上下调倍"),("A","举镜后，看向 22 米内陆地动物并记录"),("B","手册 → 航海手札 → 自然观察")};
                 default:return left
                     ?new[]{("Grip","握住工具")}
                     :new[]{("Grip","握住工具 / 曲柄"),("A","切换配方"),("B","退出")};
@@ -56,9 +61,10 @@ namespace BoatAttack.Fishing
             if(c.HandGames!=null && c.HandGames.Active)return Context.Craft;
             if(c.StoryBlocksGameplay)return Context.Story;
             if(c.Expedition!=null && c.Expedition.Aligning)return Context.Align;
-            if(c.Life!=null && c.Life.Viewfinding)return Context.Camera;
+            if(c.Life!=null && (c.Life.Viewfinding || c.Life.VrRaised))return Context.Camera;
             if(!c.Ashore)return c.Anchored || c.HasPendingCatch?Context.Fishing:Context.Boat;
             if(c.Shore.Climbing)return Context.Climb;
+            if(c.Career.Backpack.Equipped==FieldItem.Binoculars && !c.Shore.Swimming && !(c.Realms!=null && c.Realms.Inside))return Context.Binocular;
             return c.Realms!=null && c.Realms.Inside?Context.Realm:Context.Shore;
         }
         public static string KeyName(string key,bool left)=>key=="Stick"?(left?"左摇杆":"右摇杆"):key=="Click"?(left?"按下左摇杆":"按下右摇杆"):key=="Menu"?"左菜单键":key=="Trigger"?(left?"左扳机":"右扳机"):key=="Grip"?(left?"左握把":"右握把"):key;
@@ -78,6 +84,7 @@ namespace BoatAttack.Fishing
             if(c.HasPendingCatch)return "钓到了 · 按 A 放入鱼箱，或在收获卡选择放生\n传说鱼：A 测量，再确认放生\n"+help;
             if(c.Expedition.Aligning)return "校准信标 · 右摇杆左右调转盘，A 确认，B 取消\n"+c.Expedition.AlignmentHint;
             if(!c.Ashore && c.Anchored)return FishingAction(c.Session,c.Hands.HoldingRod)+"\n按下右摇杆收竿起航 · B 手册换饵 / 返家";
+            if(c.Life!=null && c.Life.VrRaised)return "相机取景 · 右扳机拍照\n放下右手收起 · B → 航海手札 → 相册";
             string action;
             if(c.Ashore)
             {
@@ -85,14 +92,16 @@ namespace BoatAttack.Fishing
                 action=FishingXRText.Adapt(nearby ?? c.Shore.ActionTitle,true);
                 if(c.Shore.Climbing)return action+"\n双手握住横档交替下拉，或左摇杆上下；到端自动离开\n"+help;
                 if(c.Shore.Swimming)return "游泳 · 左摇杆朝浅岸移动，左握把加速\n靠近船边按 X 上船，右摇杆按下攀低台\n"+help;
+                if(c.Career.Backpack.Equipped==FieldItem.Binoculars)return (c.Life!=null && c.Life.Binoculars!=null && c.Life.Binoculars.Active?"望远镜已举起 · 看向动物，A 记录\n":"望远镜已选中 · 双手握住举到眼前\n")+BinocularHelp;
                 if(nearby==null)action+=" · "+(FishingXRComfort.Teleport?"左摇杆前推，松开瞬移":"左摇杆行走，左握把疾跑")+" · 右摇杆按下跳跃 · Y 换装备";
             }
-            else if(c.AtHarbor)action="潮汐渔港 · A 交付 / 出售，X 上岸\n左摇杆前进 / 倒车，右摇杆掌舵，左扳机刹车";
+            else if(c.AtHarbor)action="潮汐渔港 · A 交付 / 出售，X 上岸\n左摇杆前进 / 倒车，右摇杆掌舵";
             else if(c.SpotDistance<=22)action=c.Speed>3?"接近钓点 · 按住左扳机减速至停船，再按 A 驻钓":"A 驻钓 · 右握把拿竿后，A 抛竿 / 提竿";
-            else action="左摇杆前进 / 倒车 · 右摇杆掌舵 · 左扳机刹车 · 靠岸 X 下船";
+            else action="左摇杆前进 / 倒车 · 右摇杆掌舵 · 靠岸 X 下船";
             string goal=FishingXRText.Adapt(FishingVoyageWorld.CompactObjective(c.Career),true);
             if(!c.Ashore)
             {
+                action+="\n按住左握把加速 · 左扳机制动"+(c.Boost.Overheated?" · 过热冷却至 25%":c.Boost.Active?" · 加速中":"");
                 var delta=c.NavigationPosition-c.ExplorerPosition;
                 float bearing=Mathf.DeltaAngle(c.viewCamera.transform.eulerAngles.y,Mathf.Atan2(delta.x,delta.z)*Mathf.Rad2Deg);
                 string direction=Mathf.Abs(bearing)<12?"前方":(bearing<0?"左侧 ":"右侧 ")+Mathf.RoundToInt(Mathf.Abs(bearing))+"°";
@@ -179,7 +188,7 @@ namespace BoatAttack.Fishing
         private void LateUpdate()
         {
             if(_c==null)return;
-            bool xr=XRSettings.isDeviceActive && _c.XRSeat!=null && _c.XRSeat.Ready && Application.isFocused && !_c.Paused;
+            bool xr=XRSettings.isDeviceActive && _c.XRSeat!=null && _c.XRSeat.Ready && Application.isFocused && !_c.Paused && !_c.HandGames.Active;
             if(!xr){foreach(var tag in _tags)tag.Canvas.gameObject.SetActive(false);return;}
             var context=Current(_c);
             string nearby=context==Context.Shore || context==Context.Realm?FishingXRText.Adapt(_c.WorldInteractionTitle??"",true).TrimStart():"";

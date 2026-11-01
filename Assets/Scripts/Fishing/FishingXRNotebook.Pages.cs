@@ -10,7 +10,7 @@ namespace BoatAttack.Fishing
         private Text _pageTitle,_pageDate,_pageDetail,_pageSubtitle;
         private Image _pageLeaf,_pageLeafEdge;
         private int _pageHover=-1;
-        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤","储物箱 · 存入","储物箱 · 取出","声音混音","家园生态","VR 舒适","操作说明","信件","相册","照片图鉴","物品与整理","选择目标格","夕照中的金帆","航程存档","航海手札","世界与秘境","沿岸调查","手部对齐","退出游戏","创造模式","卖鱼回收"};
+        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤","储物箱 · 存入","储物箱 · 取出","声音混音","家园生态","VR 舒适","操作说明","信件","相册","照片图鉴","物品与整理","选择目标格","夕照中的金帆","航程存档","航海手札","世界与秘境","沿岸调查","航程设置","手部对齐","退出游戏","创造模式","卖鱼回收"};
 
         private void BuildNotebookPages()
         {
@@ -44,7 +44,7 @@ namespace BoatAttack.Fishing
             var panel=_canvas.GetComponent<Image>();panel.sprite=FishingPaperDesign.Surface(theme);panel.type=Image.Type.Sliced;panel.color=FishingPaperDesign.PaperTint;
             FishingUITheme.StyleHeading(_pageTitle,theme==FishingPaperTheme.Celestial?1:theme==FishingPaperTheme.Herbarium?2:theme==FishingPaperTheme.DreamSettings?4:0);
             _pageTitle.fontSize=42;
-            _pageTitle.text=_page==34?"手部对齐":_page==35?"退出游戏":_page==36?"创造模式":_page>=0 && _page<PageTitles.Length?PageTitles[_page]:"潮汐手册";
+            _pageTitle.text=_page==ClassroomPage?"航程设置":_page==HandAlignmentPage?"手部对齐":_page==QuitPage?"退出游戏":_page==CreativePage?"创造模式":_page>=0 && _page<PageTitles.Length?PageTitles[_page]:"潮汐手册";
             _pageDate.text=_c.Career.Calendar.DateLabel+"  /  "+_c.Career.Calendar.TimeLabel;
             bool guide=_page==11;
             _pageSubtitle.text=guide?"安全练习 "+(_guideLesson+1)+" / 3  ·  "+(_guideLesson<2?PracticeCount(_guidePracticed)+" / 5 项已完成":"航行与生活") : "潮汐手册  /  回潮海";
@@ -129,13 +129,13 @@ namespace BoatAttack.Fishing
         private void UpdatePagePointer(int index,bool held)
         {
             _pageHover=index;
-            if(_page==AlbumPage){_pageDetail.gameObject.SetActive(false);_status.gameObject.SetActive(true);for(int i=0;i<9;i++)ApplyPageState(i,held,false);return;}
+            if(_page==AlbumPage || _page==ClassroomPage || _page==HandAlignmentPage || _page==QuitPage || _page==CreativePage){_pageDetail.gameObject.SetActive(false);_status.gameObject.SetActive(true);for(int i=0;i<9;i++)ApplyPageState(i,held,false);return;}
             bool detail=index>=0 && index<6 && !string.IsNullOrEmpty(_pageContent[index]) && _pageContent[index]!="—";
             _pageDetail.gameObject.SetActive(detail);_status.gameObject.SetActive(!detail);
             if(detail)
             {
-                _pageDetail.text=_pageContent[index];HomeRect(_pageDetail.rectTransform,new Rect(62,191,_page==12?580:335,_page==12?120:471));
-                _pageDetail.fontSize=22;
+                _pageDetail.text=_pageContent[index];_pageDetail.fontSize=22;
+                HomeRect(_pageDetail.rectTransform,new Rect(62,191,_page==12?580:335,_page==12?120:_page==23?525:471));
                 while(_pageDetail.fontSize>20 && _pageDetail.preferredHeight>_pageDetail.rectTransform.rect.height)_pageDetail.fontSize--;
             }
             for(int i=0;i<9;i++)ApplyPageState(i,held,false);

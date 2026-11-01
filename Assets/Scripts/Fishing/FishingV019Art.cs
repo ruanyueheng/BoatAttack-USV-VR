@@ -35,7 +35,7 @@ namespace BoatAttack.Fishing
             var label = new GameObject("Sign " + text).AddComponent<TextMesh>(); label.transform.SetParent(parent, false);
             label.transform.localPosition = point; FishingXRText.Bind(label, text); label.font = FishingUIFont.Font;
             label.fontSize = 64; label.characterSize = size; label.anchor = TextAnchor.MiddleCenter; label.color = color;
-            label.GetComponent<MeshRenderer>().sharedMaterial = label.font.material;
+            FishingWorldText.Apply(label);
             // V044：浅色说明牌改为绘本标签牌（淡纸底 + 细金边、深墨字），靠近时淡入。
             if (color.grayscale > .6f) { label.color = FishingWorldSign.Ink; label.gameObject.AddComponent<FishingWorldSign>(); }
             return label;

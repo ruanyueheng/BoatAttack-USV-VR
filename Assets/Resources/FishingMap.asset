@@ -17,10 +17,10 @@ MonoBehaviour:
   worldXZBounds: {x: -820, y: -694, z: 825.98267, w: 570}
   seaLevel: 0
   sourceScene: Assets/scenes/Fishing/fishing_Island.unity
-  bakedUtc: 2026-10-28T09:12:53.0002094Z
+  bakedUtc: 2026-11-01T05:19:27.5404513Z
   includesInitializedScenery: 1
   terrainCount: 2
-  staticRendererCount: 1622
+  staticRendererCount: 1621
   terrainVertexCount: 526338
   metersPerTexel: {x: 0.8037025, y: 0.8035601}
   captureNotes: "North = +Z; UV origin = SW. One-shot explicit CommandBuffer.DrawMesh,
@@ -1946,9 +1946,6 @@ MonoBehaviour:
     (-182.77, 2.58, 24.13), Extents: (1.45, 0.47, 1.45)'
   - 'Mesh Fishing Prototype/V035 Home flowers and orchard/MeadowPatch/MeadowPatch(Clone)
     | GEO-MeadowPatch | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-184.90, 2.58, 21.49), Extents: (1.71, 0.47, 1.71)'
-  - 'Mesh Fishing Prototype/V035 Home flowers and orchard/MeadowPatch/MeadowPatch(Clone)
-    | GEO-MeadowPatch | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
     (-185.98, 2.58, 27.59), Extents: (1.57, 0.47, 1.57)'
   - 'Mesh Fishing Prototype/V035 Home flowers and orchard/MeadowPatch/MeadowPatch(Clone)
     | GEO-MeadowPatch | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
@@ -2011,8 +2008,8 @@ MonoBehaviour:
     firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-168.55, 2.57, 1.12), Extents:
     (0.03, 0.37, 0.03)'
   - 'Mesh Fishing Prototype/V035 home garden/Garden player rake | GEO-Rake | staticBatch=False
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-180.00, 2.73, 9.92), Extents:
-    (0.22, 0.53, 0.11)'
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-165.74, 2.32, 4.06), Extents:
+    (0.33, 0.52, 0.41)'
   - 'Mesh Fishing Prototype/V035 home garden/GardenFixtures/GardenFixtures(Clone)
     | Garden fixtures without fixed well bucket | staticBatch=False firstSubmesh=0
     opaqueDraws=2 rendererBounds=Center: (-160.00, 1.31, 12.78), Extents: (11.55,
@@ -2046,7 +2043,7 @@ MonoBehaviour:
     (-166.00, 2.34, 5.00), Extents: (1.02, 0.08, 1.02)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 1/Turnip0/Turnip0(Clone)
     | GEO-Turnip0 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-166.00, 2.44, 5.00), Extents: (0.53, 0.06, 0.53)"
+    (-166.00, 2.42, 5.00), Extents: (0.62, 0.06, 0.53)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 1/Turnip1/Turnip1(Clone)
     | GEO-Turnip1 | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-166.00, 2.45, 5.00), Extents: (0.59, 0.18, 0.59)"
@@ -2061,7 +2058,7 @@ MonoBehaviour:
     (-162.40, 2.34, 15.00), Extents: (1.02, 0.08, 1.02)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 10/Turnip0/Turnip0(Clone)
     | GEO-Turnip0 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-162.40, 2.44, 15.00), Extents: (0.53, 0.06, 0.53)"
+    (-162.40, 2.42, 15.00), Extents: (0.62, 0.06, 0.53)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 10/Turnip1/Turnip1(Clone)
     | GEO-Turnip1 | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-162.40, 2.45, 15.00), Extents: (0.59, 0.18, 0.59)"
@@ -2076,7 +2073,7 @@ MonoBehaviour:
     (-158.80, 2.34, 15.00), Extents: (1.02, 0.08, 1.02)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 11/Turnip0/Turnip0(Clone)
     | GEO-Turnip0 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-158.80, 2.44, 15.00), Extents: (0.53, 0.06, 0.53)"
+    (-158.80, 2.42, 15.00), Extents: (0.62, 0.06, 0.53)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 11/Turnip1/Turnip1(Clone)
     | GEO-Turnip1 | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-158.80, 2.45, 15.00), Extents: (0.59, 0.18, 0.59)"
@@ -2091,7 +2088,7 @@ MonoBehaviour:
     (-155.20, 2.34, 15.00), Extents: (1.02, 0.08, 1.02)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 12/Turnip0/Turnip0(Clone)
     | GEO-Turnip0 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-155.20, 2.44, 15.00), Extents: (0.53, 0.06, 0.53)"
+    (-155.20, 2.42, 15.00), Extents: (0.62, 0.06, 0.53)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 12/Turnip1/Turnip1(Clone)
     | GEO-Turnip1 | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-155.20, 2.45, 15.00), Extents: (0.59, 0.18, 0.59)"
@@ -2106,7 +2103,7 @@ MonoBehaviour:
     (-162.40, 2.34, 5.00), Extents: (1.02, 0.08, 1.02)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 2/Turnip0/Turnip0(Clone)
     | GEO-Turnip0 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-162.40, 2.44, 5.00), Extents: (0.53, 0.06, 0.53)"
+    (-162.40, 2.42, 5.00), Extents: (0.62, 0.06, 0.53)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 2/Turnip1/Turnip1(Clone)
     | GEO-Turnip1 | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-162.40, 2.45, 5.00), Extents: (0.59, 0.18, 0.59)"
@@ -2121,7 +2118,7 @@ MonoBehaviour:
     (-158.80, 2.34, 5.00), Extents: (1.02, 0.08, 1.02)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 3/Turnip0/Turnip0(Clone)
     | GEO-Turnip0 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-158.80, 2.44, 5.00), Extents: (0.53, 0.06, 0.53)"
+    (-158.80, 2.42, 5.00), Extents: (0.62, 0.06, 0.53)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 3/Turnip1/Turnip1(Clone)
     | GEO-Turnip1 | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-158.80, 2.45, 5.00), Extents: (0.59, 0.18, 0.59)"
@@ -2136,7 +2133,7 @@ MonoBehaviour:
     (-155.20, 2.34, 5.00), Extents: (1.02, 0.08, 1.02)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 4/Turnip0/Turnip0(Clone)
     | GEO-Turnip0 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-155.20, 2.44, 5.00), Extents: (0.53, 0.06, 0.53)"
+    (-155.20, 2.42, 5.00), Extents: (0.62, 0.06, 0.53)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 4/Turnip1/Turnip1(Clone)
     | GEO-Turnip1 | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-155.20, 2.45, 5.00), Extents: (0.59, 0.18, 0.59)"
@@ -2151,7 +2148,7 @@ MonoBehaviour:
     (-166.00, 2.34, 10.00), Extents: (1.02, 0.08, 1.02)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 5/Turnip0/Turnip0(Clone)
     | GEO-Turnip0 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-166.00, 2.44, 10.00), Extents: (0.53, 0.06, 0.53)"
+    (-166.00, 2.42, 10.00), Extents: (0.62, 0.06, 0.53)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 5/Turnip1/Turnip1(Clone)
     | GEO-Turnip1 | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-166.00, 2.45, 10.00), Extents: (0.59, 0.18, 0.59)"
@@ -2166,7 +2163,7 @@ MonoBehaviour:
     (-162.40, 2.34, 10.00), Extents: (1.02, 0.08, 1.02)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 6/Turnip0/Turnip0(Clone)
     | GEO-Turnip0 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-162.40, 2.44, 10.00), Extents: (0.53, 0.06, 0.53)"
+    (-162.40, 2.42, 10.00), Extents: (0.62, 0.06, 0.53)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 6/Turnip1/Turnip1(Clone)
     | GEO-Turnip1 | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-162.40, 2.45, 10.00), Extents: (0.59, 0.18, 0.59)"
@@ -2181,7 +2178,7 @@ MonoBehaviour:
     (-158.80, 2.34, 10.00), Extents: (1.02, 0.08, 1.02)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 7/Turnip0/Turnip0(Clone)
     | GEO-Turnip0 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-158.80, 2.44, 10.00), Extents: (0.53, 0.06, 0.53)"
+    (-158.80, 2.42, 10.00), Extents: (0.62, 0.06, 0.53)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 7/Turnip1/Turnip1(Clone)
     | GEO-Turnip1 | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-158.80, 2.45, 10.00), Extents: (0.59, 0.18, 0.59)"
@@ -2196,7 +2193,7 @@ MonoBehaviour:
     (-155.20, 2.34, 10.00), Extents: (1.02, 0.08, 1.02)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 8/Turnip0/Turnip0(Clone)
     | GEO-Turnip0 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-155.20, 2.44, 10.00), Extents: (0.53, 0.06, 0.53)"
+    (-155.20, 2.42, 10.00), Extents: (0.62, 0.06, 0.53)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 8/Turnip1/Turnip1(Clone)
     | GEO-Turnip1 | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-155.20, 2.45, 10.00), Extents: (0.59, 0.18, 0.59)"
@@ -2211,13 +2208,16 @@ MonoBehaviour:
     (-166.00, 2.34, 15.00), Extents: (1.02, 0.08, 1.02)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 9/Turnip0/Turnip0(Clone)
     | GEO-Turnip0 | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-166.00, 2.44, 15.00), Extents: (0.53, 0.06, 0.53)"
+    (-166.00, 2.42, 15.00), Extents: (0.62, 0.06, 0.53)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 9/Turnip1/Turnip1(Clone)
     | GEO-Turnip1 | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-166.00, 2.45, 15.00), Extents: (0.59, 0.18, 0.59)"
   - "Mesh Fishing Prototype/V035 home garden/\u83DC\u7566 9/Turnip2/Turnip2(Clone)
     | GEO-Turnip2 | staticBatch=False firstSubmesh=0 opaqueDraws=2 rendererBounds=Center:
     (-166.00, 2.49, 15.00), Extents: (0.64, 0.28, 0.64)"
+  - "Mesh Fishing Prototype/V035 home garden/\u841D\u535C\u79CD\u5B50\u888B | Three
+    folded radish seed packets | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
+    (-169.96, 3.23, 6.19), Extents: (0.47, 0.16, 0.07)"
   - 'Mesh Fishing Prototype/V044 painted lighthouse/Lighthouse(Clone) | GEO-Lighthouse
     | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-199.00,
     8.15, 22.00), Extents: (2.06, 5.95, 2.16)'
@@ -4062,9 +4062,6 @@ MonoBehaviour:
   - 'Mesh Island Level/Environment Objects/Mountains/Cliff_Wall_01 (3)/Cliff_Wall_01_LOD0
     | Combined Mesh (root: scene) 64 | staticBatch=True firstSubmesh=1 opaqueDraws=1
     rendererBounds=Center: (53.89, 32.75, -220.96), Extents: (64.82, 62.51, 30.33)'
-  - 'Mesh Island Level/Environment Objects/Mountains/Hero_Mountain (4)/Hero_Mountain_LOD0
-    | Combined Mesh (root: scene) 64 | staticBatch=True firstSubmesh=4 opaqueDraws=1
-    rendererBounds=Center: (-161.57, 13.98, -125.43), Extents: (82.05, 68.89, 65.79)'
   - 'Mesh Island Level/Environment Objects/Mountains/Hero_Mountain (6)/Hero_Mountain_LOD0
     | Combined Mesh (root: scene) 5 | staticBatch=True firstSubmesh=36 opaqueDraws=1
     rendererBounds=Center: (160.11, 5.73, -262.02), Extents: (87.89, 70.08, 52.78)'
@@ -4079,10 +4076,10 @@ MonoBehaviour:
     rendererBounds=Center: (118.24, 7.53, -66.63), Extents: (6.59, 12.61, 4.65)'
   - 'Mesh Island Level/Environment Objects/Props_Floating/KayakRoot (2)/Geo_Props_Kayak
     (4) | Geo_Props_Kayak | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-83.76, 0.37, -41.83), Extents: (0.76, 0.52, 2.09)'
+    (-83.77, 0.06, -41.82), Extents: (0.77, 0.33, 2.08)'
   - 'Mesh Island Level/Environment Objects/Props_Floating/KayakRoot/Geo_Props_Kayak
     (4) | Geo_Props_Kayak | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center:
-    (-84.71, 0.37, -44.56), Extents: (0.84, 0.52, 2.10)'
+    (-84.72, 0.06, -44.56), Extents: (0.84, 0.31, 2.09)'
   - 'Mesh Island Level/Environment Objects/SmallIsland/Rocks/Rock_Large_01 (2)/Rock_Large_01_LOD0
     | Combined Mesh (root: scene) 7 | staticBatch=True firstSubmesh=60 opaqueDraws=1
     rendererBounds=Center: (10.07, 3.07, 70.93), Extents: (6.78, 12.84, 4.70)'
@@ -4130,7 +4127,7 @@ MonoBehaviour:
     (26.19, 0.00, 24.99)'
   - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/V035 crafted coastal
     scenery/ObservatoryExterior/IvyDrape/IvyDrape(Clone) | Combined Mesh (root: scene)
-    17 | staticBatch=True firstSubmesh=10 opaqueDraws=2 rendererBounds=Center: (353.01,
+    17 | staticBatch=True firstSubmesh=9 opaqueDraws=2 rendererBounds=Center: (353.01,
     4.61, -359.46), Extents: (0.15, 0.85, 0.31)"
   - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/V035 crafted coastal
     scenery/ObservatoryExterior/IvyDrape/IvyDrape(Clone) | Combined Mesh (root: scene)
@@ -4138,7 +4135,7 @@ MonoBehaviour:
     4.61, -357.46), Extents: (0.31, 0.85, 0.15)"
   - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/V035 crafted coastal
     scenery/ObservatoryExterior/IvyDrape/IvyDrape(Clone) | Combined Mesh (root: scene)
-    25 | staticBatch=True firstSubmesh=16 opaqueDraws=2 rendererBounds=Center: (356.55,
+    25 | staticBatch=True firstSubmesh=15 opaqueDraws=2 rendererBounds=Center: (356.55,
     4.61, -354.68), Extents: (0.27, 0.85, 0.21)"
   - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/V035 crafted coastal
     scenery/ObservatoryExterior/IvyDrape/IvyDrape(Clone) | Combined Mesh (root: scene)
@@ -4146,11 +4143,11 @@ MonoBehaviour:
     4.61, -354.64), Extents: (0.27, 0.85, 0.21)"
   - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/V035 crafted coastal
     scenery/ObservatoryExterior/IvyDrape/IvyDrape(Clone) | Combined Mesh (root: scene)
-    48 | staticBatch=True firstSubmesh=2 opaqueDraws=2 rendererBounds=Center: (354.02,
+    48 | staticBatch=True firstSubmesh=1 opaqueDraws=2 rendererBounds=Center: (354.02,
     4.61, -353.38), Extents: (0.08, 0.85, 0.32)"
   - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/V035 crafted coastal
     scenery/ObservatoryExterior/IvyDrape/IvyDrape(Clone) | Combined Mesh (root: scene)
-    49 | staticBatch=True firstSubmesh=1 opaqueDraws=2 rendererBounds=Center: (355.82,
+    48 | staticBatch=True firstSubmesh=10 opaqueDraws=2 rendererBounds=Center: (355.82,
     4.61, -359.05), Extents: (0.21, 0.85, 0.27)"
   - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/V035 crafted coastal
     scenery/ObservatoryExterior/IvyDrape/IvyDrape(Clone) | Combined Mesh (root: scene)
@@ -4166,7 +4163,7 @@ MonoBehaviour:
     (354.00, 6.14, -356.50), Extents: (0.53, 0.64, 0.53)"
   - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/V035 crafted coastal
     scenery/ObservatoryExterior/TelescopeBase/TelescopeMount/TelescopeMount(Clone)
-    | Combined Mesh (root: scene) 41 | staticBatch=True firstSubmesh=12 opaqueDraws=1
+    | Combined Mesh (root: scene) 41 | staticBatch=True firstSubmesh=8 opaqueDraws=1
     rendererBounds=Center: (354.03, 6.90, -356.50), Extents: (0.47, 0.30, 0.22)"
   - "Mesh V018 explorable islands/\u661F\u671B\u9057\u8FF9\u5C9B/V035 crafted coastal
     scenery/ObservatoryExterior/TelescopeBase/TelescopeMount/TelescopeTube/TelescopeTube(Clone)
@@ -4329,7 +4326,7 @@ MonoBehaviour:
     Extents: (3.15, 2.85, 2.50)"
   - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V035 crafted coastal
     scenery/CoastalPine/CoastalPine(Clone) | Combined Mesh (root: scene) 19 | staticBatch=True
-    firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (-223.91, 7.58, 173.36),
+    firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (-223.91, 7.58, 173.36),
     Extents: (3.12, 2.85, 2.54)"
   - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V035 crafted coastal
     scenery/CoastalPine/CoastalPine(Clone) | Combined Mesh (root: scene) 29 | staticBatch=True
@@ -4340,8 +4337,8 @@ MonoBehaviour:
     firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (-215.12, 3.54, 204.98),
     Extents: (3.16, 2.85, 2.48)"
   - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V035 crafted coastal
-    scenery/CoastalPine/CoastalPine(Clone) | Combined Mesh (root: scene) 32 | staticBatch=True
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-197.57, 3.79, 195.10),
+    scenery/CoastalPine/CoastalPine(Clone) | Combined Mesh (root: scene) 31 | staticBatch=True
+    firstSubmesh=13 opaqueDraws=1 rendererBounds=Center: (-197.57, 3.79, 195.10),
     Extents: (3.14, 2.85, 2.52)"
   - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V035 crafted coastal
     scenery/CoastalPine/CoastalPine(Clone) | Combined Mesh (root: scene) 52 | staticBatch=True
@@ -4413,7 +4410,7 @@ MonoBehaviour:
     4.79, 166.63), Extents: (0.59, 1.57, 0.15)"
   - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V035 crafted coastal
     scenery/Windmill/IvyDrape/IvyDrape(Clone) | Combined Mesh (root: scene) 47 |
-    staticBatch=True firstSubmesh=15 opaqueDraws=2 rendererBounds=Center: (-197.30,
+    staticBatch=True firstSubmesh=14 opaqueDraws=2 rendererBounds=Center: (-197.30,
     4.79, 166.63), Extents: (0.59, 1.57, 0.15)"
   - "Mesh V018 explorable islands/\u6708\u7259\u98CE\u94C3\u5C9B/V035 crafted coastal
     scenery/Windmill/Windmill(Clone) | Combined Mesh (root: scene) 64 | staticBatch=True
@@ -4424,10 +4421,10 @@ MonoBehaviour:
     opaqueDraws=1 rendererBounds=Center: (-210.00, -1.41, 180.00), Extents: (34.00,
     7.11, 34.00)"
   - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V035 crafted coastal scenery/DunePalm/DunePalm(Clone)
-    | Combined Mesh (root: scene) 40 | staticBatch=True firstSubmesh=6 opaqueDraws=1
+    | Combined Mesh (root: scene) 40 | staticBatch=True firstSubmesh=4 opaqueDraws=1
     rendererBounds=Center: (-343.59, 3.70, -340.00), Extents: (2.72, 3.09, 2.53)"
   - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V035 crafted coastal scenery/DunePalm/DunePalm(Clone)
-    | Combined Mesh (root: scene) 49 | staticBatch=True firstSubmesh=7 opaqueDraws=1
+    | Combined Mesh (root: scene) 49 | staticBatch=True firstSubmesh=3 opaqueDraws=1
     rendererBounds=Center: (-367.21, 4.28, -323.21), Extents: (2.53, 3.09, 2.72)"
   - "Mesh V018 explorable islands/\u6C89\u8239\u6C99\u6D32/V035 crafted coastal scenery/DunePalm/DunePalm(Clone)
     | Combined Mesh (root: scene) 52 | staticBatch=True firstSubmesh=9 opaqueDraws=1
@@ -4466,11 +4463,11 @@ MonoBehaviour:
     (4.04, 3.62, 3.14)"
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V035 crafted coastal
     scenery/AncientTree/AncientTree(Clone) | Combined Mesh (root: scene) 35 | staticBatch=True
-    firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (215.87, 4.94, 147.94), Extents:
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (215.87, 4.94, 147.94), Extents:
     (3.47, 3.62, 4.01)"
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V035 crafted coastal
     scenery/AncientTree/AncientTree(Clone) | Combined Mesh (root: scene) 40 | staticBatch=True
-    firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (192.05, 4.46, 156.21), Extents:
+    firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (192.05, 4.46, 156.21), Extents:
     (3.98, 3.62, 3.37)"
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V035 crafted coastal
     scenery/AncientTree/AncientTree(Clone) | Combined Mesh (root: scene) 65 | staticBatch=True
@@ -4478,7 +4475,7 @@ MonoBehaviour:
     (6.55, 5.74, 4.74)"
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V035 crafted coastal
     scenery/MangroveTree/MangroveTree(Clone) | Combined Mesh (root: scene) 16 | staticBatch=True
-    firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (190.32, 4.83, 170.85), Extents:
+    firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (190.32, 4.83, 170.85), Extents:
     (4.03, 4.00, 3.95)"
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V035 crafted coastal
     scenery/MangroveTree/MangroveTree(Clone) | Combined Mesh (root: scene) 20 | staticBatch=True
@@ -4493,8 +4490,8 @@ MonoBehaviour:
     firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (191.32, 4.60, 159.85), Extents:
     (3.66, 4.00, 4.47)"
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V035 crafted coastal
-    scenery/MangroveTree/MangroveTree(Clone) | Combined Mesh (root: scene) 25 | staticBatch=True
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (210.07, 4.76, 146.03), Extents:
+    scenery/MangroveTree/MangroveTree(Clone) | Combined Mesh (root: scene) 24 | staticBatch=True
+    firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (210.07, 4.76, 146.03), Extents:
     (4.33, 4.00, 3.76)"
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V035 crafted coastal
     scenery/MangroveTree/MangroveTree(Clone) | Combined Mesh (root: scene) 26 | staticBatch=True
@@ -4505,20 +4502,20 @@ MonoBehaviour:
     firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (221.18, 4.99, 141.98), Extents:
     (4.46, 4.00, 3.63)"
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V035 crafted coastal
-    scenery/MangroveTree/MangroveTree(Clone) | Combined Mesh (root: scene) 33 | staticBatch=True
-    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (188.67, 4.84, 147.54), Extents:
-    (3.74, 4.00, 4.48)"
+    scenery/MangroveTree/MangroveTree(Clone) | Combined Mesh (root: scene) 32 | staticBatch=True
+    firstSubmesh=11 opaqueDraws=1 rendererBounds=Center: (188.67, 4.84, 147.54),
+    Extents: (3.74, 4.00, 4.48)"
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V035 crafted coastal
     scenery/MangroveTree/MangroveTree(Clone) | Combined Mesh (root: scene) 33 | staticBatch=True
-    firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (222.29, 4.72, 181.72), Extents:
+    firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (222.29, 4.72, 181.72), Extents:
     (3.68, 4.00, 4.42)"
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V035 crafted coastal
     scenery/MangroveTree/MangroveTree(Clone) | Combined Mesh (root: scene) 36 | staticBatch=True
-    firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (226.50, 4.67, 169.70), Extents:
+    firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (226.50, 4.67, 169.70), Extents:
     (3.87, 4.00, 4.20)"
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V035 crafted coastal
     scenery/MangroveTree/MangroveTree(Clone) | Combined Mesh (root: scene) 42 | staticBatch=True
-    firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (225.38, 5.16, 151.71), Extents:
+    firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (225.38, 5.16, 151.71), Extents:
     (3.74, 4.00, 4.34)"
   - "Mesh V018 explorable islands/\u7FE1\u7FE0\u6F6E\u6797\u5C9B/V035 crafted coastal
     scenery/MangroveTree/MangroveTree(Clone) | GEO-MangroveTree | staticBatch=False
@@ -4568,40 +4565,40 @@ MonoBehaviour:
     interior | Combined Mesh (root: scene) 62 | staticBatch=True firstSubmesh=0 opaqueDraws=1
     rendererBounds=Center: (210.00, -3.57, 160.00), Extents: (34.00, 5.14, 34.00)"
   - 'Mesh V044 grass clusters/Full/DuneGrass -41,-42 | Combined Mesh (root: scene)
-    19 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (-327.88,
+    19 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-327.88,
     1.29, -335.86), Extents: (1.09, 0.17, 1.13)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -41,-43 | Combined Mesh (root: scene)
-    42 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (-326.05,
+    42 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (-326.05,
     1.13, -340.76), Extents: (1.73, 0.26, 1.77)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -41,-44 | Combined Mesh (root: scene)
-    38 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (-325.47,
+    38 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-325.47,
     1.07, -346.17), Extents: (1.71, 0.26, 1.73)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -42,-41 | Combined Mesh (root: scene)
     10 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-329.94,
     1.25, -324.17), Extents: (1.71, 0.26, 1.66)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -42,-42 | Combined Mesh (root: scene)
-    40 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (-333.37,
+    40 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-333.37,
     1.34, -332.05), Extents: (4.36, 0.44, 4.90)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -42,-43 | Combined Mesh (root: scene)
     14 | staticBatch=True firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (-332.27,
     1.34, -340.83), Extents: (5.32, 0.38, 4.48)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -42,-44 | Combined Mesh (root: scene)
-    34 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (-332.58,
+    34 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (-332.58,
     1.18, -348.07), Extents: (5.13, 0.40, 4.30)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -42,-45 | Combined Mesh (root: scene)
-    19 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (-331.64,
+    19 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (-331.64,
     0.99, -356.23), Extents: (3.64, 0.30, 4.23)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -43,-41 | Combined Mesh (root: scene)
-    39 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (-340.21,
+    39 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (-340.21,
     1.13, -325.27), Extents: (3.52, 0.30, 3.69)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -43,-42 | Combined Mesh (root: scene)
-    34 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (-339.97,
+    34 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (-339.97,
     1.10, -331.54), Extents: (1.71, 0.26, 1.74)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -43,-43 | Combined Mesh (root: scene)
     30 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (-338.89,
     1.25, -339.41), Extents: (2.69, 0.42, 4.91)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -43,-44 | Combined Mesh (root: scene)
-    35 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (-338.95,
+    35 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (-338.95,
     1.34, -345.81), Extents: (4.61, 0.37, 2.33)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -43,-45 | Combined Mesh (root: scene)
     53 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (-338.44,
@@ -4622,19 +4619,19 @@ MonoBehaviour:
     30 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (-347.20,
     1.32, -359.99), Extents: (1.07, 0.17, 1.13)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -44,-46 | Combined Mesh (root: scene)
-    24 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-349.86,
+    23 | staticBatch=True firstSubmesh=17 opaqueDraws=1 rendererBounds=Center: (-349.86,
     1.30, -363.24), Extents: (2.98, 0.34, 2.64)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -45,-40 | Combined Mesh (root: scene)
-    36 | staticBatch=True firstSubmesh=9 opaqueDraws=1 rendererBounds=Center: (-355.62,
+    36 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (-355.62,
     1.19, -316.07), Extents: (1.74, 0.26, 1.75)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -45,-41 | Combined Mesh (root: scene)
-    17 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-358.02,
+    16 | staticBatch=True firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (-358.02,
     1.43, -322.02), Extents: (3.30, 0.26, 3.41)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -45,-42 | Full DuneGrass -45,-42 L0
     | staticBatch=False firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-356.33,
     1.34, -331.56), Extents: (3.88, 0.64, 4.55)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -45,-46 | Combined Mesh (root: scene)
-    49 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (-354.04,
+    49 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (-354.04,
     1.04, -365.16), Extents: (1.71, 0.26, 1.73)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -46,-40 | Combined Mesh (root: scene)
     27 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (-361.93,
@@ -4643,7 +4640,7 @@ MonoBehaviour:
     43 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (-363.42,
     1.23, -325.23), Extents: (3.68, 0.43, 4.09)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -46,-42 | Combined Mesh (root: scene)
-    50 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (-363.51,
+    50 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (-363.51,
     1.37, -331.65), Extents: (3.89, 0.65, 4.66)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -46,-43 | Combined Mesh (root: scene)
     28 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (-366.37,
@@ -4652,7 +4649,7 @@ MonoBehaviour:
     52 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (-366.50,
     1.22, -345.63), Extents: (1.20, 0.45, 1.18)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -46,-45 | Combined Mesh (root: scene)
-    35 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (-367.27,
+    35 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (-367.27,
     1.19, -359.39), Extents: (1.73, 0.26, 1.71)'
   - 'Mesh V044 grass clusters/Full/DuneGrass -47,-42 | Combined Mesh (root: scene)
     13 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (-371.41,
@@ -4664,40 +4661,40 @@ MonoBehaviour:
     31 | staticBatch=True firstSubmesh=12 opaqueDraws=1 rendererBounds=Center: (-371.48,
     1.05, -348.09), Extents: (1.07, 0.17, 1.13)'
   - 'Mesh V044 grass clusters/Full/FernClump 23,18 | Combined Mesh (root: scene)
-    19 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (189.17,
+    19 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (189.17,
     1.38, 150.89), Extents: (1.54, 0.43, 1.78)'
   - 'Mesh V044 grass clusters/Full/FernClump 23,20 | Combined Mesh (root: scene)
     46 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (185.61,
     1.23, 165.93), Extents: (1.16, 0.28, 1.13)'
   - 'Mesh V044 grass clusters/Full/FernClump 24,20 | Combined Mesh (root: scene)
-    25 | staticBatch=True firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (195.41,
+    25 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (195.41,
     1.24, 162.32), Extents: (2.71, 0.43, 2.09)'
   - 'Mesh V044 grass clusters/Full/FernClump 24,21 | Combined Mesh (root: scene)
-    42 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (197.58,
+    41 | staticBatch=True firstSubmesh=12 opaqueDraws=1 rendererBounds=Center: (197.58,
     1.34, 173.79), Extents: (3.33, 0.45, 1.96)'
   - 'Mesh V044 grass clusters/Full/FernClump 24,22 | Combined Mesh (root: scene)
     51 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (199.95,
     1.19, 182.78), Extents: (1.72, 0.43, 1.65)'
   - 'Mesh V044 grass clusters/Full/FernClump 25,16 | Combined Mesh (root: scene)
-    48 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (207.34,
+    48 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (207.34,
     1.39, 135.91), Extents: (1.80, 0.43, 1.80)'
   - 'Mesh V044 grass clusters/Full/FernClump 25,17 | Combined Mesh (root: scene)
     15 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (203.78,
     1.33, 140.26), Extents: (3.43, 0.59, 4.28)'
   - 'Mesh V044 grass clusters/Full/FernClump 25,18 | Combined Mesh (root: scene)
-    40 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (205.21,
+    39 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (205.21,
     1.29, 147.14), Extents: (3.47, 0.61, 1.13)'
   - 'Mesh V044 grass clusters/Full/FernClump 25,20 | Combined Mesh (root: scene)
-    41 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (200.98,
+    40 | staticBatch=True firstSubmesh=9 opaqueDraws=1 rendererBounds=Center: (200.98,
     1.21, 163.71), Extents: (1.08, 0.28, 1.08)'
   - 'Mesh V044 grass clusters/Full/FernClump 25,21 | Combined Mesh (root: scene)
-    32 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (204.97,
+    32 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (204.97,
     1.14, 171.95), Extents: (1.79, 0.43, 1.77)'
   - 'Mesh V044 grass clusters/Full/FernClump 25,22 | Combined Mesh (root: scene)
     10 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (205.08,
     1.36, 182.51), Extents: (3.34, 0.46, 1.95)'
   - 'Mesh V044 grass clusters/Full/FernClump 26,17 | Combined Mesh (root: scene)
-    36 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (211.56,
+    36 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (211.56,
     1.42, 142.97), Extents: (4.47, 0.62, 1.85)'
   - 'Mesh V044 grass clusters/Full/FernClump 26,18 | Combined Mesh (root: scene)
     26 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (211.14,
@@ -4712,10 +4709,10 @@ MonoBehaviour:
     11 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (210.12,
     1.26, 171.61), Extents: (2.88, 0.69, 4.28)'
   - 'Mesh V044 grass clusters/Full/FernClump 26,22 | Combined Mesh (root: scene)
-    32 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (210.00,
+    32 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (210.00,
     1.37, 178.91), Extents: (2.77, 0.60, 3.21)'
   - 'Mesh V044 grass clusters/Full/FernClump 26,23 | Combined Mesh (root: scene)
-    38 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (209.99,
+    37 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (209.99,
     1.18, 184.76), Extents: (2.21, 0.26, 0.41)'
   - 'Mesh V044 grass clusters/Full/FernClump 27,18 | Combined Mesh (root: scene)
     23 | staticBatch=True firstSubmesh=14 opaqueDraws=1 rendererBounds=Center: (221.66,
@@ -4724,34 +4721,34 @@ MonoBehaviour:
     31 | staticBatch=True firstSubmesh=9 opaqueDraws=1 rendererBounds=Center: (221.97,
     1.40, 161.61), Extents: (1.80, 0.43, 1.79)'
   - 'Mesh V044 grass clusters/Full/FernClump 28,17 | Combined Mesh (root: scene)
-    42 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (227.59,
+    42 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (227.59,
     1.35, 143.13), Extents: (1.03, 0.28, 1.13)'
   - 'Mesh V044 grass clusters/Full/FernClump 28,18 | Combined Mesh (root: scene)
-    41 | staticBatch=True firstSubmesh=9 opaqueDraws=1 rendererBounds=Center: (230.70,
+    41 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (230.70,
     1.32, 144.84), Extents: (1.76, 0.43, 1.57)'
   - 'Mesh V044 grass clusters/Full/FernClump 28,19 | Combined Mesh (root: scene)
     11 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (229.62,
     1.60, 155.26), Extents: (3.91, 0.50, 3.99)'
   - 'Mesh V044 grass clusters/Full/FernClump 28,20 | Combined Mesh (root: scene)
-    25 | staticBatch=True firstSubmesh=12 opaqueDraws=1 rendererBounds=Center: (225.39,
+    25 | staticBatch=True firstSubmesh=11 opaqueDraws=1 rendererBounds=Center: (225.39,
     1.36, 165.62), Extents: (2.15, 0.43, 2.83)'
   - 'Mesh V044 grass clusters/Full/FernClump 28,21 | Combined Mesh (root: scene)
-    16 | staticBatch=True firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (225.39,
+    16 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (225.39,
     1.15, 175.96), Extents: (1.10, 0.28, 1.14)'
   - 'Mesh V044 grass clusters/Full/FernClump 29,20 | Combined Mesh (root: scene)
     21 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (234.80,
     1.31, 167.29), Extents: (1.75, 0.43, 1.78)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -24,21 | Combined Mesh (root: scene)
-    42 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (-190.18,
+    42 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (-190.18,
     1.23, 175.00), Extents: (0.92, 0.17, 0.93)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -24,23 | Combined Mesh (root: scene)
     10 | staticBatch=True firstSubmesh=15 opaqueDraws=1 rendererBounds=Center: (-185.23,
     1.17, 187.32), Extents: (0.92, 0.17, 0.91)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -25,20 | Combined Mesh (root: scene)
-    47 | staticBatch=True firstSubmesh=10 opaqueDraws=1 rendererBounds=Center: (-192.37,
+    47 | staticBatch=True firstSubmesh=9 opaqueDraws=1 rendererBounds=Center: (-192.37,
     1.10, 163.13), Extents: (0.90, 0.17, 0.93)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -25,22 | Combined Mesh (root: scene)
-    36 | staticBatch=True firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (-195.60,
+    36 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (-195.60,
     1.22, 183.95), Extents: (0.89, 0.17, 0.90)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -25,23 | Combined Mesh (root: scene)
     10 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (-193.66,
@@ -4775,13 +4772,13 @@ MonoBehaviour:
     13 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (-209.38,
     1.87, 154.54), Extents: (0.89, 0.17, 0.90)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -27,20 | Combined Mesh (root: scene)
-    38 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (-209.30,
+    38 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (-209.30,
     2.93, 164.11), Extents: (2.09, 0.55, 2.70)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -27,21 | Combined Mesh (root: scene)
     30 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (-210.10,
     3.07, 172.64), Extents: (1.67, 0.29, 2.01)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -27,22 | Combined Mesh (root: scene)
-    50 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (-213.57,
+    50 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-213.57,
     2.74, 180.72), Extents: (1.82, 0.92, 4.40)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -27,23 | Combined Mesh (root: scene)
     31 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-210.41,
@@ -4790,7 +4787,7 @@ MonoBehaviour:
     15 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (-209.98,
     1.28, 196.55), Extents: (3.05, 0.29, 4.50)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -28,20 | Combined Mesh (root: scene)
-    41 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (-219.75,
+    40 | staticBatch=True firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (-219.75,
     5.10, 162.56), Extents: (0.91, 0.17, 0.92)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -28,21 | Combined Mesh (root: scene)
     18 | staticBatch=True firstSubmesh=10 opaqueDraws=1 rendererBounds=Center: (-220.19,
@@ -4802,16 +4799,16 @@ MonoBehaviour:
     46 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (-223.95,
     1.36, 193.62), Extents: (0.90, 0.17, 0.89)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -28,25 | Combined Mesh (root: scene)
-    19 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-216.57,
+    18 | staticBatch=True firstSubmesh=13 opaqueDraws=1 rendererBounds=Center: (-216.57,
     1.25, 202.74), Extents: (0.93, 0.17, 0.92)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -29,20 | Combined Mesh (root: scene)
     23 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (-230.56,
     3.77, 167.55), Extents: (0.91, 0.17, 0.92)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -29,21 | Combined Mesh (root: scene)
-    34 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (-230.51,
+    34 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-230.51,
     3.22, 174.15), Extents: (0.92, 0.17, 0.91)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -29,22 | Combined Mesh (root: scene)
-    42 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (-227.95,
+    41 | staticBatch=True firstSubmesh=13 opaqueDraws=1 rendererBounds=Center: (-227.95,
     2.66, 179.83), Extents: (0.93, 0.17, 0.90)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch -30,23 | Combined Mesh (root: scene)
     28 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (-234.41,
@@ -4820,34 +4817,34 @@ MonoBehaviour:
     20 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (350.02,
     1.39, -323.45), Extents: (3.05, 0.33, 4.50)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch 43,-42 | Combined Mesh (root: scene)
-    17 | staticBatch=True firstSubmesh=12 opaqueDraws=1 rendererBounds=Center: (349.37,
+    17 | staticBatch=True firstSubmesh=11 opaqueDraws=1 rendererBounds=Center: (349.37,
     2.02, -332.80), Extents: (1.54, 0.30, 1.93)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch 43,-43 | Combined Mesh (root: scene)
     13 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (351.17,
     2.33, -336.73), Extents: (1.34, 0.23, 1.69)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch 44,-42 | Combined Mesh (root: scene)
-    40 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (352.96,
+    39 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (352.96,
     1.80, -331.93), Extents: (0.77, 0.15, 0.79)'
   - 'Mesh V044 grass clusters/Full/FlowerPatch 44,-43 | Combined Mesh (root: scene)
-    17 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (354.94,
+    17 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (354.94,
     2.04, -336.03), Extents: (1.23, 0.23, 1.25)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -24,20 | Combined Mesh (root: scene)
-    47 | staticBatch=True firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (-189.29,
+    47 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (-189.29,
     0.86, 164.88), Extents: (1.76, 0.26, 1.73)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -24,21 | Combined Mesh (root: scene)
     30 | staticBatch=True firstSubmesh=10 opaqueDraws=1 rendererBounds=Center: (-187.40,
     1.18, 172.70), Extents: (2.81, 0.37, 4.33)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -24,22 | Combined Mesh (root: scene)
-    41 | staticBatch=True firstSubmesh=10 opaqueDraws=1 rendererBounds=Center: (-186.47,
+    41 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (-186.47,
     1.30, 177.99), Extents: (3.51, 0.31, 2.14)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -24,24 | Combined Mesh (root: scene)
-    49 | staticBatch=True firstSubmesh=11 opaqueDraws=1 rendererBounds=Center: (-189.91,
+    49 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (-189.91,
     1.17, 194.04), Extents: (3.59, 0.27, 3.69)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -25,19 | Combined Mesh (root: scene)
     28 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (-195.97,
     1.23, 159.09), Extents: (1.14, 0.17, 1.11)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -25,20 | Combined Mesh (root: scene)
-    24 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (-194.13,
+    24 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (-194.13,
     1.15, 163.93), Extents: (2.56, 0.23, 3.13)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -25,21 | Combined Mesh (root: scene)
     12 | staticBatch=True firstSubmesh=9 opaqueDraws=1 rendererBounds=Center: (-195.47,
@@ -4859,25 +4856,25 @@ MonoBehaviour:
     26 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-196.28,
     1.28, 187.65), Extents: (3.76, 0.27, 3.24)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -25,24 | Combined Mesh (root: scene)
-    25 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (-195.07,
+    25 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-195.07,
     1.24, 195.72), Extents: (3.60, 0.27, 5.28)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -26,19 | Combined Mesh (root: scene)
-    38 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-203.46,
+    37 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (-203.46,
     1.43, 157.27), Extents: (1.80, 0.20, 2.42)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -26,20 | Combined Mesh (root: scene)
     10 | staticBatch=True firstSubmesh=13 opaqueDraws=1 rendererBounds=Center: (-200.77,
     1.57, 163.79), Extents: (0.60, 0.23, 0.62)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -26,21 | Combined Mesh (root: scene)
-    47 | staticBatch=True firstSubmesh=14 opaqueDraws=1 rendererBounds=Center: (-204.23,
+    47 | staticBatch=True firstSubmesh=13 opaqueDraws=1 rendererBounds=Center: (-204.23,
     1.89, 173.20), Extents: (3.20, 0.60, 3.93)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -26,22 | Combined Mesh (root: scene)
-    42 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (-201.14,
+    42 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (-201.14,
     1.28, 183.29), Extents: (1.76, 0.26, 1.73)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -26,23 | Combined Mesh (root: scene)
-    48 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-202.81,
+    47 | staticBatch=True firstSubmesh=16 opaqueDraws=1 rendererBounds=Center: (-202.81,
     1.36, 188.41), Extents: (4.16, 0.30, 3.89)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -26,24 | Combined Mesh (root: scene)
-    48 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (-200.52,
+    48 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-200.52,
     1.36, 193.69), Extents: (1.72, 0.26, 1.72)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -27,19 | Combined Mesh (root: scene)
     18 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-212.21,
@@ -4889,7 +4886,7 @@ MonoBehaviour:
     43 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-211.50,
     3.46, 172.12), Extents: (3.92, 0.81, 4.75)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -27,22 | Combined Mesh (root: scene)
-    17 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (-213.57,
+    17 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (-213.57,
     2.81, 180.73), Extents: (0.94, 0.36, 0.94)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -27,23 | Combined Mesh (root: scene)
     12 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-212.02,
@@ -4898,10 +4895,10 @@ MonoBehaviour:
     43 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (-211.77,
     1.38, 198.36), Extents: (4.52, 0.38, 2.74)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -27,25 | Combined Mesh (root: scene)
-    36 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-211.31,
+    35 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (-211.31,
     1.28, 202.09), Extents: (3.73, 0.28, 1.71)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -28,19 | Combined Mesh (root: scene)
-    33 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (-220.58,
+    33 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (-220.58,
     3.94, 158.18), Extents: (4.45, 0.71, 3.59)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -28,20 | Combined Mesh (root: scene)
     46 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-219.79,
@@ -4910,7 +4907,7 @@ MonoBehaviour:
     53 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-217.62,
     5.36, 170.86), Extents: (1.72, 0.26, 1.77)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -28,22 | Combined Mesh (root: scene)
-    34 | staticBatch=True firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (-220.08,
+    34 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (-220.08,
     3.58, 179.58), Extents: (3.75, 1.24, 5.21)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -28,23 | Combined Mesh (root: scene)
     23 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (-219.54,
@@ -4919,55 +4916,55 @@ MonoBehaviour:
     44 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-221.23,
     1.38, 197.13), Extents: (1.64, 0.26, 1.73)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -28,25 | Combined Mesh (root: scene)
-    37 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (-219.32,
+    37 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-219.32,
     1.37, 201.43), Extents: (3.39, 0.33, 3.14)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -29,20 | Combined Mesh (root: scene)
-    37 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (-229.70,
+    36 | staticBatch=True firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (-229.70,
     3.11, 164.13), Extents: (1.12, 0.17, 1.15)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -29,21 | Combined Mesh (root: scene)
-    38 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (-227.74,
+    38 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (-227.74,
     4.53, 171.93), Extents: (4.81, 1.17, 3.23)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -29,22 | Combined Mesh (root: scene)
-    48 | staticBatch=True firstSubmesh=9 opaqueDraws=1 rendererBounds=Center: (-227.57,
+    48 | staticBatch=True firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (-227.57,
     2.95, 180.12), Extents: (4.83, 1.21, 5.55)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -29,23 | Combined Mesh (root: scene)
-    39 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (-226.25,
+    39 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (-226.25,
     1.98, 185.75), Extents: (1.76, 0.26, 1.71)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -29,24 | Combined Mesh (root: scene)
-    19 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (-225.97,
+    19 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (-225.97,
     1.33, 197.80), Extents: (3.42, 0.30, 3.47)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -30,21 | Combined Mesh (root: scene)
-    19 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (-233.53,
+    19 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (-233.53,
     2.51, 172.02), Extents: (1.13, 0.17, 1.11)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch -30,22 | Combined Mesh (root: scene)
     30 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (-235.44,
     1.91, 177.14), Extents: (1.76, 0.26, 1.77)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 23,18 | Combined Mesh (root: scene)
-    24 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (186.46,
+    24 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (186.46,
     1.28, 152.03), Extents: (1.74, 0.26, 1.70)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 23,19 | Combined Mesh (root: scene)
-    17 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (186.19,
+    17 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (186.19,
     1.23, 157.07), Extents: (3.39, 0.31, 3.30)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 23,20 | Combined Mesh (root: scene)
-    16 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (188.45,
+    16 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (188.45,
     1.21, 162.23), Extents: (4.58, 0.29, 3.44)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 24,17 | Combined Mesh (root: scene)
-    40 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (198.08,
+    40 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (198.08,
     1.11, 139.67), Extents: (3.11, 0.43, 3.45)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 24,18 | Combined Mesh (root: scene)
-    42 | staticBatch=True firstSubmesh=12 opaqueDraws=1 rendererBounds=Center: (194.01,
+    42 | staticBatch=True firstSubmesh=10 opaqueDraws=1 rendererBounds=Center: (194.01,
     1.30, 150.46), Extents: (3.06, 0.26, 1.75)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 24,19 | Combined Mesh (root: scene)
-    16 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (195.29,
+    16 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (195.29,
     1.22, 156.01), Extents: (4.40, 0.29, 4.36)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 24,20 | Combined Mesh (root: scene)
-    35 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (196.16,
+    34 | staticBatch=True firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (196.16,
     1.25, 163.13), Extents: (4.17, 0.28, 4.34)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 24,21 | Combined Mesh (root: scene)
     11 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (192.46,
     1.30, 175.46), Extents: (1.08, 0.17, 1.13)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 24,22 | Combined Mesh (root: scene)
-    39 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (195.72,
+    38 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (195.72,
     1.31, 178.38), Extents: (5.10, 0.31, 3.41)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 25,17 | Combined Mesh (root: scene)
     44 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (204.41,
@@ -4982,7 +4979,7 @@ MonoBehaviour:
     43 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (204.92,
     1.11, 164.64), Extents: (1.73, 0.26, 1.77)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 25,21 | Combined Mesh (root: scene)
-    38 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (200.46,
+    38 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (200.46,
     1.08, 170.31), Extents: (1.12, 0.17, 1.11)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 25,22 | Combined Mesh (root: scene)
     18 | staticBatch=True firstSubmesh=11 opaqueDraws=1 rendererBounds=Center: (203.90,
@@ -4991,7 +4988,7 @@ MonoBehaviour:
     21 | staticBatch=True firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (204.91,
     0.98, 185.21), Extents: (1.77, 0.26, 1.76)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 26,16 | Combined Mesh (root: scene)
-    37 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (215.83,
+    37 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (215.83,
     1.23, 135.98), Extents: (1.71, 0.26, 1.75)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 26,17 | Combined Mesh (root: scene)
     22 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (211.30,
@@ -5000,7 +4997,7 @@ MonoBehaviour:
     10 | staticBatch=True firstSubmesh=9 opaqueDraws=1 rendererBounds=Center: (214.27,
     1.43, 151.02), Extents: (1.70, 0.26, 1.75)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 26,19 | Combined Mesh (root: scene)
-    42 | staticBatch=True firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (210.66,
+    42 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (210.66,
     1.14, 152.62), Extents: (1.76, 0.26, 1.77)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 27,17 | Combined Mesh (root: scene)
     22 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (217.19,
@@ -5012,7 +5009,7 @@ MonoBehaviour:
     14 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (219.46,
     1.48, 156.12), Extents: (3.96, 0.42, 3.23)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 27,20 | Combined Mesh (root: scene)
-    39 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (220.15,
+    39 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (220.15,
     1.17, 165.25), Extents: (3.31, 0.33, 3.69)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 27,21 | Combined Mesh (root: scene)
     14 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (221.31,
@@ -5021,10 +5018,10 @@ MonoBehaviour:
     46 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (224.03,
     1.35, 139.09), Extents: (1.14, 0.17, 1.11)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 28,18 | Combined Mesh (root: scene)
-    37 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (226.10,
+    37 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (226.10,
     1.51, 147.18), Extents: (2.93, 0.32, 3.44)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 28,19 | Combined Mesh (root: scene)
-    37 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (228.19,
+    36 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (228.19,
     1.55, 154.82), Extents: (5.13, 0.37, 3.99)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 28,21 | Combined Mesh (root: scene)
     13 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (230.85,
@@ -5033,34 +5030,34 @@ MonoBehaviour:
     30 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (227.55,
     1.19, 177.64), Extents: (2.48, 0.30, 3.36)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 29,18 | Combined Mesh (root: scene)
-    35 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (232.80,
+    35 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (232.80,
     1.27, 150.02), Extents: (1.73, 0.26, 1.64)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 29,19 | Combined Mesh (root: scene)
     15 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (234.47,
     1.22, 156.83), Extents: (2.57, 0.43, 3.30)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 40,-42 | Combined Mesh (root: scene)
-    49 | staticBatch=True firstSubmesh=9 opaqueDraws=1 rendererBounds=Center: (325.13,
+    49 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (325.13,
     1.09, -332.64), Extents: (1.77, 0.26, 1.75)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 40,-43 | Combined Mesh (root: scene)
     10 | staticBatch=True firstSubmesh=12 opaqueDraws=1 rendererBounds=Center: (325.28,
     1.54, -338.20), Extents: (1.74, 0.26, 1.71)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 41,-42 | Combined Mesh (root: scene)
-    41 | staticBatch=True firstSubmesh=14 opaqueDraws=1 rendererBounds=Center: (334.31,
+    41 | staticBatch=True firstSubmesh=10 opaqueDraws=1 rendererBounds=Center: (334.31,
     1.65, -331.95), Extents: (1.12, 0.17, 1.15)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 41,-43 | Combined Mesh (root: scene)
     29 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (333.16,
     2.21, -341.57), Extents: (1.66, 0.26, 1.72)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 41,-44 | Combined Mesh (root: scene)
-    24 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (331.51,
+    24 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (331.51,
     2.42, -347.94), Extents: (3.92, 0.55, 5.12)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 41,-45 | Combined Mesh (root: scene)
-    42 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (333.33,
+    42 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (333.33,
     2.36, -358.73), Extents: (1.73, 0.26, 1.71)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 42,-40 | Combined Mesh (root: scene)
-    49 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (338.74,
+    49 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (338.74,
     1.36, -317.85), Extents: (3.81, 0.30, 3.62)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 42,-41 | Combined Mesh (root: scene)
-    25 | staticBatch=True firstSubmesh=10 opaqueDraws=1 rendererBounds=Center: (338.88,
+    25 | staticBatch=True firstSubmesh=9 opaqueDraws=1 rendererBounds=Center: (338.88,
     1.55, -327.98), Extents: (1.72, 0.26, 1.71)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 42,-42 | Combined Mesh (root: scene)
     18 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (342.92,
@@ -5069,10 +5066,10 @@ MonoBehaviour:
     53 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (339.05,
     2.83, -340.57), Extents: (3.80, 0.60, 2.79)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 42,-44 | Combined Mesh (root: scene)
-    24 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (338.61,
+    24 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (338.61,
     3.19, -347.48), Extents: (4.34, 0.64, 4.79)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 42,-45 | Combined Mesh (root: scene)
-    38 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (341.17,
+    37 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (341.17,
     3.19, -356.53), Extents: (2.17, 0.39, 3.55)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 42,-46 | Combined Mesh (root: scene)
     21 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (343.47,
@@ -5090,16 +5087,16 @@ MonoBehaviour:
     45 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (344.84,
     3.47, -354.34), Extents: (1.13, 0.17, 1.13)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 44,-42 | Combined Mesh (root: scene)
-    19 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (359.77,
+    19 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (359.77,
     1.64, -331.76), Extents: (1.71, 0.26, 1.74)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 44,-43 | Combined Mesh (root: scene)
-    42 | staticBatch=True firstSubmesh=11 opaqueDraws=1 rendererBounds=Center: (359.94,
+    42 | staticBatch=True firstSubmesh=9 opaqueDraws=1 rendererBounds=Center: (359.94,
     1.81, -336.32), Extents: (1.76, 0.26, 1.73)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 44,-46 | Combined Mesh (root: scene)
-    39 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (354.78,
+    39 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (354.78,
     1.64, -364.88), Extents: (1.12, 0.17, 1.15)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 45,-40 | Combined Mesh (root: scene)
-    48 | staticBatch=True firstSubmesh=8 opaqueDraws=1 rendererBounds=Center: (363.32,
+    48 | staticBatch=True firstSubmesh=7 opaqueDraws=1 rendererBounds=Center: (363.32,
     1.29, -318.35), Extents: (1.76, 0.26, 1.76)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 45,-41 | Combined Mesh (root: scene)
     28 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (363.40,
@@ -5108,25 +5105,25 @@ MonoBehaviour:
     31 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (364.10,
     1.43, -331.35), Extents: (2.24, 0.35, 3.25)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 45,-43 | Combined Mesh (root: scene)
-    41 | staticBatch=True firstSubmesh=15 opaqueDraws=1 rendererBounds=Center: (366.21,
+    41 | staticBatch=True firstSubmesh=11 opaqueDraws=1 rendererBounds=Center: (366.21,
     1.69, -341.35), Extents: (1.07, 0.17, 1.13)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 45,-44 | Combined Mesh (root: scene)
-    35 | staticBatch=True firstSubmesh=5 opaqueDraws=1 rendererBounds=Center: (365.73,
+    35 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (365.73,
     1.79, -345.47), Extents: (3.37, 0.34, 1.88)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 45,-45 | Combined Mesh (root: scene)
-    36 | staticBatch=True firstSubmesh=3 opaqueDraws=1 rendererBounds=Center: (365.95,
+    36 | staticBatch=True firstSubmesh=0 opaqueDraws=1 rendererBounds=Center: (365.95,
     1.69, -354.36), Extents: (1.77, 0.26, 1.75)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 46,-42 | Combined Mesh (root: scene)
     31 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (372.99,
     1.00, -330.60), Extents: (1.40, 0.40, 3.03)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 46,-43 | Combined Mesh (root: scene)
-    36 | staticBatch=True firstSubmesh=4 opaqueDraws=1 rendererBounds=Center: (370.95,
+    36 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (370.95,
     1.42, -339.71), Extents: (1.53, 0.24, 4.85)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 46,-44 | Combined Mesh (root: scene)
     52 | staticBatch=True firstSubmesh=1 opaqueDraws=1 rendererBounds=Center: (372.89,
     1.36, -351.45), Extents: (1.77, 0.26, 1.76)'
   - 'Mesh V044 grass clusters/Full/MeadowPatch 46,-45 | Combined Mesh (root: scene)
-    41 | staticBatch=True firstSubmesh=6 opaqueDraws=1 rendererBounds=Center: (369.55,
+    41 | staticBatch=True firstSubmesh=2 opaqueDraws=1 rendererBounds=Center: (369.55,
     1.36, -353.31), Extents: (1.14, 0.17, 1.15)'
   - Terrain Island Level/TerrainGroup/Terrain-0-0 | native heightmap 513
   - Terrain Island Level/TerrainGroup/Terrain-1-0 | native heightmap 513

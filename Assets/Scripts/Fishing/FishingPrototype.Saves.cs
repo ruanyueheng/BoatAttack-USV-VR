@@ -147,7 +147,7 @@ namespace BoatAttack.Fishing
             if(!CanContinue){SaveMenuMessage="没有本次可恢复的航程。请选择新建游戏或读取存档。";return;}
             MenuControls=false;SaveMenuOpen=false;TitleVoyage.Sail(true);
         }
-        private void RememberActiveSaveSlot(){if(!HasIsolatedProfile){PlayerPrefs.SetInt(ActiveSlotPreference,ActiveSaveSlot);PlayerPrefs.Save();}}
+        private void RememberActiveSaveSlot(){if(!HasIsolatedProfile && !ClassroomDemoActive){PlayerPrefs.SetInt(ActiveSlotPreference,ActiveSaveSlot);PlayerPrefs.Save();}}
         private bool CanSaveCheckpoint() => _initialized && !HasPendingCatch && !WorldActionBusy && !GuideOpening
             && !Prologue.Open && !Home.Sleeping && !Realms.Inside && !Realms.Transitioning
             && !Shore.Swimming && !Shore.Climbing
@@ -188,7 +188,7 @@ namespace BoatAttack.Fishing
         {
             if(!_initialized || !_savingReady || !CanContinue)return;
             // Explicit isolated acceptance keeps its historical single-file test contract.
-            if(HasIsolatedProfile)
+            if(HasIsolatedProfile || ClassroomDemoActive)
             {
                 try{FishingSaveStore.Save(SavePath,Career);SaveWarning=string.Empty;}
                 catch(Exception ex) when(ex is IOException || ex is UnauthorizedAccessException)

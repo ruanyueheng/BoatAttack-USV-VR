@@ -31,7 +31,12 @@ namespace BoatAttack.EditorTools
                 FishingV036FarmValidation.Aim(c,station.TransformPoint(new Vector3(0,1.1f,0)));yield return null;
                 Check(c.HandGames.TryTarget(out int target,out _) && target==game && c.HandGames.Begin(game),"World interaction starts the intended new handcraft "+game);
                 for(int i=0;i<20;i++)yield return null;
+                Check(Vector3.Distance(c.HandGames.ToolContact,c.HandGames.WorkPoint)<.012f,"The teeth/striking face rests on the real material instead of beside it "+game);
+                var support=(Transform[])typeof(FishingHandGames).GetField("_workLeft",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(c.HandGames);
+                Check(Vector3.Distance(support[game-2].position,c.HandGames.WorkPoint)>.25f,"The resting hand stays safely beside the cut/strike "+game);
+                if(game==2)Check(Vector3.Dot(c.HandGames.ActiveTool.up,-station.forward)>.99f && Vector3.Dot(c.HandGames.ActiveTool.right,Vector3.down)>.99f,"Saw length follows a forward/back kerf with its teeth downward");
                 var view=c.viewCamera.WorldToViewportPoint(c.HandGames.HandlePoint);Check(view.z>.25f && view.x>0 && view.x<1 && view.y>0 && view.y<1,"The working handle stays on screen and away from the eye "+game+" "+view);
+                Directory.CreateDirectory("Logs/V057");FishingV016Validation.Capture(c,"Logs/V057",game==2?"saw-rest":"forge-rest");
                 if(game==3)foreach(var filter in c.HandGames.ActiveTool.GetComponentsInChildren<MeshFilter>())
                 {
                     foreach(var vertex in filter.sharedMesh.vertices)
@@ -43,10 +48,20 @@ namespace BoatAttack.EditorTools
                 if(game==3)Check(true,"The complete hammer stays visible at its resting strike pose");
                 Directory.CreateDirectory("Logs/FeedbackToolsWorld");c.PresentCharacterFrame();FishingV016Validation.Capture(c,"Logs/FeedbackToolsWorld",game==2?"saw-table":"forge-table");
                 Check(Vector3.Distance(c.Shore.Character.PalmPosition(false),c.HandGames.HandlePoint)<.09f,"The real skinned working palm reaches the tool grip "+game+" palm="+c.Shore.Character.PalmPosition(false).ToString("F4")+" grip="+c.HandGames.HandlePoint.ToString("F4")+" shoulder="+c.Shore.Character.ShoulderPosition(false).ToString("F4")+" reach="+c.Shore.Character.ArmReach(false));
-                foreach(float edge in new[]{-.1f,.1f})
+                foreach(float edge in game==2?new[]{-.1f,.1f}:new[]{-.1f,.1f,.18f})
                 {
                     typeof(FishingHandGames).GetField("_motion",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(c.HandGames,game==2?new Vector2(.1f+edge,0):new Vector2(.1f,edge));yield return null;c.PresentCharacterFrame();
                     Check(Vector3.Distance(c.Shore.Character.PalmPosition(false),c.HandGames.HandlePoint)<.09f,"The real working palm still reaches the tool at motion extreme "+game+" "+edge+" distance="+Vector3.Distance(c.Shore.Character.PalmPosition(false),c.HandGames.HandlePoint));
+                    Check(Vector3.Dot(c.Shore.Character.PalmPosition(false)-c.Shore.Character.PalmPosition(true),c.Shore.Actor.right)>.12f,"Working arms do not cross at the motion extreme "+game+" "+edge);
+                    var delta=station.InverseTransformPoint(c.HandGames.ToolContact)-station.InverseTransformPoint(c.HandGames.WorkPoint);
+                    if(game==2)Check(Mathf.Abs(delta.x)<.005f && Mathf.Abs(delta.y)<.005f && Mathf.Abs(delta.z)<=.095f,"Saw teeth stay in the kerf throughout the forward/back stroke");
+                    else if(edge>0)Check(delta.y>.15f && Quaternion.Angle(c.HandGames.ActiveTool.localRotation,Quaternion.LookRotation(Vector3.right,Vector3.back))>15,"Hammer lifts in a wrist arc above the billet");
+                    if(game==3)foreach(var filter in c.HandGames.ActiveTool.GetComponentsInChildren<MeshFilter>())foreach(var vertex in filter.sharedMesh.vertices)
+                    {
+                        var p=c.viewCamera.WorldToViewportPoint(filter.transform.TransformPoint(vertex));
+                        if(p.z<=.25f || p.x<=0 || p.x>=1 || p.y<=0 || p.y>=1)throw new InvalidOperationException("Complete hammer must stay in view during the wrist arc "+edge+" "+p);
+                    }
+                    Directory.CreateDirectory("Logs/V057");FishingV016Validation.Capture(c,"Logs/V057",(game==2?"saw":"forge")+(edge<0?"-contact":"-raised"));
                 }
                 int input=c.Career.Backpack.Count(game==2?FieldItem.Driftwood:FieldItem.IronIngot);c.HandGames.Cancel();Check(c.Career.Backpack.Count(game==2?FieldItem.Driftwood:FieldItem.IronIngot)==input,"Cancel leaves all source material untouched "+game);yield return null;
                 FishingV036FarmValidation.Aim(c,station.TransformPoint(new Vector3(0,1.1f,0)));Check(c.HandGames.Begin(game),"The table can be reopened after cancellation "+game);var task=c.HandGames.Task;

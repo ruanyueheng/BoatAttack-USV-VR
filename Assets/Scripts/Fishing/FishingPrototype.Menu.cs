@@ -73,10 +73,10 @@ namespace BoatAttack.Fishing
             {
                 if(keyboard.escapeKey.wasPressedThisFrame)
                 {
-                    if(SaveConfirmation.Length>0)CancelSaveConfirmation();else if(SaveMenuOpen)CloseSaveMenu();else MenuControls=false;
+                    if(ClassroomMenuOpen)CloseClassroomMenu();else if(SaveConfirmation.Length>0)CancelSaveConfirmation();else if(SaveMenuOpen)CloseSaveMenu();else MenuControls=false;
                     SaveSettings();
                 }
-                else if(keyboard.enterKey.wasPressedThisFrame && !keyboard.leftAltKey.isPressed && !keyboard.rightAltKey.isPressed && !MenuControls && !SaveMenuOpen)
+                else if(keyboard.enterKey.wasPressedThisFrame && !keyboard.leftAltKey.isPressed && !keyboard.rightAltKey.isPressed && !MenuControls && !SaveMenuOpen && !ClassroomMenuOpen)
                 {if(CanContinue)ContinueFromMenu();else StartFromMenu();}
             }
             return true;

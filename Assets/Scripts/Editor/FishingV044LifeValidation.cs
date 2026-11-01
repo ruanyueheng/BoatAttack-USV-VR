@@ -20,7 +20,7 @@ namespace BoatAttack.EditorTools
         public static IEnumerator Checks(FishingPrototype c)
         {
             Check(c.Automated && c.HasIsolatedProfile && c.SavePath.StartsWith(Application.temporaryCachePath),"Only the isolated automation profile is used");
-            Rules();Saves();
+            Rules();Saves();HeadingChecks();
             string dir=Path.GetFullPath("Logs/V044/life");Directory.CreateDirectory(dir);
             foreach(var old in Directory.GetFiles(dir,"*.png"))File.Delete(old);
             var life=c.Life;Check(life!=null,"Life world is built");
@@ -52,6 +52,7 @@ namespace BoatAttack.EditorTools
                 if(!withPhotos)
                 {
                     Check(actions.Take(6).All(a=>a==null) && actions[6]==null && actions[8]==null && !preview.gameObject.activeSelf,"Empty XR album has no stale photo or invalid paging action");
+                    Check(status.text.Contains("22 厘米") && status.text.Contains("放下手收起") && status.preferredHeight<=status.rectTransform.rect.height,"Empty album explains the camera gesture and fits the reading leaf");
                     FishingXRPresentationValidation.CaptureCanvas(canvas,Path.Combine(dir,"life-xr-album-empty.png"));return;
                 }
                 var album=c.Life.Album;
@@ -84,6 +85,7 @@ namespace BoatAttack.EditorTools
                 F("_page").SetValue(book,FishingXRNotebook.PhotoCodexPage);F("_offset").SetValue(book,0);refresh.Invoke(book,null);
                 var content=(string[])F("_pageContent").GetValue(book);
                 Check(content[0].StartsWith("★ "+FishingPhotoCodex.Name(0)) && status.text.Contains("与桌面相册共用"),"XR photo codex reads the shared discoveries and photographed flags");
+                Check(status.text.Contains("22 厘米") && status.text.Contains("换下猎枪 / 望远镜") && status.preferredHeight<=status.rectTransform.rect.height,"Photo codex explains raising, shutter, stowing and competing tools without clipping");
                 FishingXRPresentationValidation.CaptureCanvas(canvas,Path.Combine(dir,"life-xr-photo-codex.png"));
                 F("_offset").SetValue(book,12);refresh.Invoke(book,null);
                 Check(actions[8]==null && actions[7]!=null && content[3].Contains(FishingPhotoCodex.Seen(c.Career,15)?FishingPhotoCodex.Name(15):"未见条目"),"XR codex reaches the final entry and retains a home action");
@@ -107,6 +109,21 @@ namespace BoatAttack.EditorTools
             Check(!FishingLifeWorld.PalmUp(Vector3.up*1.6f,new Vector3(0,1.25f,.3f),Quaternion.LookRotation(Vector3.forward,Vector3.up)),"Palm-up rule rejects a palm facing sideways");
             Check(!FishingLifeWorld.PalmUp(Vector3.up*1.6f,new Vector3(0,.8f,.2f),PalmUpRotation(Vector3.forward)),"Palm-up rule rejects a hand hanging at the hip");
             Check(FishingLifeWorld.RaisedToEye(Vector3.zero,Vector3.forward,new Vector3(0,0,.12f)) && !FishingLifeWorld.RaisedToEye(Vector3.zero,Vector3.forward,new Vector3(0,-.4f,.2f)),"Raise-to-eye rule");
+        }
+        private static void HeadingChecks()
+        {
+            var root=new GameObject("Isolated repeated title styling check",typeof(RectTransform),typeof(Canvas));
+            try
+            {
+                var go=new GameObject("Heading",typeof(RectTransform),typeof(Text));go.transform.SetParent(root.transform,false);
+                var text=go.GetComponent<Text>();text.text="回潮海";FishingUITheme.StyleHeading(text);
+                int dirty=0;text.RegisterDirtyVerticesCallback(()=>dirty++);
+                for(int i=0;i<10;i++)FishingUITheme.StyleHeading(text);
+                Check(dirty==0,"Repeated identical heading styling never dirties the text mesh");
+                FishingUITheme.StyleHeading(text,1);
+                Check(dirty>0 && text.color==FishingUITheme.TitleFill(1) && text.GetComponent<Outline>().effectColor==FishingUITheme.Gold,"Changing heading theme still updates the authored ink and gilt outline");
+            }
+            finally{UnityEngine.Object.DestroyImmediate(root);}
         }
         private static Quaternion PalmUpRotation(Vector3 forward)
         {
@@ -395,8 +412,35 @@ namespace BoatAttack.EditorTools
                 int taken=life.PhotosTaken;
                 life.DebugRightHand=new Pose(eye.position+eye.forward*.1f,eye.rotation);yield return null;yield return null;
                 Check(life.VrRaised,"Right hand at the eye raises the camera");
+                Check(FishingXRHints.Current(c)==FishingXRHints.Context.Camera && FishingXRHints.Guidance(c).Contains("右扳机拍照"),"VR raised camera selects its own controller context and next-action guidance");
                 life.DebugPressShutter();yield return null;yield return null;
                 Check(life.PhotosTaken==taken+1,"VR trigger takes a photo");
+                var landing=Land(c);while(landing.MoveNext())yield return landing.Current;
+                var bag=c.Career.Backpack;int previous=bag.Selected;
+                foreach(var item in new[]{FieldItem.HuntingRifle,FieldItem.Binoculars})
+                {
+                    if(bag.Count(item)==0)Check(bag.TryAdd(item,1),"Camera exclusion fixture owns "+item);
+                    int slot=Enumerable.Range(0,FishingBackpack.SlotCount).First(i=>bag.At(i).item==item);
+                    if(slot>=FishingBackpack.HotbarCount){Check(bag.Move(slot,previous),"Camera exclusion fixture equips "+item);slot=previous;}
+                    c.SelectFieldSlot(slot);life.DebugRightHand=new Pose(eye.position+eye.forward*.1f,eye.rotation);
+                    life.DebugPressShutter();yield return null;yield return null;
+                    Check(!life.VrRaised && life.PhotosTaken==taken+1,"Raising "+item+" cannot open or fire the camera");
+                    if(item==FieldItem.Binoculars)
+                    {
+                        string guidance=FishingXRHints.Guidance(c);
+                        Check(FishingXRHints.Current(c)==FishingXRHints.Context.Binocular && guidance.Contains("双手")
+                            && guidance.Contains("握") && guidance.Contains("22 米") && guidance.Contains("A 记录"),
+                            "Selected binoculars explain both physical grips, the real range and the record button");
+                        if(UnityEngine.XR.XRSettings.isDeviceActive)
+                        {
+                            c.UseFieldItem();
+                            Check(!c.BinocularsRaised,"An XR use-button press cannot bypass the physical binocular grip gate");
+                        }
+                        life.Binoculars.PresentForValidation(false,Vector3.zero,Vector3.zero);
+                        Check(!life.Binoculars.Active,"Selected binoculars without tracked palms cannot activate physical optics");
+                    }
+                }
+                c.SelectFieldSlot(previous);
                 life.DebugRightHand=new Pose(eye.position+Vector3.down*.6f,eye.rotation);yield return null;yield return null;
                 Check(!life.VrRaised,"Lowering the right hand puts the camera away");
             }

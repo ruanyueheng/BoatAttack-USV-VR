@@ -21,6 +21,13 @@ internal static class FeedbackToolsTests
         var parts=new FishingHandTask(FishingHandTaskKind.Forge,true);var iron=new FishingBackpack();iron.TryAdd(FieldItem.IronIngot,6);for(int i=0;i<40;i++)for(int f=0;f<12;f++)parts.Sample(0,i%2==0?-.1f:.1f,.02f);check(parts.Complete && parts.Claim(iron) && iron.Count(FieldItem.GunParts)==1 && iron.Count(FieldItem.IronIngot)==0,"Forge can shape the six-ingot real gun-parts recipe");
         var forge=new FishingHandTask(FishingHandTaskKind.Forge);for(int i=0;i<80;i++)for(int j=0;j<12;j++)forge.Sample(i%2==0?-.1f:.1f,0,.02f);
         check(forge.Progress==0,"Sideways movement cannot fake downward forge strikes");
+        var airborne=new FishingHandTask(FishingHandTaskKind.Forge);
+        for(int i=0;i<30;i++)for(int j=0;j<12;j++)airborne.Sample(0,i%2==0?.10f:.20f,.02f);
+        check(airborne.Strokes==0,"A hammer moving above the billet cannot forge in mid-air");
+        for(int i=0;i<12;i++)airborne.Sample(0,0,.02f);
+        check(airborne.Strokes==1,"An armed hammer counts once when its face reaches the billet");
+        for(int i=0;i<30;i++)airborne.Sample(0,.01f,.02f);
+        check(airborne.Strokes==1,"Resting on the billet cannot repeat a strike");
         foreach(int version in new[]{15,16,17})foreach(var tool in new[]{FieldItem.Axe,FieldItem.Shovel,FieldItem.Rake})
         {
             var source=new FishingCareer().Snapshot();source.version=version;source.backpack[1]=new FieldStack{item=tool,count=1};

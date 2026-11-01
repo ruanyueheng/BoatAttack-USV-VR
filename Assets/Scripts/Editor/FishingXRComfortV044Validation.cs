@@ -183,7 +183,7 @@ namespace BoatAttack.EditorTools
                     {
                         type.GetMethod("UpdatePagePointer",Private).Invoke(notebook,new object[]{0,false});
                         var detail=(Text)type.GetField("_pageDetail",Private).GetValue(notebook);
-                        Check(detail.gameObject.activeSelf && detail.preferredHeight<=detail.rectTransform.rect.height,"操作说明 detail lists every key of a context without overflow");
+                        Check(detail.gameObject.activeSelf && detail.preferredHeight<=detail.rectTransform.rect.height,"操作说明 detail lists every key of a context without overflow: "+detail.preferredHeight+" / "+detail.rectTransform.rect.height);
                         FishingXRPresentationValidation.CaptureCanvas(screen,Path.Combine(evidence,"notebook-controls-detail.png"));
                         type.GetMethod("UpdatePagePointer",Private).Invoke(notebook,new object[]{-1,false});
                     }
