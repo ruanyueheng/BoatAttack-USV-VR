@@ -8,7 +8,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingCharacter
     {
-        private Mesh _firstPersonMesh,_xrFirstPersonMesh,_tabletopMesh,_desktopMesh;
+        private Mesh _firstPersonMesh,_xrFirstPersonMesh,_xrTabletopMesh,_tabletopMesh,_desktopMesh;
         public Mesh TrackedHandsMesh=>_xrFirstPersonMesh;
         public Mesh TabletopArmsMesh=>_tabletopMesh;
         public SkinnedMeshRenderer FirstPersonSkin { get; private set; }
@@ -93,6 +93,15 @@ namespace BoatAttack.Fishing
                 }
                 _xrFirstPersonMesh.SetTriangles(visible,sub,false);
             }
+            _xrTabletopMesh=Instantiate(_xrFirstPersonMesh);_xrTabletopMesh.name="Beach body • tracked tabletop hands";
+            for(int sub=0;sub<source.subMeshCount;sub++)
+            {
+                var triangles=_xrFirstPersonMesh.GetTriangles(sub);var visible=new List<int>();
+                for(int i=0;i<triangles.Length;i+=3)
+                    if(Weight(handBones,weights[triangles[i]])>=.8f || Weight(handBones,weights[triangles[i+1]])>=.8f || Weight(handBones,weights[triangles[i+2]])>=.8f)
+                    {visible.Add(triangles[i]);visible.Add(triangles[i+1]);visible.Add(triangles[i+2]);}
+                _xrTabletopMesh.SetTriangles(visible,sub,false);
+            }
             if(HiddenNeckTriangles==0 || HiddenTorsoTriangles==0)throw new InvalidOperationException("源人物没有可识别的头颈/躯干区域，拒绝静默跳过第一人称遮罩");
             var go=new GameObject("Beach_Body_FirstPerson");go.layer=BodySkin.gameObject.layer;
             go.transform.SetParent(BodySkin.transform,false);
@@ -114,7 +123,7 @@ namespace BoatAttack.Fishing
         {
             // 同源近眼躯干遮罩也用于 XR；HMD 投影与实际手柄位置保持独立。
             bool local=firstPerson || _tabletopView;bool tracked=XRSettings.isDeviceActive;
-            FirstPersonSkin.sharedMesh=tracked?_xrFirstPersonMesh:_tabletopView?_tabletopMesh:_desktopMesh;BodySkin.forceRenderingOff=tracked;
+            FirstPersonSkin.sharedMesh=tracked?(_tabletopView?_xrTabletopMesh:_xrFirstPersonMesh):_tabletopView?_tabletopMesh:_desktopMesh;BodySkin.forceRenderingOff=tracked;
             foreach(var renderer in _renderers)renderer.shadowCastingMode=local && (_tabletopView || _headWear.Contains(renderer)) && renderer!=BodySkin && renderer!=HeadSkin?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
             HeadSkin.shadowCastingMode=local?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
             BodySkin.shadowCastingMode=local?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
@@ -132,7 +141,7 @@ namespace BoatAttack.Fishing
         }
         private void OnDestroy()
         {
-            if(_firstPersonMesh!=null)Destroy(_firstPersonMesh);if(_xrFirstPersonMesh!=null)Destroy(_xrFirstPersonMesh);if(_tabletopMesh!=null)Destroy(_tabletopMesh);if(_desktopMesh!=null)Destroy(_desktopMesh);
+            if(_firstPersonMesh!=null)Destroy(_firstPersonMesh);if(_xrFirstPersonMesh!=null)Destroy(_xrFirstPersonMesh);if(_xrTabletopMesh!=null)Destroy(_xrTabletopMesh);if(_tabletopMesh!=null)Destroy(_tabletopMesh);if(_desktopMesh!=null)Destroy(_desktopMesh);
             if(_waistMesh!=null)Destroy(_waistMesh);
         }
     }
