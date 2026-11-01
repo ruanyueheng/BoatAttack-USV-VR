@@ -225,7 +225,7 @@ namespace BoatAttack.Fishing
                 float d=Vector3.Distance(p.Feet,_c.Shore.Position);
                 if(p.Root!=null && p.Root.gameObject.activeSelf && d<2.5f && d<nearest && Visible(p.Root.position+(p.Cache?Vector3.up*.3f:Vector3.zero),3.4f,.15f,p.Cache?p.Root:null)){_nearby=p;nearest=d;}
             }
-            nearest=float.MaxValue;float range=_c.BinocularsRaised?22:8;
+            nearest=float.MaxValue;float range=_c.BinocularsRaised || (_c.Life!=null && _c.Life.Binoculars.Active)?22:8;
             foreach(var a in _animals)
             {
                 if(a.Dead || !a.Root.gameObject.activeSelf)continue;

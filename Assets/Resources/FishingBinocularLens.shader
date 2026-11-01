@@ -3,11 +3,10 @@ Shader "BoatAttack/FishingBinocularLens"
     Properties { _MainTex("Distant optical view",2D)="black"{} }
     SubShader
     {
-        Tags { "RenderPipeline"="UniversalPipeline" "Queue"="Transparent+100" "RenderType"="Transparent" }
+        Tags { "RenderPipeline"="UniversalPipeline" "Queue"="Geometry+10" "RenderType"="Opaque" }
         Pass
         {
-            ZWrite Off ZTest Always Cull Off
-            Blend SrcAlpha OneMinusSrcAlpha
+            ZWrite On ZTest LEqual Cull Off
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
@@ -20,13 +19,12 @@ Shader "BoatAttack/FishingBinocularLens"
             half4 Frag(V v):SV_Target
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(v);
-                float2 p=(v.uv-.5)*float2(1.777778,1);
-                float rim=min(length(p-float2(-.28,0)),length(p-float2(.28,0)));
-                float alpha=1-smoothstep(.455,.47,rim);
-                float glass=1-smoothstep(.43,.448,rim);
+                float rim=length(v.uv-.5);
+                clip(.5-rim);
+                float glass=1-smoothstep(.465,.49,rim);
                 half3 view=SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,v.uv).rgb;
                 half3 ink=half3(.012,.021,.021);
-                return half4(lerp(ink,view,glass),alpha);
+                return half4(lerp(ink,view,glass),1);
             }
             ENDHLSL
         }

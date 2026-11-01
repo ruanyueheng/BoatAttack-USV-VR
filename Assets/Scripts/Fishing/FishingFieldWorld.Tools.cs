@@ -205,6 +205,14 @@ namespace BoatAttack.Fishing
             if(tracked)
             {
                 if(!_c.Hands.TryControllerPalm(false,out var palm,out var palmFrame)){ClearToolPresentation();_held.gameObject.SetActive(false);return;}
+                if(FishingUserTools.IsPick(item)){ApplyTrackedPickPose(palm,palmFrame);return;}
+                if(item==FieldItem.Binoculars)
+                {
+                    bool leftTracked=_c.Hands.TryControllerPalm(true,out var lp,out var lq);
+                    var left=InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+                    ApplyTrackedBinocularPose(new Pose(lp,lq),new Pose(palm,palmFrame),leftTracked && FishingXRInput.Grip(left),FishingXRInput.Grip(right));
+                    return;
+                }
                 _held.rotation=palmFrame*Quaternion.Inverse(rightRotation);
                 var controller=_c.Hands.ControllerGripRotation(palmFrame);
                 if(pick)_held.rotation=controller*Quaternion.Euler(90,0,0); // Imported work-tool shafts use +Y; the tracked handle points along +Z.

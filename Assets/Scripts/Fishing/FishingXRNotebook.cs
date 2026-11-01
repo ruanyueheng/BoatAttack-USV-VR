@@ -453,8 +453,10 @@ namespace BoatAttack.Fishing
             }
 
             bool lantern=bag.At(slot).item==FieldItem.Lantern;
+            bool binocular=bag.At(slot).item==FieldItem.Binoculars;
             _c.SelectFieldSlot(slot);Close();
             if(lantern)_c.Notice("提灯已挂在右侧腰间。右扳机开关；右握把拿起，松手挂回。Y 收回背包。",7);
+            else if(binocular)_c.Notice("双手握住望远镜举到眼前，通过镜筒观察；移开或松握退出。右摇杆上下调倍，A 记录动物。",7);
             else _c.InspectFieldItem(slot);
         }
         public bool Tick(bool allow)
