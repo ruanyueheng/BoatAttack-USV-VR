@@ -28,6 +28,22 @@ internal static class FeedbackToolsTests
         check(airborne.Strokes==1,"An armed hammer counts once when its face reaches the billet");
         for(int i=0;i<30;i++)airborne.Sample(0,.01f,.02f);
         check(airborne.Strokes==1,"Resting on the billet cannot repeat a strike");
+        var missed=new FishingHandTask(FishingHandTaskKind.Forge);
+        missed.SampleContact(0,0,.02f,true);missed.SampleContact(0,.12f,.02f,true);
+        missed.SampleContact(.3f,0,.02f,false);missed.SampleContact(0,0,.02f,true);
+        check(missed.Strokes==0,"A raised hammer missing the billet cannot cash in that strike when slid back onto the metal");
+        missed.SampleContact(0,.12f,.02f,true);missed.SampleContact(0,0,.02f,true);
+        check(missed.Strokes==1,"The same held hammer can be lifted and strike normally after a miss");
+        var liftedSaw=new FishingHandTask(FishingHandTaskKind.Saw);
+        liftedSaw.SampleContact(0,0,.02f,true);liftedSaw.SampleContact(.12f,0,.02f,false);
+        liftedSaw.SampleContact(-.12f,0,.02f,true);
+        check(liftedSaw.Strokes==0,"Lifting a saw out of the kerf and replacing it cannot join disconnected points into a cut");
+        liftedSaw.SampleContact(0,0,.02f,true);
+        check(liftedSaw.Strokes==1,"The same saw resumes a real push through the wood after being replaced");
+        var looseCrank=new FishingHandTask(FishingHandTaskKind.Winder);
+        looseCrank.SampleContact(.1f,0,.02f,true);looseCrank.SampleContact(0,.1f,.02f,false);
+        looseCrank.SampleContact(-.1f,0,.02f,true);
+        check(looseCrank.Progress==0,"Leaving the wheel plane cannot bank an unobserved half-turn on re-entry");
         foreach(int version in new[]{15,16,17})foreach(var tool in new[]{FieldItem.Axe,FieldItem.Shovel,FieldItem.Rake})
         {
             var source=new FishingCareer().Snapshot();source.version=version;source.backpack[1]=new FieldStack{item=tool,count=1};

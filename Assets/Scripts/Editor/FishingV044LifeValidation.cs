@@ -232,7 +232,7 @@ namespace BoatAttack.EditorTools
             Debug.Log("[V044-LIFE] album journal page index "+albumPage);
         }
 
-        private static IEnumerator BinocularChecks(FishingPrototype c,FishingLifeWorld life,string dir)
+        public static IEnumerator BinocularChecks(FishingPrototype c,FishingLifeWorld life,string dir)
         {
             var land=Land(c);while(land.MoveNext())yield return land.Current;
             var snapshot=c.Career.Snapshot();var eye=c.viewCamera.transform;var position=eye.position;var rotation=eye.rotation;
@@ -262,7 +262,7 @@ namespace BoatAttack.EditorTools
                 {
                     var q=eye.rotation*turn;
                     var root=eye.position+eye.forward*distance+offset-q*(Vector3.forward*FishingXRBinoculars.RearLensZ*scale);
-                    lp=root+q*(FishingFieldWorld.BinocularLeftPalm*scale);rp=root+q*(FishingFieldWorld.BinocularRightPalm*scale);
+                    lp=root+q*(FishingFieldWorld.TrackedBinocularLeftPalm*scale);rp=root+q*(FishingFieldWorld.TrackedBinocularRightPalm*scale);
                     Check(c.FieldWorld.ApplyTrackedBinocularPose(new Pose(lp,q*leftBase),new Pose(rp,q*rightBase),true,true),"Both real palm poses fit the binocular body");
                     optics.PresentForValidation(true,lp,rp);
                 }
@@ -275,10 +275,16 @@ namespace BoatAttack.EditorTools
                     && optics.OpticalTexture.width==FishingXRBinoculars.Width && optics.OpticalTexture.height==FishingXRBinoculars.Height
                     && optics.OpticalCamera.stereoTargetEye==UnityEngine.StereoTargetEyeMask.None,
                     "Both grips raised to the eyes activate the physical optical camera without a use-button toggle");
-                Check(optics.OpticalWindow.parent==tool && Vector3.Distance(optics.LeftEyepiece.position,tool.TransformPoint(FishingXRBinoculars.EyepieceLocal(true)))<.001f
-                    && Vector3.Distance(optics.RightEyepiece.position,tool.TransformPoint(FishingXRBinoculars.EyepieceLocal(false)))<.001f
-                    && Mathf.Abs(Vector3.Distance(optics.LeftEyepiece.position,optics.RightEyepiece.position)-.066f)<.001f,
-                    "Two 66mm-spaced rear lenses are physically attached to the instrument, never to the HMD");
+                Check(optics.OpticalWindow.parent==tool && Vector3.Distance(optics.LeftEyepiece.position,tool.TransformPoint(FishingXRBinoculars.EyepieceLocal(true,optics.LensSeparation)))<.001f
+                    && Vector3.Distance(optics.RightEyepiece.position,tool.TransformPoint(FishingXRBinoculars.EyepieceLocal(false,optics.LensSeparation)))<.001f
+                    && Mathf.Abs(Vector3.Distance(optics.LeftEyepiece.position,optics.RightEyepiece.position)-FishingXRBinoculars.EyeSeparation(c.viewCamera))<.001f,
+                    "Both rear eyecups follow the headset IPD and remain physically attached to the instrument");
+                Check(Mathf.Abs(FishingXRBinoculars.CalibratedEyeSeparation(Vector3.left*.036f,Vector3.right*.036f)-.072f)<.0001f
+                    && FishingXRBinoculars.CalibratedEyeSeparation(Vector3.zero,Vector3.zero)==FishingXRBinoculars.DefaultEyeSeparation,
+                    "A 72mm wearer gets 72mm eyecups; missing eye tracking uses a safe 64mm fallback");
+                var body=tool.GetComponent<MeshFilter>().sharedMesh.bounds.size*scale;
+                Check(body.z>.16f && body.x>.17f && optics.LeftEyepiece.lossyScale.x>.05f,
+                    "The XR binocular body is full size and both viewing apertures are over 50mm wide");
                 Check(c.FieldWorld.HeldToolRenderer.enabled,"The real binocular body remains visible while looking through its rear lenses");
                 Check((optics.OpticalCamera.cullingMask&(1<<5))==0 && !optics.OpticalCamera.GetUniversalAdditionalCameraData().allowXRRendering,
                     "The objective camera excludes its own eyepieces and cannot recursively render either HMD eye");
@@ -290,6 +296,18 @@ namespace BoatAttack.EditorTools
                 Check(!optics.Active,"Barrels pointed away from the eyes do not activate");
                 Hold(.08f,Quaternion.Euler(0,0,90));
                 Check(!optics.Active,"Vertically stacked barrels cannot pretend to align with both eyes");
+                Hold(.11f,Quaternion.Euler(15,20,10),Vector3.right*.025f+Vector3.down*.03f);
+                Check(c.FieldWorld.ApplyTrackedBinocularPose(new Pose(lp,eye.rotation*Quaternion.Euler(15,20,10)*leftBase),
+                    new Pose(rp,eye.rotation*Quaternion.Euler(15,20,10)*rightBase),true,true,true),"A raised two-handed grip can request trigger alignment");
+                optics.PresentForValidation(true,lp,rp);
+                var rear=(optics.LeftEyepiece.position+optics.RightEyepiece.position)*.5f;
+                Check(optics.Active && c.FieldWorld.BinocularEyeAlignment && Quaternion.Angle(tool.rotation,eye.rotation)<.01f
+                    && Vector3.Distance(rear,FishingXRBinoculars.EyeCentre(c.viewCamera)+eye.forward*FishingXRBinoculars.ComfortEyeDistance)<.001f,
+                    "Holding a trigger near the face seats both large eyecups at the headset's real eye positions");
+                Check(!FishingXRBinoculars.CanAlignAtEyes(new Pose(eye.position,eye.rotation),lp+Vector3.down*.3f,rp+Vector3.down*.3f)
+                    && !FishingXRBinoculars.CanAlignAtEyes(new Pose(eye.position,eye.rotation),lp+Vector3.forward*.5f,rp+Vector3.forward*.5f),
+                    "Trigger assistance rejects lowered hands and an instrument held at arm's length");
+                Check(c.viewCamera.projectionMatrix==projection,"Trigger alignment preserves the HMD stereo projection");
                 Hold(.08f,Quaternion.identity);
                 target=GameObject.CreatePrimitive(PrimitiveType.Cube);target.name="Binocular real-world scale target";
                 target.transform.position=eye.position+eye.forward*12;target.transform.localScale=new Vector3(.5f,.5f,.05f);

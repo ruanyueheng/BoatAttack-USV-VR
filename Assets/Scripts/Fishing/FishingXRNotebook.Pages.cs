@@ -134,7 +134,7 @@ namespace BoatAttack.Fishing
             _pageDetail.gameObject.SetActive(detail);_status.gameObject.SetActive(!detail);
             if(detail)
             {
-                _pageDetail.text=_pageContent[index];_pageDetail.fontSize=22;
+                _pageDetail.text=_pageContent[index]+(_page==5 && !string.IsNullOrEmpty(_c.VisibleMessage)?"\n\n"+_c.VisibleMessage:"");_pageDetail.fontSize=22;
                 HomeRect(_pageDetail.rectTransform,new Rect(62,191,_page==12?580:335,_page==12?120:_page==23?525:471));
                 while(_pageDetail.fontSize>20 && _pageDetail.preferredHeight>_pageDetail.rectTransform.rect.height)_pageDetail.fontSize--;
             }

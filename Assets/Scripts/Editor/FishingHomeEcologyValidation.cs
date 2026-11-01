@@ -77,5 +77,84 @@ namespace BoatAttack.EditorTools
             c.PresentCharacterFrame();FishingV016Validation.Capture(c,"Logs/HomeEcology","home-ecology-rabbit");
             Debug.Log("[HOME-ECOLOGY] EVIDENCE: "+Path.GetFullPath("Logs/HomeEcology")+"; physical input and headset comfort remain unverified.");
         }
+
+        public static IEnumerator QuickPurchaseAndDeploymentChecks(FishingPrototype c)
+        {
+            Check(c.Automated && c.HasIsolatedProfile,"Quick purchase/deployment checks require an isolated profile");
+            if(c.StartMenuOpen)c.FinishTitleVoyage();c.Prologue.Suspend();c.CloseHomeChart(true);
+            if(c.InventoryOpen)c.ToggleInventory();if(c.JournalOpen)c.ToggleJournal();if(c.Paused)c.TogglePause();
+            c.ReturnToHarbor();
+            typeof(FishingPrototype).GetMethod("PrepareAcceptanceHome",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)
+                .Invoke(c,new object[]{FishingAcceptanceCase.HomeInterior});
+            yield return null;yield return null;
+            var original=c.Career.Snapshot();bool creative=c.CreativeMode;GameObject obstruction=null;
+            try
+            {
+                var funded=new FishingCareer().Snapshot();funded.coins=2000;c.RestoreShopTestProfile(funded);c.SetCreativeMode(false);
+                Check(c.Ashore && !c.TackleShop.NearCounter && !c.AtHarbor,"Quick delivery is tested at home, away from every purchase counter");
+                c.ToggleInventory();
+                int before=c.Career.Coins,quantity=c.Career.Backpack.Count(FieldItem.Rope);
+                Check(c.InventoryOpen && c.Paused && c.BuySupplyFromMenu(5),"An open backpack permits the real menu purchase without changing its modal flags");
+                Check(c.InventoryOpen && c.Paused && c.Career.Coins==before-FishingSupplies.Price(5)
+                    && c.Career.Backpack.Count(FieldItem.Rope)==quantity+FishingSupplies.Quantity(5),"Menu purchase charges the ordinary wallet once and adds the exact real quantity");
+                var loaded=FishingSaveStore.Load(c.SavePath,out var warning);
+                Check(warning.Length==0 && loaded.Coins==c.Career.Coins && loaded.Backpack.Count(FieldItem.Rope)==c.Career.Backpack.Count(FieldItem.Rope),"Menu purchase persists coins and backpack through the actual save store");
+                var poor=new FishingCareer().Snapshot();c.RestoreShopTestProfile(poor);c.SetCreativeMode(false);
+                Check(!c.BuySupplyFromMenu(5) && c.Career.Coins==0 && c.Career.Backpack.Count(FieldItem.Rope)==0 && c.Message.Contains("金币不足"),"Insufficient money rejects visibly and cannot create items");
+                var full=new FishingCareer().Snapshot();full.coins=2000;
+                for(int i=0;i<full.backpack.Count;i++)full.backpack[i]=new FieldStack{item=FieldItem.FieldGuide,count=1};
+                c.RestoreShopTestProfile(full);c.SetCreativeMode(false);
+                Check(!c.BuySupplyFromMenu(5) && c.Career.Coins==2000 && c.Career.Backpack.Count(FieldItem.Rope)==0 && c.Message.Contains("背包空间不足"),"A full backpack rejects visibly without charging or deleting any item");
+                c.SetCreativeMode(true);
+                Check(!c.BuySupplyFromMenu(5) && c.Career.Coins==2000 && c.Career.Backpack.Count(FieldItem.Rope)==0,"Creative quick delivery still respects full backpack capacity");
+                c.RestoreShopTestProfile(poor);
+                Check(c.CreativeMode && c.BuySupplyFromMenu(5) && c.Career.Coins==0 && c.Career.Backpack.Count(FieldItem.Rope)==FishingSupplies.Quantity(5),"Creative quick delivery creates real items while retaining its existing free-purchase policy");
+                c.RestoreShopTestProfile(funded);c.SetCreativeMode(false);
+                Check(!c.BuySupplyFromMenu(-1) && c.Career.Coins==2000,"An invalid menu product cannot spend or index the product list");
+                c.ToggleInventory();yield return null;
+                var world=c.HomeEcology;world.Refresh();yield return null;Physics.SyncTransforms();
+                Check(world.NearHome && world.Choices(0).Count==6,"The first facility page exposes aquarium and all five animal deployments");
+                var display=world.transform.Find("家园生态展示");
+                for(int i=0;i<5;i++)Check(display.Find(FishingCareer.HabitatName((LandAnimalKind)i)+"/Marked habitat deployment plot")!=null,"The empty deployment plot is visible for "+(LandAnimalKind)i);
+                Check(c.Career.Backpack.TryAdd(FieldItem.Aquarium,1),"The aquarium fixture has its actual kit");
+                world.Choices(0)[0].Run();yield return null;
+                Check(c.Career.AquariumLevel==1 && c.Career.Backpack.Count(FieldItem.Aquarium)==0,"The shared menu deploys and consumes exactly one aquarium kit");
+                var land=c.Home.transform.Find("V035 Home HomeLand").GetComponentInChildren<MeshCollider>();var heights=new float[5];
+                for(int i=0;i<5;i++)
+                {
+                    var kind=(LandAnimalKind)i;var kit=FishingCareer.HabitatKit(kind);
+                    Check(c.Career.Backpack.TryAdd(kit,1),"The real deployment kit is present for "+kind);
+                    var choice=world.Choices(0)[i+1];Check(choice.Enabled,"The facility has its own enabled deployment action: "+kind);choice.Run();yield return null;Physics.SyncTransforms();
+                    var root=world.transform.Find("家园生态展示/"+FishingCareer.HabitatName(kind));heights[i]=root.position.y;
+                    Check(c.Career.HabitatLevel(kind)==1 && c.Career.Backpack.Count(kit)==0 && root.Find("Shelter, exercise run and feeding station")!=null,"The menu consumes the correct kit and creates the visible habitat: "+kind);
+                    foreach(var offset in new[]{Vector3.zero,new Vector3(-1.5f,0,-.75f),new Vector3(1.5f,0,-.75f),new Vector3(-1.5f,0,2.55f),new Vector3(1.5f,0,2.55f)})
+                    {
+                        Check(land.Raycast(new Ray(root.position+offset+Vector3.up*30,Vector3.down),out var hit,60)
+                            && Mathf.Abs(root.position.y-hit.point.y)<.025f,"The complete habitat footprint rests on authored home land: "+kind+" "+offset);
+                    }
+                }
+                loaded=FishingSaveStore.Load(c.SavePath,out warning);
+                Check(warning.Length==0 && loaded.AquariumLevel==1,"All permanent deployments use the real save store");
+                for(int i=0;i<5;i++)Check(loaded.HabitatLevel((LandAnimalKind)i)==1,"Deployment survives save/reload: "+(LandAnimalKind)i);
+                obstruction=new GameObject("Temporary overlapping legacy support fixture");
+                for(int i=0;i<5;i++)
+                {
+                    var block=new GameObject("Higher legacy collider");block.transform.SetParent(obstruction.transform,false);block.transform.position=world.HabitatPosition((LandAnimalKind)i)+Vector3.up*.7f;
+                    block.AddComponent<BoxCollider>().size=new Vector3(3.4f,.2f,3.7f);
+                }
+                Physics.SyncTransforms();world.Refresh();yield return null;Physics.SyncTransforms();
+                for(int i=0;i<5;i++)Check(Mathf.Abs(world.transform.Find("家园生态展示/"+FishingCareer.HabitatName((LandAnimalKind)i)).position.y-heights[i])<.005f,"Overlapping legacy colliders cannot lift a refreshed habitat: "+(LandAnimalKind)i);
+                world.Open();
+                var hud=typeof(FishingPrototype).GetField("_hud",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).GetValue(c);
+                Check(c.InventoryOpen && (int)typeof(FishingHUD).GetField("_ecologyMode",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).GetValue(hud)==0,"Opening ecology always starts with all six construction actions");
+                Debug.Log("[HOME-ECOLOGY] CHECK: real quick delivery, visible transaction failures, save round-trip, six deployments and stable authored land grounding passed.");
+            }
+            finally
+            {
+                if(obstruction!=null){obstruction.SetActive(false);UnityEngine.Object.Destroy(obstruction);}
+                if(c.InventoryOpen)c.ToggleInventory();if(c.JournalOpen)c.ToggleJournal();if(c.Paused)c.TogglePause();
+                c.RestoreShopTestProfile(original);c.SetCreativeMode(creative);c.HomeEcology.Refresh();
+            }
+        }
     }
 }

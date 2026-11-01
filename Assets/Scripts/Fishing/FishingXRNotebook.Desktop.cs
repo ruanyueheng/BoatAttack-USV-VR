@@ -141,7 +141,7 @@ namespace BoatAttack.Fishing
             {HomeImage(_desktopBag.transform,"Wildlife note paper "+i,new Rect(696,158+i*93,290,i==2?102:81),FishingUITheme.Light,null,false);_bagNotes[i]=DesktopText(_desktopBag.transform,"Windows wildlife note "+i,new Rect(710,166+i*93,264,i==2?88:67),"",19,FishingUITheme.Ink);}
             DesktopText(_desktopBag.transform,"Windows tool heading",new Rect(696,462,290,30),"工具使用",24,FishingUITheme.Gold,true);
             DesktopText(_desktopBag.transform,"VR tool mapping",new Rect(696,498,290,101),"Y 换装备 · A 互动 · 扳机使用\n握把拿取 · 提灯夜间照路\n生兽肉 + 燃料 → 熔炉炭烤",20,FishingUITheme.Muted);
-            var ecology=DesktopButton(_desktopBag.transform,"Windows home ecology entry",143,new Rect(696,605,290,31),"家园生态 · 鱼缸 / 活捉 / 繁殖",()=>{_ecologyMode=-1;Open(21);},18);ecology.color=Color.clear;
+            var ecology=DesktopButton(_desktopBag.transform,"Windows home ecology entry",143,new Rect(696,605,290,31),"家园建设 · 六类设施 / 饲养",()=>OpenHomeEcology(),18);ecology.color=Color.clear;
             var craft=DesktopButton(_desktopBag.transform,"Windows crafting tab",144,new Rect(677,30,145,34),"制作 / 熔炼",()=>Open(2),20);craft.color=Color.clear;
             var close=DesktopButton(_desktopBag.transform,"Windows bag close",145,new Rect(866,30,124,38),"B 关闭",Close,20);close.color=Color.clear;
             _desktopBag.SetActive(false);

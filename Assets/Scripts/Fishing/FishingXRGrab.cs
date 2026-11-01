@@ -24,12 +24,15 @@ namespace BoatAttack.Fishing
         {
             if(_c==null || !XRSettings.isDeviceActive)return;
             bool ready=_c.Ashore && Application.isFocused && !_c.Paused && !_c.StoryBlocksGameplay && !_c.ShopBlocksGameplay && !_c.XRNotebook.BlocksGameplay
-                && !_c.WorldActionBusy && !_c.XRSeat.HeadBlocked && !_c.Hands.HoldingRod && !_c.Shore.Climbing;
+                && !_c.WorldActionBusy && !_c.XRSeat.HeadBlocked && !_c.Hands.HoldingRod && !_c.Shore.Climbing && !_c.Shore.Swimming
+                && !_c.StartMenuOpen && !_c.InventoryOpen && !_c.JournalOpen && !_c.HasPendingCatch && !_c.HandGames.Active;
             bool grip=FishingXRInput.Grip(InputDevices.GetDeviceAtXRNode(XRNode.RightHand));
             bool leftGrip=FishingXRInput.Grip(InputDevices.GetDeviceAtXRNode(XRNode.LeftHand));
-            bool pressed=_grip.Step(ready,grip),leftPressed=_leftGrip.Step(ready,leftGrip);
+            bool rightTracked=_c.Hands.TryControllerPalm(false,out var palm,out _),leftTracked=_c.Hands.TryControllerPalm(true,out var leftPalm,out _);
+            bool pressed=_grip.Step(ready && rightTracked,grip),leftPressed=_leftGrip.Step(ready && leftTracked,leftGrip);
+            if(pressed && _c.Home.TryGripOrchardFruit(palm) || leftPressed && _c.Home.TryGripOrchardFruit(leftPalm))return;
             if(ready && TryFarmHand(pressed,grip,leftPressed))return;
-            if(!pressed || !_c.Hands.TryControllerPalm(false,out var palm,out _))return;
+            if(!pressed || !rightTracked)return;
             if(_c.FieldWorld.TryPickupTarget(out var pickup) && Vector3.Distance(palm,FishingContactGeometry.ClosestPoint(pickup.Root,palm))<Reach)
             {_c.FieldWorld.PickupById(pickup.Id,pickup.Item,pickup.Count);return;}
             if(_c.RifleHunting.TryLootTarget(out var animal))

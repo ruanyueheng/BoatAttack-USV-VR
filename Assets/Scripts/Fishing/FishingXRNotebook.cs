@@ -179,7 +179,6 @@ namespace BoatAttack.Fishing
                 _c.Hands.ResetInteraction();_c.FieldWorld.ClearToolPresentation();_trigger.Reset();
             }
             IsOpen=true;_page=page;_offset=0;
-            if(page==21)_ecologyMode=-1;
             if(page==11){_guideLesson=0;ResetGuidePractice();}
             _canvas.gameObject.SetActive(true);_c.WorkshopWorld.SelectNearby();Refresh();
         }
@@ -227,7 +226,7 @@ namespace BoatAttack.Fishing
                     Photo(i,FishingV023Art.Icon(item.item) ?? FishingItemIcons.Get(item.item));
                 }
                 Pager(FishingBackpack.SlotCount);
-                Set(7,"家园生态 / 饲养",()=>{_ecologyMode=-1;Open(21);});
+                Set(7,"家园建设 / 饲养",()=>OpenHomeEcology());
             }
             else if(_page==2)
             {
@@ -271,11 +270,11 @@ namespace BoatAttack.Fishing
             }
             else if(_page==5)
             {
-                _status.text="海湾百货 · "+FishingSupplies.CategoryName(_offset/FishingSupplies.CategorySize)+" · 金币 "+_c.Career.Coins+"\n港口或店内柜台可购买\n用品进入背包；船舶升级立即生效\n"+_c.Message;
+                _status.text="菜单快购 · "+FishingSupplies.CategoryName(_offset/FishingSupplies.CategorySize)+" · 金币 "+_c.Career.CoinDisplay+"\n安全位置可购买，用品直接放入背包\n"+_c.Message;
                 for(int i=0;i<6;i++)
                 {
                     int product=_offset+i;if(product>=FishingSupplies.Items.Length)break;
-                    Set(i,FishingBackpack.Name(FishingSupplies.Items[product])+" ×"+FishingSupplies.Quantity(product)+"\n"+FishingSupplies.Price(product)+" 金币",()=>{_c.BuySupply(product);Refresh();});
+                    Set(i,FishingBackpack.Name(FishingSupplies.Items[product])+" ×"+FishingSupplies.Quantity(product)+"\n"+(_c.CreativeMode?"创造模式免费":FishingSupplies.Price(product)+" 金币")+" · 已有 "+_c.Career.Backpack.Count(FishingSupplies.Items[product]),()=>{_c.BuySupplyFromMenu(product);Refresh();});
                     Photo(i,FishingV023Art.Icon(FishingSupplies.Items[product]));
                 }
                 Set(6,_offset+FishingSupplies.CategorySize<FishingSupplies.Items.Length?"下一类物资":"返回探索工具",()=>{_offset=(_offset+FishingSupplies.CategorySize)%FishingSupplies.Items.Length;Refresh();});Set(7,"船舶 / 钓具升级",()=>Open(4));Set(8,"关闭",Close);
@@ -465,7 +464,7 @@ namespace BoatAttack.Fishing
             bool binocular=bag.At(slot).item==FieldItem.Binoculars;
             _c.SelectFieldSlot(slot);Close();
             if(lantern)_c.Notice("提灯已挂在右侧腰间。右扳机开关；右握把拿起，松手挂回。Y 收回背包。",7);
-            else if(binocular)_c.Notice("双手握住望远镜举到眼前，通过镜筒观察；移开或松握退出。右摇杆上下调倍，A 记录动物。",7);
+            else if(binocular)_c.Notice("双手握住望远镜举到眼前；近眼按扳机辅助对齐双眼。移开或松握退出，右摇杆上下调倍，A 记录动物。",7);
             else _c.InspectFieldItem(slot);
         }
         public bool Tick(bool allow)

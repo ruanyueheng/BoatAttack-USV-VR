@@ -22,7 +22,7 @@ namespace BoatAttack.EditorTools
             importer.meshCompression = ModelImporterMeshCompression.Off;
             importer.importNormals = ModelImporterNormals.Import;
             importer.importTangents = ModelImporterTangents.CalculateMikk;
-            importer.isReadable = false;
+            importer.isReadable = true; // Runtime creates the same lightweight gesture skin for both LODs.
         }
         private void OnPreprocessTexture()
         {

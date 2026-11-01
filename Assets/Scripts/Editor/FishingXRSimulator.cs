@@ -64,6 +64,9 @@ namespace BoatAttack.EditorTools
             public Vector3 marketPosition;
             public bool xr,focused,isolated,automated,headTracked,leftTracked,rightTracked,seatReady,headBlocked,motionReady,notebook,anchored,ashore,pending;
             public bool a,b,canLand,netHeld,holdingRod,boostActive,toolActive,carryingCan,riflePresented,rifleObstructed,cameraRaised,triggerButton,binocularRaised;
+            public bool binocularOpticsActive,binocularEyeAlignment;
+            public float binocularLensSeparation,binocularFov;
+            public Vector3 binocularLeftEyepiece,binocularRightEyepiece;
             public string hintContext,marketTarget;
             public Vector3 home;
             public float triggerValue,leftPalmRoll,rightPalmRoll;
@@ -254,6 +257,10 @@ namespace BoatAttack.EditorTools
                 shotsFired=_c.RifleHunting.ShotsFired,riflePresented=_c.RifleHunting.Presented,rifleObstructed=_c.RifleHunting.Obstructed,
                 photosTaken=_c.Life.PhotosTaken,cameraRaised=_c.Life.VrRaised,triggerButton=triggerButton,triggerValue=triggerValue,
                 binocularRaised=_c.BinocularsRaised,hintContext=FishingXRHints.Current(_c).ToString(),
+                binocularOpticsActive=_c.Life.Binoculars.Active,binocularEyeAlignment=_c.FieldWorld.BinocularEyeAlignment,
+                binocularLensSeparation=_c.Life.Binoculars.LensSeparation,binocularFov=_c.Life.Binoculars.OpticalCamera!=null?_c.Life.Binoculars.OpticalCamera.fieldOfView:0,
+                binocularLeftEyepiece=_c.Life.Binoculars.LeftEyepiece!=null?_c.Life.Binoculars.LeftEyepiece.position:Vector3.zero,
+                binocularRightEyepiece=_c.Life.Binoculars.RightEyepiece!=null?_c.Life.Binoculars.RightEyepiece.position:Vector3.zero,
                 leftPalmRoll=FishingHands.ControllerRoll(true),rightPalmRoll=FishingHands.ControllerRoll(false),
                 classroom=_c.ClassroomDemoActive,day=_c.Career.Calendar.Day,coins=_c.Career.Coins,creativeMode=_c.CreativeMode,coinDisplay=_c.Career.CoinDisplay,
                 lanternOn=_c.LanternOn,lanternLightEnabled=_c.FieldWorld.LanternLight!=null && _c.FieldWorld.LanternLight.enabled,

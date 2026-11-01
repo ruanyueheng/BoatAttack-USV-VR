@@ -210,7 +210,8 @@ namespace BoatAttack.Fishing
                 {
                     bool leftTracked=_c.Hands.TryControllerPalm(true,out var lp,out var lq);
                     var left=InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
-                    ApplyTrackedBinocularPose(new Pose(lp,lq),new Pose(palm,palmFrame),leftTracked && FishingXRInput.Grip(left),FishingXRInput.Grip(right));
+                    ApplyTrackedBinocularPose(new Pose(lp,lq),new Pose(palm,palmFrame),leftTracked && FishingXRInput.Grip(left),FishingXRInput.Grip(right),
+                        FishingXRInput.Trigger(left) || FishingXRInput.Trigger(right));
                     return;
                 }
                 _held.rotation=palmFrame*Quaternion.Inverse(rightRotation);

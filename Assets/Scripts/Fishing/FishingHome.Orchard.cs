@@ -61,7 +61,7 @@ namespace BoatAttack.Fishing
         }
         private bool OrchardAvailable=>_c!=null && _c.Ashore && !_c.Paused && !_c.StartMenuOpen && !_c.StoryBlocksGameplay && !_c.WorldActionBusy
             && !_c.InventoryOpen && !_c.JournalOpen && !_c.ShopBlocksGameplay && !_c.Shore.Swimming && !_c.Shore.Climbing && !_c.HasPendingCatch
-            && (_c.Farm==null || !_c.Farm.CarryingCan) && _c.Hands.CanPresentTools && !_c.XRSeat.HeadBlocked
+            && (_c.Farm==null || !_c.Farm.CarryingCan) && (_c.HandGames==null || !_c.HandGames.Active) && _c.Hands.CanPresentTools && !_c.XRSeat.HeadBlocked
             && (_c.XRNotebook==null || !_c.XRNotebook.BlocksGameplay);
         private bool ReachOrchard(int id)
         {
@@ -75,7 +75,7 @@ namespace BoatAttack.Fishing
         private string OrchardTitle(int id)
         {
             var tree=_orchard[id];string key=XRSettings.isDeviceActive?"A ":"E ";
-            if(tree.Fall>=0)return tree.Fall<1.12f?"果子正在落下 · 稍等片刻":key+"拾取海岛甜果";
+            if(tree.Fall>=0)return tree.Fall<1.12f?"果子正在落下 · 稍等片刻":XRSettings.isDeviceActive?"伸手握住落果 · 左右手握把拾取":key+"拾取海岛甜果";
             if(tree.Shake>=0)return "枝叶轻摇 · 留意树下的果子";
             if(!_c.Career.CanHarvestHomeFruit(id))return "今日成熟的果子已采下 · 明日再来";
             return XRSettings.isDeviceActive?"握住树干，左右轻摇三次 · 真实手部动作":key+"轻摇果树 · 等果子落地后拾取";
@@ -88,8 +88,7 @@ namespace BoatAttack.Fishing
                 if(tree.Fall<1.12f)return false;
                 if(XRSettings.isDeviceActive)
                 {
-                    if(!_c.Hands.TryControllerPalm(false,out var palm,out _) || Vector3.Distance(palm,tree.Fruit.position)>.42f){_c.Notice("将右手伸向落果，靠近后按 A 拾取。",4);return false;}
-                    return PickOrchardFruit(id);
+                    _c.Notice("将任一只手伸到落果旁，松开再握住握把，甜果就会收入背包。",4);return false;
                 }
                 var contact=FishingContactGeometry.ClosestPoint(tree.Fruit,_c.Shore.Character.ShoulderPosition(false));
                 return _c.BeginWorldAction(FishingActionKind.Pickup,"orchard:"+id,tree.Fruit,contact,_c.Shore.Actor.rotation,()=>PickOrchardFruit(id));
@@ -117,6 +116,21 @@ namespace BoatAttack.Fishing
             tree.Fruit.gameObject.SetActive(false);tree.Fall=-1;_interactables[id+7]=tree.Root;_interactionPoints[id+7]=tree.Root.position+Vector3.up*1.1f;
             _c.WorldAudio?.Play("LootBag",tree.Ground,.35f);
             _c.Save();_c.Effects?.Burst(tree.Ground,new Color(1,.78f,.35f));_c.Notice("拾取海岛甜果 ×1 · 已收入背包",4);return true;
+        }
+        /// <summary>Called only on a tracked hand's fresh grip edge; shares the saved harvest transaction.</summary>
+        public bool TryGripOrchardFruit(Vector3 palm)
+        {
+            if(!OrchardAvailable || float.IsNaN(palm.sqrMagnitude) || float.IsInfinity(palm.sqrMagnitude))return false;
+            for(int id=0;id<_orchard.Length;id++)
+            {
+                var tree=_orchard[id];
+                if(tree==null || tree.Fall<1.12f || !tree.Fruit.gameObject.activeSelf)continue;
+                var contact=FishingContactGeometry.ClosestPoint(tree.Fruit,palm);
+                if(Vector3.Distance(palm,contact)>FishingXRGrab.Reach || !_c.Shore.ClearSight(palm,contact))continue;
+                // Consume this grip even when the bag is full, so it cannot also take another world item.
+                PickOrchardFruit(id);return true;
+            }
+            return false;
         }
         private void UpdateOrchard()
         {

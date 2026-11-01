@@ -105,7 +105,8 @@ namespace BoatAttack.Fishing
                 case FieldItem.Rake:if(Farm.TryTarget(out int plot,out var root) && plot<12 && Farm.Work(plot)==FarmWork.Till)RequestFarmInteraction(plot,root);else Notice("靠近菜畦，F / 右扳机整地；旧默认锄头入口仍保留。",4);break;
                 case FieldItem.CaptureNet:HomeEcology.UseNet();break;
                 case FieldItem.AnimalTrap:HomeEcology.PlaceTrap();break;
-                case FieldItem.Aquarium:case FieldItem.FishFeed:case FieldItem.RabbitHutch:case FieldItem.FoxDen:case FieldItem.TortoisePen:case FieldItem.BirdAviary:case FieldItem.SeaTurtlePond:HomeEcology.Open();break;
+                case FieldItem.FishFeed:HomeEcology.Open(2);break;
+                case FieldItem.Aquarium:case FieldItem.RabbitHutch:case FieldItem.FoxDen:case FieldItem.TortoisePen:case FieldItem.BirdAviary:case FieldItem.SeaTurtlePond:HomeEcology.Open();break;
                 case FieldItem.Workbench:case FieldItem.Furnace:case FieldItem.Forge:RequestPlaceEquipped();break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:RequestHarvest();break;
                 case FieldItem.FieldGuide: OpenFieldGuide();break;

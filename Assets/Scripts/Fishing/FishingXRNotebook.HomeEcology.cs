@@ -4,7 +4,9 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingXRNotebook
     {
-        private int _ecologyMode=-1;
+        private int _ecologyMode;
+        public void OpenHomeEcology(int mode=0)
+        {Open(21);_ecologyMode=Mathf.Clamp(mode,0,4);_c.HomeEcology.Page=0;if(IsOpen)Refresh();}
         private void RefreshHomeEcology()
         {
             var world=_c.HomeEcology;if(world==null)return;
@@ -20,7 +22,7 @@ namespace BoatAttack.Fishing
             for(int i=0;i<6;i++)
             {int index=world.Page*6+i;if(index>=choices.Count)break;var choice=choices[index];Set(i,choice.Label,choice.Enabled?(Action)(()=>{choice.Run();Refresh();}):null);}
             Set(6,(world.Page+1)+"/"+pages+" · 下一页",pages>1?(Action)(()=>{world.Page=(world.Page+1)%pages;Refresh();}):null);
-            Set(7,"返回生态目录",()=>{_ecologyMode=-1;Refresh();});Set(8,"关闭",Close);
+            Set(7,"养鱼 / 动物 / 诱捕目录",()=>{_ecologyMode=-1;Refresh();});Set(8,"关闭",Close);
         }
     }
 }
