@@ -51,6 +51,32 @@ namespace BoatAttack.EditorTools
                     Call(c.XRNotebook,"UseTrackedTool");
                     Check(c.Career.Adventure.Restored(island),"Right trigger confirms the actual beacon direction "+island);
                 }
+                var pickup=c.FieldWorld.Pickups[0];
+                Check(c.Shore.Relocate(pickup.Feet+Vector3.back*.8f,Quaternion.identity),"Nearby-menu check has supported ground by an actual pickup");
+                c.viewCamera.transform.SetPositionAndRotation(c.Shore.Position+Vector3.up*1.5f,Quaternion.LookRotation(pickup.Root.position-c.Shore.Position-Vector3.up*1.5f));
+                Physics.SyncTransforms();
+                Check(c.FieldWorld.TryPickupTarget(out var selected) && selected==pickup,"Nearby-menu check aims at an uncollected production pickup");
+                Check(!c.Hands.TryControllerPalm(false,out _,out _),"Nearby-menu boundary check has no tracked right palm");
+                var pending=typeof(FishingXRNotebook).GetField("_nearbyInteractionPending",Private);
+                foreach(int page in new[]{6,9})
+                {
+                    typeof(FishingXRNotebook).GetProperty("IsOpen").SetValue(c.XRNotebook,true);
+                    typeof(FishingXRNotebook).GetField("_page",Private).SetValue(c.XRNotebook,page);Call(c.XRNotebook,"Refresh");
+                    var nearby=(Action[])typeof(FishingXRNotebook).GetField("_actions",Private).GetValue(c.XRNotebook);
+                    Check(nearby[page==6?4:5]!=null,"Nearby action exists on the actual notebook page "+page);
+                    var plates=(UnityEngine.UI.Image[])typeof(FishingXRNotebook).GetField("_plates",Private).GetValue(c.XRNotebook);
+                    typeof(FishingXRNotebook).GetMethod("PressNotebookButton",Private).Invoke(c.XRNotebook,new object[]{plates[page==6?4:5].GetComponent<FishingNotebookButton>()});
+                    Check(!c.XRNotebook.IsOpen && !c.WorldActionBusy && !c.Career.Backpack.Collected(pickup.Id),
+                        "Nearby action on page "+page+" preserves the XR tracking gate without starting a desktop action");
+                    Check((bool)pending.GetValue(c.XRNotebook) && !c.XRNotebook.MotionReady,"Nearby button queues exactly one request without bypassing neutral input on page "+page);
+                    bool ready=(bool)typeof(FishingXRNotebook).GetMethod("ReArmMotion",Private).Invoke(c.XRNotebook,new object[]{Vector2.up,Vector2.zero,true});
+                    Check(!ready && (bool)pending.GetValue(c.XRNotebook),"Held motion cannot rearm or dispatch the pending nearby request");
+                    c.XRNotebook.ResetInput();
+                    Check(!(bool)pending.GetValue(c.XRNotebook) && !c.XRNotebook.MotionReady,"Reset cancels the pending interaction as well as motion readiness");
+                    nearby[page==6?4:5]();c.XRNotebook.Tick(true);
+                    Check(!(bool)pending.GetValue(c.XRNotebook) && !c.WorldActionBusy && !c.Career.Backpack.Collected(pickup.Id),
+                        "A pending request without XR tracking is cancelled without consuming the pickup");
+                }
                 c.ReturnToHarbor();yield return null;yield return null;
                 Check(c.Islands.CompleteAtHarbor()==150,"VR island route can complete at the shared harbor");
                 var notebook=c.XRNotebook;var type=typeof(FishingXRNotebook);

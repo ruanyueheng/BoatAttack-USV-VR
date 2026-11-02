@@ -14,9 +14,20 @@ namespace BoatAttack.EditorTools
     public static class FishingV044LifeValidation
     {
         public static void Run()=>FishingV011Validation.Begin("V044-LIFE");
+        public static void RunCamera()=>FishingV011Validation.Begin("LIFE-CAMERA");
         private static void Check(bool ok,string label){if(!ok)throw new InvalidOperationException(label);Debug.Log("[V044-LIFE] CHECK: "+label);}
         private static IEnumerator Wait(float seconds){float until=Time.time+seconds;while(Time.time<until)yield return null;}
         private static IEnumerator Frames(int n){for(int i=0;i<n;i++)yield return null;}
+        public static IEnumerator CameraReviewChecks(FishingPrototype c)
+        {
+            Check(c.Automated && c.HasIsolatedProfile,"Camera checks use an isolated profile");
+            if(c.StartMenuOpen)c.FinishTitleVoyage();c.Prologue.Suspend();c.CloseHomeChart(true);
+            string dir=Path.GetFullPath("Logs/VRReview/Camera");Directory.CreateDirectory(dir);
+            if(Directory.Exists(c.AlbumDirectory))Directory.Delete(c.AlbumDirectory,true);
+            c.Life.RefreshAlbum();
+            foreach(var run in new[]{CameraChecks(c,c.Life,dir),PalmChecks(c,c.Life,dir)})
+            {try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}}
+        }
         public static IEnumerator Checks(FishingPrototype c)
         {
             Check(c.Automated && c.HasIsolatedProfile && c.SavePath.StartsWith(Application.temporaryCachePath),"Only the isolated automation profile is used");
@@ -137,8 +148,9 @@ namespace BoatAttack.EditorTools
             var json=JsonUtility.ToJson(career.Snapshot());
             Check(FishingCareer.TryRestore(JsonUtility.FromJson<FishingSaveData>(json),out var back) && back.Lore.PhotoFlag(FishingPhotoCodex.Lighthouse) && back.Coins==career.Coins,"Photo codex survives a JSON round trip");
             var bad=JsonUtility.FromJson<FishingSaveData>(json);bad.lore.photoLog=1<<24;Check(!FishingCareer.TryRestore(bad,out _),"Out-of-range photo log is rejected");
-            var forged=JsonUtility.FromJson<FishingSaveData>(json);forged.version=19;Check(!FishingCareer.TryRestore(forged,out _),"Pre-v20 saves cannot carry a photo log");
+            var forged=JsonUtility.FromJson<FishingSaveData>(json);forged.version=19;forged.homeStorage=forged.homeStorage.Take(FishingBackpack.SlotCount).ToList();Check(!FishingCareer.TryRestore(forged,out _),"Pre-v20 saves cannot carry a photo log");
             var legacy=new FishingCareer().Snapshot();legacy.version=19;legacy.coins=55;
+            legacy.homeStorage=legacy.homeStorage.Take(FishingBackpack.SlotCount).ToList();
             var old=JsonUtility.ToJson(legacy);old=System.Text.RegularExpressions.Regex.Replace(old,",\"photoLog\":0","");
             Check(!old.Contains("photoLog"),"Fixture really lacks the photo log");
             Check(FishingCareer.TryRestore(JsonUtility.FromJson<FishingSaveData>(old),out var up) && up.Coins==55 && !up.Lore.PhotoFlag(FishingPhotoCodex.Lighthouse),"Old saves load with an empty photo codex");
@@ -184,6 +196,16 @@ namespace BoatAttack.EditorTools
                 life.EnterViewfinder();yield return null;head=guide.position+Vector3.up*1.35f;Aim(c,c.viewCamera.transform.position,head);
             }
             Check(life.Subject(c.viewCamera)==FishingPhotoCodex.Resident+5,"Harbour guide is recognised in frame");
+            int takenBefore=life.PhotosTaken;string lastPath=life.LastPhotoPath;int lastEntry=life.LastEntry;
+            Directory.CreateDirectory(Path.GetDirectoryName(c.AlbumDirectory));
+            File.WriteAllText(c.AlbumDirectory,"Isolated unavailable album directory");
+            try
+            {
+                Check(life.TakePhoto()=="" && life.PhotosTaken==takenBefore && life.LastPhotoPath==lastPath && life.LastEntry==lastEntry
+                    && !c.Career.Lore.PhotoFlag(FishingPhotoCodex.Resident+5) && c.Career.Coins==coins,
+                    "Failed photo storage preserves photo count, last photo, codex and coins");
+            }
+            finally{File.Delete(c.AlbumDirectory);}
             string path=life.TakePhoto();
             Check(File.Exists(path) && new FileInfo(path).Length>2000 && new FileInfo(path).Length<=40*1024,"Photo saved as a small JPG ("+(File.Exists(path)?new FileInfo(path).Length:0)+" bytes)");
             Check(c.Career.Lore.PhotoFlag(FishingPhotoCodex.Resident+5) && c.Career.Coins==coins+FishingPhotoCodex.FirstReward,"First photo of a resident unlocks the codex illustration and pays once");
@@ -221,6 +243,14 @@ namespace BoatAttack.EditorTools
             var files=FishingLifeWorld.AlbumFiles(c.AlbumDirectory);
             long bytes=files.Sum(f=>new FileInfo(Path.Combine(c.AlbumDirectory,f.name)).Length);
             Check(files.Count==FishingLifeWorld.AlbumLimit && files[0].sequence>0,"Album keeps the newest "+FishingLifeWorld.AlbumLimit+" photos");
+            string blocked=Path.Combine(c.AlbumDirectory,FishingPhotoCodex.FileName(files.Last().sequence+1,c.Career.Calendar.Day,life.Subject(c.viewCamera)));
+            Directory.CreateDirectory(blocked);
+            try
+            {
+                Check(life.TakePhoto()=="" && files.All(f=>File.Exists(Path.Combine(c.AlbumDirectory,f.name))),
+                    "A full album retains every existing photo if writing the replacement fails");
+            }
+            finally{Directory.Delete(blocked);}
             Check(bytes<1024*1024,"Album stays under 1 MB ("+bytes/1024+" KB)");
             Check(life.Album.Count==FishingLifeWorld.AlbumLimit && life.Album.All(a=>a.tex!=null && a.tex.width==FishingLifeWorld.PhotoWidth),"Album textures load for the journal");
 
@@ -248,7 +278,7 @@ namespace BoatAttack.EditorTools
                 FishingLifeWorld.ForceVr=true;life.DebugRightHand=new Pose(eye.position+eye.forward*.1f,eye.rotation);
                 int taken=life.PhotosTaken;
                 var cameraTick=typeof(FishingLifeWorld).GetMethod("UpdateVrCamera",BindingFlags.Instance|BindingFlags.NonPublic);
-                cameraTick.Invoke(life,null);life.DebugPressShutter();cameraTick.Invoke(life,null);
+                cameraTick.Invoke(life,new object[]{true});life.DebugPressShutter();cameraTick.Invoke(life,new object[]{true});
                 Check(!life.VrRaised && life.PhotosTaken==taken,"Binocular equipment prevents the near-eye film-camera gesture and shutter from taking over");
                 eye.SetPositionAndRotation(new Vector3(0,300,0),Quaternion.identity);c.viewCamera.fieldOfView=69;
                 var projection=c.viewCamera.projectionMatrix;
@@ -428,9 +458,32 @@ namespace BoatAttack.EditorTools
 
                 // Right hand raised to the eye: viewfinder frame and trigger photo.
                 int taken=life.PhotosTaken;
-                life.DebugRightHand=new Pose(eye.position+eye.forward*.1f,eye.rotation);yield return null;yield return null;
+                life.DebugRightHand=new Pose(eye.position+eye.forward*.1f,eye.rotation);
+                Check(!life.VrRaised && life.OwnsVrTrigger,"A newly raised camera owns this frame's trigger before LateUpdate");
+                typeof(FishingXRNotebook).GetMethod("UseTrackedTool",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(c.XRNotebook,null);
+                Check(!c.JournalOpen && !c.XRNotebook.IsOpen,"Raising and pressing in the same frame cannot open the equipped guide");
+                yield return null;yield return null;
                 Check(life.VrRaised,"Right hand at the eye raises the camera");
+                c.PresentCharacterFrame();
+                Check(c.Shore.Character.FirstPersonSkin.forceRenderingOff && !c.FieldWorld.HeldTool.gameObject.activeSelf,
+                    "Near-eye camera view hides local hands and the equipped tool without moving the tracked palms");
                 Check(FishingXRHints.Current(c)==FishingXRHints.Context.Camera && FishingXRHints.Guidance(c).Contains("右扳机拍照"),"VR raised camera selects its own controller context and next-action guidance");
+                typeof(FishingXRNotebook).GetMethod("UseTrackedTool",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(c.XRNotebook,null);
+                Check(!c.JournalOpen && !c.XRNotebook.IsOpen,"A raised shore camera owns the trigger without opening the equipped field guide");
+                var cameraTick=typeof(FishingLifeWorld).GetMethod("UpdateVrCamera",BindingFlags.Instance|BindingFlags.NonPublic);
+                life.DebugPressShutter();cameraTick.Invoke(life,new object[]{false});
+                Check(!life.VrRaised && life.PhotosTaken==taken,"Focus loss stows the camera and suppresses the shutter");
+                life.DebugPressShutter();cameraTick.Invoke(life,new object[]{true});
+                Check(life.VrRaised && life.PhotosTaken==taken,"A held trigger on focus recovery cannot take a photo");
+                var pause=typeof(FishingLifeWorld).GetMethod("OnApplicationPause",BindingFlags.Instance|BindingFlags.NonPublic);
+                pause.Invoke(life,new object[]{true});cameraTick.Invoke(life,new object[]{true});
+                life.DebugPressShutter();cameraTick.Invoke(life,new object[]{true});
+                Check(!life.VrRaised && !life.OwnsVrTrigger && life.PhotosTaken==taken,"Application pause blocks camera input even while focus remains true");
+                typeof(FishingXRNotebook).GetMethod("UseTrackedTool",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(c.XRNotebook,null);
+                Check(!c.JournalOpen && !c.XRNotebook.IsOpen,"A suspended camera cannot leak the shutter into the equipped field guide");
+                pause.Invoke(life,new object[]{false});life.DebugPressShutter();cameraTick.Invoke(life,new object[]{true});
+                Check(life.VrRaised && life.PhotosTaken==taken,"Resuming the application cannot fire a held shutter");
+                cameraTick.Invoke(life,new object[]{true});
                 life.DebugPressShutter();yield return null;yield return null;
                 Check(life.PhotosTaken==taken+1,"VR trigger takes a photo");
                 var landing=Land(c);while(landing.MoveNext())yield return landing.Current;

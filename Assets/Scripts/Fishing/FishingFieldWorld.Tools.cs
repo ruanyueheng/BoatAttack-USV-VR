@@ -74,6 +74,7 @@ namespace BoatAttack.Fishing
             bool facility=FishingRecipes.IsStation(item);
             bool tool=FishingBackpack.Defined(item) && item!=FieldItem.Empty && (item!=FieldItem.HuntingRifle || _c.InspectingItem);
             bool visible=(_c.Ashore || _c.InspectingItem) && !_c.StoryBlocksGameplay && !_c.Shore.Swimming && !_c.Shore.Climbing && (_c.XRNotebook==null || !_c.XRNotebook.BlocksGameplay) && _c.Hands.CanPresentTools && !_c.ShopBlocksGameplay && !_c.Hands.HasGesture && !_c.Hands.PresentingPickup && !_c.Expedition.Aligning && !_c.ActionSuppressesHeldTool && tool;
+            if(_c.Life!=null && _c.Life.VrRaised)visible=false;
             if(item==FieldItem.Lantern && XRSettings.isDeviceActive && !_lanternInHand && !_c.InspectingItem && !preview)visible=false;
             if(item==FieldItem.Lantern && !_c.LanternEquipped && !_c.InspectingItem && !preview)visible=false;
             _c.HomeEcology?.PresentNet(visible && item==FieldItem.CaptureNet);

@@ -457,7 +457,7 @@ namespace BoatAttack.Fishing
                 var island=Home.Origin;var position=island+new Vector3(26,8,-61);var target=island+new Vector3(-9,17,10);
                 viewCamera.transform.SetPositionAndRotation(position,Quaternion.LookRotation(target-position));
             }
-            Shore.Character.SetOpticalView(View.OpticalView || ((Letter.Open || Prologue.Open || Realms.ObservingStars) && !UnityEngine.XR.XRSettings.isDeviceActive));DockConsole.Present();
+            Shore.Character.SetOpticalView(View.OpticalView || (Life!=null && Life.VrRaised) || ((Letter.Open || Prologue.Open || Realms.ObservingStars) && !UnityEngine.XR.XRSettings.isDeviceActive));DockConsole.Present();
         }
         public void ToggleView()
         {

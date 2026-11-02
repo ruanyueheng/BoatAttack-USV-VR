@@ -45,6 +45,7 @@ namespace BoatAttack.Fishing
         private bool _leftPointer;
         public bool IsOpen { get; private set; }
         public bool MotionReady { get; private set; }
+        private bool _nearbyInteractionPending;
         public bool BlocksGameplay=>IsOpen || (XRSettings.isDeviceActive && !MotionReady);
         public void Build(FishingPrototype c)
         {
@@ -168,6 +169,7 @@ namespace BoatAttack.Fishing
         public void Open(int page=0)
         {
             if(!XRSettings.isDeviceActive)return;
+            _nearbyInteractionPending=false;
             if(page!=ClassroomPage)_c.CloseClassroomMenu();
             if(page!=SavePage)CloseSaveSlots();
             if(page!=8 && (!IsOpen || _page!=page))_c.WorldAudio?.Play("UIConfirm",_c.ExplorerPosition,.24f);
@@ -183,7 +185,13 @@ namespace BoatAttack.Fishing
             _canvas.gameObject.SetActive(true);_c.WorkshopWorld.SelectNearby();Refresh();
         }
         public void Close(){_c?.CloseClassroomMenu();CloseSaveSlots();bool wasOpen=IsOpen;IsOpen=false;_discardQuote="";_bagSelection=-1;if(_canvas!=null)_canvas.gameObject.SetActive(false);if(_ray!=null)_ray.enabled=false;ResetInput();if(wasOpen)_c?.Hands?.ResetInteraction();}
-        public void ResetInput(){_menu.Reset();_primary.Reset();_board.Reset();_slot.Reset();_trigger.Reset();_turnReady=false;_tipSample=false;MotionReady=false;ResetPageGestures();_guideLeftTrigger.Reset();_guideLeftGrip.Reset();_guideRightGrip.Reset();_guideBoost.Reset();if(_homeDecor!=null)UpdateHomePointer(-1,false);}
+        public void ResetInput(){_nearbyInteractionPending=false;_menu.Reset();_primary.Reset();_board.Reset();_slot.Reset();_trigger.Reset();_turnReady=false;_tipSample=false;MotionReady=false;ResetPageGestures();_guideLeftTrigger.Reset();_guideLeftGrip.Reset();_guideRightGrip.Reset();_guideBoost.Reset();if(_homeDecor!=null)UpdateHomePointer(-1,false);}
+        private void RequestNearbyInteraction()
+        {
+            Close();
+            // Closing the notebook rearms motion; dispatch only after fresh neutral input.
+            _nearbyInteractionPending=!_c.Paused;
+        }
         private bool ReArmMotion(Vector2 leftAxis,Vector2 rightAxis,bool boost)
         {
             if(!MotionReady && leftAxis.sqrMagnitude<.18f*.18f && rightAxis.sqrMagnitude<.18f*.18f && !boost)MotionReady=true;
@@ -265,7 +273,7 @@ namespace BoatAttack.Fishing
                 for(int i=0;i<4;i++){int island=i;Set(i,FishingAdventure.Name(i)+"\n"+(_c.Career.Lore.RewardClaimed(i)?"遗物与蓝图已领":_c.Career.Lore.Cleared(i)?"遗物与蓝图待领":"秘境尚待探索"),()=>{Close();_c.SelectNavigation(_c.IslandNavigationIndex(island));});}
                 if(_c.Career.Backpack.Count(FieldItem.VoyageCompass)>0 && !_c.Career.PirateKing)Set(4,"白帆拱湾\n前往宝藏航点",()=>{Close();_c.SelectNavigation(_c.HomeNavigationIndex+1);});
                 else Set(4,"群岛来信 / 航标",()=>Open(6));
-                Set(5,"附近互动 / 补领遗物",()=>{Close();_c.RequestWorldInteraction();});
+                Set(5,"附近互动 / 补领遗物",RequestNearbyInteraction);
                 Set(6,"信件 / 漂流瓶",()=>Open(LettersPage));Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
             }
             else if(_page==5)
@@ -284,7 +292,7 @@ namespace BoatAttack.Fishing
                 int island=_c.Islands.NearIsland(out int nearby)?nearby:0;
                 _status.text="群岛来信 · "+FishingAdventure.Name(island)+"\n"+FishingAdventure.Clue(island)+"\n读信 → 地标寻宝 / 校准信标\n四灯已亮后返港提交 +150 金币\n"+_c.Message;
                 for(int i=0;i<4;i++){int dest=i;Set(i,FishingAdventure.Name(i)+"\n"+(_c.Career.Adventure.Restored(i)?"信标已亮":"设为航点"),()=>{_c.SelectNavigation(_c.IslandNavigationIndex(dest));Refresh();});}
-                Set(4,"附近互动\n读信 / 开箱 / 转动",()=>{Close();_c.RequestWorldInteraction();});
+                Set(4,"附近互动\n读信 / 开箱 / 转动",RequestNearbyInteraction);
                 Set(5,"确认灯头方向",()=>{Close();_c.Islands.ConfirmNearby();});
                 Set(6,"返港提交群岛航记",()=>{Close();_c.Islands.CompleteAtHarbor();});Set(7,"返回首页",()=>Open());Set(8,"关闭",Close);
             }
@@ -469,13 +477,14 @@ namespace BoatAttack.Fishing
         }
         public bool Tick(bool allow)
         {
+            if(_c.Paused || _c.StoryBlocksGameplay || _c.ShopBlocksGameplay || _c.WorldActionBusy || _c.HasPendingCatch || _c.XRSeat.HeadBlocked)_nearbyInteractionPending=false;
             // A closed XR notebook must not reset the desktop cast/hand interaction every frame.
-            if(!XRSettings.isDeviceActive){if(IsOpen)Close();return false;}
+            if(!XRSettings.isDeviceActive){_nearbyInteractionPending=false;if(IsOpen)Close();return false;}
             bool rightTracked=allow && FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out _,out _);
             bool leftTracked=allow && FishingXRTracking.TryPose(_c.viewCamera,XRNode.LeftHand,out _,out _);
             if(!rightTracked && !leftTracked){ResetInput();_ray.enabled=false;if(!allow)Close();return true;}
             var right=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);var left=InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
-            if(!rightTracked || !leftTracked){MotionReady=false;_turnReady=false;_tipSample=false;ResetPageGestures();}
+            if(!rightTracked || !leftTracked){_nearbyInteractionPending=false;MotionReady=false;_turnReady=false;_tipSample=false;ResetPageGestures();}
             right.TryGetFeatureValue(CommonUsages.secondaryButton,out bool menu);right.TryGetFeatureValue(CommonUsages.primaryButton,out bool primary);
             // Left menu key mirrors right B so the notebook is reachable with either hand.
             menu&=rightTracked;
@@ -528,6 +537,7 @@ namespace BoatAttack.Fishing
             bool boost=FishingXRInput.StickClick(left)||FishingXRInput.Grip(left)||(_c.Ashore && FishingXRInput.Trigger(left));
             if(!ReArmMotion(leftAxis,axis,boost)){_c.Notice("请松开双摇杆和左手加速键，再继续移动或使用工具。",2);return true;}
             if(_c.Paused){if(action)_c.TogglePause();return true;}
+            if(_nearbyInteractionPending){_nearbyInteractionPending=false;InteractTracked();return true;}
             if(_c.Expedition.Aligning){_c.Expedition.Dial.Rotate(axis.x*Time.unscaledDeltaTime*45);if(action)_c.Expedition.Confirm();return true;}
             if(Mathf.Abs(axis.x)<.25f)_turnReady=true;
             if(_c.Ashore && FishingXRComfort.TurnMode==FishingXRComfort.Turn.Smooth){_c.XRSeat.SnapTurn(FishingXRComfort.SmoothTurnDegrees(axis.x,Time.deltaTime));}
@@ -547,6 +557,7 @@ namespace BoatAttack.Fishing
         }
         private void UseTrackedTool()
         {
+            if(_c.Life!=null && (_c.Life.ApplicationPaused || _c.Life.OwnsVrTrigger))return;
             if(_c.InspectingItem){_c.EndItemInspection();return;}
             if(_c.Career.Backpack.Equipped==FieldItem.Binoculars){_c.UseFieldItem();return;}
             if(_c.Islands.TryTarget(out int islandTarget,out _) && islandTarget%3==2){_c.Islands.ConfirmNearby();return;}
