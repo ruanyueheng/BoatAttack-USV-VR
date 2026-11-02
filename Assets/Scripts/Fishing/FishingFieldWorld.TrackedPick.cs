@@ -13,19 +13,30 @@ namespace BoatAttack.Fishing
         /// <summary>Mounts the supplied pick on the same calibrated palm used by the visible hand.</summary>
         public bool ApplyTrackedPickPose(Vector3 palm,Quaternion palmFrame)
         {
-            if(_c==null || _held==null || !FishingUserTools.IsPick(PresentedItem) || !_c.Hands.CanPresentTools
+            var item=PresentedItem;
+            if(_c==null || _held==null || (!FishingBackpack.IsGatherTool(item) && item!=FieldItem.Rake) || !_c.Hands.CanPresentTools
                 || !FinitePick(palm.x) || !FinitePick(palm.y) || !FinitePick(palm.z)
                 || !FinitePick(palmFrame.x) || !FinitePick(palmFrame.y) || !FinitePick(palmFrame.z)
                 || !FinitePick(palmFrame.w) || Quaternion.Dot(palmFrame,palmFrame)<.5f)return false;
             palmFrame=palmFrame.normalized;
-            var rotation=palmFrame*Quaternion.Inverse(TrackedPickPalmRotation);
-            var localPalm=TrackedPickPalmRotation*TrackedPickPalmOffset/PickScale;
-            _held.localScale=Vector3.one*PickScale;
-            _held.SetPositionAndRotation(palm-rotation*(localPalm*PickScale),rotation);
-            _c.Hands.SetToolTarget(false,_held,localPalm,TrackedPickPalmRotation,.94f,fingers:PickFingers);
-            _c.Hands.Right.SetGripSurface(_held.TransformPoint(new Vector3(0,-.155f,0)),
-                _held.TransformPoint(new Vector3(0,.25f,0)),.018f*PickScale);
+            var hand=item==FieldItem.Shovel?Quaternion.identity:TrackedPickPalmRotation;
+            float scale=WorkToolScale(item);
+            var rotation=palmFrame*Quaternion.Inverse(hand);
+            var localPalm=WorkHandle(item)+hand*TrackedPickPalmOffset/scale;
+            _held.localScale=Vector3.one*scale;
+            _held.SetPositionAndRotation(palm-rotation*(localPalm*scale),rotation);
+            _c.Hands.SetToolTarget(false,_held,localPalm,hand,.94f,fingers:PickFingers);
+            ConfigureWorkGrip(item,scale);
             return true;
+        }
+        private void ConfigureWorkGrip(FieldItem item,float scale)
+        {
+            var center=WorkHandle(item);
+            var axis=item==FieldItem.Shovel?Vector3.right:Vector3.up;
+            float half=item==FieldItem.Shovel?.07f:.15f;
+            bool pick=FishingUserTools.IsPick(item);
+            _c.Hands.Right.SetGripSurface(_held.TransformPoint(pick?Vector3.down*.155f:center-axis*half),_held.TransformPoint(pick?Vector3.up*.25f:center+axis*half),
+                (pick?.018f:item==FieldItem.Shovel?.016f:.022f)*scale);
         }
         private static bool FinitePick(float value)=>!float.IsNaN(value) && !float.IsInfinity(value);
     }

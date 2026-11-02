@@ -33,7 +33,7 @@ namespace BoatAttack.EditorTools
             yield return null;yield return null;
             var cashier=shop.Cashier;var root=cashier.transform;var feet=root.position;var facing=root.rotation;
             var skins=cashier.GetComponent<LODGroup>().GetLODs().Select(l=>l.renderers[0] as SkinnedMeshRenderer).ToArray();
-            Check(cashier.Animated && skins.Length==2 && skins.All(s=>s!=null && s.bones.Length==5 && s.sharedMesh!=null && s.enabled),"Both original cashier LODs have visible GPU gesture skins");
+            Check(cashier.Animated && skins.Length==2 && skins.All(s=>s!=null && s.bones.Length==7 && s.sharedMesh!=null && s.enabled),"Both original cashier LODs have articulated GPU gesture skins");
             var baked=new Mesh();var before=new Mesh();
             try
             {

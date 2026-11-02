@@ -16,7 +16,7 @@ internal static class CombatTests
         c.MarkNightCreatureDefeated();check(c.ClaimNightCreatureReward() && !c.ClaimNightCreatureReward(),"Night creature cooldown gates duplicate loot");
         var data=c.Snapshot();check(FishingCareer.TryRestore(data,out var restored) && restored.GuardianWins==2,"Combat receipts round trip");
         data.combat.guardianWins=99;check(restored.GuardianWins==2,"Combat restore clones visitor DTO");
-        var old=new FishingCareer().Snapshot();old.version=17;check(FishingCareer.TryRestore(old,out var migrated) && migrated.GuardianWins==0,"Version17 migrates pristine combat");
+        var old=new FishingCareer().Snapshot();Program.Legacy(old,17);check(FishingCareer.TryRestore(old,out var migrated) && migrated.GuardianWins==0,"Version17 migrates pristine combat");
         old.combat.guardianWins=1;check(!FishingCareer.TryRestore(old,out _),"Version17 rejects future combat receipts");
         old=new FishingCareer().Snapshot();old.combat.guardianCooldown=double.NaN;check(!FishingCareer.TryRestore(old,out _),"Combat save rejects NaN time");
         var full=new FishingCareer();while(full.Backpack.TryAdd(FieldItem.Stone,64)){}full.MarkGuardianDefeated();coins=full.Coins;

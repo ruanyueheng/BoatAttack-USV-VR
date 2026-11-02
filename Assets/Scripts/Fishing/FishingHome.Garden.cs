@@ -40,6 +40,7 @@ namespace BoatAttack.Fishing
             {
                 for(int j=0;j<8;j++)
                 {
+                    if(side>0 && j<4)continue; // Leave the aquarium and its viewing approach clear.
                     var flowers=FishingFarmWorld.Model("FlowerPatch",root,OnLand(new Vector3(side*(7.4f+j*.15f),0,-6+j*1.7f)),false);flowers.localScale=Vector3.one*1.2f;
                 }
                 var ivy=FishingFarmWorld.Model("IvyDrape",House,new Vector3(side*5.9f,3.1f,-5.3f),false);ivy.localScale=Vector3.one*.85f;

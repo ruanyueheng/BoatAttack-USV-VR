@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -119,6 +119,22 @@ namespace BoatAttack.EditorTools
         }
         private static IEnumerator Checks(FishingPrototype c,string suite)
         {
+            if(suite=="V060-WELL")
+            {
+                var run=FishingV060Validation.WellChecks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V060")
+            {
+                var run=FishingV060Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V059-HANDCRAFT")
+            {
+                var run=FishingV059Validation.HandcraftChecks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V059")
+            {
+                var run=FishingV059Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
             if(suite=="V058")
             {
                 var run=FishingV058Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;

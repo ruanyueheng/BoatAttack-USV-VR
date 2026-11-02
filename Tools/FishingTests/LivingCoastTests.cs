@@ -7,7 +7,7 @@ internal static class LivingCoastTests
     {
         for(int version=9;version<=19;version++)
         {
-            var legacySave=new FishingCareer().Snapshot();legacySave.version=version;legacySave.coins=87;
+            var legacySave=new FishingCareer().Snapshot();Program.Legacy(legacySave,version);legacySave.coins=87;
             legacySave.hunting.availableDays=new List<int>(new int[8]);legacySave.hunting.availableMinutes=new List<double>(new double[8]);
             legacySave.hunting.availableDays[1]=1;legacySave.hunting.availableMinutes[1]=legacySave.calendar.minute+200;legacySave.hunting.harvests=3;
             check(FishingCareer.TryRestore(legacySave,out var loaded),"Eight-entry wildlife saves remain readable: schema "+version);

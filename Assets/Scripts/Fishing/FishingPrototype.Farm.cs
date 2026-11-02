@@ -19,7 +19,8 @@ namespace BoatAttack.Fishing
             {
                 // The rake head meets the soil; the generic pickup height is a palm target.
                 contact.y=root.TransformPoint(Vector3.up*.12f).y;
-                contact-=Shore.Actor.rotation*Quaternion.Euler(145,0,-12)*(FishingFieldWorld.WorkToolTip(FieldItem.Rake)-new Vector3(0,.1f,0));
+                var rotation=Shore.Actor.rotation*Quaternion.Euler(145,0,-12);
+                contact-=rotation*(FishingFieldWorld.WorkToolTip(FieldItem.Rake)-FishingFieldWorld.WorkGripPalm(FieldItem.Rake,rotation,Shore.Actor.rotation));
             }
             return contact;
         }

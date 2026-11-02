@@ -73,7 +73,7 @@ internal static class VoyageQuestTests
             var old = new FishingCareer();
             for (int i = 0; i < 4; i++) if ((mask & (1 << i)) != 0) old.CompleteShrine(i);
             if (mask == 15) old.CompleteEchoVoyage();
-            var legacy = old.Snapshot(); legacy.version = 15;
+            var legacy = old.Snapshot(); Program.Legacy(legacy,15);
             check(FishingCareer.TryRestore(legacy, out var upgraded) && upgraded.Coins == old.Coins && upgraded.Lore.ClearCount == old.Lore.ClearCount
                 && upgraded.Lore.Finale == old.Lore.Finale && !upgraded.PirateKing && upgraded.Lore.RewardedShrines == 0, "Quest: v15 migration preserves paid money and old finale without inventing new rewards " + mask);
             check(!legacy.lore.mayorAccepted && !legacy.lore.chartFound && legacy.lore.rewardedShrines == 0, "Quest: legacy migration never writes into the input DTO " + mask);
@@ -85,7 +85,7 @@ internal static class VoyageQuestTests
             }
             check(FishingCareer.TryRestore(upgraded.Snapshot(), out _), "Quest: migrated progress can be saved and loaded as v16 " + mask);
         }
-        var sailed = new FishingCareer(); sailed.DiscoverIsland(0); var sailedSave = sailed.Snapshot(); sailedSave.version = 15;
+        var sailed = new FishingCareer(); sailed.DiscoverIsland(0); var sailedSave = sailed.Snapshot(); Program.Legacy(sailedSave,15);
         check(FishingCareer.TryRestore(sailedSave, out var sailor) && sailor.Lore.ChartFound && sailor.Coins == sailed.Coins, "Quest: old island-only progress receives the narrative migration without replaying payment");
 
         var bad = new FishingCareer().Snapshot(); bad.lore.chartFound = true;
@@ -100,9 +100,9 @@ internal static class VoyageQuestTests
         check(!FishingCareer.TryRestore(bad, out _), "Quest: unique relics cannot be duplicated across backpack and home storage");
         bad = Ready().Snapshot(); bad.backpack[Slot(Ready().Backpack, FieldItem.WindRelic)] = new FieldStack();
         check(!FishingCareer.TryRestore(bad, out _), "Quest: a lost claimed relic cannot silently destroy the route to the finale");
-        bad = Ready().Snapshot(); bad.version = 15;
+        bad = Ready().Snapshot(); Program.Legacy(bad,15);
         check(!FishingCareer.TryRestore(bad, out _), "Quest: old schemas cannot conceal new quest receipts or items");
-        bad = new FishingCareer().Snapshot(); bad.version = 15; bad.backpack[1] = new FieldStack { item = FieldItem.VoyageCompass, count = 1 };
+        bad = new FishingCareer().Snapshot(); Program.Legacy(bad,15); bad.backpack[1] = new FieldStack { item = FieldItem.VoyageCompass, count = 1 };
         check(!FishingCareer.TryRestore(bad, out _), "Quest: a legacy backpack cannot smuggle a final key");
         var independent = Ready(); var copy = independent.Snapshot(); copy.lore.rewardedShrines = 0;
         check(independent.Lore.RewardedShrines == 15, "Quest: quest snapshots do not alias live narrative or reward facts");

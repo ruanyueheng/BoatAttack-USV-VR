@@ -35,7 +35,7 @@ internal static class FieldTests
         check(caches.Backpack.TryCollect(8,FieldItem.SeaTreasure,1) && !caches.Backpack.TryCollect(8,FieldItem.SeaTreasure,1),"New wild cache IDs pay exactly once");
         check(caches.Backpack.TryCollect(15,FieldItem.Plank,4) && !caches.Backpack.TryCollect(16,FieldItem.Plank,4),"Appended wild cache ID range stays bounded");
         check(FishingCareer.TryRestore(caches.Snapshot(),out var cacheLoaded) && cacheLoaded.Backpack.Collected(8) && cacheLoaded.Backpack.Collected(15),"New cache receipts survive a career reload");
-        var oldCache=caches.Snapshot();oldCache.version=18;
+        var oldCache=caches.Snapshot();Program.Legacy(oldCache,18);
         check(!FishingCareer.TryRestore(oldCache,out _),"Older schemas cannot smuggle new cache receipts");
         foreach(int n in new[]{-1,8})check(!FishingBackpack.TryRestore(bag.Snapshot(),0,0,n,out _),"Unknown animal mask rejected "+n);
         var invalid=bag.Snapshot();invalid[0].count=2;check(!FishingBackpack.TryRestore(invalid,0,0,0,out _),"Overstacked tool save rejected");

@@ -102,18 +102,20 @@ namespace BoatAttack.EditorTools
             for(int step=0;step<1800;step++)
             {
                 animate.Invoke(world,new object[]{.1f});
-                var footprints=new List<(Transform actor,Rect rect)>();
+                var footprints=new List<(Transform actor,Rect rect,Bounds bounds)>();
                 foreach(var (actor,renderer) in bodies)
                 {
                     var bounds=renderer.bounds;var center=actor.parent.position;var min=bounds.min-center;var max=bounds.max-center;
-                    bool inside=min.x>=-1.42f && max.x<=1.42f && min.z>=-.65f && max.z<=2.43f && min.y>=.07f && min.y<=.15f;
+                    bool perched=actor.name.StartsWith("Housed Gull ",StringComparison.Ordinal);
+                    bool height=perched?(Mathf.Abs(min.y-.595f)<.04f || Mathf.Abs(min.y-1.205f)<.04f):min.y>=.07f && min.y<=.15f;
+                    bool inside=min.x>=-1.42f && max.x<=1.42f && min.z>=-.65f && max.z<=2.43f && height;
                     var footprint=Rect.MinMaxRect(min.x,min.z,max.x,max.z);
                     bool clear=!footprint.Overlaps(new Rect(.95f,1.18f,.36f,.36f)) && !footprint.Overlaps(new Rect(.95f,1.78f,.36f,.36f))
-                        && !footprint.Overlaps(new Rect(-.9f,-.8f,1.8f,1.44f));
+                        && (perched || !footprint.Overlaps(new Rect(-.9f,-.8f,1.8f,1.44f)));
                     if(!inside || !clear)Check(false,stage+" step="+step+" actor="+actor.name+" renderer="+renderer.name+" min="+min.ToString("F4")+" max="+max.ToString("F4")+" inside="+inside+" clearFoodWaterShelter="+clear);
-                    foreach(var previous in footprints)if(previous.actor!=actor && previous.actor.parent==actor.parent && previous.rect.Overlaps(footprint))
+                    foreach(var previous in footprints)if(previous.actor!=actor && previous.actor.parent==actor.parent && previous.rect.Overlaps(footprint) && previous.bounds.Intersects(bounds))
                         Check(false,stage+" step="+step+" bodies overlap: "+previous.actor.name+" and "+actor.name+" min="+min.ToString("F4")+" max="+max.ToString("F4"));
-                    footprints.Add((actor,footprint));
+                    footprints.Add((actor,footprint,bounds));
                 }
             }
             Check(true,stage+": three minutes keep every body inside the fence, apart from other animals and clear of food, water and shelter solids");

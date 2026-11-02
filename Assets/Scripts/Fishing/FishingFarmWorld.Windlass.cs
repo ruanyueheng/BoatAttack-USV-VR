@@ -6,7 +6,7 @@ namespace BoatAttack.Fishing
     {
         // Desktop well drawing: the can is set on the rim, both hands turn a real windlass crank whose rope coil winds
         // with the bucket height, then both hands tip the dripping bucket into the can and the crank lets it back down.
-        private static readonly Vector3 CrankPivotLocal=new Vector3(11.72f,1.65f,-8);
+        private static readonly Vector3 CrankPivotLocal=new Vector3(11.82f,1.28f,-7.55f);
         private const float CrankRadius=.2f,CoilCore=.11f,CoilDepth=.08f,DrumRadius=.17f;
         private Transform _crank,_coil;private Vector3 _rimSeat;private Quaternion _rimSeatRotation;
         private float _crankAngle;
@@ -19,6 +19,8 @@ namespace BoatAttack.Fishing
         }
         private void BuildWindlass()
         {
+            FishingArt.Pole("Windlass crank support",Root,new Vector3(11.72f,1.65f,-8),new Vector3(11.72f,1.28f,-7.55f),.035f,_c.wood);
+            FishingArt.Pole("Outboard windlass axle",Root,new Vector3(11.60f,1.28f,-7.55f),CrankPivotLocal,.045f,_c.wood);
             _crank=new GameObject("Well windlass crank").transform;_crank.SetParent(Root,false);_crank.localPosition=CrankPivotLocal;
             FishingArt.Shape("Crank arm",PrimitiveType.Cube,_crank,new Vector3(.02f,-CrankRadius*.5f,0),new Vector3(.035f,CrankRadius+.03f,.035f),_c.wood);
             var handle=FishingArt.Shape("Crank handle",PrimitiveType.Cylinder,_crank,new Vector3(.13f,-CrankRadius,0),new Vector3(.034f,.11f,.034f),_c.wood);handle.transform.localRotation=Quaternion.Euler(0,0,90);
@@ -51,13 +53,23 @@ namespace BoatAttack.Fishing
         /// <summary>A desktop stance must reach the crank's top and bottom and the rim seat with the real right arm.</summary>
         private bool WellStanceReaches(Vector3 actor,Quaternion face)
         {
-            var feet=actor-Vector3.up*.08f;RimSeat(feet,out var seat,out _);
-            if(Mathf.Abs(Vector3.Dot(face*Vector3.forward,Root.right))>.6f)return false;
+            var post=Root.TransformPoint(new Vector3(11.65f,1.65f,-8));
+            if(FishingPrototype.FlatDistance(actor,post)<.6f)return false;
             var pivot=Root.TransformPoint(CrankPivotLocal)+Root.right*.18f;
-            foreach(var point in new[]{pivot})
-                if(!_c.CanReachFarmHandle(point,face,actor,face,out _))return false;
+            var lean=Vector3.zero;
+            foreach(var point in new[]{pivot+Vector3.up*CrankRadius,pivot-Vector3.up*CrankRadius,pivot-Root.right*.24f})
+            {
+                if(!_c.CanReachFarmHandle(point,face,actor,face,out var next))return false;
+                if(next.sqrMagnitude>lean.sqrMagnitude)lean=next;
+            }
+            var character=_c.Shore.Character;
+            var eye=actor+face*(Quaternion.Inverse(_c.Shore.Actor.rotation)*(character.EyePosition-_c.Shore.Actor.position-Vector3.ClampMagnitude(character.InteractionLean,.22f)))+lean;
+            var to=WellViewFocus-eye;
+            if(Root.Find("GardenFixtures").GetComponentInChildren<MeshCollider>().Raycast(new Ray(eye,to.normalized),out _,to.magnitude))return false;
             return true;
         }
+        public bool DrawingWell=>Busy && _canWork==FarmWork.Refill;
+        public Vector3 WellViewFocus=>(_crank.position+_targets[12].position+Vector3.up*1.05f)*.5f;
         private Quaternion WorkFacing=>Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0);
 
         private void PresentRefillHands(float p)

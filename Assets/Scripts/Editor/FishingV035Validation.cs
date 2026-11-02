@@ -19,7 +19,7 @@ namespace BoatAttack.EditorTools
             Directory.CreateDirectory("Logs/V035");
             var previous=FishingV034Validation.Checks(c);
             try{while(previous.MoveNext())yield return previous.Current;}finally{(previous as IDisposable)?.Dispose();}
-            Check(FishingHandGames.StartHint(true)=="E 动手试试" && FishingHandGames.StartHint(false)=="右手柄 A 动手试试","Start labels identify the actual input device");
+            Check(FishingHandGames.StartHint(true)=="E 动手试试" && FishingHandGames.StartHint(false).Contains("握把"),"Start labels identify the actual input device");
             var xrCanvas=(Canvas)Field("_canvas").GetValue(c.HandGames);var xrTitle=(UnityEngine.UI.Text)Field("_title").GetValue(c.HandGames);
             Check(xrCanvas.GetComponent<FishingUIThemeBindings>()!=null && xrTitle.font==FishingUITheme.Heading && xrTitle.GetComponent<UnityEngine.UI.Outline>()!=null,"XR handcraft paper follows the day/night palette and its brush-script title has a glyph outline");
             for(int game=0;game<2;game++)

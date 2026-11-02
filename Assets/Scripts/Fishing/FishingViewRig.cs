@@ -185,6 +185,8 @@ namespace BoatAttack.Fishing
             if(IsLooking)ApplyShoreLookDelta(mouse.delta.ReadValue());
             var rotation=Quaternion.Euler(_lookPitch,_shoreYaw+_lookYaw,0);
             var eye=c.Shore.Character.EyePosition;
+            bool well=FirstPerson && c.Farm!=null && c.Farm.DrawingWell;
+            if(well)rotation=Quaternion.LookRotation(c.Farm.WellViewFocus-eye,Vector3.up);
             float rifleAim=c.RifleHunting!=null?c.RifleHunting.AimBlend:0;
             // Held catches/items are framed from the true eye; the look-down shift would push them up the view.
             float lookDown=c.HasPendingCatch || c.InspectingItem?0:1;
@@ -196,6 +198,7 @@ namespace BoatAttack.Fishing
             float opticalFov=2*Mathf.Atan(Mathf.Tan(c.FieldOfView*Mathf.Deg2Rad*.5f)/BinocularMagnification)*Mathf.Rad2Deg;
             float rifleZoom=rifleAim;
             c.viewCamera.fieldOfView=FirstPerson?Mathf.Lerp(Mathf.Lerp(c.FieldOfView,c.FieldOfView*.76f,rifleZoom),opticalFov,zoom):58;
+            if(well)c.viewCamera.fieldOfView=Mathf.Max(68,c.viewCamera.fieldOfView);
             _reset=true; // Boarding must not interpolate the boat camera from an inland position.
         }
         // 头已隐藏：低头时眼位沿水平朝向前移，让颈口落在视锥后方，只看到胸腹外侧。
