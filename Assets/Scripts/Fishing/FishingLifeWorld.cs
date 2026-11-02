@@ -62,7 +62,7 @@ namespace BoatAttack.Fishing
         private void LateUpdate()
         {
             if (_c == null) return;
-            UpdateVrCamera();
+            UpdateVrCamera(_c.Automated || Application.isFocused);
             UpdatePalmMap();
             AnimateFestival();
         }

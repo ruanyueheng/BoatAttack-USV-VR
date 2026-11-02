@@ -23,6 +23,7 @@ namespace BoatAttack.Fishing
         private RenderTexture _film;
         private Transform _prop, _frame;
         private bool _wasFirstPerson;
+        public bool ApplicationPaused { get; private set; }
         private float _flash = -10;
         private readonly FishingPressEdge _vrShutter = new FishingPressEdge();
         private AudioSource _shutter;
@@ -92,13 +93,21 @@ namespace BoatAttack.Fishing
         {
             var d = hand - eye; return d.magnitude <= .22f && Vector3.Dot(d, eyeForward) > .02f;
         }
-        private void UpdateVrCamera()
+        private bool TryCameraHand(bool focused, out Vector3 p, out Quaternion q)
+        {
+            p=Vector3.zero;q=Quaternion.identity;
+            return focused && !ApplicationPaused && Vr && CanUseCamera && !_c.XRSeat.HeadBlocked
+                && !_c.InspectingItem && !_c.Hands.HoldingRod && !_c.Anchored
+                && _c.Career.Backpack.Equipped!=FieldItem.HuntingRifle && _c.Career.Backpack.Equipped!=FieldItem.Binoculars
+                && RightHand(out p,out q);
+        }
+        public bool OwnsVrTrigger => _c!=null && TryCameraHand(_c.Automated || Application.isFocused,out var hand,out _)
+            && RaisedToEye(_c.viewCamera.transform.position,_c.viewCamera.transform.forward,hand);
+        private void UpdateVrCamera(bool focused)
         {
             bool raised = false;
             // Equipped binoculars own the near-eye gesture and trigger; never replace them with a film camera.
-            if (Vr && CanUseCamera && !_c.InspectingItem && !_c.Hands.HoldingRod && !_c.Anchored
-                && _c.Career.Backpack.Equipped != FieldItem.HuntingRifle && _c.Career.Backpack.Equipped != FieldItem.Binoculars
-                && RightHand(out var p, out var q))
+            if (TryCameraHand(focused,out var p,out var q))
             {
                 var eye = _c.viewCamera.transform;
                 raised = RaisedToEye(eye.position, eye.forward, p);
@@ -108,13 +117,15 @@ namespace BoatAttack.Fishing
                 _frame.gameObject.SetActive(raised);
                 if (raised) _frame.SetPositionAndRotation(eye.position + eye.forward * .2f, eye.rotation);
                 bool trigger = false;
-                if (!DebugRightHand.HasValue) InputDevices.GetDeviceAtXRNode(XRNode.RightHand).TryGetFeatureValue(CommonUsages.triggerButton, out trigger);
+                if (!DebugRightHand.HasValue) trigger = FishingXRInput.Trigger(InputDevices.GetDeviceAtXRNode(XRNode.RightHand));
                 if (_vrShutter.Step(raised, trigger || _debugShutter)) TakePhoto();
             }
             else { _prop.gameObject.SetActive(false); _frame.gameObject.SetActive(false); _vrShutter.Step(false, false); }
             _debugShutter = false;
             VrRaised = raised;
         }
+        private void OnApplicationFocus(bool focused){if(!focused)_vrShutter.Reset();}
+        private void OnApplicationPause(bool paused){ApplicationPaused=paused;if(paused)_vrShutter.Reset();}
         private bool _debugShutter;
         /// <summary>Automation: press the VR shutter for one frame (needs a released frame first, like the real trigger).</summary>
         public void DebugPressShutter() => _debugShutter = true;
@@ -138,6 +149,7 @@ namespace BoatAttack.Fishing
             }
             catch (Exception ex) { Debug.LogWarning("[LIFE] Photo not saved: " + ex.Message); }
             finally { RenderTexture.active = previous; if (image != null) Destroy(image); _prop.gameObject.SetActive(propWasOn); _frame.gameObject.SetActive(frameWasOn); }
+            if (path.Length == 0) { _c.Notice("照片没能冲洗出来（存储不可用），请检查空间或权限后重试。", 5); return ""; }
             _shutter.Play(); _flash = Time.unscaledTime; PhotosTaken++; LastEntry = entry; LastPhotoPath = path;
             if (Vr) Haptic();
             int pay = entry >= 0 ? _c.Career.RecordPhoto(entry) : 0;
@@ -160,10 +172,18 @@ namespace BoatAttack.Fishing
             var dir = AlbumDirectory; Directory.CreateDirectory(dir);
             var files = AlbumFiles(dir);
             int next = files.Count == 0 ? 0 : files.Max(f => f.sequence) + 1;
-            // Oldest photos roll off so one run never exceeds AlbumLimit × ~20 KB.
-            for (int i = 0; i <= files.Count - AlbumLimit; i++) File.Delete(Path.Combine(dir, files[i].name));
             var path = Path.Combine(dir, FishingPhotoCodex.FileName(next, _c.Career.Calendar.Day, entry));
-            File.WriteAllBytes(path, jpg); return path;
+            var temporary = path + ".tmp";
+            try { File.WriteAllBytes(temporary, jpg); File.Move(temporary, path); }
+            finally { if (File.Exists(temporary)) File.Delete(temporary); }
+            // Retire old photos only after the replacement is safely stored.
+            for (int i = 0; i <= files.Count - AlbumLimit; i++)
+            {
+                try { File.Delete(Path.Combine(dir, files[i].name)); }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                { Debug.LogWarning("[LIFE] Old photo retained: " + ex.Message); }
+            }
+            return path;
         }
         public static List<(string name, int sequence, int day, int entry)> AlbumFiles(string dir)
         {

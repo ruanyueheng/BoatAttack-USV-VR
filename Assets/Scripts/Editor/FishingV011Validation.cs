@@ -119,6 +119,10 @@ namespace BoatAttack.EditorTools
         }
         private static IEnumerator Checks(FishingPrototype c,string suite)
         {
+            if(suite=="LIFE-CAMERA")
+            {
+                var run=FishingV044LifeValidation.CameraReviewChecks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
             if(suite=="V060-WELL")
             {
                 var run=FishingV060Validation.WellChecks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;

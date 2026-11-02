@@ -53,6 +53,9 @@ namespace BoatAttack.EditorTools
             public int table=-1;
             public int orchard=-1;
             public bool homeReview;
+            public int pickup=-1;
+            public int carcass=-1;
+            public bool applicationPaused;
             public bool stop;
         }
         [Serializable] private sealed class Button { public int index; public string label; public Vector3 center; }
@@ -92,6 +95,13 @@ namespace BoatAttack.EditorTools
             public bool captureNetActive;
             public Vector3 captureNetPalm;
             public Vector3 cashierFace;
+            public Vector3 pickupPosition;
+            public int pickupTarget,pickupBagCount;
+            public bool pickupCollected;
+            public bool localHandsHidden;
+            public bool nearbyPending,carcassCollected;
+            public Vector3 carcassPosition;
+            public int carcassTarget;
             public bool cashierVisible;
             public bool handcraftLeft,workDebrisBothDirections;
             public int sand,shells,sawPlayCount,forgePlayCount,workpieceVertices,workDebrisEmitted,workDebrisVertices;
@@ -226,6 +236,25 @@ namespace BoatAttack.EditorTools
                         Require(_c.Shore.Relocate(_c.Home.Origin+new Vector3(3.1f,.2f,-1.35f),Quaternion.Euler(0,90,0)),"Home review chest approach failed.");
                         _c.View.ResetLook();
                     }
+                    if(next.pickup>=0 && next.pickup!=_command.pickup)
+                    {
+                        Require(_c.HasIsolatedProfile && _c.Ashore,"Pickup review requires an isolated shore profile.");
+                        var pickup=_c.FieldWorld.Pickups.First(p=>p.Id==next.pickup);
+                        _c.CancelWorldAction();_c.XRNotebook.Close();
+                        Require(_c.Shore.Relocate(pickup.Feet+Vector3.back*.8f,Quaternion.identity),"No supported pickup approach.");
+                        _c.View.ResetLook();
+                    }
+                    if(next.carcass>=0 && next.carcass!=_command.carcass)
+                    {
+                        Require(_c.HasIsolatedProfile && _c.Ashore,"Carcass review requires an isolated shore profile.");
+                        var animal=_c.RifleHunting.Targets.First(a=>a.Id==next.carcass);var feet=animal.Feet;
+                        Require(_c.Career.KillLandAnimal(animal.Id,animal.Kind,feet.x,feet.y,feet.z,0),"Carcass fixture requires an equipped rifle and a live animal.");
+                        _c.RifleHunting.RefreshAnimals();
+                        Require(_c.Shore.Relocate(feet+Vector3.back*.85f,Quaternion.identity),"No supported carcass approach.");
+                        _c.View.ResetLook();
+                    }
+                    if(next.applicationPaused!=_command.applicationPaused)
+                        typeof(FishingLifeWorld).GetMethod("OnApplicationPause",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(_c.Life,new object[]{next.applicationPaused});
                     _command=next;_lastWrite=written;_commandFrame=Time.frameCount;
                     if(next.stop){SessionState.SetBool(Key,false);Cleanup();EditorApplication.Exit(0);return;}
                     EditorWindow.GetWindow(Type.GetType("UnityEditor.GameView,UnityEditor")).Focus();
@@ -252,6 +281,8 @@ namespace BoatAttack.EditorTools
             Require(c!=null,"Missing command.");
             Require(c.table==-1 || c.table==0 || c.table==2 || c.table==3,"Unknown handcraft table fixture.");
             Require(c.orchard>=-1 && c.orchard<FishingCareer.HomeFruitTreeCount,"Unknown orchard fixture.");
+            Require(c.pickup>=-1 && c.pickup<FishingBackpack.PickupCount,"Unknown pickup fixture.");
+            Require(c.carcass==-1 || c.carcass==0,"Unknown carcass fixture.");
             foreach(var v in new[]{c.head,c.headEuler,c.left,c.right,c.leftEuler,c.rightEuler,new Vector3(c.leftStick.x,c.leftStick.y,c.leftTrigger),new Vector3(c.rightStick.x,c.rightStick.y,c.rightTrigger),new Vector3(c.leftGrip,c.rightGrip,0)})
                 Require(!float.IsNaN(v.sqrMagnitude) && !float.IsInfinity(v.sqrMagnitude) && v.magnitude<1000,"Non-finite/out-of-range simulator input.");
             Require(string.IsNullOrEmpty(c.capture) || (c.capture.Length<65 && c.capture.All(ch=>char.IsLetterOrDigit(ch)||ch=='-'||ch=='_')),"Capture name must be a filename stem.");
@@ -293,6 +324,8 @@ namespace BoatAttack.EditorTools
             var sieveA=(Transform)typeof(FishingHandGames).GetField("_sieveGripA",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.HandGames);
             var sieveB=(Transform)typeof(FishingHandGames).GetField("_sieveGripB",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.HandGames);
             bool fishReady=_c.HasPendingCatch && _c.ActiveFish!=null;var gripper=_c.CatchRig.FishGripper;
+            var pickup=_command.pickup<0?null:_c.FieldWorld.Pickups.First(p=>p.Id==_command.pickup);
+            var carcass=_command.carcass<0?null:_c.RifleHunting.Targets.First(a=>a.Id==_command.carcass);
             var dynamics=_c.Hands.Rod.GetComponent<FishingRodDynamics>();
             var restTip=dynamics!=null?(Vector3)typeof(FishingRodDynamics).GetField("_restTip",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(dynamics):Vector3.zero;
             var fishingLine=(LineRenderer)typeof(FishingAnglingPresentation).GetField("_line",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.Angling);
@@ -312,6 +345,13 @@ namespace BoatAttack.EditorTools
                 holdCount=_c.Career.Count,health=_c.Combat.Health,canLand=_c.Session.CanLand,remaining=_c.Session.Remaining,beat=_c.Session.Beat.ToString(),netHeld=_c.CatchRig.NetHeld,holdingRod=_c.Hands.HoldingRod,
                 shotsFired=_c.RifleHunting.ShotsFired,riflePresented=_c.RifleHunting.Presented,rifleObstructed=_c.RifleHunting.Obstructed,
                 photosTaken=_c.Life.PhotosTaken,cameraRaised=_c.Life.VrRaised,triggerButton=triggerButton,triggerValue=triggerValue,
+                localHandsHidden=_c.Shore.Character.FirstPersonSkin.forceRenderingOff,
+                nearbyPending=(bool)typeof(FishingXRNotebook).GetField("_nearbyInteractionPending",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.XRNotebook),
+                carcassPosition=carcass!=null?carcass.Root.GetComponent<Renderer>().bounds.center:Vector3.zero,
+                carcassCollected=carcass!=null && _c.Career.HuntedAnimal(carcass.Id)?.collected==true,
+                carcassTarget=_c.RifleHunting.TryLootTarget(out var loot)?loot.Id:-1,
+                pickupPosition=pickup!=null?pickup.Root.position:Vector3.zero,pickupCollected=pickup!=null && _c.Career.Backpack.Collected(pickup.Id),
+                pickupBagCount=pickup!=null?_c.Career.Backpack.Count(pickup.Item):0,pickupTarget=_c.FieldWorld.TryPickupTarget(out var nearby)?nearby.Id:-1,
                 binocularRaised=_c.BinocularsRaised,hintContext=FishingXRHints.Current(_c).ToString(),
                 binocularOpticsActive=_c.Life.Binoculars.Active,binocularEyeAlignment=_c.FieldWorld.BinocularEyeAlignment,
                 binocularLensSeparation=_c.Life.Binoculars.LensSeparation,binocularFov=_c.Life.Binoculars.OpticalCamera!=null?_c.Life.Binoculars.OpticalCamera.fieldOfView:0,
