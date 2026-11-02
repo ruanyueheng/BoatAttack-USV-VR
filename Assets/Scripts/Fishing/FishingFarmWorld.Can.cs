@@ -156,6 +156,7 @@ namespace BoatAttack.Fishing
             _startCanPosition=_can.position;_startCanRotation=_can.rotation;_startRightPalm=_c.Shore.Character.PalmPosition(false);_nextDrop=0;
             _canCrouched=_c.Shore.Crouched;
             _ownsCanLean=!tracked && (handling || work==FarmWork.Refill);
+            if(_ownsCanLean && work==FarmWork.Refill)_c.Shore.Character.SetTabletopView(true);
             if(work==FarmWork.Refill)RimSeat(_c.Shore.Position-Vector3.up*.08f,out _rimSeat,out _rimSeatRotation);
             _c.Shore.ResetMoveInput();return true;
         }
@@ -196,7 +197,12 @@ namespace BoatAttack.Fishing
         }
         private void RestoreCanLean()
         {
-            if(_ownsCanLean){_ownsCanLean=false;if(_c!=null && _c.Shore!=null && _c.Shore.Character!=null)_c.Shore.Character.InteractionLean=Vector3.zero;}
+            if(_ownsCanLean)
+            {
+                _ownsCanLean=false;
+                if(_c!=null && _c.Shore!=null && _c.Shore.Character!=null)
+                {_c.Shore.Character.InteractionLean=Vector3.zero;if(_canWork==FarmWork.Refill)_c.Shore.Character.SetTabletopView(false);}
+            }
         }
         private void DockCan()=>_can.SetPositionAndRotation(_targets[15].position,Root.rotation*CanDockRotation);
         private void ResetBucket()

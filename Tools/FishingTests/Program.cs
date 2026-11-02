@@ -3,6 +3,12 @@ using BoatAttack.Fishing;
 internal static class Program
 {
     private static int count;
+    internal static void Legacy(FishingSaveData data,int version)
+    {
+        data.version=version;
+        if(version<21 && data.homeStorage!=null && data.homeStorage.Count>FishingBackpack.SlotCount)
+            data.homeStorage.RemoveRange(FishingBackpack.SlotCount,data.homeStorage.Count-FishingBackpack.SlotCount);
+    }
     static void Check(bool ok, string label) { if (!ok) throw new Exception(label); count++; Console.WriteLine("PASS " + label); }
     static CatchSession Bite(FishKind kind, int level = 0)
     {

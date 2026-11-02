@@ -63,7 +63,7 @@ namespace BoatAttack.Fishing
             float nearest=2.25f;
             for(int i=0;i<_targets.Length;i++)
             {
-                var p=_targets[i].position;float d=FishingPrototype.FlatDistance(_c.Shore.Position,p);
+                var p=_targets[i].position;float d=FishingPrototype.FlatDistance(_c.Shore.Position,i==12?_crank.position:p);
                 if(d>=nearest || Mathf.Abs(p.y-_c.Shore.Position.y)>(i==15?1f:.6f))continue;
                 var direction=Aim(i)-_c.viewCamera.transform.position;
                 if(Vector3.Dot(_c.viewCamera.transform.forward,direction.normalized)<.1f)continue;
@@ -145,10 +145,13 @@ namespace BoatAttack.Fishing
             {
                 var palm=_c.Hands.Right.Palm.position;
                 var rotation=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0)*Quaternion.Euler(rake?145:35,0,-12);
-                var grip=rake?new Vector3(0,.1f,0):new Vector3(.036f,0,0);var handRotation=Quaternion.LookRotation(Vector3.forward,Vector3.right);
+                var frame=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0);
+                var grip=rake?FishingFieldWorld.WorkGripPalm(FieldItem.Rake,rotation,frame):new Vector3(.036f,0,0);
+                var handRotation=rake?FishingFieldWorld.WorkHandRotation(FieldItem.Rake,rotation,frame):Quaternion.LookRotation(Vector3.forward,Vector3.right);
                 tool.SetPositionAndRotation(palm-rotation*grip,rotation);
                 _c.Hands.SetToolTarget(false,tool,grip,handRotation,.8f,fingers:new FishingFingerPose(.7f,.8f,.82f,.85f,.7f));
-                _c.Hands.Right.SetGripSurface(tool.TransformPoint(rake?new Vector3(0,.02f,0):Vector3.down*.12f),tool.TransformPoint(Vector3.up*.18f),.018f);
+                var center=rake?FishingFieldWorld.WorkHandle(FieldItem.Rake):Vector3.zero;
+                _c.Hands.Right.SetGripSurface(tool.TransformPoint(center-Vector3.up*.12f),tool.TransformPoint(center+Vector3.up*.15f),.022f);
                 _c.Hands.Right.SetForearmRoll(.65f);
             }
         }

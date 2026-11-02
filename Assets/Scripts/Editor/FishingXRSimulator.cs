@@ -51,6 +51,7 @@ namespace BoatAttack.EditorTools
             public string capture,fixture,equip;
             public int table=-1;
             public int orchard=-1;
+            public bool homeReview;
             public bool stop;
         }
         [Serializable] private sealed class Button { public int index; public string label; public Vector3 center; }
@@ -83,6 +84,10 @@ namespace BoatAttack.EditorTools
             public bool handcraftActive,handcraftHeld,orchardFruitLanded;
             public int handcraftKind,handcraftStrokes,driftwood,planks,ironIngots,pickHeads,gunParts,islandFruit;
             public Vector3 toolGrip,toolContact,workPoint,toolEuler,rightPalmEuler,orchardFruit;
+            public int chestCapacity,pageOffset,bagTreasure,aquariumCount;
+            public string chestLastItem,cashierGesture;
+            public Vector3 heldRight,rightKnuckles,visualRightPalm,aquarium;
+            public float gripRadius;
         }
 
         static FishingXRSimulator()
@@ -196,6 +201,22 @@ namespace BoatAttack.EditorTools
                         Require(_c.Home.ShakeOrchardTree(next.orchard),"Orchard fixture cannot drop a fresh fruit.");
                         _c.View.ResetLook();
                     }
+                    if(next.homeReview && !_command.homeReview)
+                    {
+                        Require(_c.HasIsolatedProfile && _c.Ashore,"Home review requires an isolated shore profile.");
+                        _c.CancelWorldAction();_c.XRNotebook.Close();var career=_c.Career;
+                        while(career.HomeStorage.UsedSlots<143)Require(career.HomeStorage.TryAdd(FieldItem.Glass,64),"Home review chest fill failed.");
+                        Require(career.HomeStorage.TryAdd(FieldItem.SeaTreasure,1) && career.HomeStorage.At(143).item==FieldItem.SeaTreasure,"Home review final slot failed.");
+                        if(career.AquariumLevel==0)Require(career.Backpack.TryAdd(FieldItem.Aquarium,1) && career.BuildAquarium(),"Home review aquarium failed.");
+                        if(career.AquariumCount==0)
+                        {
+                            var fish=new CatchRecord{id="v059-review-fish",kind=FishKind.Coral,grams=800,value=FishingSpecies.Value(FishKind.Coral,false,800)};
+                            Require(career.Store(fish) && career.DisplayFish(fish.id),"Home review displayed fish failed.");
+                        }
+                        _c.HomeEcology.Refresh();FishingSaveStore.Save(_c.SavePath,career);
+                        Require(_c.Shore.Relocate(_c.Home.Origin+new Vector3(3.1f,.2f,-1.35f),Quaternion.Euler(0,90,0)),"Home review chest approach failed.");
+                        _c.View.ResetLook();
+                    }
                     _command=next;_lastWrite=written;_commandFrame=Time.frameCount;
                     if(next.stop){SessionState.SetBool(Key,false);Cleanup();EditorApplication.Exit(0);return;}
                     EditorWindow.GetWindow(Type.GetType("UnityEditor.GameView,UnityEditor")).Focus();
@@ -262,6 +283,10 @@ namespace BoatAttack.EditorTools
             var restTip=dynamics!=null?(Vector3)typeof(FishingRodDynamics).GetField("_restTip",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(dynamics):Vector3.zero;
             var fishingLine=(LineRenderer)typeof(FishingAnglingPresentation).GetField("_line",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.Angling);
             var s=new State{commandSequence=_command.sequence,commandFrame=_commandFrame,frame=Time.frameCount,xr=XRSettings.isDeviceActive,focused=Application.isFocused,isolated=_c.HasIsolatedProfile,automated=_c.Automated,
+                chestCapacity=_c.Career.HomeStorage.Capacity,chestLastItem=_c.Career.HomeStorage.At(143).item.ToString(),bagTreasure=_c.Career.Backpack.Count(FieldItem.SeaTreasure),
+                pageOffset=(int)typeof(FishingXRNotebook).GetField("_offset",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.XRNotebook),
+                aquarium=_c.HomeEcology.AquariumPosition,aquariumCount=_c.Career.AquariumCount,cashierGesture=_c.TackleShop.Cashier.Gesture,
+                heldRight=_c.FieldWorld.HeldTool.right,rightKnuckles=_c.Hands.Right.Palm.forward,visualRightPalm=_c.Shore.Character.PalmPosition(false),gripRadius=_c.Hands.Right.GripRadius,
                 headTracked=Tracked(XRNode.Head),leftTracked=Tracked(XRNode.LeftHand),rightTracked=Tracked(XRNode.RightHand),seatReady=_c.XRSeat.Ready,headBlocked=_c.XRSeat.HeadBlocked,
                 motionReady=_c.XRNotebook.MotionReady,notebook=_c.XRNotebook.IsOpen,page=(int)typeof(FishingXRNotebook).GetField("_page",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.XRNotebook),
                 anchored=_c.Anchored,ashore=_c.Ashore,pending=_c.HasPendingCatch,phase=_c.Session.Phase.ToString(),message=_c.VisibleMessage,speed=_c.Speed,spot=_c.Spot,spotDistance=_c.SpotDistance,tension=_c.Session.Tension,distance=_c.Session.Distance,

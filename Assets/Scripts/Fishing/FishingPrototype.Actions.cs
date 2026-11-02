@@ -179,7 +179,7 @@ namespace BoatAttack.Fishing
                 Shoulder=moved+turn*(character.ShoulderPosition(false)-pivot),Grounded=Shore.Grounded,Crouched=Shore.Crouched,ArmReach=character.ArmReach(false)};
             check.BaseShoulder=check.Shoulder-turn*character.AppliedInteractionLean;
             check.Palm=pick?FishingFieldWorld.WorkContactPalm(Career.Backpack.Equipped,contact,rotation,yaw):contact;
-            var wrist=pick?Shore.Character.WristForPalm(false,check.Palm,rotation*FishingFieldWorld.PickHandRotation(rotation,yaw)):check.Palm;
+            var wrist=pick?Shore.Character.WristForPalm(false,check.Palm,rotation*FishingFieldWorld.WorkHandRotation(Career.Backpack.Equipped,rotation,yaw)):check.Palm;
             float ReachDistance(Vector3 shoulder)=>Mathf.Max(Vector3.Distance(shoulder,check.Palm),Vector3.Distance(shoulder,wrist));
             // 使用当前输入最终对应的姿态；起身途中的瞬时可达不能冒充站姿可达。
             if(lowAction && Ashore)check.BaseShoulder+=turn*character.AshoreStanceOffset(Shore.Crouched);
@@ -397,7 +397,7 @@ namespace BoatAttack.Fishing
             return true;
         }
         private Vector3 ActionPickWrist(Vector3 palm,Quaternion toolRotation)
-            =>Shore.Character.WristForPalm(false,palm,toolRotation*FishingFieldWorld.PickHandRotation(toolRotation,Quaternion.Euler(0,Shore.Actor.eulerAngles.y,0)));
+            =>Shore.Character.WristForPalm(false,palm,toolRotation*FishingFieldWorld.WorkHandRotation(Career.Backpack.Equipped,toolRotation,Quaternion.Euler(0,Shore.Actor.eulerAngles.y,0)));
         private bool ClearActionSight(Vector3 from,Vector3 to,Transform target)=>ClearActionSight(from,to,target,out _);
         private bool ClearActionSight(Vector3 from,Vector3 to,Transform target,out string blocker)
         {

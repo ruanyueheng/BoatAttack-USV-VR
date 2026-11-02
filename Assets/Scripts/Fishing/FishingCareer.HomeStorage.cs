@@ -3,7 +3,7 @@ namespace BoatAttack.Fishing
     public sealed partial class FishingCareer
     {
         public const int HomeFruitTreeCount=5;
-        public FishingBackpack HomeStorage {get;private set;}=new FishingBackpack(false);
+        public FishingBackpack HomeStorage {get;private set;}=new FishingBackpack(false,FishingBackpack.HomeStorageSlots);
         private int[] _homeFruitDays={-1,-1,-1,-1,-1};
         public bool CanHarvestHomeFruit(int tree)=>tree>=0 && tree<HomeFruitTreeCount && _homeFruitDays[tree]<Calendar.Day;
         public bool TryHarvestHomeFruit(int tree)
@@ -21,7 +21,14 @@ namespace BoatAttack.Fishing
                 if(data.backpack!=null)foreach(var stack in data.backpack)if(stack!=null && stack.item==FieldItem.IslandFruit)return false;
                 return true;
             }
-            if(!FishingBackpack.TryRestore(data.homeStorage,0,0,0,out var storage)
+            var slots=data.homeStorage;
+            if(data.version<21)
+            {
+                if(slots==null || slots.Count!=FishingBackpack.SlotCount)return false;
+                slots=new System.Collections.Generic.List<FieldStack>(slots);
+                while(slots.Count<FishingBackpack.HomeStorageSlots)slots.Add(new FieldStack());
+            }
+            if(!FishingBackpack.TryRestore(slots,0,0,0,out var storage,FishingBackpack.HomeStorageSlots)
                 || data.homeFruitDays==null || data.homeFruitDays.Length!=HomeFruitTreeCount)return false;
             foreach(int day in data.homeFruitDays)if(day< -1 || day>Calendar.Day)return false;
             HomeStorage=storage;_homeFruitDays=(int[])data.homeFruitDays.Clone();return true;

@@ -35,7 +35,7 @@ namespace BoatAttack.Fishing
             int first=c.CaptureAnimalWithNet(0,LandAnimalKind.Rabbit),second=c.CaptureAnimalWithNet(3,LandAnimalKind.Rabbit);
             Require(first>0 && second>0 && c.HouseAnimal(first) && c.HouseAnimal(second),"House a pair of captured rabbits");
             _c.HomeEcology.Refresh();Equip(FieldItem.Empty);
-            Stand(_c.Home.Origin+new Vector3(2,.25f,-3.1f),_c.HomeEcology.AquariumPosition+Vector3.up*.95f);
+            Stand(_c.HomeEcology.AquariumPosition+Vector3.back*2,_c.HomeEcology.AquariumPosition+Vector3.up*.95f);
             var shot=Shot("aquarium-world");while(shot.MoveNext())yield return shot.Current;
             _c.HomeEcology.Open();shot=Shot("ecology-menu");while(shot.MoveNext())yield return shot.Current;
             if(_c.InventoryOpen)_c.ToggleInventory();

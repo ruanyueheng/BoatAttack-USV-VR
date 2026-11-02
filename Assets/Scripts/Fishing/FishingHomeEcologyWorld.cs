@@ -25,10 +25,14 @@ namespace BoatAttack.Fishing
         public LandAnimalKind TrapKind=LandAnimalKind.Rabbit;
         public int Page;
         public bool NearHome=>_c.Ashore && FishingPrototype.FlatDistance(_c.ExplorerPosition,_c.Home.Origin)<22 && !_c.Shore.Swimming && !_c.Shore.Climbing;
-        public Vector3 AquariumPosition=>_c.Home.Origin+new Vector3(2,.25f,-1.5f);
+        public Vector3 AquariumPosition=>HomePlot(new Vector3(8.3f,0,-4));
         public Vector3 HabitatPosition(LandAnimalKind kind)
         {
-            var point=_c.Home.Origin+new Vector3(-7.5f+(int)kind*4,0,7.5f);
+            return HomePlot(new Vector3(-7.5f+(int)kind*4,0,7.5f));
+        }
+        private Vector3 HomePlot(Vector3 offset)
+        {
+            var point=_c.Home.Origin+offset;
             // These permanent plots belong to the authored home island. General physics ground can
             // select an overlapping legacy terrain or another fixture and lift the entire enclosure.
             if(_homeLand!=null && _homeLand.Raycast(new Ray(point+Vector3.up*40,Vector3.down),out var hit,80))point.y=hit.point.y;
@@ -169,11 +173,11 @@ namespace BoatAttack.Fishing
             }
             return list;
         }
-        public string Status=>"水族箱 "+_c.Career.AquariumCount+"/"+_c.Career.AquariumCapacity+" · 活体载具 "+_c.Career.CarriedAnimalCount+"/4 · 动物 "+_c.Career.HomeAnimalCount+"/16\n六种设施均可部署：水族箱在屋内，五类动物住所位于菜园西侧。套件可在工作台制作；幼兽2日成年。";
+        public string Status=>"水族箱 "+_c.Career.AquariumCount+"/"+_c.Career.AquariumCapacity+" · 活体载具 "+_c.Career.CarriedAnimalCount+"/4 · 动物 "+_c.Career.HomeAnimalCount+"/16\n水族箱在渔屋东侧的岛上，五类动物住所位于菜园西侧。套件可在工作台制作；幼兽2日成年。";
         public bool UseNet()
         {
             if(!Active || !_c.Ashore || _c.Career.Backpack.Equipped!=FieldItem.CaptureNet)return false;
-            PresentNet();if(_net==null || !_net.gameObject.activeInHierarchy)return false;
+            if(_net==null || !_net.gameObject.activeInHierarchy)return false;
             var mouth=_net.TransformPoint(new Vector3(FishingDetailArt.NetMouthOffset,0,0));
             FishingFieldWorld.Animal best=null;float nearest=1.8f;
             foreach(var a in _c.RifleHunting.Targets)
@@ -314,19 +318,21 @@ namespace BoatAttack.Fishing
             }
             return result;
         }
-        private void PresentNet()
+        public void PresentNet(bool show)
         {
-            bool show=_c.Ashore && _c.Career.Backpack.Equipped==FieldItem.CaptureNet && _c.Hands.CanPresentTools;
             if(_net==null && show)
             {_net=Instantiate(_c.LandingNet,transform);_net.name="手持活捉网";foreach(var col in _net.GetComponentsInChildren<Collider>())Destroy(col);}
             if(_net==null)return;_net.gameObject.SetActive(show);if(!show)return;
-            var palm=_c.Shore.Character.PalmPosition(false);
+            _c.Hands.GetToolFrame(out var shoulder,out var aim);
+            var palm=shoulder+aim*new Vector3(.16f,-.16f,.40f);
             var rotation=_c.Shore.Actor.rotation*Quaternion.Euler(0,-90,0)*Quaternion.Euler(0,0,-25);
+            var hand=Quaternion.LookRotation(Vector3.forward,Vector3.up);
             if(XRSettings.isDeviceActive && _c.Hands.TryControllerPalm(false,out var tracked,out var frame))
-            {palm=tracked;rotation=frame*Quaternion.Inverse(Quaternion.LookRotation(Vector3.right,Vector3.up));}
+            {palm=tracked;rotation=frame*Quaternion.Inverse(hand);}
             _net.localScale=Vector3.one*.6f;_net.SetPositionAndRotation(palm-rotation*new Vector3(.05f,.035f,0)*.6f,rotation);
+            _c.Hands.SetToolTarget(false,_net,new Vector3(.05f,.035f,0),hand,.85f,fingers:FishingFingerPose.Handle);
+            _c.Hands.Right.SetGripSurface(_net.TransformPoint(Vector3.zero),_net.TransformPoint(Vector3.right*.22f),.022f*.6f);
         }
-        private void LateUpdate(){if(_c!=null)PresentNet();}
 
         private void OnDestroy(){foreach(var item in _owned)if(item!=null)Destroy(item);}
     }

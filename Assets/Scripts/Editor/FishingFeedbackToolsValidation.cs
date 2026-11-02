@@ -191,7 +191,7 @@ namespace BoatAttack.EditorTools
                     var rake=(Transform)typeof(FishingFarmWorld).GetField("_rake",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(c.Farm);
                     var tip=rake.TransformPoint(FishingFieldWorld.WorkToolTip(FieldItem.Rake));var local=c.Farm.Target(plot).InverseTransformPoint(tip);
                     Check(Mathf.Abs(local.y-.12f)<.09f && Mathf.Abs(local.x)<=.99f && Mathf.Abs(local.z)<=.99f,"The rendered rake head actually touches the soil at commit · local="+local.ToString("F4"));
-                    Check(Vector3.Distance(c.Shore.Character.PalmPosition(false),rake.TransformPoint(new Vector3(0,.1f,0)))<.09f,"The real working palm still holds the rake at soil contact");
+                    Check(Vector3.Distance(c.Shore.Character.PalmPosition(false),rake.TransformPoint(FishingFieldWorld.WorkGripPalm(FieldItem.Rake,rake.rotation,c.Shore.Actor.rotation)))<.09f,"The real working palm still holds the rake at soil contact");
                     Directory.CreateDirectory("Logs/FeedbackToolsWorld");FishingV016Validation.Capture(c,"Logs/FeedbackToolsWorld","rake-soil-contact");touchedSoil=true;
                 }
                 catch(Exception ex){contactError=ex;}
@@ -205,7 +205,7 @@ namespace BoatAttack.EditorTools
                 Check(c.Career.Farm.Plot(plot).tilled && touchedSoil,"The selected rake performs actual soil preparation with visible tool contact · "+c.VisibleMessage);
             }
             finally{probe.Sample=null;UnityEngine.Object.Destroy(probe);}
-            Check(c.Shore.Relocate(c.Home.Origin+new Vector3(.4f,.2f,-1.5f),Quaternion.identity),"XR routing fixture approaches the new aquarium point");yield return null;
+            Check(c.Shore.Relocate(c.HomeEcology.AquariumPosition+Vector3.back*1.5f,Quaternion.identity),"XR routing fixture approaches the new aquarium point");yield return null;
             Check(c.HomeEcology.NearbyHint!=null,"The new ecology point is the real nearby interaction");
             typeof(FishingXRNotebook).GetMethod("InteractTracked",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(c.XRNotebook,null);
             Check(c.InventoryOpen,"The actual XR A-button routing reaches new world interactions before legacy hand-only fallback");c.ToggleInventory();

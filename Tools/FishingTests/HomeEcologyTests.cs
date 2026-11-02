@@ -234,12 +234,12 @@ internal static class HomeEcologyTests
     {
         foreach(int version in new[]{15,16})
         {
-            var data=new FishingCareer().Snapshot();data.version=version;data.homeEcology=null;
+            var data=new FishingCareer().Snapshot();Program.Legacy(data,version);data.homeEcology=null;
             check(FishingCareer.TryRestore(data,out var loaded) && loaded.Snapshot().version==FishingSaveData.CurrentVersion && loaded.AquariumCount==0
                 && loaded.HomeAnimalCount==0 && data.homeEcology==null,"Ecology: v"+version+" migrates empty facilities without editing the caller DTO");
-            data=new FishingCareer().Snapshot();data.version=version;data.homeEcology.aquariumLevel=1;
+            data=new FishingCareer().Snapshot();Program.Legacy(data,version);data.homeEcology.aquariumLevel=1;
             check(!FishingCareer.TryRestore(data,out _),"Ecology: old schema cannot carry invented ecology state "+version);
-            data=new FishingCareer().Snapshot();data.version=version;data.backpack[1]=new FieldStack{item=FieldItem.CaptureNet,count=1};
+            data=new FishingCareer().Snapshot();Program.Legacy(data,version);data.backpack[1]=new FieldStack{item=FieldItem.CaptureNet,count=1};
             check(!FishingCareer.TryRestore(data,out _),"Ecology: old schema cannot introduce future tools "+version);
         }
         var c=Seed();Aquarium(c);var f=Fish("saved-display");c.Store(f);c.DisplayFish(f.id);

@@ -46,9 +46,9 @@ internal static class FeedbackToolsTests
         check(looseCrank.Progress==0,"Leaving the wheel plane cannot bank an unobserved half-turn on re-entry");
         foreach(int version in new[]{15,16,17})foreach(var tool in new[]{FieldItem.Axe,FieldItem.Shovel,FieldItem.Rake})
         {
-            var source=new FishingCareer().Snapshot();source.version=version;source.backpack[1]=new FieldStack{item=tool,count=1};
+            var source=new FishingCareer().Snapshot();Program.Legacy(source,version);source.backpack[1]=new FieldStack{item=tool,count=1};
             check(!FishingCareer.TryRestore(source,out _),"Old schema rejects new tools in backpack "+version+" "+tool);
-            source=new FishingCareer().Snapshot();source.version=version;source.homeStorage[0]=new FieldStack{item=tool,count=1};
+            source=new FishingCareer().Snapshot();Program.Legacy(source,version);source.homeStorage[0]=new FieldStack{item=tool,count=1};
             check(!FishingCareer.TryRestore(source,out _),"Old schema rejects new tools in home storage "+version+" "+tool);
         }
     }
