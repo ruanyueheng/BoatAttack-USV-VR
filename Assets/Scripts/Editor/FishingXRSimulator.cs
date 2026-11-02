@@ -89,6 +89,8 @@ namespace BoatAttack.EditorTools
             public string chestLastItem,cashierGesture;
             public Vector3 heldRight,rightKnuckles,visualRightPalm,aquarium;
             public float gripRadius;
+            public bool captureNetActive;
+            public Vector3 captureNetPalm;
             public bool handcraftLeft,workDebrisBothDirections;
             public int sand,shells,sawPlayCount,forgePlayCount,workpieceVertices,workDebrisEmitted,workDebrisVertices;
             public float handcraftProgress,workpieceFingerprint;
@@ -292,7 +294,9 @@ namespace BoatAttack.EditorTools
             var dynamics=_c.Hands.Rod.GetComponent<FishingRodDynamics>();
             var restTip=dynamics!=null?(Vector3)typeof(FishingRodDynamics).GetField("_restTip",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(dynamics):Vector3.zero;
             var fishingLine=(LineRenderer)typeof(FishingAnglingPresentation).GetField("_line",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.Angling);
+            var captureNet=(Transform)typeof(FishingHomeEcologyWorld).GetField("_net",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.HomeEcology);
             var s=new State{commandSequence=_command.sequence,commandFrame=_commandFrame,frame=Time.frameCount,xr=XRSettings.isDeviceActive,focused=Application.isFocused,isolated=_c.HasIsolatedProfile,automated=_c.Automated,
+                captureNetActive=captureNet!=null && captureNet.gameObject.activeInHierarchy,captureNetPalm=captureNet!=null?captureNet.TransformPoint(new Vector3(.05f,.035f,0)):Vector3.zero,
                 chestCapacity=_c.Career.HomeStorage.Capacity,chestLastItem=_c.Career.HomeStorage.At(143).item.ToString(),bagTreasure=_c.Career.Backpack.Count(FieldItem.SeaTreasure),
                 pageOffset=(int)typeof(FishingXRNotebook).GetField("_offset",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.XRNotebook),
                 aquarium=_c.HomeEcology.AquariumPosition,aquariumCount=_c.Career.AquariumCount,cashierGesture=_c.TackleShop.Cashier.Gesture,

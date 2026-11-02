@@ -266,6 +266,8 @@ namespace BoatAttack.Fishing
         public bool UseNet()
         {
             if(!Active || !_c.Ashore || _c.Career.Backpack.Equipped!=FieldItem.CaptureNet)return false;
+            // Input can arrive before the presentation frame updates the controller pose.
+            _c.FieldWorld.ApplyHeldTool();
             if(_net==null || !_net.gameObject.activeInHierarchy)return false;
             var mouth=_net.TransformPoint(new Vector3(FishingDetailArt.NetMouthOffset,0,0));
             FishingFieldWorld.Animal best=null;float nearest=1.8f;

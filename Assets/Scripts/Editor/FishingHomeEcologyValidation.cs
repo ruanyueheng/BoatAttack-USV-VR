@@ -50,7 +50,11 @@ namespace BoatAttack.EditorTools
             Check(placed,"A supported nearby rabbit approach exists");c.View.ResetLook();
             var rabbitStart=rabbit.Feet;
             c.Shore.Move(Vector2.zero,false,false,true,.02f);c.PresentCharacterFrame();FishingV036FarmValidation.Aim(c,rabbit.Root.position+Vector3.up*.2f);yield return null;
+            var staleNet=(Transform)typeof(FishingHomeEcologyWorld).GetField("_net",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(world);
+            Check(staleNet!=null && staleNet.gameObject.activeInHierarchy,"The equipped capture net is visible before input");
+            staleNet.position+=Vector3.up*10;
             bool captured=world.UseNet();
+            Check(Vector3.Distance(staleNet.position,c.ExplorerPosition)<3,"Capture refreshes the current net pose before testing contact");
             if(!captured)
             {
                 var net=(Transform)typeof(FishingHomeEcologyWorld).GetField("_net",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(world);

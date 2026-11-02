@@ -49,9 +49,14 @@ namespace BoatAttack.Fishing
                     float torso=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.92f,1.30f,p.y))*(1-head);
                     float arm=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.13f,.24f,Mathf.Abs(p.x)))
                         *Mathf.SmoothStep(0,1,Mathf.InverseLerp(1.12f,1.23f,p.y))*(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(1.45f,1.58f,p.y)));
-                    arm*=1-head;torso*=1-arm;
+                    // The authored palms overlap in front of the abdomen; lateral distance alone excludes the hands.
+                    float hands=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.13f,.19f,p.z))
+                        *Mathf.SmoothStep(0,1,Mathf.InverseLerp(1.16f,1.22f,p.y))*(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(1.30f,1.36f,p.y)));
+                    arm=Mathf.Max(arm,hands)*(1-head);torso*=1-arm;
                     float forearm=Mathf.SmoothStep(0,1,Mathf.InverseLerp(1.46f,1.25f,p.y));int side=p.x<0?3:4;
-                    weights[i]=arm>0?GestureWeights(Mathf.Max(0,1-torso-arm),torso,arm*(1-forearm),arm*forearm,side+2,side)
+                    float right=Mathf.SmoothStep(0,1,Mathf.InverseLerp(-.08f,.08f,p.x));
+                    weights[i]=hands>0 && Mathf.Abs(p.x)<.13f?GestureWeights(Mathf.Max(0,1-torso-arm),torso,arm*(1-right),arm*right,6,5)
+                        :arm>0?GestureWeights(Mathf.Max(0,1-torso-arm),torso,arm*(1-forearm),arm*forearm,side+2,side)
                         :GestureWeights(Mathf.Max(0,1-head-torso),torso,head,0,side);
                 }
                 mesh.boneWeights=weights;mesh.bindposes=bind;mesh.UploadMeshData(true);_animatedMeshes[lod]=mesh;
@@ -109,13 +114,13 @@ namespace BoatAttack.Fishing
             _joints[1].localRotation=Quaternion.Euler(Mathf.Sin(_clock*1.6f)*.7f,Mathf.Sin(_clock*.6f)*1.3f,Mathf.Sin(_clock*.8f)*.7f);
             _joints[1].localScale=new Vector3(1,1+Mathf.Sin(_clock*1.6f)*.0025f,1);
             _joints[2].localRotation=Quaternion.Slerp(_joints[2].localRotation,Quaternion.Euler(nod,gaze,Mathf.Sin(_clock*.7f)*1.3f),1-Mathf.Exp(-Time.deltaTime*5));
-            var left=Quaternion.Euler(work*(8+Mathf.Sin(_clock*2.2f)*5),stretch*8,-stretch*9);
-            var right=Quaternion.Euler(-wave*14+work*7,0,wave*18+stretch*9);
+            var left=Quaternion.Euler(-work*(12+Mathf.Sin(_clock*2.2f)*5)-stretch*12,stretch*8,-stretch*25);
+            var right=Quaternion.Euler(-wave*20-work*12-stretch*12,0,wave*18+stretch*25);
             float blend=1-Mathf.Exp(-Time.deltaTime*5);
             _joints[3].localRotation=Quaternion.Slerp(_joints[3].localRotation,left,blend);
             _joints[4].localRotation=Quaternion.Slerp(_joints[4].localRotation,right,blend);
-            _joints[5].localRotation=Quaternion.Slerp(_joints[5].localRotation,Quaternion.Euler(speaking?8+Mathf.Sin(_clock*3.4f)*7:work*Mathf.Sin(_clock*2.2f)*8,0,-stretch*8),blend);
-            _joints[6].localRotation=Quaternion.Slerp(_joints[6].localRotation,Quaternion.Euler(-wave*22+(speaking?10+Mathf.Sin(_clock*3.4f+1)*9:0),wave*Mathf.Sin(_clock*7)*16,stretch*8),blend);
+            _joints[5].localRotation=Quaternion.Slerp(_joints[5].localRotation,Quaternion.Euler(speaking?-12+Mathf.Sin(_clock*3.4f)*7:work*Mathf.Sin(_clock*2.2f)*8,0,stretch*38+work*18+(speaking?24:0)),blend);
+            _joints[6].localRotation=Quaternion.Slerp(_joints[6].localRotation,Quaternion.Euler(-wave*18+(speaking?-14+Mathf.Sin(_clock*3.4f+1)*9:0),wave*Mathf.Sin(_clock*7)*14,-wave*(72+Mathf.Sin(_clock*7)*12)-stretch*38-work*18-(speaking?28:0)),blend);
         }
 
         private void OnDestroy()

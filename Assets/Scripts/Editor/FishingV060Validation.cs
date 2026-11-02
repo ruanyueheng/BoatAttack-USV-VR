@@ -49,7 +49,38 @@ namespace BoatAttack.EditorTools
                 FishingV016Validation.Capture(c,Evidence+"/Well","cycle-"+cycle+"-"+current.ToString("D2"));
             };
             var run=FishingV036FarmValidation.Checks(c);
-            try{while(run.MoveNext())yield return run.Current;}
+            bool thirdPerson=false,firstPersonAgain=false,wasDrawing=false,cancelRestored=false,completeRestored=false;
+            try
+            {
+                while(run.MoveNext())
+                {
+                    bool drawing=c.Farm.DrawingWell;
+                    if(drawing && !thirdPerson && c.Farm.WorkProgress>.30f)
+                    {
+                        c.ToggleView();c.PresentCharacterFrame();var character=c.Shore.Character;
+                        Check(!c.FirstPerson && !character.FirstPersonSkin.enabled
+                            && character.HeadSkin.shadowCastingMode==UnityEngine.Rendering.ShadowCastingMode.On
+                            && character.BodySkin.shadowCastingMode==UnityEngine.Rendering.ShadowCastingMode.On,
+                            "Switching to third person while drawing the well restores the visible full body and head in the same frame");
+                        FishingV016Validation.Capture(c,Evidence+"/Well","thirdperson-full-body");thirdPerson=true;
+                    }
+                    else if(drawing && thirdPerson && !firstPersonAgain && c.Farm.WorkProgress>.40f)
+                    {
+                        c.ToggleView();c.PresentCharacterFrame();var character=c.Shore.Character;
+                        Check(c.FirstPerson && character.FirstPersonSkin.enabled && character.FirstPersonSkin.sharedMesh==character.TabletopArmsMesh,
+                            "Returning to first person during well drawing restores the near-eye tabletop mask in the same frame");
+                        firstPersonAgain=true;
+                    }
+                    if(wasDrawing && !drawing)
+                    {
+                        c.PresentCharacterFrame();var character=c.Shore.Character;
+                        Check(!character.FirstPersonSkin.enabled || character.FirstPersonSkin.sharedMesh!=character.TabletopArmsMesh,
+                            "Finishing or cancelling well drawing releases the tabletop mask");
+                        if(c.Career.Farm.Water==FishingFarm.WaterCapacity)completeRestored=true;else cancelRestored=true;
+                    }
+                    wasDrawing=drawing;yield return run.Current;
+                }
+            }
             finally
             {
                 probe.Sample=null;UnityEngine.Object.Destroy(probe);UnityEngine.Object.Destroy(mesh);(run as IDisposable)?.Dispose();
@@ -57,6 +88,7 @@ namespace BoatAttack.EditorTools
             }
             Check(rows.Count>=30,"The full well sequence was sampled before, during and after raising and pouring");
             Check(rows.All(row=>row.EndsWith(",0")),"Visible body triangles stay outside the central near-eye region throughout well drawing");
+            Check(thirdPerson && firstPersonAgain && cancelRestored && completeRestored,"Well drawing covers both view switches and mask restoration after cancellation and completion");
         }
         private static IEnumerator HomeChecks(FishingPrototype c)
         {
@@ -126,19 +158,57 @@ namespace BoatAttack.EditorTools
             c.Residents.Close();var cashier=shop.Cashier;var at=cashier.transform.position;
             var skin=(SkinnedMeshRenderer)cashier.GetComponent<LODGroup>().GetLODs()[0].renderers[0];
             var gestures=new HashSet<string>();var elbow=skin.bones[6];var start=elbow.localRotation;float maxAngle=0;
-            float until=Time.time+35;
-            while(Time.time<until)
+            var rest=skin.transform.parent.GetComponent<MeshFilter>().sharedMesh.vertices;
+            var forearms=new List<int>();var feet=new List<int>();var hands=new List<int>();
+            for(int i=0;i<rest.Length;i++)
             {
-                maxAngle=Mathf.Max(maxAngle,Quaternion.Angle(start,elbow.localRotation));
-                if(gestures.Add(cashier.Gesture))
+                var p=cashier.transform.InverseTransformPoint(skin.transform.TransformPoint(rest[i]));
+                if(p.y<.12f)feet.Add(i);
+                if(p.y>1.18f && p.y<1.43f && Mathf.Abs(p.x)>.13f && Mathf.Abs(p.x)<.33f && p.z>-.02f)forearms.Add(i);
+                if(p.y>1.18f && p.y<1.34f && Mathf.Abs(p.x)<.12f && p.z>.18f)hands.Add(i);
+            }
+            Check(forearms.Count>20 && feet.Count>20 && hands.Count>20,"Cashier deformation checks select real source forearm, hand and planted-foot vertices");
+            var baked=new Mesh();float maxForearm=0,maxMeanForearm=0,maxFoot=0,maxHandHeight=0;
+            var metrics=new List<string>{"time,gesture,forearmMaxMetres,forearmMeanMetres,footMaxMetres,handTopMetres"};
+            void SampleSkin()
+            {
+                skin.BakeMesh(baked);var vertices=baked.vertices;float peak=0,sum=0,foot=0,top=0;
+                Check(vertices.Length==rest.Length && baked.bounds.size.x<1.35f && baked.bounds.size.y<2.2f && baked.bounds.size.z<.95f,"Cashier skin retains bounded proportions throughout the gesture");
+                foreach(int i in forearms){float d=Vector3.Distance(rest[i],vertices[i]);peak=Mathf.Max(peak,d);sum+=d;}
+                foreach(int i in feet)foot=Mathf.Max(foot,Vector3.Distance(rest[i],vertices[i]));
+                foreach(int i in hands)top=Mathf.Max(top,cashier.transform.InverseTransformPoint(skin.transform.TransformPoint(vertices[i])).y);
+                Check(!float.IsNaN(peak+sum+foot+top) && !float.IsInfinity(peak+sum+foot+top) && peak<.60f,"Cashier baked forearms remain finite and do not spike away from the body");
+                maxForearm=Mathf.Max(maxForearm,peak);maxMeanForearm=Mathf.Max(maxMeanForearm,sum/forearms.Count);maxFoot=Mathf.Max(maxFoot,foot);maxHandHeight=Mathf.Max(maxHandHeight,top);
+                metrics.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture,"{0:F3},{1},{2:F5},{3:F5},{4:F5},{5:F5}",Time.time,cashier.Gesture,peak,sum/forearms.Count,foot,top));
+            }
+            void Capture(string name)
+            {
+                var eye=cashier.transform.TransformPoint(new Vector3(.45f,1.65f,2.15f));
+                c.viewCamera.transform.SetPositionAndRotation(eye,Quaternion.LookRotation(cashier.FacePosition-Vector3.up*.3f-eye));
+                FishingV016Validation.Capture(c,Evidence,name);
+            }
+            float until=Time.time+35,captureAt=Time.time+.8f,nextSample=0;string pending=cashier.Gesture;
+            try
+            {
+                while(Time.time<until)
                 {
-                    var eye=cashier.transform.TransformPoint(new Vector3(.45f,1.65f,2.15f));
-                    c.viewCamera.transform.SetPositionAndRotation(eye,Quaternion.LookRotation(cashier.FacePosition-Vector3.up*.3f-eye));
-                    FishingV016Validation.Capture(c,Evidence,"cashier-"+gestures.Count);
+                    maxAngle=Mathf.Max(maxAngle,Quaternion.Angle(start,elbow.localRotation));
+                    if(cashier.Gesture!=pending){pending=cashier.Gesture;captureAt=Time.time+.8f;}
+                    if(Time.time>=captureAt && gestures.Add(pending))Capture("cashier-"+gestures.Count);
+                    if(Time.time>=nextSample){SampleSkin();nextSample=Time.time+.15f;}
+                    yield return null;
                 }
-                yield return null;
+                Check(c.Residents.Talk(4),"The real cashier conversation takes over from idle activities");
+                yield return new WaitForSeconds(.8f);SampleSkin();Capture("cashier-conversation");c.Residents.Close();
+            }
+            finally
+            {
+                UnityEngine.Object.Destroy(baked);c.Residents.Close();
+                File.WriteAllLines(Path.Combine(Evidence,"cashier-skin-motion.csv"),metrics);
             }
             Check(gestures.Count>=4 && maxAngle>8,"Cashier cycles at least four distinct activities with independently articulated forearms");
+            Check(maxForearm>.10f && maxMeanForearm>.025f && maxHandHeight>1.38f,"Actual skinned forearms move visibly and the hands rise above the counter: peak="+maxForearm+", mean="+maxMeanForearm+", handTop="+maxHandHeight);
+            Check(maxFoot<.002f,"Cashier gestures keep the actual skinned feet planted: "+maxFoot);
             Check(Vector3.Distance(at,cashier.transform.position)<.0001f,"Cashier activities preserve the planted shop anchor");
             File.WriteAllLines(Path.Combine(Evidence,"cashier-activities.txt"),gestures);
         }

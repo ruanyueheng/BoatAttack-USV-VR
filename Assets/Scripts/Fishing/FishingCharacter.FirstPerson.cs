@@ -122,13 +122,13 @@ namespace BoatAttack.Fishing
         private void SetBodyPresentation(bool firstPerson)
         {
             // 同源近眼躯干遮罩也用于 XR；HMD 投影与实际手柄位置保持独立。
-            bool local=firstPerson || _tabletopView;bool tracked=XRSettings.isDeviceActive;
-            FirstPersonSkin.sharedMesh=tracked?(_tabletopView?_xrTabletopMesh:_xrFirstPersonMesh):_tabletopView?_tabletopMesh:_desktopMesh;BodySkin.forceRenderingOff=tracked;
-            foreach(var renderer in _renderers)renderer.shadowCastingMode=local && (_tabletopView || _headWear.Contains(renderer)) && renderer!=BodySkin && renderer!=HeadSkin?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
+            bool local=firstPerson,tabletop=firstPerson && _tabletopView;bool tracked=XRSettings.isDeviceActive;
+            FirstPersonSkin.sharedMesh=tracked?(tabletop?_xrTabletopMesh:_xrFirstPersonMesh):tabletop?_tabletopMesh:_desktopMesh;BodySkin.forceRenderingOff=tracked;
+            foreach(var renderer in _renderers)renderer.shadowCastingMode=local && (tabletop || _headWear.Contains(renderer)) && renderer!=BodySkin && renderer!=HeadSkin?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
             HeadSkin.shadowCastingMode=local?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
             BodySkin.shadowCastingMode=local?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
             FirstPersonSkin.enabled=local;FirstPersonSkin.forceRenderingOff=false;
-            WaistCover.enabled=local && tracked && !_tabletopView;WaistCover.forceRenderingOff=false;
+            WaistCover.enabled=local && tracked && !tabletop;WaistCover.forceRenderingOff=false;
         }
         public void SetOpticalView(bool observing)
         {

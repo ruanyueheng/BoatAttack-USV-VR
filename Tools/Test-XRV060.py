@@ -7,7 +7,7 @@ import importlib.util
 import math
 from pathlib import Path
 
-spec = importlib.util.spec_from_file_location('xr058', Path(__file__).with_name('Test-XRV058.py'))
+spec = importlib.util.spec_from_file_location('xr059', Path(__file__).with_name('Test-XRV059.py'))
 base = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(base)
 
@@ -53,6 +53,18 @@ def run(checks):
         tool_delta = base.subtract(base.xyz(state['heldPosition']), base.xyz(before['heldPosition']))
         assert base.distance(palm_delta, tool_delta) < .02, (item, 'tool detached while moving')
 
+    state = checks.send(**base.NEUTRAL, equip='CaptureNet', right=base.NORMAL_RIGHT,
+                        rightEuler=base.ZERO, headEuler=dict(x=25, y=0, z=0))
+    assert state['captureNetActive'] and not state['toolActive'], state
+    assert base.distance(base.xyz(state['captureNetPalm']), base.xyz(state['rightPalm'])) < .02, state
+    checks.send(seconds=.7, capture='v060-native-net-grip')
+    state = checks.send(rightActive=False)
+    assert not state['captureNetActive'], state
+    checks.remember('captureNetHidesOnTrackingLoss', state)
+    state = checks.send(rightActive=True)
+    assert state['captureNetActive'], state
+    checks.remember('captureNetGripAndTrackingRecovered', state)
+    checks.send(headEuler=base.ZERO)
     checks.binoculars()
     state = checks.send(**base.NEUTRAL, fixture='HomeInterior', homeReview=True,
                         left=base.NORMAL_LEFT, right=base.NORMAL_RIGHT, rightEuler=base.ZERO, headEuler=base.ZERO)
@@ -89,7 +101,7 @@ def run(checks):
     checks.remember('outdoorAquariumInteraction', state)
     checks.send(b=True)
     checks.send(b=False)
-    state = checks.send(**base.NEUTRAL, fixture='ShopAttendant', headEuler=base.ZERO, seconds=.8)
+    state = checks.send(**base.NEUTRAL, fixture='ShopAttendant', headEuler=dict(x=0, y=180, z=0), seconds=.8)
     gestures = set()
     for index in range(18):
         state = checks.send(seconds=2)
@@ -101,7 +113,7 @@ def run(checks):
 
 
 def main():
-    checks = base.NativeChecks(base.ROOT / 'Logs/V060/NativeXR/native-v060.json', 25)
+    checks = base.NativeV059Checks(base.ROOT / 'Logs/V060/NativeXR/native-v060.json', 25)
     try:
         run(checks)
         checks.save(True)
