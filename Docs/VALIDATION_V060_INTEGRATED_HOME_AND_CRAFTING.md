@@ -20,7 +20,7 @@
 | 游戏规则 | 4,861 通过；包括旧满箱迁移、全部新增格、末格存取、交易复制与破损存档拒绝 | `dotnet run --project Tools/FishingTests/FishingTests.csproj --no-restore` |
 | 输入规则 | 74 通过 | `Tools/InputTests/InputTests.csproj` |
 | Runtime / Editor 编译 | 通过 | `Tools/Check-FastCompile.py`；场景运行也完成实际 Unity 编译 |
-| V060 完整场景 | 通过；包含 V058、65 类物品、旧箱 JSON、室外鱼缸、店员与井水全过程 | `Logs/usv-validation-458d91b6062b4f0fa4815ff3d6b82929.log` |
+| V060 完整场景 | 通过；包含 V058、65 类物品、旧箱 JSON、室外鱼缸、店员与井水全过程 | `Logs/usv-validation-c12f36bbe2a64a7fa588997759856488.log` |
 | PR #67 的 V059 完整场景 | 通过；音效、筛具、工件与动物专项 | `Logs/usv-validation-c7a4f7a30e584895b664b96e8e705739.log` |
 | 活捉网及生态回归 | 通过；故意破坏旧网口位置后仍先刷新当前姿态，再实际捕获野兔 | `Logs/V060/FishingHomeEcology.log` |
 | 战斗与枪械场景 | 通过；实际持枪、射击与回港清理 | `Logs/V060/final-FishingCombat.log` |
@@ -37,6 +37,8 @@ Jev 辅助核查使用 `jev-latest`，实际模型 `jev-1.14.0`。它对有源�
 
 ## 画面证据
 
-[原生 OpenXR 握姿、箱子末页与室外鱼缸](Images/V060/native-grips-and-home.jpg)为生产镜头的单眼镜像，保留实际场景与界面。网具近景通过抬起控制器并低头取得；没有变更网具模型或绕过碰撞。它们不能替代双眼头显验收。
+[原生 OpenXR 握姿、箱子末页与室外鱼缸](Images/V060/native-grips-and-home.jpg)为生产镜头同位置的单眼镜像（80°视场，不采用头显双眼投影），保留实际场景与界面。网具近景通过抬起控制器并低头取得；没有变更网具模型或绕过碰撞。它们不能替代双眼头显验收。
 
-店员最终检查测得蒙皮前臂最大位移 **0.155 m**，区域平均最大位移 **0.043 m**，手部抬至模型坐标 **1.471 m**，脚部最大位移约 **0.007 mm**；已检查招手、整理、伸展、环顾、等候和实际交谈的中段截图。它们来自真实 `BakeMesh` 结果，另外保留骨骼与形变边界断言。
+店员保留原模型的静态姿态，以自然近身幅度增加活动与交谈。源网格的手和衣饰共用拓扑，因此不采用会拉长腰饰的大幅抬臂。最终真实蒙皮前臂峰值位移为 **0.0528 m**，区域平均峰值 **0.0141 m**；800个源腰饰点最大位移 **4.87 mm**，相邻三角边最大相对伸缩 **1.85%**，脚部最大位移约 **0.007 mm**。已复查动作中段和实际交谈近景。
+
+[店员动作中段](Images/V060/cashier-activities.jpg)、[原生 VR 中的店员](Images/V060/native-cashier.jpg)和[井水视角检查](Images/V060/well-views.jpg)已目视复查。原生店员验收使用实际面部坐标和 XR origin 求头部输入，并逐帧样本检查面部位于视域且视线无遮挡，证据为 `Logs/V060/NativeXR/cashier-visible.json`。最初朝向错误的一组补拍未用作该结论。

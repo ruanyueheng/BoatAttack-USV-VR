@@ -158,28 +158,42 @@ namespace BoatAttack.EditorTools
             c.Residents.Close();var cashier=shop.Cashier;var at=cashier.transform.position;
             var skin=(SkinnedMeshRenderer)cashier.GetComponent<LODGroup>().GetLODs()[0].renderers[0];
             var gestures=new HashSet<string>();var elbow=skin.bones[6];var start=elbow.localRotation;float maxAngle=0;
-            var rest=skin.transform.parent.GetComponent<MeshFilter>().sharedMesh.vertices;
-            var forearms=new List<int>();var feet=new List<int>();var hands=new List<int>();
+            var sourceMesh=skin.transform.parent.GetComponent<MeshFilter>().sharedMesh;var rest=sourceMesh.vertices;
+            var forearms=new List<int>();var feet=new List<int>();var waist=new HashSet<int>();
             for(int i=0;i<rest.Length;i++)
             {
                 var p=cashier.transform.InverseTransformPoint(skin.transform.TransformPoint(rest[i]));
                 if(p.y<.12f)feet.Add(i);
                 if(p.y>1.18f && p.y<1.43f && Mathf.Abs(p.x)>.13f && Mathf.Abs(p.x)<.33f && p.z>-.02f)forearms.Add(i);
-                if(p.y>1.18f && p.y<1.34f && Mathf.Abs(p.x)<.12f && p.z>.18f)hands.Add(i);
+                // These hanging front ornaments are below the source palms; include their actual adjacent triangles.
+                if(p.y>1.08f && p.y<1.16f && Mathf.Abs(p.x)<.12f && p.z>.16f)waist.Add(i);
             }
-            Check(forearms.Count>20 && feet.Count>20 && hands.Count>20,"Cashier deformation checks select real source forearm, hand and planted-foot vertices");
-            var baked=new Mesh();float maxForearm=0,maxMeanForearm=0,maxFoot=0,maxHandHeight=0;
-            var metrics=new List<string>{"time,gesture,forearmMaxMetres,forearmMeanMetres,footMaxMetres,handTopMetres"};
+            Check(forearms.Count>20 && feet.Count>20 && waist.Count>20,"Cashier deformation checks select real source forearm, waist-ornament and planted-foot vertices");
+            var waistEdges=new List<Vector2Int>();var triangles=sourceMesh.triangles;
+            for(int i=0;i<triangles.Length;i+=3)
+            {
+                int a=triangles[i],b=triangles[i+1],d=triangles[i+2];
+                if(!waist.Contains(a) && !waist.Contains(b) && !waist.Contains(d))continue;
+                waistEdges.Add(new Vector2Int(a,b));waistEdges.Add(new Vector2Int(b,d));waistEdges.Add(new Vector2Int(d,a));
+            }
+            var baked=new Mesh();float maxForearm=0,maxMeanForearm=0,maxFoot=0,maxWaist=0,maxWaistStrain=0;
+            var metrics=new List<string>{"time,gesture,forearmMaxMetres,forearmMeanMetres,footMaxMetres,waistMaxMetres,waistMaxRelativeEdgeStrain"};
             void SampleSkin()
             {
-                skin.BakeMesh(baked);var vertices=baked.vertices;float peak=0,sum=0,foot=0,top=0;
+                skin.BakeMesh(baked);var vertices=baked.vertices;float peak=0,sum=0,foot=0,accessory=0,strain=0;
                 Check(vertices.Length==rest.Length && baked.bounds.size.x<1.35f && baked.bounds.size.y<2.2f && baked.bounds.size.z<.95f,"Cashier skin retains bounded proportions throughout the gesture");
                 foreach(int i in forearms){float d=Vector3.Distance(rest[i],vertices[i]);peak=Mathf.Max(peak,d);sum+=d;}
                 foreach(int i in feet)foot=Mathf.Max(foot,Vector3.Distance(rest[i],vertices[i]));
-                foreach(int i in hands)top=Mathf.Max(top,cashier.transform.InverseTransformPoint(skin.transform.TransformPoint(vertices[i])).y);
-                Check(!float.IsNaN(peak+sum+foot+top) && !float.IsInfinity(peak+sum+foot+top) && peak<.60f,"Cashier baked forearms remain finite and do not spike away from the body");
-                maxForearm=Mathf.Max(maxForearm,peak);maxMeanForearm=Mathf.Max(maxMeanForearm,sum/forearms.Count);maxFoot=Mathf.Max(maxFoot,foot);maxHandHeight=Mathf.Max(maxHandHeight,top);
-                metrics.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture,"{0:F3},{1},{2:F5},{3:F5},{4:F5},{5:F5}",Time.time,cashier.Gesture,peak,sum/forearms.Count,foot,top));
+                foreach(int i in waist)accessory=Mathf.Max(accessory,Vector3.Distance(rest[i],vertices[i]));
+                foreach(var edge in waistEdges)
+                {
+                    float length=Vector3.Distance(rest[edge.x],rest[edge.y]);if(length<.0001f)continue;
+                    strain=Mathf.Max(strain,Mathf.Abs(Vector3.Distance(vertices[edge.x],vertices[edge.y])/length-1));
+                }
+                Check(!float.IsNaN(peak+sum+foot+accessory+strain) && !float.IsInfinity(peak+sum+foot+accessory+strain) && peak<.60f,"Cashier baked forearms remain finite and do not spike away from the body");
+                maxForearm=Mathf.Max(maxForearm,peak);maxMeanForearm=Mathf.Max(maxMeanForearm,sum/forearms.Count);maxFoot=Mathf.Max(maxFoot,foot);
+                maxWaist=Mathf.Max(maxWaist,accessory);maxWaistStrain=Mathf.Max(maxWaistStrain,strain);
+                metrics.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture,"{0:F3},{1},{2:F5},{3:F5},{4:F5},{5:F5},{6:F5}",Time.time,cashier.Gesture,peak,sum/forearms.Count,foot,accessory,strain));
             }
             void Capture(string name)
             {
@@ -207,7 +221,8 @@ namespace BoatAttack.EditorTools
                 File.WriteAllLines(Path.Combine(Evidence,"cashier-skin-motion.csv"),metrics);
             }
             Check(gestures.Count>=4 && maxAngle>8,"Cashier cycles at least four distinct activities with independently articulated forearms");
-            Check(maxForearm>.10f && maxMeanForearm>.025f && maxHandHeight>1.38f,"Actual skinned forearms move visibly and the hands rise above the counter: peak="+maxForearm+", mean="+maxMeanForearm+", handTop="+maxHandHeight);
+            Check(maxForearm>.035f && maxMeanForearm>.010f,"Actual skinned forearms perform natural close-body gestures: peak="+maxForearm+", mean="+maxMeanForearm);
+            Check(maxWaist<.012f && maxWaistStrain<.12f,"Waist ornaments stay with the torso without stretched local triangles: motion="+maxWaist+", relativeEdgeStrain="+maxWaistStrain);
             Check(maxFoot<.002f,"Cashier gestures keep the actual skinned feet planted: "+maxFoot);
             Check(Vector3.Distance(at,cashier.transform.position)<.0001f,"Cashier activities preserve the planted shop anchor");
             File.WriteAllLines(Path.Combine(Evidence,"cashier-activities.txt"),gestures);
