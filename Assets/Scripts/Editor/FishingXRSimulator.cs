@@ -48,6 +48,7 @@ namespace BoatAttack.EditorTools
             public Vector2 leftStick,rightStick;
             public bool a,b,x,y,leftClick,rightClick;
             public float leftTrigger,rightTrigger,leftGrip,rightGrip;
+            public bool leftActive=true,rightActive=true;
             public string capture,fixture,equip;
             public int table=-1;
             public int orchard=-1;
@@ -83,6 +84,10 @@ namespace BoatAttack.EditorTools
             public bool handcraftActive,handcraftHeld,orchardFruitLanded;
             public int handcraftKind,handcraftStrokes,driftwood,planks,ironIngots,pickHeads,gunParts,islandFruit;
             public Vector3 toolGrip,toolContact,workPoint,toolEuler,rightPalmEuler,orchardFruit;
+            public bool handcraftLeft,workDebrisBothDirections;
+            public int sand,shells,sawPlayCount,forgePlayCount,workpieceVertices,workDebrisEmitted,workDebrisVertices;
+            public float handcraftProgress,workpieceFingerprint;
+            public Vector3 sieveGripA,sieveGripB,toolPosition,leftPalmEuler,workpieceSize;
         }
 
         static FishingXRSimulator()
@@ -179,12 +184,12 @@ namespace BoatAttack.EditorTools
                         if(slot>=FishingBackpack.HotbarCount){Require(bag.Move(slot,bag.Selected),"Cannot equip fixture.");slot=bag.Selected;}
                         _c.SelectFieldSlot(slot);
                     }
-                    if(next.table>=2 && next.table!=_command.table)
+                    if(next.table>=0 && next.table!=_command.table)
                     {
                         Require(_c.HasIsolatedProfile && _c.Ashore,"Handcraft fixture requires an isolated shore profile.");
                         _c.HandGames.Cancel();var station=_c.HandGames.Station(next.table);
                         Require(_c.Shore.Relocate(_c.HandGames.Approach(next.table),Quaternion.LookRotation(-station.forward)),"No supported handcraft approach.");
-                        var item=next.table==2?FieldItem.Driftwood:FieldItem.IronIngot;int needed=next.table==2?1:6;
+                        var item=next.table==0?FieldItem.Sand:next.table==2?FieldItem.Driftwood:FieldItem.IronIngot;int needed=next.table==0?8:next.table==2?1:6;
                         if(_c.Career.Backpack.Count(item)<needed)Require(_c.Career.Backpack.TryAdd(item,needed-_c.Career.Backpack.Count(item)),"Handcraft fixture material does not fit.");
                         _c.View.ResetLook();
                     }
@@ -200,9 +205,11 @@ namespace BoatAttack.EditorTools
                     if(next.stop){SessionState.SetBool(Key,false);Cleanup();EditorApplication.Exit(0);return;}
                     EditorWindow.GetWindow(Type.GetType("UnityEditor.GameView,UnityEditor")).Focus();
                     if(!string.IsNullOrEmpty(next.capture)){_capture=next.capture;_captureAt=EditorApplication.timeSinceStartup+.5;}
+                    Invoke(Conformance,"ConformanceAutomationSetActive",Profile,"/user/hand/left",_command.leftActive);
+                    Invoke(Conformance,"ConformanceAutomationSetActive",Profile,"/user/hand/right",_command.rightActive);
                     Head(_command.head,Quaternion.Euler(_command.headEuler));
-                    Hand("left",_command.left,Quaternion.Euler(_command.leftEuler),_command.leftStick,_command.x,_command.y,_command.leftClick,_command.leftTrigger,_command.leftGrip);
-                    Hand("right",_command.right,Quaternion.Euler(_command.rightEuler),_command.rightStick,_command.a,_command.b,_command.rightClick,_command.rightTrigger,_command.rightGrip);
+                    if(_command.leftActive)Hand("left",_command.left,Quaternion.Euler(_command.leftEuler),_command.leftStick,_command.x,_command.y,_command.leftClick,_command.leftTrigger,_command.leftGrip);
+                    if(_command.rightActive)Hand("right",_command.right,Quaternion.Euler(_command.rightEuler),_command.rightStick,_command.a,_command.b,_command.rightClick,_command.rightTrigger,_command.rightGrip);
                     File.AppendAllText(Path.Combine(Root,"commands.jsonl"),JsonUtility.ToJson(_command)+"\n");
                 }
                 if(EditorApplication.timeSinceStartup>=_nextState){WriteState();_nextState=EditorApplication.timeSinceStartup+.25;}
@@ -218,7 +225,7 @@ namespace BoatAttack.EditorTools
         private static void Validate(Command c)
         {
             Require(c!=null,"Missing command.");
-            Require(c.table==-1 || c.table==2 || c.table==3,"Unknown handcraft table fixture.");
+            Require(c.table==-1 || c.table==0 || c.table==2 || c.table==3,"Unknown handcraft table fixture.");
             Require(c.orchard>=-1 && c.orchard<FishingCareer.HomeFruitTreeCount,"Unknown orchard fixture.");
             foreach(var v in new[]{c.head,c.headEuler,c.left,c.right,c.leftEuler,c.rightEuler,new Vector3(c.leftStick.x,c.leftStick.y,c.leftTrigger),new Vector3(c.rightStick.x,c.rightStick.y,c.rightTrigger),new Vector3(c.leftGrip,c.rightGrip,0)})
                 Require(!float.IsNaN(v.sqrMagnitude) && !float.IsInfinity(v.sqrMagnitude) && v.magnitude<1000,"Non-finite/out-of-range simulator input.");
@@ -256,7 +263,10 @@ namespace BoatAttack.EditorTools
             FishingXRTracking.TryPose(_c.viewCamera,XRNode.LeftHand,out var left,out _);
             FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out var r,out var q,true);
             string hitName=Physics.Raycast(r,q*Vector3.forward,out var hit,3,1<<5,QueryTriggerInteraction.Collide)?hit.collider.name:"";
-            _c.Hands.TryControllerPalm(true,out var lp,out _);_c.Hands.TryControllerPalm(false,out var rp,out var rq);
+            _c.Hands.TryControllerPalm(true,out var lp,out var lq);_c.Hands.TryControllerPalm(false,out var rp,out var rq);
+            var tools=(Transform[])typeof(FishingHandGames).GetField("_tools",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.HandGames);
+            var sieveA=(Transform)typeof(FishingHandGames).GetField("_sieveGripA",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.HandGames);
+            var sieveB=(Transform)typeof(FishingHandGames).GetField("_sieveGripB",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.HandGames);
             bool fishReady=_c.HasPendingCatch && _c.ActiveFish!=null;var gripper=_c.CatchRig.FishGripper;
             var dynamics=_c.Hands.Rod.GetComponent<FishingRodDynamics>();
             var restTip=dynamics!=null?(Vector3)typeof(FishingRodDynamics).GetField("_restTip",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(dynamics):Vector3.zero;
@@ -290,8 +300,12 @@ namespace BoatAttack.EditorTools
                 marketVisible=_c.SeaMarket.Visible,marketPosition=_c.SeaMarket.Position,marketTrades=_c.SeaMarket.Trades,
                 handcraftActive=_c.HandGames.Active,handcraftHeld=_c.HandGames.XRToolHeld,handcraftKind=_c.HandGames.Active?(int)_c.HandGames.Task.Kind:-1,handcraftStrokes=_c.HandGames.Task?.Strokes??0,
                 driftwood=_c.Career.Backpack.Count(FieldItem.Driftwood),planks=_c.Career.Backpack.Count(FieldItem.Plank),ironIngots=_c.Career.Backpack.Count(FieldItem.IronIngot),pickHeads=_c.Career.Backpack.Count(FieldItem.IronPickHead),gunParts=_c.Career.Backpack.Count(FieldItem.GunParts),
-                toolGrip=_c.HandGames.Active?_c.HandGames.HandlePoint:_command.table>=2?((Transform[])typeof(FishingHandGames).GetField("_workRight",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.HandGames))[_command.table-2].position:Vector3.zero,
+                toolGrip=_c.HandGames.Active?_c.HandGames.HandlePoint:_command.table==0?sieveA.position:_command.table>=2?((Transform[])typeof(FishingHandGames).GetField("_workRight",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.HandGames))[_command.table-2].position:Vector3.zero,
                 toolContact=_c.HandGames.ToolContact,workPoint=_c.HandGames.WorkPoint,toolEuler=_c.HandGames.Active?_c.HandGames.ActiveTool.eulerAngles:Vector3.zero,rightPalmEuler=rq.eulerAngles,
+                handcraftLeft=(bool)typeof(FishingHandGames).GetField("_sieveHeldLeft",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.HandGames),handcraftProgress=_c.HandGames.Task?.Progress??0,
+                sand=_c.Career.Backpack.Count(FieldItem.Sand),shells=_c.Career.Backpack.Count(FieldItem.Shell),sieveGripA=sieveA.position,sieveGripB=sieveB.position,
+                toolPosition=_c.HandGames.Active?_c.HandGames.ActiveTool.position:_command.table>=0?tools[_command.table].position:Vector3.zero,leftPalmEuler=lq.eulerAngles,
+                sawPlayCount=_c.WorldAudio.PlayCount("SawCut"),forgePlayCount=_c.WorldAudio.PlayCount("ForgeHammer"),
                 orchardFruit=_command.orchard>=0?_c.Home.OrchardFruit(_command.orchard).position:Vector3.zero,orchardFruitLanded=_command.orchard>=0 && _c.Home.OrchardFruitLanded(_command.orchard),islandFruit=_c.Career.Backpack.Count(FieldItem.IslandFruit),
                 home=_c.Home.Origin,marketTarget=_c.SeaMarket.Target?.ToString()??"",
                 marketLabels=_c.SeaMarket.transform.Find("V044 roaming market ship").GetComponentsInChildren<TextMesh>().Select(t=>new Button{label=t.text,center=t.transform.position}).ToArray(),
@@ -305,6 +319,16 @@ namespace BoatAttack.EditorTools
                 camera=_c.viewCamera.transform.position,cameraEuler=_c.viewCamera.transform.eulerAngles,boat=_c.Player.transform.position,boatEuler=_c.Player.transform.eulerAngles,left=left,right=r,rayTarget=hitName,fishingSpots=_c.fishingSpots,
                 rodPosition=_c.Hands.Rod.position,rodForward=_c.Hands.Rod.forward,rodTip=_c.Hands.Rod.TransformPoint(new Vector3(0,-.015f,2.03f)),rightForward=q*Vector3.forward,rodPalm=_c.Hands.Right.Palm.position,
                 buttons=Object.FindObjectsOfType<FishingNotebookButton>().Where(x=>x.Owner==_c.XRNotebook).Select(x=>new Button{index=x.Index,label=string.Join(" / ",x.GetComponentsInChildren<Text>().Select(t=>t.text)),center=x.GetComponent<Collider>().bounds.center}).ToArray()};
+            if(_command.table>=2)
+            {
+                var workpiece=_c.HandGames.Workpiece(_command.table);var mesh=workpiece.GetComponent<MeshFilter>().sharedMesh;
+                var vertices=mesh.vertices;s.workpieceVertices=vertices.Length;s.workpieceSize=mesh.bounds.size;
+                for(int i=0;i<vertices.Length;i++)s.workpieceFingerprint+=(i+1)*(vertices[i].x*3+vertices[i].y*5+vertices[i].z*7);
+                var visuals=(Array)typeof(FishingHandGames).GetField("_workpieces",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.HandGames);var visual=visuals.GetValue(_command.table-2);var type=visual.GetType();
+                s.workDebrisEmitted=(int)type.GetField("Next").GetValue(visual);s.workDebrisVertices=((Mesh)type.GetField("Debris").GetValue(visual)).vertexCount;
+                var velocities=(Vector3[])type.GetField("Velocity").GetValue(visual);
+                s.workDebrisBothDirections=velocities.Any(v=>v.x<-.01f) && velocities.Any(v=>v.x>.01f);
+            }
             File.WriteAllText(Path.Combine(Root,"state.json"),JsonUtility.ToJson(s,true));
         }
         private static void Capture(string name)

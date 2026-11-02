@@ -14,13 +14,15 @@ namespace BoatAttack.Fishing
         private readonly List<Transform> _fish=new List<Transform>();
         private sealed class Pet { public Transform Root;public LandAnimalKind Kind;public int Id,Slot; }
         private readonly List<Pet> _pets=new List<Pet>();
+        private readonly Dictionary<int,float> _petCalls=new Dictionary<int,float>();
         private readonly Dictionary<int,Transform> _traps=new Dictionary<int,Transform>();
         private FishingCareer _profile;
         private int _day=-1,_sourceCount,_growthDays;
         private Material _glass;
         private MeshCollider _homeLand;
         private Vector3 _heartPoint;
-        private float _trapAt,_heartUntil,_petTime;
+        private float _trapAt,_heartUntil,_petTime,_petCallAt;
+        private int _habitatFilter=-1;
         private Transform _hearts;
         public LandAnimalKind TrapKind=LandAnimalKind.Rabbit;
         public int Page;
@@ -48,7 +50,7 @@ namespace BoatAttack.Fishing
             {
                 float t=Time.time*.5f+i*1.8f;var f=_fish[i];f.localPosition=new Vector3(Mathf.Sin(t)*.8f,.7f+(i%2)*.25f,Mathf.Cos(t)*.27f);f.localRotation=Quaternion.Slerp(f.localRotation,Quaternion.Euler(0,Mathf.Cos(t)>0?90:270,0),Mathf.Min(1,Time.deltaTime*3));
             }
-            if(Active)AnimatePets(Time.deltaTime);
+            if(Active){AnimatePets(Time.deltaTime);TickPetCalls();}
             if(_hearts!=null){_hearts.gameObject.SetActive(Time.time<_heartUntil);_hearts.position=_heartPoint+Vector3.up*(1.1f+(1-(_heartUntil-Time.time)/3)*.5f);_hearts.rotation=Quaternion.LookRotation(_hearts.position-_c.viewCamera.transform.position);}
         }
         private void AnimatePets(float delta)
@@ -59,8 +61,10 @@ namespace BoatAttack.Fishing
                 if(pet.Root==null)continue;
                 float rate=pet.Kind==LandAnimalKind.Tortoise?.045f:pet.Kind==LandAnimalKind.SeaTurtle?.07f:pet.Kind==LandAnimalKind.Rabbit?.18f:.13f;
                 float phase=Mathf.Repeat(_petTime*rate+pet.Id*.37f,2),leg=phase<1?1:-1,progress=Mathf.Min(1,(phase%1)/.65f);
-                var anchor=new Vector3(-1.04f+pet.Slot%4*.53f,.08f,1.16f+(pet.Slot/4)*.75f);
-                var offset=new Vector3(0,0,.10f);
+                bool perched=pet.Kind==LandAnimalKind.Gull;
+                var anchor=perched?new Vector3(-.72f+pet.Slot%4*.48f,.595f+(pet.Slot/4)*.61f,-.2f)
+                    :new Vector3(-1.04f+pet.Slot%4*.53f,.08f,1.16f+(pet.Slot/4)*.75f);
+                var offset=perched?new Vector3(.025f,0,0):new Vector3(0,0,.10f);
                 var point=anchor+offset*(leg*Mathf.Lerp(-1,1,Mathf.SmoothStep(0,1,progress)));
                 float moving=progress<1?1:0;
                 float hop=pet.Kind==LandAnimalKind.Rabbit?.065f:pet.Kind==LandAnimalKind.Tortoise || pet.Kind==LandAnimalKind.SeaTurtle?.005f:.018f;
@@ -71,6 +75,37 @@ namespace BoatAttack.Fishing
                 pet.Root.localRotation=Quaternion.Slerp(pet.Root.localRotation,facing,Mathf.Min(1,delta*5));
             }
         }
+        private static string PetCue(LandAnimalKind kind)=>kind==LandAnimalKind.Rabbit?"RabbitCall":kind==LandAnimalKind.Fox?"FoxCall"
+            :kind==LandAnimalKind.Gull?"GullCall":kind==LandAnimalKind.Tortoise?"TortoiseCall":"SeaTurtleCall";
+        private bool PlayPetCall(Pet pet)
+        {
+            if(!Active || _c.StartMenuOpen || pet.Root==null || !pet.Root.gameObject.activeInHierarchy
+                || Vector3.Distance(_c.viewCamera.transform.position,pet.Root.position)>14)return false;
+            var audio=_c.WorldAudio;if(audio==null)return false;
+            string cue=PetCue(pet.Kind);
+            return audio.Play(audio.HasCue(cue)?cue:"AnimalRustle",pet.Root.position+Vector3.up*.18f,1,FishingAudioCategory.Ambient);
+        }
+        private void TickPetCalls()
+        {
+            if(_petTime<_petCallAt)return;
+            foreach(var pet in _pets)
+            {
+                if(!_petCalls.TryGetValue(pet.Id,out float next) || _petTime<next)continue;
+                // Retry out-of-range or muted animals slowly; refreshing a menu never restarts their call clock.
+                _petCalls[pet.Id]=_petTime+9+(pet.Id*7%8);
+                if(!PlayPetCall(pet))continue;
+                _petCallAt=_petTime+1.5f;break;
+            }
+        }
+        private int CarriedCount(LandAnimalKind kind)
+        {int count=0;foreach(var a in _c.Career.HomeAnimals)if(a.kind==kind && !a.housed && a.trapId==0)count++;return count;}
+        private int NearbyHabitat()
+        {
+            if(!NearHome)return -1;int result=-1;float nearest=2.5f;
+            for(int i=0;i<5;i++)
+            {float distance=Vector3.Distance(_c.ExplorerPosition,HabitatPosition((LandAnimalKind)i)+Vector3.forward*2.6f);if(distance<nearest){nearest=distance;result=i;}}
+            return result;
+        }
         public string NearbyHint
         {
             get
@@ -78,7 +113,13 @@ namespace BoatAttack.Fishing
                 if(!_c.Ashore)return null;
                 string key=XRSettings.isDeviceActive?"A ":"E ";
                 if(NearHome && Vector3.Distance(_c.ExplorerPosition,AquariumPosition)<2.4f)return key+"家园水族箱 · 展示、喂养与成长";
-                for(int i=0;i<5;i++)if(NearHome && Vector3.Distance(_c.ExplorerPosition,HabitatPosition((LandAnimalKind)i)+Vector3.forward*2.6f)<2.5f)return key+FishingCareer.HabitatName((LandAnimalKind)i)+(_c.Career.HabitatLevel((LandAnimalKind)i)==0?" · 部署设施":" · 饲养与繁殖");
+                int nearby=NearbyHabitat();
+                if(nearby>=0)
+                {
+                    var kind=(LandAnimalKind)nearby;var c=_c.Career;
+                    string action=c.HabitatLevel(kind)==0?" · 部署设施":CarriedCount(kind)>0 && c.HousedAnimalCount(kind)<c.HabitatCapacity(kind)?" · 安置携带的"+FishingBackpack.AnimalName(kind):" · 饲养与繁殖";
+                    return key+FishingCareer.HabitatName(kind)+action;
+                }
                 return NearbyTrap()!=null?key+"诱捕笼 · 上饵、收取或收回":null;
             }
         }
@@ -87,16 +128,44 @@ namespace BoatAttack.Fishing
             if(NearbyHint==null)return false;
             int mode=NearbyTrap()!=null?4:0;
             if(NearHome && Vector3.Distance(_c.ExplorerPosition,AquariumPosition)<2.4f)mode=_c.Career.AquariumLevel>0?2:0;
-            else for(int i=0;i<5;i++)if(NearHome && Vector3.Distance(_c.ExplorerPosition,HabitatPosition((LandAnimalKind)i)+Vector3.forward*2.6f)<2.5f)
-            {mode=_c.Career.HabitatLevel((LandAnimalKind)i)>0?3:0;break;}
+            else
+            {
+                int nearby=NearbyHabitat();
+                if(nearby>=0)
+                {
+                    var kind=(LandAnimalKind)nearby;
+                    if(_c.Career.HousedAnimalCount(kind)<_c.Career.HabitatCapacity(kind))
+                        foreach(var a in _c.Career.HomeAnimals)if(a.kind==kind && !a.housed && a.trapId==0){MoveAnimal(a.id,false);return true;}
+                    _habitatFilter=nearby;OpenPanel(_c.Career.HabitatLevel(kind)>0?3:0);return true;
+                }
+            }
             Open(mode);return true;
         }
         public void Open(int mode=0)
+        {ClearHabitatFilter();OpenPanel(mode);}
+        public void ClearHabitatFilter(){_habitatFilter=-1;Page=0;}
+        private void OpenPanel(int mode)
         {
             Page=0;
-            if(XRSettings.isDeviceActive){_c.XRNotebook.OpenHomeEcology(mode);return;}
+            if(XRSettings.isDeviceActive){_c.XRNotebook.OpenHomeEcology(mode,true);return;}
             if(!_c.InventoryOpen)_c.ToggleInventory();
-            if(_c.InventoryOpen)_c.OpenHomeEcologyPage(mode);
+            if(_c.InventoryOpen)_c.OpenHomeEcologyPage(mode,true);
+        }
+        private string AnimalMoveBlocked(int id)
+        {
+            var c=_c.Career;var a=c.HomeAnimal(id);
+            if(a==null)return "这只动物已不在载具或住所中。";
+            if(a.trapId>0)return "先到诱捕笼旁收取这只动物，再带回家园。";
+            if(a.housed)return c.CarriedAnimalCount>=FishingCareer.AnimalCarrierCapacity?"活体载具已满，先安置其他动物。":null;
+            if(c.HabitatLevel(a.kind)==0)return "先在设施建设中部署"+FishingCareer.HabitatName(a.kind)+"。";
+            return c.HousedAnimalCount(a.kind)>=c.HabitatCapacity(a.kind)?FishingCareer.HabitatName(a.kind)+"已满，先扩建或带走一只动物。":null;
+        }
+        private void MoveAnimal(int id,bool expectedHoused)
+        {
+            string reason=AnimalMoveBlocked(id);if(reason!=null){_c.Notice(reason,5);return;}
+            var animal=_c.Career.HomeAnimal(id);bool housed=animal.housed;
+            if(housed!=expectedHoused){_c.Notice("动物安置状态已更新，请重新选择操作。",4);return;}
+            Commit(()=>housed?_c.Career.CarryHomeAnimal(id):_c.Career.HouseAnimal(id),housed?"动物已进入活体载具。":"已安置"+FishingBackpack.AnimalName(animal.kind)+"，可在住所内看见并听见它。" );
         }
         private AnimalTrapData NearbyTrap()
         {
@@ -117,9 +186,10 @@ namespace BoatAttack.Fishing
             if(mode==0)
             {
                 int aquariumKit=c.Backpack.Count(FieldItem.Aquarium);
-                Add(c.AquariumLevel==0?"部署水族箱 · 套件 "+aquariumKit+"/1":c.AquariumLevel==1?"扩建水族箱至8格 · 潮境蓝图 +300币":"水族箱 · 已建成8格",c.AquariumLevel==0?(Func<bool>)c.BuildAquarium:c.UpgradeAquarium,"水族箱已更新。",NearHome && c.AquariumLevel<2);
+                if(_habitatFilter<0)Add(c.AquariumLevel==0?"部署水族箱 · 套件 "+aquariumKit+"/1":c.AquariumLevel==1?"扩建水族箱至8格 · 潮境蓝图 +300币":"水族箱 · 已建成8格",c.AquariumLevel==0?(Func<bool>)c.BuildAquarium:c.UpgradeAquarium,"水族箱已更新。",NearHome && c.AquariumLevel<2);
                 for(int i=0;i<5;i++)
                 {
+                    if(_habitatFilter>=0 && _habitatFilter!=i)continue;
                     var kind=(LandAnimalKind)i;int level=c.HabitatLevel(kind);
                     Add(FishingCareer.HabitatName(kind)+(level==0?" · 部署 · 套件 "+c.Backpack.Count(FishingCareer.HabitatKit(kind))+"/1":" · "+c.HousedAnimalCount(kind)+"/"+c.HabitatCapacity(kind)+(level==1?" · 林境蓝图+250币扩建":" · 已满级")),()=>level==0?c.BuildAnimalHabitat(kind):c.UpgradeAnimalHabitat(kind),FishingCareer.HabitatName(kind)+"已部署在菜园西侧的专用地块。",NearHome && level<2);
                 }
@@ -140,11 +210,17 @@ namespace BoatAttack.Fishing
             else if(mode==3)
             {
                 var animals=new List<HomeAnimalData>(c.HomeAnimals);
+                animals.Sort((a,b)=>a.housed!=b.housed?a.housed.CompareTo(b.housed):a.id.CompareTo(b.id));
                 foreach(var a in animals)
                 {
+                    if(_habitatFilter>=0 && (int)a.kind!=_habitatFilter)continue;
                     int id=a.id;string name="#"+id+" "+FishingBackpack.AnimalName(a.kind)+(a.female?" ♀":" ♂")+(c.AnimalAdult(id)?" 成年":" 幼兽")+(a.housed?" · 已安家":a.trapId>0?" · 笼内":" · 携带中");
                     if(a.trapId>0)continue;
-                    Add(name+(a.housed?" · 带上旅途":" · 安置住所"),()=>a.housed?c.CarryHomeAnimal(id):c.HouseAnimal(id),"动物安置已更新。",NearHome);
+                    string blocked=AnimalMoveBlocked(id);
+                    bool expectedHoused=a.housed;
+                    string moveLabel=name+(a.housed?" · 带上旅途":" · 安置住所");
+                    if(blocked!=null)moveLabel=(a.housed?"活体载具已满":c.HabitatLevel(a.kind)==0?"先部署"+FishingCareer.HabitatName(a.kind):"住所已满 · 需扩建")+"\n#"+id+" "+FishingBackpack.AnimalName(a.kind);
+                    list.Add(new Choice{Label=moveLabel,Enabled=NearHome && blocked==null,Run=()=>MoveAnimal(id,expectedHoused)});
                     if(a.housed)Add("喂养 #"+id+" · "+FishingBackpack.Name(FishingCareer.AnimalFood(a.kind)),()=>c.FeedHomeAnimal(id),"今天已喂养。",NearHome && a.lastFedDay!=c.Calendar.Day);
                     if(a.housed && c.AnimalAdult(id) && !a.female)
                         foreach(var b in animals)if(b.housed && b.kind==a.kind && b.female && c.AnimalAdult(b.id))
@@ -167,9 +243,22 @@ namespace BoatAttack.Fishing
                     }
                 }
             }
+            if(mode==3 && list.Count==0)list.Add(new Choice{Label="尚无可安置的"+(_habitatFilter>=0?FishingBackpack.AnimalName((LandAnimalKind)_habitatFilter):"动物")+" · 活捉网右扳机捕获；诱捕笼须先收取",Enabled=false});
             return list;
         }
-        public string Status=>"水族箱 "+_c.Career.AquariumCount+"/"+_c.Career.AquariumCapacity+" · 活体载具 "+_c.Career.CarriedAnimalCount+"/4 · 动物 "+_c.Career.HomeAnimalCount+"/16\n六种设施均可部署：水族箱在屋内，五类动物住所位于菜园西侧。套件可在工作台制作；幼兽2日成年。";
+        public string Status
+        {
+            get
+            {
+                if(_habitatFilter>=0)
+                {
+                    var kind=(LandAnimalKind)_habitatFilter;var c=_c.Career;
+                    return FishingCareer.HabitatName(kind)+" · 已安置 "+c.HousedAnimalCount(kind)+"/"+c.HabitatCapacity(kind)+" · 携带同类 "+CarriedCount(kind)+"只\n"+
+                        (c.HabitatLevel(kind)==0?"先用对应套件部署住所。":CarriedCount(kind)==0?"用活捉网捕获或从诱捕笼收取，带回门口按 A / E 安置。":c.HousedAnimalCount(kind)>=c.HabitatCapacity(kind)?"住所已满：在设施建设中扩建，或先将一只动物带上旅途。":"关闭菜单，在门口按 A / E 逐只安置携带的动物。");
+                }
+                return "水族箱 "+_c.Career.AquariumCount+"/"+_c.Career.AquariumCapacity+" · 活体载具 "+_c.Career.CarriedAnimalCount+"/4 · 动物 "+_c.Career.HomeAnimalCount+"/16\n活捉后带回对应住所门口，A / E 安置；也可在动物页选择安置。套件在工作台制作；幼兽2日成年。";
+            }
+        }
         public bool UseNet()
         {
             if(!Active || !_c.Ashore || _c.Career.Backpack.Equipped!=FieldItem.CaptureNet)return false;
@@ -180,7 +269,10 @@ namespace BoatAttack.Fishing
             {
                 if(a.Dead || a.Root==null || !a.Root.gameObject.activeInHierarchy || !_c.Career.WildAnimalAvailable(a.Id,a.Kind))continue;
                 var point=a.Root.position+Vector3.up*.2f;float d=Vector3.Distance(_c.ExplorerPosition,point);
-                if(d<nearest && Vector3.Distance(mouth,point)<.6f && Vector3.Dot(_c.viewCamera.transform.forward,(point-_c.viewCamera.transform.position).normalized)>.65f && _c.Shore.ClearSight(_c.Shore.Character.EyePosition,point)){best=a;nearest=d;}
+                // The tracked net mouth defines VR aim. Requiring the headset to face the same point
+                // rejects a correct low reach whenever the player looks toward their hand or habitat.
+                bool aimed=XRSettings.isDeviceActive || Vector3.Dot(_c.viewCamera.transform.forward,(point-_c.viewCamera.transform.position).normalized)>.65f;
+                if(d<nearest && Vector3.Distance(mouth,point)<.6f && aimed && _c.Shore.ClearSight(_c.Shore.Character.EyePosition,point)){best=a;nearest=d;}
             }
             if(best==null){_c.Notice("手持活捉网，蹲下接近动物，把网口送到它身旁；F / 右扳机活捉。",5);return false;}
             int id=_c.Career.CaptureAnimalWithNet(best.Id,best.Kind);
@@ -292,10 +384,12 @@ namespace BoatAttack.Fishing
                         pet.localScale*=span/Mathf.Max(.001f,new Vector2(bounds.size.x,bounds.size.z).magnitude);
                         bounds=PetBounds(actor);pet.localPosition-=new Vector3(bounds.center.x,bounds.min.y,bounds.center.z);
                         _pets.Add(new Pet{Root=actor,Kind=kind,Id=a.id,Slot=slot});
+                        if(!_petCalls.ContainsKey(a.id))_petCalls.Add(a.id,_petTime+.5f+slot*.3f);
                     }
                     slot++;
                 }
             }
+            foreach(int id in new List<int>(_petCalls.Keys))if(!_pets.Exists(p=>p.Id==id))_petCalls.Remove(id);
             AnimatePets(0);
             foreach(var t in _profile.AnimalTraps){var trap=Model("FishingProps/CrateBody",_display,new Vector3(t.x,t.y,t.z),.45f);if(trap!=null){_traps[t.id]=trap;FishingV019Art.Sign(t.animalId>0?"已捕获":t.baited?"诱饵就绪":"空诱捕笼",trap,Vector3.up*1.3f,.018f,new Color(.85f,.92f,.82f));}}
             _hearts=FishingV019Art.Sign("♥  ♥",_display,_c.Home.Origin+new Vector3(0,1.5f,7.5f),.035f,new Color(1,.35f,.45f)).transform;
@@ -322,8 +416,11 @@ namespace BoatAttack.Fishing
             if(_net==null)return;_net.gameObject.SetActive(show);if(!show)return;
             var palm=_c.Shore.Character.PalmPosition(false);
             var rotation=_c.Shore.Actor.rotation*Quaternion.Euler(0,-90,0)*Quaternion.Euler(0,0,-25);
-            if(XRSettings.isDeviceActive && _c.Hands.TryControllerPalm(false,out var tracked,out var frame))
-            {palm=tracked;rotation=frame*Quaternion.Inverse(Quaternion.LookRotation(Vector3.right,Vector3.up));}
+            if(XRSettings.isDeviceActive)
+            {
+                if(!_c.Hands.TryControllerPalm(false,out var tracked,out var frame)){_net.gameObject.SetActive(false);return;}
+                palm=tracked;rotation=frame*Quaternion.Inverse(Quaternion.LookRotation(Vector3.right,Vector3.up));
+            }
             _net.localScale=Vector3.one*.6f;_net.SetPositionAndRotation(palm-rotation*new Vector3(.05f,.035f,0)*.6f,rotation);
         }
         private void LateUpdate(){if(_c!=null)PresentNet();}
