@@ -127,6 +127,14 @@ namespace BoatAttack.EditorTools
             {
                 var run=FishingV060Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
             }
+            if(suite=="V059-HANDCRAFT")
+            {
+                var run=FishingV059Validation.HandcraftChecks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V059")
+            {
+                var run=FishingV059Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
             if(suite=="V058")
             {
                 var run=FishingV058Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;

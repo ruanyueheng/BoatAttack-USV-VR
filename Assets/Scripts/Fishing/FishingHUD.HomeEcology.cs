@@ -5,7 +5,7 @@ namespace BoatAttack.Fishing
     {
         private bool _ecologyPage;
         private int _ecologyMode;
-        public void OpenHomeEcologyPage(int mode=0){_ecologyPage=true;_craftPage=false;_ecologyMode=Mathf.Clamp(mode,0,4);Controller.HomeEcology.Page=0;}
+        public void OpenHomeEcologyPage(int mode=0,bool keepHabitat=false){if(!keepHabitat)Controller.HomeEcology.ClearHabitatFilter();_ecologyPage=true;_craftPage=false;_ecologyMode=Mathf.Clamp(mode,0,4);Controller.HomeEcology.Page=0;}
         private void DrawHomeEcology()
         {
             var world=Controller.HomeEcology;
@@ -14,7 +14,7 @@ namespace BoatAttack.Fishing
             if(Button(new Rect(1060,160,210,38),"返回背包",true,false,16)){_ecologyPage=false;return;}
             Label(322,212,940,54,world.Status,15,Muted);
             string[] tabs={"设施建设","鱼箱 → 展示","水族箱养鱼","动物与繁殖","诱捕笼"};
-            for(int i=0;i<tabs.Length;i++)if(Button(new Rect(320+i*191,277,183,38),tabs[i],true,_ecologyMode==i,16)){_ecologyMode=i;world.Page=0;}
+            for(int i=0;i<tabs.Length;i++)if(Button(new Rect(320+i*191,277,183,38),tabs[i],true,_ecologyMode==i,16)){world.ClearHabitatFilter();_ecologyMode=i;}
             var choices=world.Choices(_ecologyMode);int pages=Mathf.Max(1,Mathf.CeilToInt(choices.Count/6f));world.Page=Mathf.Clamp(world.Page,0,pages-1);
             for(int i=0;i<6;i++)
             {

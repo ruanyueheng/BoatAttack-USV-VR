@@ -8,7 +8,7 @@ using UnityEngine.XR;
 namespace BoatAttack.Fishing
 {
     /// <summary>Small tabletop crafts. The real instruments stay in the world, away from the eyes.</summary>
-    public sealed class FishingHandGames : MonoBehaviour
+    public sealed partial class FishingHandGames : MonoBehaviour
     {
         private FishingPrototype _c;
         private readonly Transform[] _stations=new Transform[4],_tools=new Transform[4];
@@ -22,6 +22,9 @@ namespace BoatAttack.Fishing
         private Quaternion _trackedToolRotation;
         private bool _trackedToolHeld,_hasTrackedContact;
         private readonly FishingPressEdge _worldGrip=new FishingPressEdge();
+        private readonly FishingPressEdge _worldLeftGrip=new FishingPressEdge();
+        private bool _sieveHeldLeft;
+        private Vector3 _trackedSieveGripLocal;
         private Vector3 _lastTrackedContact;
         private Transform _crank,_coil,_sand,_tray,_caughtSand,_feedCoil;
         private readonly Transform[] _shells=new Transform[6],_grains=new Transform[32];
@@ -56,10 +59,10 @@ namespace BoatAttack.Fishing
         public Vector3 Approach(int index)=>_stations[index].TransformPoint(new Vector3(0,0,.60f));
         public Transform ActiveTool=>!Active?null:_index==1?_crank:_tools[_index];
         public Vector3 HandlePoint=>!Active?Vector3.zero:_rightGrip.position;
-        public Vector3 WorkPoint=>!Active || _index<2?Vector3.zero:_stations[_index].TransformPoint(_index==2?new Vector3(-.12f,1.025f,0):new Vector3(-.10f,1.035f,-.12f));
+        public Vector3 WorkPoint=>!Active || _index<2?Vector3.zero:_stations[_index].TransformPoint(_index==2?new Vector3(-.12f,1.025f,0):new Vector3(-.10f,ForgeSurface(_task.Progress),-.12f));
         public Vector3 ToolContact=>!Active || _index<2?Vector3.zero:_tools[_index].TransformPoint(_index==2?new Vector3(.08f,.35f,0):new Vector3(.132f,.40f,0));
         public static string Name(int index)=>index==0?"潮汐摇筛":index==1?"手摇绕绳":index==2?"往复锯木":"锻锤塑形";
-        public static string StartHint(bool desktop)=>desktop?"E 动手试试":"握柄旁按右握把 · A 开始";
+        public static string StartHint(bool desktop)=>desktop?"E 动手试试":"握柄旁按握把 · 摇筛支持左右手";
         public string Instruction=>_index==1?"按住鼠标左键，沿摇柄画圈绕线":_index==2?"按住左键前后拖动，沿锯缝推拉":_index==3?"按住左键向上抬锤，再向下敲到铁坯":"按住鼠标左键，左右往复";
         public int Count=>_task==null?0:_index==1?Mathf.FloorToInt(_task.Progress*3):_task.Strokes;
         public void Build(FishingPrototype c)
@@ -125,6 +128,7 @@ namespace BoatAttack.Fishing
                     piece.localScale=Vector3.Scale(piece.localScale,new Vector3(size.x/bounds.size.x,size.y/bounds.size.y,size.z/bounds.size.z));
                     bounds=surfaces[0].bounds;foreach(var r in surfaces)bounds.Encapsulate(r.bounds);piece.position+=root.TransformPoint(i==2?new Vector3(0,1,0):new Vector3(-.10f,1,-.12f))-bounds.center;
                     if(i==2)foreach(var r in surfaces)r.sharedMaterial=_c.wood;
+                    BuildWorkpiece(i,piece);
                 }
                 var sign=new GameObject("Small handcraft label",typeof(TextMesh));sign.transform.SetParent(root,false);sign.transform.localPosition=new Vector3(0,1.19f,-.10f);
                 var label=sign.GetComponent<TextMesh>();label.font=FishingUIFont.Font;label.fontSize=32;label.characterSize=.0045f;
@@ -208,7 +212,8 @@ namespace BoatAttack.Fishing
                 if(_c.Shore.Crouched){_c.Notice("站起身后再开始桌边手作。",4);return false;}
             }
             _index=index;_task=task;_career=_c.Career;_ready=_calibrated=false;_exitHeld=_recipeHeld=true;_mouse=_motion=new Vector2(.1f,0);
-            _motionSpeed=_visualSpeed=_shakePhase=_emission=0;_trackedToolHeld=_hasTrackedContact=false;_lastInteractionState=-1;
+            BeginWorkpiece(index);
+            _motionSpeed=_visualSpeed=_shakePhase=_emission=0;_trackedToolHeld=_hasTrackedContact=_sieveHeldLeft=false;_lastInteractionState=-1;
             _frame=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0);_toolHome=_tools[index].localPosition;_toolRest=_tools[index].localRotation;
             if(index==0)
             {
@@ -249,21 +254,28 @@ namespace BoatAttack.Fishing
             var next=new FishingHandTask(FishingHandTaskKind.Forge,!ForgeGunParts);
             if(!next.HasMaterials(_c.Career.Backpack)){_c.Notice("切换配方需备齐铁锭：镐头3个，枪械铁件6个；本次材料未扣除。",5);return;}
             ForgeGunParts=!ForgeGunParts;_task=next;_ready=_calibrated=_trackedToolHeld=_hasTrackedContact=false;_lastPercent=-1;
+            BeginWorkpiece(3);
         }
-        private bool TryBeginXRGrab(bool focused)
+        private bool TryBeginXRGrab(bool focused,bool left=false)
         {
             if(!focused || _c==null || _c.Hands==null || _c.XRSeat.HeadBlocked || _c.Hands.HoldingRod
-                || !_c.Hands.TryControllerPalm(false,out var palm,out _))return false;
+                || !_c.Hands.TryControllerPalm(left,out var palm,out _))return false;
+            return TryBeginTrackedGrab(palm,left);
+        }
+        private bool TryBeginTrackedGrab(Vector3 palm,bool left)
+        {
             int nearest=-1;float distance=.22f;
-            var right=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0)*Vector3.right;
+            Transform grabbed=null;
             for(int i=0;i<4;i++)
             {
-                var grip=i==0?(Vector3.Dot(_sieveGripA.position-_sieveGripB.position,right)>0?_sieveGripA:_sieveGripB):i==1?_winderHandle:_workRight[i-2];
+                if(left && i!=0)continue;
+                var grip=i==0?(Vector3.Distance(palm,_sieveGripA.position)<Vector3.Distance(palm,_sieveGripB.position)?_sieveGripA:_sieveGripB):i==1?_winderHandle:_workRight[i-2];
                 float reach=Vector3.Distance(palm,grip.position);
                 if(reach>=distance || !_c.Shore.ClearSight(palm,grip.position))continue;
-                nearest=i;distance=reach;
+                nearest=i;distance=reach;grabbed=grip;
             }
             if(nearest<0 || !Begin(nearest,true))return false;
+            if(nearest==0){_sieveHeldLeft=left;_rightGrip=grabbed;_leftGrip=grabbed==_sieveGripA?_sieveGripB:_sieveGripA;}
             // This grip press is the entry action; the player need not open the hand and grab twice.
             _ready=true;return true;
         }
@@ -305,16 +317,33 @@ namespace BoatAttack.Fishing
         private bool TrackedHandMotion(Vector3 palm,Quaternion palmRotation,bool held,out Vector2 point)
         {
             point=_motion;
-            if(!held){_ready=true;_calibrated=_trackedToolHeld=_hasTrackedContact=false;return false;}
+            if(!held)
+            {
+                _ready=true;_calibrated=_trackedToolHeld=_hasTrackedContact=false;
+                if(_index==0){_tools[0].localPosition=_toolHome;_tools[0].localRotation=_toolRest;}
+                return false;
+            }
             if(!_ready)return false;
             if(!_trackedToolHeld)
             {
+                if(_index==0)
+                {
+                    _rightGrip=Vector3.Distance(palm,_sieveGripA.position)<Vector3.Distance(palm,_sieveGripB.position)?_sieveGripA:_sieveGripB;
+                    _leftGrip=_rightGrip==_sieveGripA?_sieveGripB:_sieveGripA;
+                    _trackedSieveGripLocal=_tools[0].InverseTransformPoint(_rightGrip.position);
+                }
                 if(Vector3.Distance(palm,HandlePoint)>=.22f)return false;
                 _trackedToolRotation=Quaternion.Inverse(palmRotation)*_tools[_index].rotation;
                 _trackedToolHeld=true;_hasTrackedContact=false;
             }
+            if(_index==0)
+            {
+                var rotation=palmRotation*_trackedToolRotation;
+                _tools[0].SetPositionAndRotation(palm+palmRotation*new Vector3(0,-.026f,0)-rotation*Vector3.Scale(_trackedSieveGripLocal,_tools[0].lossyScale),rotation);
+                return true;
+            }
             // Workpiece contact controls progress only. The grip owns attachment until it is released.
-            return _index==0 || TrackedToolMotion(palm,palmRotation,out point);
+            return TrackedToolMotion(palm,palmRotation,out point);
         }
         public bool Tick(Keyboard keyboard,Mouse mouse,bool focused,bool xr)
         {
@@ -322,23 +351,33 @@ namespace BoatAttack.Fishing
             bool grabAvailable=xr && focused && !Active && _c!=null && _c.Ashore && !_c.Paused && !_c.StartMenuOpen
                 && !_c.StoryBlocksGameplay && !_c.ShopBlocksGameplay && !_c.InventoryOpen && !_c.JournalOpen
                 && !_c.WorldActionBlocksGameplay && !_c.HasPendingCatch && !_c.XRNotebook.BlocksGameplay
-                && !_c.XRSeat.HeadBlocked && !_c.Hands.HoldingRod && !_c.Shore.Swimming && !_c.Shore.Climbing
-                && _c.Hands.TryControllerPalm(false,out _,out _);
-            bool grabPressed=_worldGrip.Step(grabAvailable,worldGrip);
-            if(!Active && (!xr || !grabPressed || !TryBeginXRGrab(focused)))return false;
+                && !_c.XRSeat.HeadBlocked && !_c.Hands.HoldingRod && !_c.Shore.Swimming && !_c.Shore.Climbing;
+            bool grabPressed=_worldGrip.Step(grabAvailable && _c.Hands.TryControllerPalm(false,out _,out _),worldGrip);
+            bool leftGrabPressed=_worldLeftGrip.Step(grabAvailable && _c.Hands.TryControllerPalm(true,out _,out _),xr && Grip(InputDevices.GetDeviceAtXRNode(XRNode.LeftHand)));
+            if(!Active && (!xr || !(grabPressed && TryBeginXRGrab(focused) || leftGrabPressed && TryBeginXRGrab(focused,true))))return false;
             if(!focused || _c.Paused || _c.StartMenuOpen || _career!=_c.Career || !_c.Ashore || _c.Shore.Swimming || _c.Shore.Climbing
                 || Vector3.Distance(_c.Shore.Position,_stations[_index].position)>(xr?1.5f:1.15f)){Cancel();return true;}
             if(keyboard!=null && keyboard.escapeKey.wasPressedThisFrame){Cancel();return true;}
             bool held=false,exit=false,tracked=true,contact=true;Vector2 point=_mouse;InputDevice device=default;
             if(xr)
             {
-                device=InputDevices.GetDeviceAtXRNode(XRNode.RightHand);held=Grip(device);device.TryGetFeatureValue(CommonUsages.secondaryButton,out exit);
+                if(_index==0 && !_trackedToolHeld && _ready)
+                {
+                    bool left=Grip(InputDevices.GetDeviceAtXRNode(XRNode.LeftHand));
+                    bool right=Grip(InputDevices.GetDeviceAtXRNode(XRNode.RightHand));
+                    if(left!=right && _c.Hands.TryControllerPalm(left,out var candidate,out _)
+                        && Mathf.Min(Vector3.Distance(candidate,_sieveGripA.position),Vector3.Distance(candidate,_sieveGripB.position))<.22f)
+                        _sieveHeldLeft=left;
+                }
+                bool leftSieve=_index==0 && _sieveHeldLeft;
+                device=InputDevices.GetDeviceAtXRNode(leftSieve?XRNode.LeftHand:XRNode.RightHand);held=Grip(device);
+                InputDevices.GetDeviceAtXRNode(XRNode.RightHand).TryGetFeatureValue(CommonUsages.secondaryButton,out exit);
                 device.TryGetFeatureValue(CommonUsages.primaryButton,out bool recipe);if(recipe && !_recipeHeld && _index==3)SwitchForgeOutput();_recipeHeld=recipe;
                 // Entering a modal resets locomotion readiness; this modal owns its own release-to-grip guard.
-                tracked=Application.isFocused && !_c.XRSeat.HeadBlocked && !_c.XRNotebook.IsOpen && _c.Hands.TryControllerPalm(false,out _,out _);
+                tracked=Application.isFocused && !_c.XRSeat.HeadBlocked && !_c.XRNotebook.IsOpen && _c.Hands.TryControllerPalm(leftSieve,out _,out _);
                 if(tracked)
                 {
-                    _c.Hands.TryControllerPalm(false,out var palm,out var palmRotation);
+                    _c.Hands.TryControllerPalm(leftSieve,out var palm,out var palmRotation);
                     contact=TrackedHandMotion(palm,palmRotation,held,out point);
                     if(_index==0 && _trackedToolHeld)
                     {
@@ -366,14 +405,18 @@ namespace BoatAttack.Fishing
                 }
             }
             _motionSpeed=0;
-            if(!tracked){_ready=_calibrated=_trackedToolHeld=_hasTrackedContact=false;_task.Release();}
+            if(!tracked)
+            {
+                _ready=_calibrated=_trackedToolHeld=_hasTrackedContact=false;_task.Release();
+                if(_index==0){_tools[0].localPosition=_toolHome;_tools[0].localRotation=_toolRest;}
+            }
             else if(!held){_ready=true;_task.Release();_calibrated=_trackedToolHeld=_hasTrackedContact=false;if(xr && _index>=2)_motion=new Vector2(.1f,0);}
             else if(_ready && (!xr || _trackedToolHeld) && !_c.Automated)
             {
                 _motionSpeed=Mathf.Clamp01((point-_motion).magnitude/Mathf.Max(.001f,Time.unscaledDeltaTime)*2);
                 _motion=point;bool step=_task.SampleContact(point.x,point.y,Time.unscaledDeltaTime,contact);
                 if(step && Time.unscaledTime>=_audioAt)
-                {_audioAt=Time.unscaledTime+.9f;_c.WorldAudio?.Play(_index==3?"ForgeStrike":"HandcraftRub",_rightGrip.position,.28f);}
+                {_audioAt=Time.unscaledTime+(_index>=2?.18f:.9f);_c.WorldAudio?.Play(_index==3?"ForgeHammer":_index==2?"SawCut":"HandcraftRub",_index>=2?WorkPoint:_rightGrip.position,_index>=2?.9f:.28f);}
                 if(step && Time.unscaledTime>=_hapticAt && device.isValid && device.TryGetHapticCapabilities(out var cap) && cap.supportsImpulse)
                 {FishingXRInput.Pulse(device,Mathf.Clamp(.12f+_motionSpeed*.12f,.12f,.24f),.035f);_hapticAt=Time.unscaledTime+.16f;}
             }
@@ -382,7 +425,7 @@ namespace BoatAttack.Fishing
             if(percent!=_lastPercent || interactionState!=_lastInteractionState)
             {
                 _lastPercent=percent;_lastInteractionState=interactionState;
-                _status.text=FishingXRText.Adapt((interactionState==0?"松开握把，对准桌上握柄再握住。":interactionState==1?"伸手靠近握柄，按住右握把拿起。":interactionState==2?(_index==1?"已握住摇柄 · 围绕轮轴画圈":_index==2?"锯子仍在手中 · 将锯齿放回木料":"锤子仍在手中 · 对准铁坯再敲击"):_index==1?"右握把握住摇柄 · 转三圈绕线":_index==3?"右握把抬锤 · 锤面落到铁坯":_index==2?"右握把握锯 · 沿木料前后推拉":"右握把 · 左右往复")
+                _status.text=FishingXRText.Adapt((interactionState==0?"松开握把，对准桌上握柄再握住。":interactionState==1?(_index==0?"靠近任一筛柄，按住左或右握把拿起。":"伸手靠近握柄，按住右握把拿起。"):interactionState==2?(_index==0?"握住筛柄 · 左右往复":_index==1?"已握住摇柄 · 围绕轮轴画圈":_index==2?"锯子仍在手中 · 将锯齿放回木料":"锤子仍在手中 · 对准铁坯再敲击"):_index==1?"右握把握住摇柄 · 转三圈绕线":_index==3?"右握把抬锤 · 锤面落到铁坯":_index==2?"右握把握锯 · 沿木料前后推拉":(_sieveHeldLeft?"左":"右")+"握把握住筛柄 · 左右往复")
                     +"\n"+(_index==3?FishingBackpack.Name(_task.Output)+" · A切换配方\n":_index==1?"纤维×3 → 绳索×"+_task.OutputCount+"\n":"")+(_index==1?Count+" / 3 圈":_task.Strokes+" / "+_task.StrokeTarget+" 次")+"    B 收起");
             }
             if(_task.Complete && held && _ready && tracked && (!xr || _trackedToolHeld))
@@ -396,13 +439,15 @@ namespace BoatAttack.Fishing
         public void Present()
         {
             float dt=_visualFrame==Time.frameCount?0:Time.unscaledDeltaTime;_visualFrame=Time.frameCount;
+            PresentWorkpieces(dt);
             if(!Active){PresentThread();return;}
             _visualSpeed=Mathf.MoveTowards(_visualSpeed,_motionSpeed,dt*6);_shakePhase+=dt*18*_visualSpeed;
             float wave=Mathf.Sin(_shakePhase)*_visualSpeed;
             if(_index==0)
             {
-                _tools[0].localPosition=_toolHome+new Vector3(-Mathf.Clamp(_motion.x-.1f,-.065f,.065f),wave*.005f,0);
-                _tools[0].localRotation=Quaternion.Euler(wave*1.5f,0,wave*3);_sand.localScale=Vector3.one*Mathf.Lerp(1,.30f,_task.Progress);_sand.localPosition=Vector3.down*.016f*_task.Progress;
+                if(!XRSettings.isDeviceActive)
+                {_tools[0].localPosition=_toolHome+new Vector3(-Mathf.Clamp(_motion.x-.1f,-.065f,.065f),wave*.005f,0);_tools[0].localRotation=Quaternion.Euler(wave*1.5f,0,wave*3);}
+                _sand.localScale=Vector3.one*Mathf.Lerp(1,.30f,_task.Progress);_sand.localPosition=Vector3.down*.016f*_task.Progress;
                 for(int i=0;i<_shells.Length;i++)
                 {
                     float a=i*2.399963f,r=.033f+(i%3)*.024f,bounce=Mathf.Sin(_shakePhase+i*1.7f);
@@ -424,13 +469,22 @@ namespace BoatAttack.Fishing
                     float lift=Mathf.Clamp(_motion.y,0,.12f);
                     var rotation=Quaternion.AngleAxis(lift/.18f*28,Vector3.right)*_toolRest;
                     var gripLocal=Vector3.Scale(_rightGrip.localPosition,_tools[3].localScale);
-                    var grip=_toolHome+_toolRest*gripLocal+Vector3.up*lift;
+                    var grip=_toolHome+_toolRest*gripLocal+Vector3.up*(lift+ForgeSurface(_task.Progress)-1.035f);
                     _tools[3].localRotation=rotation;_tools[3].localPosition=grip-rotation*gripLocal;
                 }
             }
             if(XRSettings.isDeviceActive)
             {
                 if(_index>=2){if(_trackedToolHeld)GripSurface(_c.Hands.Right,_rightGrip,_tools[_index],_index==2?Vector3.right:Vector3.up,_index==2?.016f:.025f);return;}
+                if(_index==0)
+                {
+                    if(_trackedToolHeld)GripSurface(_sieveHeldLeft?_c.Hands.Left:_c.Hands.Right,_rightGrip,_tools[0],Vector3.forward);
+                    bool supportLeft=!_sieveHeldLeft;
+                    if(_trackedToolHeld && Grip(InputDevices.GetDeviceAtXRNode(supportLeft?XRNode.LeftHand:XRNode.RightHand))
+                        && _c.Hands.TryControllerPalm(supportLeft,out var support,out _) && Vector3.Distance(support,_leftGrip.position)<.25f)
+                        GripSurface(supportLeft?_c.Hands.Left:_c.Hands.Right,_leftGrip,_tools[0],Vector3.forward);
+                    return;
+                }
                 if(Grip(InputDevices.GetDeviceAtXRNode(XRNode.LeftHand)) && _c.Hands.TryControllerPalm(true,out var supportPalm,out _)
                     && Vector3.Distance(supportPalm,_leftGrip.position)<.25f)
                     GripSurface(_c.Hands.Left,_leftGrip,_index==1?_tools[1]:_tools[_index],_index==0?Vector3.forward:Vector3.right);
@@ -520,6 +574,7 @@ namespace BoatAttack.Fishing
         public void Cancel()
         {
             if(!Active)return;
+            EndWorkpiece(_task);
             _tools[_index].localPosition=_toolHome;_tools[_index].localRotation=_toolRest;
             if(_c.DesktopDisplay && _c.viewCamera!=null)_c.viewCamera.fieldOfView=_cameraFov;
             _task=null;_career=null;_trackedToolHeld=_hasTrackedContact=false;_canvas.gameObject.SetActive(false);_sand.localScale=Vector3.one;_sand.localPosition=Vector3.zero;_coil.localScale=Vector3.one;_crank.localRotation=Quaternion.Euler(0,0,180);
@@ -550,6 +605,7 @@ namespace BoatAttack.Fishing
         private void OnDisable()=>Cancel();
         private void OnDestroy()
         {
+            DisposeWorkpieces();
             if(_grainMesh!=null)Destroy(_grainMesh);if(_toolMaterial!=null)Destroy(_toolMaterial);
             if(_sandMaterial!=null)Destroy(_sandMaterial);if(_shellMaterial!=null)Destroy(_shellMaterial);if(_grainMaterial!=null)Destroy(_grainMaterial);
         }

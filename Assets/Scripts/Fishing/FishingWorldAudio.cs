@@ -17,9 +17,9 @@ namespace BoatAttack.Fishing
         {
             "ImpactWood", "ImpactStone", "ImpactMetal", "BodyLand", "WaterEntry", "WaterStroke", "ClimbGrip",
             "FishBite", "FishHook", "LineSnap", "FishSplash", "FishStore", "AnimalHit", "LootBag", "CanHandle",
-            "WellBucket", "ForgeStrike", "WorkbenchAssemble", "CraftFinish", "StorageMove", "LanternSwitch",
+            "WellBucket", "ForgeStrike", "ForgeHammer", "WorkbenchAssemble", "CraftFinish", "StorageMove", "LanternSwitch",
             "FruitShake", "UIConfirm", "UIBack", "UIReject", "TVSwitch", "CushionCloth", "PortalPass",
-            "MechanismClick", "HandcraftRub", "SeagullCall", "AnimalRustle", "BoatSlap", "WaterFinish",
+            "MechanismClick", "HandcraftRub", "SawCut", "SeagullCall", "GullCall", "RabbitCall", "FoxCall", "TortoiseCall", "SeaTurtleCall", "AnimalRustle", "BoatSlap", "WaterFinish",
             "BoatScrapeLoop", "FurnaceLoop", "CookSizzleLoop", "RainLoop", "ForestLoop", "WreckLoop",
             "WindCorridorLoop", "StarsLoop", "WellRopeLoop", "WaterPourLoop", "WaterSprinkleLoop", "TVLoop",
             "BagOpen", "BagClose", "BookOpen", "BookClose", "CoinGain", "ChestOpen", "JumpPush",
@@ -114,7 +114,7 @@ namespace BoatAttack.Fishing
         }
 
         public static AudioClip Clip(string key) => key != null && CueKeys.Contains(key)
-            ? Resources.Load<AudioClip>("FishingAudio/World/" + key) : null;
+            ? Resources.Load<AudioClip>("FishingAudio/World/" + (key == "ForgeHammer" ? "ForgeStrike" : key == "GullCall" ? "SeagullCall" : key)) : null;
         private AudioClip LoadedClip(string key)
         {
             if (key == null || !CueKeys.Contains(key)) return null;
@@ -136,6 +136,9 @@ namespace BoatAttack.Fishing
             || key == "BookOpen" || key == "BookClose" || key == "CoinGain" || key == "UIPage" || key == "UINotify"
             || key == "SeaMarketTrade" || (key != null && key.StartsWith("Stinger", StringComparison.Ordinal));
         private static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
+        private static bool CraftContactCue(string key) => key == "ForgeHammer" || key == "SawCut";
+        private static bool HabitatCallCue(string key) => key == "RabbitCall" || key == "FoxCall"
+            || key == "TortoiseCall" || key == "SeaTurtleCall" || key == "GullCall";
         private static bool Finite(Vector3 value) => Finite(value.x) && Finite(value.y) && Finite(value.z);
 
         /// <summary>One recorded cue, once per successful edge. Pool and cooldown bound collision/UI spam.</summary>
@@ -179,10 +182,16 @@ namespace BoatAttack.Fishing
             voice.BedContact = bedContact; voice.RealmSignature = realmSignature;
             // Completion phrases must reach the solver and finish over the immediately following story film.
             voice.Source.spatialBlend = ui || realmSignature ? 0 : 1;
+            voice.Source.minDistance = CraftContactCue(cue) ? 2 : 1.5f;
+            voice.Source.maxDistance = CraftContactCue(cue) ? 16 : HabitatCallCue(cue) ? 18
+                : category == FishingAudioCategory.Ambient ? 60 : 24;
             voice.Source.transform.position = at; voice.Source.clip = clip;
             // Small per-play pitch/gain spread so repeated single-file cues do not sound machine-identical.
             voice.Source.pitch = UnityEngine.Random.Range(.95f, 1.05f); gain *= UnityEngine.Random.Range(.9f, 1f);
-            _c.SetAudioBaseVolume(voice.Source, Mathf.Clamp01(gain) * (realmCue ? .5f : ui ? .11f : category == FishingAudioCategory.Ambient ? .13f : .17f));
+            // Close hand tools must cut through the island ambience at the workpiece.
+            // Keep their gain local; the registry still applies master/channel/quiet settings once.
+            _c.SetAudioBaseVolume(voice.Source, Mathf.Clamp01(gain) * (realmCue ? .5f : CraftContactCue(cue) ? .62f
+                : HabitatCallCue(cue) ? .42f : ui ? .11f : category == FishingAudioCategory.Ambient ? .13f : .17f));
             voice.Source.Play(); _lastPlay[cue] = now; _plays[cue] = PlayCount(cue) + 1;
             return true;
         }
