@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -13,6 +14,53 @@ namespace BoatAttack.EditorTools
     {
         private const BindingFlags Private=BindingFlags.Instance|BindingFlags.NonPublic;
         private static void Check(bool ok,string text){if(!ok)throw new InvalidOperationException(text);Debug.Log("[XR-COMFORT] CHECK: "+text);}
+        public static IEnumerator CreativeTransactions(FishingPrototype c)
+        {
+            Check(c.Automated && c.HasIsolatedProfile,"Creative upgrade transactions require an isolated career");
+            var original=c.Career.Snapshot();bool priorCreative=c.CreativeMode;
+            string key=(string)typeof(FishingPrototype).GetField("CreativeModeKey",BindingFlags.Static|BindingFlags.NonPublic).GetRawConstantValue();
+            bool hadPreference=PlayerPrefs.HasKey(key);int priorPreference=PlayerPrefs.GetInt(key);
+            try
+            {
+                c.ReturnToHarbor();yield return null;yield return null;
+                foreach(UpgradeTrack track in Enum.GetValues(typeof(UpgradeTrack)))
+                {
+                    c.SetCreativeMode(false);c.RestoreShopTestProfile(new FishingCareer().Snapshot());
+                    c.MoveToSpotForAutomation(0);yield return null;yield return null;
+                    Check(!c.AtHarbor && !c.TackleShop.NearCounter && !c.BuyUpgrade(track) && c.Career.Level(track)==0,
+                        "Normal remote upgrade remains unavailable: "+track);
+                    c.SetCreativeMode(true);
+                    Check(c.Career.CreativeMode && c.Career.CoinDisplay=="∞" && c.BuyUpgrade(track) && c.BuyUpgrade(track)
+                        && c.Career.Level(track)==FishingCareer.MaxLevel && c.Career.Coins==0,
+                        "Production creative purchase upgrades both "+track+" levels away from the counter with zero real coins");
+                    Check(!c.BuyUpgrade(track) && c.Career.Level(track)==FishingCareer.MaxLevel && c.Career.Coins==0,
+                        "Production creative purchase rejects a third "+track+" level");
+                }
+                c.RestoreShopTestProfile(new FishingCareer().Snapshot());yield return null;yield return null;
+                c.TogglePause();
+                Check(!c.BuyUpgrade(UpgradeTrack.Cabin) && c.Career.CabinLevel==0,"Creative mode cannot upgrade through pause");
+                c.TogglePause();yield return null;yield return null;
+                int guardGrams=FishingSpecies.Grams(FishKind.Coral,.5f);
+                Check(c.Career.BeginPending(new CatchRecord{id="creative-upgrade-block",kind=FishKind.Coral,grams=guardGrams,value=FishingSpecies.Value(FishKind.Coral,false,guardGrams)},0,0,0),
+                    "Creative upgrade pending-catch guard fixture");
+                Check(!c.BuyUpgrade(UpgradeTrack.Cabin) && c.Career.CabinLevel==0,"Creative mode must resolve a pending catch before upgrading");
+                c.RestoreShopTestProfile(new FishingCareer().Snapshot());yield return null;yield return null;
+                c.SetCreativeMode(false);
+                Check(!c.BuyUpgrade(UpgradeTrack.Cabin) && c.Career.Coins==0,"Turning creative mode off revokes remote free upgrades");
+                PlayerPrefs.SetInt(key,1);
+                c.SetCreativeMode(false);
+                typeof(FishingPrototype).GetMethod("LoadCreativeModeSetting",Private).Invoke(c,null);
+                Check(PlayerPrefs.GetInt(key)==1 && !c.CreativeMode && !c.Career.CreativeMode,
+                    "Isolated validation neither overwrites nor inherits the player's persistent creative-mode preference");
+            }
+            finally
+            {
+                if(c.Paused)c.TogglePause();
+                c.RestoreShopTestProfile(original);c.SetCreativeMode(priorCreative);c.ReturnToHarbor();
+                if(hadPreference)PlayerPrefs.SetInt(key,priorPreference);else PlayerPrefs.DeleteKey(key);
+                PlayerPrefs.Save();
+            }
+        }
         public static void Run(FishingPrototype c)
         {
             var comfort=c.XRComfort;Check(comfort!=null,"XR comfort component is built");
@@ -24,6 +72,22 @@ namespace BoatAttack.EditorTools
             Check(!creative.BuyHuntingRifle() && !creative.BuySupply(-1) && !creative.SpendCoins(-1),"Creative mode keeps duplicate and invalid purchase guards");
             Check(FishingCareer.TryRestore(creative.Snapshot(),out var restored) && restored.Coins==0 && !restored.CreativeMode && restored.Backpack.Count(FieldItem.HuntingRifle)==1,"Snapshot retains actual wallet and purchased gear without persisting creative mode");
             creative.SetCreativeMode(false);Check(!creative.Upgrade(UpgradeTrack.Reel) && creative.Coins==0,"Turning creative mode off restores normal payment rules");
+            foreach(UpgradeTrack track in Enum.GetValues(typeof(UpgradeTrack)))
+            {
+                var upgradeCareer=new FishingCareer();
+                Check(!upgradeCareer.Upgrade(track) && upgradeCareer.Level(track)==0,"A normal zero wallet cannot buy "+track);
+                upgradeCareer.SetCreativeMode(true);
+                Check(upgradeCareer.UpgradePurchaseLabel(track)=="创造模式免费" && upgradeCareer.Upgrade(track)
+                    && upgradeCareer.Upgrade(track) && upgradeCareer.Level(track)==FishingCareer.MaxLevel && upgradeCareer.Coins==0,
+                    "Creative mode buys both levels of "+track+" including the deck without minting or spending coins");
+                Check(upgradeCareer.UpgradePurchaseLabel(track)=="已满级" && !upgradeCareer.Upgrade(track) && upgradeCareer.Coins==0,
+                    "Creative "+track+" still rejects repeated purchases at the level cap");
+            }
+            var specialized=new FishingCareer();specialized.SetCreativeMode(true);
+            Check(specialized.Upgrade(UpgradeTrack.Engine) && specialized.Upgrade(UpgradeTrack.Engine)
+                && specialized.Upgrade(UpgradeTrack.Hold) && !specialized.Upgrade(UpgradeTrack.Hold)
+                && specialized.UpgradePurchaseLabel(UpgradeTrack.Hold)=="专精互斥",
+                "Creative free upgrades retain the existing level-two specialization conflict");
             foreach(bool left in new[]{true,false})
             {
                 string key=left?"FishingXR.LeftPalmXY":"FishingXR.RightPalmXY";

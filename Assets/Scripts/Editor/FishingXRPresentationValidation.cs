@@ -49,7 +49,7 @@ namespace BoatAttack.EditorTools
                 actions[7]();Check((int)Field("_guideLesson").GetValue(notebook)==1 && (int)Field("_guidePracticed").GetValue(notebook)==0,"Next lesson clears practice and held input");
                 Field("_guidePracticed").SetValue(notebook,31);refresh.Invoke(notebook,null);actions[7]();Check((int)Field("_guideLesson").GetValue(notebook)==2 && actions[7]!=null,"Tool, fishing and crafting explanations precede completion");
                 Field("_guideLesson").SetValue(notebook,0);refresh.Invoke(notebook,null);CaptureCanvas(screen,Path.Combine(evidence,"controller-guide.png"));
-                foreach(int page in new[]{0,1,2,3,7,12,13,14,15,16,FishingXRNotebook.ClassroomPage,FishingXRNotebook.HandAlignmentPage,FishingXRNotebook.QuitPage,FishingXRNotebook.CreativePage})
+                foreach(int page in new[]{0,1,2,3,7,12,13,14,15,16,FishingXRNotebook.ClassroomPage,FishingXRNotebook.HandAlignmentPage,FishingXRNotebook.QuitPage,FishingXRNotebook.CreativePage,FishingXRNotebook.FishSalesPage})
                 {
                     Field("_page").SetValue(notebook,page);Field("_offset").SetValue(notebook,0);refresh.Invoke(notebook,null);
                     Check(status.text.Length>0 && actions[7]!=null,"Shared game feature page has content and a return path: "+page);

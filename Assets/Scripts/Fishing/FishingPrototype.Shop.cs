@@ -26,12 +26,45 @@ namespace BoatAttack.Fishing
         public bool ToggleShop() => TackleShop != null && TackleShop.Toggle();
         public bool BuySupply(int product)
         {
-            if(Paused || InventoryOpen || JournalOpen || HasPendingCatch || (!AtHarbor && (TackleShop==null || !TackleShop.CanPurchase)))return false;
+            if(Paused || InventoryOpen || JournalOpen || HasPendingCatch || (!AtHarbor && (TackleShop==null || !TackleShop.CanPurchase)))
+                return RejectSupplyPurchase("请在港口或店内柜台购买，或使用手册中的菜单快购。");
+            return CompleteSupplyPurchase(product);
+        }
+        // The notebook is a real delivery order: it uses the same wallet/backpack transaction as the counter.
+        // Its own modal is allowed, without temporarily changing inventory, pause or journal flags.
+        public bool BuySupplyFromMenu(int product)
+        {
+            string reason=SupplyMenuUnavailableReason(product);
+            if(reason.Length>0)return RejectSupplyPurchase(reason);
+            return CompleteSupplyPurchase(product);
+        }
+        public bool CanBuySupplyFromMenu(int product)=>SupplyMenuUnavailableReason(product).Length==0;
+        public string SupplyMenuUnavailableReason(int product)
+        {
+            if(!FishingSupplies.Valid(product))return "该商品不存在。";
+            if(Career==null || StartMenuOpen || GuideOpening || (Paused && !InventoryOpen && !JournalOpen))return "请先返回游戏，再打开菜单快购。";
+            if(HasPendingCatch || !CanChangeBait)return "请先结束垂钓并处理鱼获，再购买物资。";
+            if(WorldActionBusy || StoryBlocksGameplay || Expedition.Aligning || (Realms!=null && Realms.Inside))return "请先完成当前互动，再购买物资。";
+            if(Shore!=null && (Shore.Swimming || Shore.Climbing))return "请先回到平稳的陆地或船上，再购买物资。";
+            if(Combat!=null && (Combat.Challenging || (Combat.InDangerZone && Career.Calendar.Night)))return "请先离开战斗区域，再购买物资。";
+            if(!Ashore && Speed>=.8f)return "请先停稳船只，再购买物资。";
+            if(!Career.CanAfford(FishingSupplies.Price(product)))return "金币不足：需要 "+FishingSupplies.Price(product)+" 金币。";
+            var item=FishingSupplies.Items[product];int free=0,limit=FishingBackpack.Limit(item);
+            for(int i=0;i<FishingBackpack.SlotCount;i++)
+            {var slot=Career.Backpack.At(i);if(slot.count==0 || slot.item==item)free+=limit-slot.count;}
+            if(free<FishingSupplies.Quantity(product))return "背包空间不足：请先整理背包或存入家园仓库。";
+            return "";
+        }
+        private bool RejectSupplyPurchase(string message)
+        {WorldAudio?.Play("UIReject",ExplorerPosition,.3f);Notice("无法购买："+message,5);return false;}
+        private bool CompleteSupplyPurchase(int product)
+        {
             bool ok=Career.BuySupply(product);
             if(ok)
             {
                 Save();ActionAudio?.Detail("ShopPurchase",ExplorerPosition+Vector3.up*.7f);
-                Notice("购入 "+FishingBackpack.Name(FishingSupplies.Items[product])+" ×"+FishingSupplies.Quantity(product)+(UnityEngine.XR.XRSettings.isDeviceActive?" · B 打开背包，点选换入快捷位；Y 换装备。":" · 已放入背包，I 查看并装备。"),5);
+                var item=FishingSupplies.Items[product];
+                Notice("已入背包："+FishingBackpack.Name(item)+" ×"+FishingSupplies.Quantity(product)+" · 当前持有 "+Career.Backpack.Count(item)+(CreativeMode?" · 创造模式免费":" · 已付 "+FishingSupplies.Price(product)+" 金币")+(UnityEngine.XR.XRSettings.isDeviceActive?" · B 查看背包":" · I 查看背包"),5);
             }
             else {WorldAudio?.Play("UIReject",ExplorerPosition,.3f);Notice("无法购买：请检查金币余额和背包空位。",4);}
             return ok;

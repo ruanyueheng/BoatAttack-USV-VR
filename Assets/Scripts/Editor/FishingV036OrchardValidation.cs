@@ -52,6 +52,14 @@ namespace BoatAttack.EditorTools
             until=Time.time+3;while(c.WorldActionBusy && Time.time<until)yield return null;
             Check(c.Career.Backpack.Count(FieldItem.IslandFruit)==before+1 && !c.Home.OrchardFruit(0).gameObject.activeSelf,"Only committed pickup adds the fruit and clears the world drop");
             Check(!c.Home.ShakeOrchardTree(0) && !c.Career.CanHarvestHomeFruit(0),"The saved daily limit prevents repeated rewards");
+            var second=c.Home.OrchardTreeRoot(1);
+            Check(c.Shore.Relocate(second.position+Vector3.back*1.55f,Quaternion.identity) && c.Home.ShakeOrchardTree(1),"Second tree supports grip pickup fixture");
+            until=Time.time+2.3f;while(Time.time<until)yield return null;
+            var fruit=c.Home.OrchardFruit(1);before=c.Career.Backpack.Count(FieldItem.IslandFruit);
+            Check(!c.Home.TryGripOrchardFruit(fruit.position+Vector3.up) && !c.Home.TryGripOrchardFruit(new Vector3(float.NaN,0,0)),"Distant or invalid hand cannot take fruit");
+            Check(c.Home.TryGripOrchardFruit(fruit.position+Vector3.up*.08f),"Near hand grip reaches the real fallen fruit transaction");
+            Check(c.Career.Backpack.Count(FieldItem.IslandFruit)==before+1 && !fruit.gameObject.activeSelf
+                && !c.Home.TryGripOrchardFruit(fruit.position),"Grip pickup adds exactly one fruit and cannot repeat");
         }
     }
 }

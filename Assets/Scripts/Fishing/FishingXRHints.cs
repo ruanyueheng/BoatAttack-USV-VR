@@ -12,7 +12,7 @@ namespace BoatAttack.Fishing
     {
         public const string NotebookHelp="B 手册：地图 / 背包 / 设置与救援";
         public const string CameraHelp="相机无需装备。右手举到眼前 22 厘米内，右扳机拍照；放下手收起。\n先收竿起航，用 Y 换下猎枪 / 望远镜；照片见 B → 航海手札 → 相册。";
-        public const string BinocularHelp="右扳机举镜 / 放下；举镜后看向 22 米内陆地动物，A 记录。\nB → 航海手札 → 自然观察查看记录。";
+        public const string BinocularHelp="双手握住望远镜举到眼前，通过镜筒观察；移开或松握退出。\n右摇杆上下调倍，看向 22 米内陆地动物，A 记录；B → 航海手札 → 自然观察查看记录。";
         public enum Context { Shore, Boat, Fishing, Notebook, Story, Realm, Align, Climb, Camera, Craft, Binocular }
         public static readonly string[] ContextNames={"岸上行走","船上驾驶","驻钓 / 搏鱼","手册 / 菜单","对话 / 信件 / 过场","秘境机关","信标校准","攀爬绳梯","相机取景","手工 / 锻造","望远镜观察"};
         /// <summary>key: A B X Y Trigger Grip use PICO glyphs; Stick / Click / Menu are drawn as text.</summary>
@@ -48,8 +48,8 @@ namespace BoatAttack.Fishing
                     ?new[]{("Stick","可继续行走")}
                     :new[]{("Trigger","拍照 · 放下右手收起相机"),("B","手册 → 航海手札 → 相册")};
                 case Context.Binocular:return left
-                    ?new[]{("Y","切换装备"),("Stick","可缓慢接近动物")}
-                    :new[]{("Trigger","举镜 / 放下"),("A","举镜后，看向 22 米内陆地动物并记录"),("B","手册 → 航海手札 → 自然观察")};
+                    ?new[]{("Grip","握住镜筒，双手举到眼前"),("Y","切换装备"),("Stick","可缓慢接近动物")}
+                    :new[]{("Grip","握住镜筒 · 移开或松握退出"),("Stick","上下调倍"),("A","举镜后，看向 22 米内陆地动物并记录"),("B","手册 → 航海手札 → 自然观察")};
                 default:return left
                     ?new[]{("Grip","握住工具")}
                     :new[]{("Grip","握住工具 / 曲柄"),("A","切换配方"),("B","退出")};
@@ -92,7 +92,7 @@ namespace BoatAttack.Fishing
                 action=FishingXRText.Adapt(nearby ?? c.Shore.ActionTitle,true);
                 if(c.Shore.Climbing)return action+"\n双手握住横档交替下拉，或左摇杆上下；到端自动离开\n"+help;
                 if(c.Shore.Swimming)return "游泳 · 左摇杆朝浅岸移动，左握把加速\n靠近船边按 X 上船，右摇杆按下攀低台\n"+help;
-                if(c.Career.Backpack.Equipped==FieldItem.Binoculars)return (c.BinocularsRaised?"望远镜已举起 · 看向动物，A 记录\n":"望远镜已选中 · 先按右扳机举镜\n")+BinocularHelp;
+                if(c.Career.Backpack.Equipped==FieldItem.Binoculars)return (c.Life!=null && c.Life.Binoculars!=null && c.Life.Binoculars.Active?"望远镜已举起 · 看向动物，A 记录\n":"望远镜已选中 · 双手握住举到眼前\n")+BinocularHelp;
                 if(nearby==null)action+=" · "+(FishingXRComfort.Teleport?"左摇杆前推，松开瞬移":"左摇杆行走，左握把疾跑")+" · 右摇杆按下跳跃 · Y 换装备";
             }
             else if(c.AtHarbor)action="潮汐渔港 · A 交付 / 出售，X 上岸\n左摇杆前进 / 倒车，右摇杆掌舵";

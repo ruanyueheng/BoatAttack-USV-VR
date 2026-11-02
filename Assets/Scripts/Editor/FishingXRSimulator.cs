@@ -34,6 +34,7 @@ namespace BoatAttack.EditorTools
         private static RenderTexture _target;
         private static Command _command=new Command();
         private static DateTime _lastWrite;
+        private static int _commandFrame;
         private static double _nextState, _captureAt;
         private static string _capture;
         private static USVInputMode _previousMode;
@@ -41,6 +42,7 @@ namespace BoatAttack.EditorTools
 
         [Serializable] public sealed class Command
         {
+            public int sequence;
             public Vector3 head=new Vector3(0,1.65f,0),headEuler;
             public Vector3 left=new Vector3(-.24f,1.2f,.35f),right=new Vector3(.24f,1.2f,.35f),leftEuler,rightEuler;
             public Vector2 leftStick,rightStick;
@@ -48,11 +50,13 @@ namespace BoatAttack.EditorTools
             public float leftTrigger,rightTrigger,leftGrip,rightGrip;
             public string capture,fixture,equip;
             public int table=-1;
+            public int orchard=-1;
             public bool stop;
         }
         [Serializable] private sealed class Button { public int index; public string label; public Vector3 center; }
         [Serializable] private sealed class State
         {
+            public int commandSequence,commandFrame;
             public int frame,spot,page,holdCount,health,shotsFired,photosTaken,day,coins,marketTrades;
             public bool classroom,marketVisible,creativeMode,lanternOn,lanternLightEnabled,lanternHolstered,lanternHeld;
             public Vector3 lanternHangPoint;
@@ -64,6 +68,9 @@ namespace BoatAttack.EditorTools
             public Vector3 marketPosition;
             public bool xr,focused,isolated,automated,headTracked,leftTracked,rightTracked,seatReady,headBlocked,motionReady,notebook,anchored,ashore,pending;
             public bool a,b,canLand,netHeld,holdingRod,boostActive,toolActive,carryingCan,riflePresented,rifleObstructed,cameraRaised,triggerButton,binocularRaised;
+            public bool binocularOpticsActive,binocularEyeAlignment;
+            public float binocularLensSeparation,binocularFov;
+            public Vector3 binocularLeftEyepiece,binocularRightEyepiece;
             public string hintContext,marketTarget;
             public Vector3 home;
             public float triggerValue,leftPalmRoll,rightPalmRoll;
@@ -73,9 +80,9 @@ namespace BoatAttack.EditorTools
             public Vector3[] fishingSpots;
             public USVInputState input;
             public Button[] buttons,marketLabels;
-            public bool handcraftActive;
-            public int handcraftKind,handcraftStrokes,driftwood,planks,ironIngots,pickHeads,gunParts;
-            public Vector3 toolGrip,toolContact,workPoint,toolEuler;
+            public bool handcraftActive,handcraftHeld,orchardFruitLanded;
+            public int handcraftKind,handcraftStrokes,driftwood,planks,ironIngots,pickHeads,gunParts,islandFruit;
+            public Vector3 toolGrip,toolContact,workPoint,toolEuler,rightPalmEuler,orchardFruit;
         }
 
         static FishingXRSimulator()
@@ -181,7 +188,15 @@ namespace BoatAttack.EditorTools
                         if(_c.Career.Backpack.Count(item)<needed)Require(_c.Career.Backpack.TryAdd(item,needed-_c.Career.Backpack.Count(item)),"Handcraft fixture material does not fit.");
                         _c.View.ResetLook();
                     }
-                    _command=next;_lastWrite=written;
+                    if(next.orchard>=0 && next.orchard!=_command.orchard)
+                    {
+                        Require(_c.HasIsolatedProfile && _c.Ashore,"Orchard fixture requires an isolated shore profile.");
+                        var tree=_c.Home.OrchardTreeRoot(next.orchard);
+                        Require(_c.Shore.Relocate(tree.position+Vector3.back*1.55f,Quaternion.identity),"No supported orchard approach.");
+                        Require(_c.Home.ShakeOrchardTree(next.orchard),"Orchard fixture cannot drop a fresh fruit.");
+                        _c.View.ResetLook();
+                    }
+                    _command=next;_lastWrite=written;_commandFrame=Time.frameCount;
                     if(next.stop){SessionState.SetBool(Key,false);Cleanup();EditorApplication.Exit(0);return;}
                     EditorWindow.GetWindow(Type.GetType("UnityEditor.GameView,UnityEditor")).Focus();
                     if(!string.IsNullOrEmpty(next.capture)){_capture=next.capture;_captureAt=EditorApplication.timeSinceStartup+.5;}
@@ -204,6 +219,7 @@ namespace BoatAttack.EditorTools
         {
             Require(c!=null,"Missing command.");
             Require(c.table==-1 || c.table==2 || c.table==3,"Unknown handcraft table fixture.");
+            Require(c.orchard>=-1 && c.orchard<FishingCareer.HomeFruitTreeCount,"Unknown orchard fixture.");
             foreach(var v in new[]{c.head,c.headEuler,c.left,c.right,c.leftEuler,c.rightEuler,new Vector3(c.leftStick.x,c.leftStick.y,c.leftTrigger),new Vector3(c.rightStick.x,c.rightStick.y,c.rightTrigger),new Vector3(c.leftGrip,c.rightGrip,0)})
                 Require(!float.IsNaN(v.sqrMagnitude) && !float.IsInfinity(v.sqrMagnitude) && v.magnitude<1000,"Non-finite/out-of-range simulator input.");
             Require(string.IsNullOrEmpty(c.capture) || (c.capture.Length<65 && c.capture.All(ch=>char.IsLetterOrDigit(ch)||ch=='-'||ch=='_')),"Capture name must be a filename stem.");
@@ -240,12 +256,12 @@ namespace BoatAttack.EditorTools
             FishingXRTracking.TryPose(_c.viewCamera,XRNode.LeftHand,out var left,out _);
             FishingXRTracking.TryPose(_c.viewCamera,XRNode.RightHand,out var r,out var q,true);
             string hitName=Physics.Raycast(r,q*Vector3.forward,out var hit,3,1<<5,QueryTriggerInteraction.Collide)?hit.collider.name:"";
-            _c.Hands.TryControllerPalm(true,out var lp,out _);_c.Hands.TryControllerPalm(false,out var rp,out _);
+            _c.Hands.TryControllerPalm(true,out var lp,out _);_c.Hands.TryControllerPalm(false,out var rp,out var rq);
             bool fishReady=_c.HasPendingCatch && _c.ActiveFish!=null;var gripper=_c.CatchRig.FishGripper;
             var dynamics=_c.Hands.Rod.GetComponent<FishingRodDynamics>();
             var restTip=dynamics!=null?(Vector3)typeof(FishingRodDynamics).GetField("_restTip",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(dynamics):Vector3.zero;
             var fishingLine=(LineRenderer)typeof(FishingAnglingPresentation).GetField("_line",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.Angling);
-            var s=new State{frame=Time.frameCount,xr=XRSettings.isDeviceActive,focused=Application.isFocused,isolated=_c.HasIsolatedProfile,automated=_c.Automated,
+            var s=new State{commandSequence=_command.sequence,commandFrame=_commandFrame,frame=Time.frameCount,xr=XRSettings.isDeviceActive,focused=Application.isFocused,isolated=_c.HasIsolatedProfile,automated=_c.Automated,
                 headTracked=Tracked(XRNode.Head),leftTracked=Tracked(XRNode.LeftHand),rightTracked=Tracked(XRNode.RightHand),seatReady=_c.XRSeat.Ready,headBlocked=_c.XRSeat.HeadBlocked,
                 motionReady=_c.XRNotebook.MotionReady,notebook=_c.XRNotebook.IsOpen,page=(int)typeof(FishingXRNotebook).GetField("_page",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.XRNotebook),
                 anchored=_c.Anchored,ashore=_c.Ashore,pending=_c.HasPendingCatch,phase=_c.Session.Phase.ToString(),message=_c.VisibleMessage,speed=_c.Speed,spot=_c.Spot,spotDistance=_c.SpotDistance,tension=_c.Session.Tension,distance=_c.Session.Distance,
@@ -254,6 +270,10 @@ namespace BoatAttack.EditorTools
                 shotsFired=_c.RifleHunting.ShotsFired,riflePresented=_c.RifleHunting.Presented,rifleObstructed=_c.RifleHunting.Obstructed,
                 photosTaken=_c.Life.PhotosTaken,cameraRaised=_c.Life.VrRaised,triggerButton=triggerButton,triggerValue=triggerValue,
                 binocularRaised=_c.BinocularsRaised,hintContext=FishingXRHints.Current(_c).ToString(),
+                binocularOpticsActive=_c.Life.Binoculars.Active,binocularEyeAlignment=_c.FieldWorld.BinocularEyeAlignment,
+                binocularLensSeparation=_c.Life.Binoculars.LensSeparation,binocularFov=_c.Life.Binoculars.OpticalCamera!=null?_c.Life.Binoculars.OpticalCamera.fieldOfView:0,
+                binocularLeftEyepiece=_c.Life.Binoculars.LeftEyepiece!=null?_c.Life.Binoculars.LeftEyepiece.position:Vector3.zero,
+                binocularRightEyepiece=_c.Life.Binoculars.RightEyepiece!=null?_c.Life.Binoculars.RightEyepiece.position:Vector3.zero,
                 leftPalmRoll=FishingHands.ControllerRoll(true),rightPalmRoll=FishingHands.ControllerRoll(false),
                 classroom=_c.ClassroomDemoActive,day=_c.Career.Calendar.Day,coins=_c.Career.Coins,creativeMode=_c.CreativeMode,coinDisplay=_c.Career.CoinDisplay,
                 lanternOn=_c.LanternOn,lanternLightEnabled=_c.FieldWorld.LanternLight!=null && _c.FieldWorld.LanternLight.enabled,
@@ -268,9 +288,11 @@ namespace BoatAttack.EditorTools
                 rodDeformedTip=dynamics!=null?dynamics.Tip.position:Vector3.zero,rodUnloadedTip=_c.Hands.Rod.TransformPoint(restTip),
                 lineStart=fishingLine!=null && fishingLine.positionCount>0?fishingLine.GetPosition(0):Vector3.zero,lineTarget=_c.Session.Phase==CatchPhase.Landing?_c.LandingTarget:_c.Angling.WaterTarget,
                 marketVisible=_c.SeaMarket.Visible,marketPosition=_c.SeaMarket.Position,marketTrades=_c.SeaMarket.Trades,
-                handcraftActive=_c.HandGames.Active,handcraftKind=_c.HandGames.Active?(int)_c.HandGames.Task.Kind:-1,handcraftStrokes=_c.HandGames.Task?.Strokes??0,
+                handcraftActive=_c.HandGames.Active,handcraftHeld=_c.HandGames.XRToolHeld,handcraftKind=_c.HandGames.Active?(int)_c.HandGames.Task.Kind:-1,handcraftStrokes=_c.HandGames.Task?.Strokes??0,
                 driftwood=_c.Career.Backpack.Count(FieldItem.Driftwood),planks=_c.Career.Backpack.Count(FieldItem.Plank),ironIngots=_c.Career.Backpack.Count(FieldItem.IronIngot),pickHeads=_c.Career.Backpack.Count(FieldItem.IronPickHead),gunParts=_c.Career.Backpack.Count(FieldItem.GunParts),
-                toolGrip=_c.HandGames.HandlePoint,toolContact=_c.HandGames.ToolContact,workPoint=_c.HandGames.WorkPoint,toolEuler=_c.HandGames.Active?_c.HandGames.ActiveTool.eulerAngles:Vector3.zero,
+                toolGrip=_c.HandGames.Active?_c.HandGames.HandlePoint:_command.table>=2?((Transform[])typeof(FishingHandGames).GetField("_workRight",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(_c.HandGames))[_command.table-2].position:Vector3.zero,
+                toolContact=_c.HandGames.ToolContact,workPoint=_c.HandGames.WorkPoint,toolEuler=_c.HandGames.Active?_c.HandGames.ActiveTool.eulerAngles:Vector3.zero,rightPalmEuler=rq.eulerAngles,
+                orchardFruit=_command.orchard>=0?_c.Home.OrchardFruit(_command.orchard).position:Vector3.zero,orchardFruitLanded=_command.orchard>=0 && _c.Home.OrchardFruitLanded(_command.orchard),islandFruit=_c.Career.Backpack.Count(FieldItem.IslandFruit),
                 home=_c.Home.Origin,marketTarget=_c.SeaMarket.Target?.ToString()??"",
                 marketLabels=_c.SeaMarket.transform.Find("V044 roaming market ship").GetComponentsInChildren<TextMesh>().Select(t=>new Button{label=t.text,center=t.transform.position}).ToArray(),
                 feet=_c.Shore.Position,walkSpeed=_c.Shore.WalkSpeed,stamina=_c.Shore.Stamina,boostActive=_c.Boost.Active,boostHeat=_c.Boost.Heat,

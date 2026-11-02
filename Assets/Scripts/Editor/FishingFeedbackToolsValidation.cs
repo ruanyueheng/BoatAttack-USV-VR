@@ -18,6 +18,99 @@ namespace BoatAttack.EditorTools
             for(int i=0;i<FishingBackpack.SlotCount;i++)if(c.Career.Backpack.At(i).item==item){if(i>=9)c.Career.Backpack.QuickMove(i);break;}
             for(int i=0;i<9;i++)if(c.Career.Backpack.At(i).item==item){c.SelectFieldSlot(i);return;}throw new InvalidOperationException("Tool has no hotbar slot");
         }
+        private static bool TrackedHand(FishingHandGames games,Vector3 palm,Quaternion rotation,bool held,out Vector2 point)
+        {
+            var args=new object[]{palm,rotation,held,Vector2.zero};
+            bool contact=(bool)typeof(FishingHandGames).GetMethod("TrackedHandMotion",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(games,args);
+            point=(Vector2)args[3];return contact;
+        }
+        private static bool SampleHand(FishingHandGames games,Vector3 palm,Quaternion rotation)
+        {
+            bool contact=TrackedHand(games,palm,rotation,true,out var point);
+            games.Task.SampleContact(point.x,point.y,.02f,contact);return contact;
+        }
+        public static IEnumerator TrackedHandChecks(FishingPrototype c)
+        {
+            Check(c.Automated && c.HasIsolatedProfile,"Tracked craft checks use the isolated production career");
+            if(c.HandGames.Active)c.HandGames.Cancel();
+            if(c.StartMenuOpen)c.FinishTitleVoyage();c.Prologue.Suspend();c.CloseHomeChart(true);if(c.InventoryOpen)c.ToggleInventory();if(c.Paused)c.TogglePause();
+            if(!c.Ashore)
+            {
+                c.ReturnToHarbor();yield return null;
+                var rb=c.Player.engine.RB;rb.position=c.Home.Berth+Vector3.up*.7f;rb.rotation=Quaternion.identity;rb.velocity=rb.angularVelocity=Vector3.zero;
+                c.Player.transform.SetPositionAndRotation(rb.position,rb.rotation);Physics.SyncTransforms();for(int i=0;i<20;i++)yield return null;
+                Check(c.Shore.TryDisembark(),"Tracked craft fixture has a supported landing");yield return null;
+            }
+            foreach(int game in new[]{2,3,1})
+            {
+                var input=game==1?FieldItem.Fiber:game==2?FieldItem.Driftwood:FieldItem.IronIngot;
+                if(c.Career.Backpack.Count(input)<6)Check(c.Career.Backpack.TryAdd(input,6),"Tracked craft fixture adds "+input);
+                var station=c.HandGames.Station(game);Check(c.Shore.Relocate(c.HandGames.Approach(game),Quaternion.LookRotation(-station.forward)),"Tracked craft approach "+game);
+                c.View.ResetLook();yield return null;FishingV036FarmValidation.Aim(c,station.TransformPoint(new Vector3(0,1.1f,0)));yield return null;
+                Check(c.HandGames.Begin(game),"Tracked craft opens "+game);var games=c.HandGames;var task=games.Task;int before=c.Career.Backpack.Count(input);
+                var palm=games.HandlePoint+(game>=2?Vector3.up*.026f:Vector3.zero);var rotation=Quaternion.identity;
+                TrackedHand(games,palm,rotation,false,out _);
+                Check(SampleHand(games,palm,rotation) && games.XRToolHeld,"A real grip at the visible handle attaches the tool "+game);
+                if(game==2)
+                {
+                    var lifted=palm+Vector3.up*.28f+station.right*.24f;
+                    Check(!SampleHand(games,lifted,rotation) && games.XRToolHeld,"Saw stays held while lifted and moved away from its kerf");
+                    Check(Vector3.Distance(games.HandlePoint,lifted-Vector3.up*.026f)<.002f,"Lifted saw follows the tracked palm rather than snapping back to the table");
+                    Check(task.Strokes==0,"Moving the saw in the air produces no plank progress");
+                    Check(SampleHand(games,palm,rotation) && task.Strokes==0,"Returning the held saw to the kerf begins a fresh stroke");
+                    bool touching=true;
+                    for(int stroke=0;stroke<14;stroke++)for(int frame=0;frame<12;frame++)
+                        touching&=SampleHand(games,palm+station.forward*(stroke%2==0?.09f:-.09f),rotation);
+                    Check(touching,"Saw teeth remain in contact throughout physical push/pull strokes");
+                    Check(task.Complete && games.XRToolHeld,"Physical forward/back saw motion completes while retaining the grip");
+                }
+                else if(game==3)
+                {
+                    var raised=palm+Vector3.up*.14f;
+                    Check(SampleHand(games,raised,rotation) && games.XRToolHeld && task.Strokes==0,"Hammer can be raised without release or a false strike");
+                    Check(Vector3.Distance(games.HandlePoint,raised-Vector3.up*.026f)<.002f,"Raised hammer follows the real palm");
+                    Check(SampleHand(games,palm-Vector3.up*.08f,rotation) && task.Strokes==1,"Swept hammer face crossing the thin billet registers one real strike");
+                    var miss=palm+station.right*.30f;
+                    SampleHand(games,miss+Vector3.up*.14f,rotation);
+                    Check(!SampleHand(games,miss,rotation) && games.XRToolHeld && task.Strokes==1,"Missing the billet preserves the held hammer without crafting in the air");
+                    SampleHand(games,palm,rotation);Check(task.Strokes==1,"Sliding a missed hammer back onto the billet cannot claim a strike");
+                    SampleHand(games,raised,rotation);SampleHand(games,palm,rotation);
+                    Check(task.Strokes==2 && games.XRToolHeld,"A fresh lift and downward contact works after a miss");
+                }
+                else
+                {
+                    var tool=(Transform[])typeof(FishingHandGames).GetField("_tools",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(games);
+                    var crank=games.ActiveTool;var local=Quaternion.Inverse(tool[1].rotation)*(palm-crank.position);
+                    float radius=new Vector2(local.x,local.y).magnitude,start=Mathf.Atan2(local.y,local.x);
+                    var motion=typeof(FishingHandGames).GetField("_motion",BindingFlags.Instance|BindingFlags.NonPublic);
+                    bool contacts=true,follows=true;
+                    for(int frame=1;frame<=224;frame++)
+                    {
+                        float angle=start+frame*5*Mathf.Deg2Rad;
+                        var hand=crank.position+tool[1].rotation*new Vector3(Mathf.Cos(angle)*radius,Mathf.Sin(angle)*radius,local.z);
+                        bool contact=TrackedHand(games,hand,rotation,true,out var point);contacts&=contact;
+                        task.SampleContact(point.x,point.y,.02f,contact);motion.SetValue(games,point);games.Present();
+                        follows&=Vector3.Distance(games.HandlePoint,hand)<.003f;
+                    }
+                    Check(contacts && follows,"Visible crank follows the gripping hand around its actual world wheel plane");
+                    Check(task.Complete && games.XRToolHeld,"Three physical wheel turns complete spinning without requiring a second grip");
+                }
+                TrackedHand(games,palm,rotation,false,out _);Check(!games.XRToolHeld,"Opening the gripping hand releases the real tool "+game);
+                games.Cancel();Check(c.Career.Backpack.Count(input)==before,"Tracked tool checks never consume unfinished materials "+game);
+                if(game==1)
+                {
+                    // Cancellation consumes its frame, just like closing the other world modals.
+                    yield return null;
+                    var handle=(Transform)typeof(FishingHandGames).GetField("_winderHandle",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(games);
+                    var visibleHandle=handle.position;
+                    var begin=typeof(FishingHandGames).GetMethod("Begin",BindingFlags.Instance|BindingFlags.NonPublic,null,new[]{typeof(int),typeof(bool)},null);
+                    Check((bool)begin.Invoke(games,new object[]{1,true}),"A grip can enter spinning directly without an A-button action");
+                    Check(Vector3.Distance(games.HandlePoint,visibleHandle)<.002f,"Direct grip entry preserves the visible crank pose under the hand");games.Cancel();
+                }
+                yield return null;
+            }
+            Debug.Log("[FEEDBACK-TOOLS] Tracked hand pose, physical workpiece contact, release and crank-plane checks passed; headset comfort remains a device check.");
+        }
         public static IEnumerator Checks(FishingPrototype c)
         {
             Check(c.Automated && c.HasIsolatedProfile,"Only the isolated production career is used");
@@ -86,26 +179,43 @@ namespace BoatAttack.EditorTools
             }
             Equip(c,FieldItem.Rake);int plot=-1;for(int i=0;i<FishingFarm.PlotCount;i++)if(c.Farm.Work(i)==FarmWork.Till){plot=i;break;}Check(plot>=0,"An untilled real garden plot is available");
             var seed=c.Farm.Target(plot).position+Vector3.back*1.2f;Check(c.Shore.Ground(seed,out var soil) && c.Shore.Relocate(soil,Quaternion.identity),"The rake can approach a real garden plot");c.View.ResetLook();for(int settled=0;settled<12;settled++){c.Shore.Move(Vector2.zero,false,false,false,.02f);c.PresentCharacterFrame();yield return null;}FishingV036FarmValidation.Aim(c,c.Farm.Aim(plot));yield return null;
-            bool found=c.Farm.TryTarget(out int aimed,out _);c.UseFieldItem();Debug.Log("[FEEDBACK-TOOLS] RAKE DIAGNOSTIC: fixture="+plot+" found="+found+" aimed="+aimed+" busy="+c.WorldActionBusy+" message="+c.VisibleMessage+" preflight="+c.InspectWorldInteractionStart());
-            bool touchedSoil=false;float deadline=Time.time+3;
-            while(c.WorldActionBusy && Time.time<deadline)
+            bool found=c.Farm.TryTarget(out int aimed,out _),touchedSoil=false;Exception contactError=null;
+            var probe=c.gameObject.AddComponent<FishingFeedbackContactProbe>();
+            // EditorApplication.update can skip Player frames. Observe every rendered contact frame
+            // after FishingPrototype.LateUpdate has placed both the tool and its skinned working palm.
+            probe.Sample=()=>
             {
-                yield return null;
-                if(c.LastActionSucceeded && c.ActionContactBlend>.999f)
+                if(touchedSoil || contactError!=null || !c.LastActionSucceeded || c.ActionContactBlend<=.999f)return;
+                try
                 {
-                    c.PresentCharacterFrame();var rake=(Transform)typeof(FishingFarmWorld).GetField("_rake",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(c.Farm);
+                    var rake=(Transform)typeof(FishingFarmWorld).GetField("_rake",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(c.Farm);
                     var tip=rake.TransformPoint(FishingFieldWorld.WorkToolTip(FieldItem.Rake));var local=c.Farm.Target(plot).InverseTransformPoint(tip);
                     Check(Mathf.Abs(local.y-.12f)<.09f && Mathf.Abs(local.x)<=.99f && Mathf.Abs(local.z)<=.99f,"The rendered rake head actually touches the soil at commit · local="+local.ToString("F4"));
                     Check(Vector3.Distance(c.Shore.Character.PalmPosition(false),rake.TransformPoint(new Vector3(0,.1f,0)))<.09f,"The real working palm still holds the rake at soil contact");
                     Directory.CreateDirectory("Logs/FeedbackToolsWorld");FishingV016Validation.Capture(c,"Logs/FeedbackToolsWorld","rake-soil-contact");touchedSoil=true;
                 }
+                catch(Exception ex){contactError=ex;}
+            };
+            try
+            {
+                c.UseFieldItem();Debug.Log("[FEEDBACK-TOOLS] RAKE DIAGNOSTIC: fixture="+plot+" found="+found+" aimed="+aimed+" busy="+c.WorldActionBusy+" message="+c.VisibleMessage+" preflight="+c.InspectWorldInteractionStart());
+                float deadline=Time.time+3;
+                while(c.WorldActionBusy && Time.time<deadline && contactError==null)yield return null;
+                if(contactError!=null)throw contactError;
+                Check(c.Career.Farm.Plot(plot).tilled && touchedSoil,"The selected rake performs actual soil preparation with visible tool contact · "+c.VisibleMessage);
             }
-            Check(c.Career.Farm.Plot(plot).tilled && touchedSoil,"The selected rake performs actual soil preparation with visible tool contact · "+c.VisibleMessage);
+            finally{probe.Sample=null;UnityEngine.Object.Destroy(probe);}
             Check(c.Shore.Relocate(c.Home.Origin+new Vector3(.4f,.2f,-1.5f),Quaternion.identity),"XR routing fixture approaches the new aquarium point");yield return null;
             Check(c.HomeEcology.NearbyHint!=null,"The new ecology point is the real nearby interaction");
             typeof(FishingXRNotebook).GetMethod("InteractTracked",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(c.XRNotebook,null);
             Check(c.InventoryOpen,"The actual XR A-button routing reaches new world interactions before legacy hand-only fallback");c.ToggleInventory();
             Debug.Log("[FEEDBACK-TOOLS] LIMIT: bounded rule samples and direct XR routing are tested; physical controller calibration is not certified.");
         }
+    }
+    [DefaultExecutionOrder(30000)]
+    public sealed class FishingFeedbackContactProbe:MonoBehaviour
+    {
+        public Action Sample;
+        private void LateUpdate()=>Sample?.Invoke();
     }
 }

@@ -140,7 +140,7 @@ namespace BoatAttack.EditorTools
             importer.meshCompression = ModelImporterMeshCompression.Off;
             importer.importNormals = ModelImporterNormals.Import;
             importer.importTangents = ModelImporterTangents.CalculateMikk;
-            importer.isReadable = false;
+            importer.isReadable = true;
             importer.SaveAndReimport();
         }
 
@@ -213,8 +213,10 @@ namespace BoatAttack.EditorTools
                 "attendant feet use the original anchor without an extra position offset");
             Check(Vector3.Dot(cashier.transform.forward, -shop.transform.forward) > .999f, "attendant faces customers, not the back wall");
             Check(cashier.GetComponentsInChildren<Collider>(true).Length == 0, "visual NPC adds no collision or trade authority");
-            Check(cashier.GetComponentsInChildren<Animator>(true).Length == 0 && cashier.GetComponentsInChildren<SkinnedMeshRenderer>(true).Length == 0,
-                "authored pose is static; no fabricated animation system");
+            Check(cashier.GetComponentsInChildren<Animator>(true).Length == 0,
+                "procedural gestures do not depend on a missing Animator controller");
+            Check(cashier.GetComponentsInChildren<SkinnedMeshRenderer>(true).Length == (cashier.Animated?2:0),
+                "runtime gestures skin both LODs; source prefab remains reusable");
             var group = cashier.GetComponent<LODGroup>();
             Check(group != null && group.enabled, "LOD group is enabled");
             var lods = group.GetLODs();
@@ -228,7 +230,7 @@ namespace BoatAttack.EditorTools
                 var renderer = lods[i].renderers[0];
                 Check(renderer != null && renderer.enabled && renderer.gameObject.activeInHierarchy && !renderer.forceRenderingOff
                     && renderer.shadowCastingMode == ShadowCastingMode.On && renderer.gameObject.layer == 0, "LOD is a visible Default-layer mesh " + i);
-                var filter = renderer.GetComponent<MeshFilter>();
+                var filter = renderer.GetComponentInParent<MeshFilter>();
                 Check(filter != null && filter.sharedMesh != null && filter.sharedMesh.subMeshCount == 1, "single real human mesh/submesh " + i);
                 uint triangles = filter.sharedMesh.GetIndexCount(0) / 3;
                 Check(triangles > 0 && triangles <= (i == 0 ? 70000u : 22000u), "mesh budget LOD " + i + ": " + triangles);
@@ -241,8 +243,10 @@ namespace BoatAttack.EditorTools
                     "original metallic/smoothness texture retained " + i);
                 Check(material.GetFloat("_Surface") == 0 && material.GetFloat("_ZWrite") == 1 && material.GetColor("_BaseColor").a > .99f,
                     "opaque depth-writing character, not an invisible transparent material " + i);
-                if (haveBounds) bounds.Encapsulate(renderer.bounds);
-                else { bounds = renderer.bounds; haveBounds = true; }
+                var sourceBounds=filter.sharedMesh.bounds;
+                var geometry=new Bounds(renderer.transform.TransformPoint(sourceBounds.center),Vector3.Scale(sourceBounds.size,renderer.transform.lossyScale));
+                if (haveBounds) bounds.Encapsulate(geometry);
+                else { bounds = geometry; haveBounds = true; }
             }
             Check(Mathf.Abs(bounds.size.y - FishingShopCashier.AdultHeight) < .03f && Mathf.Abs(bounds.min.y - cashier.transform.position.y) < .025f,
                 "enlarged attendant stands approximately 1.98m with feet at anchor: " + bounds);

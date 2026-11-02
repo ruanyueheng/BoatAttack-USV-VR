@@ -45,6 +45,22 @@ namespace BoatAttack.Fishing
             }
             return b.Finish("Field kit / "+item);
         }
+        public static Mesh TrackedBinoculars(float eyeSeparation)
+        {
+            // A 16 cm long body with hinged eyecups: body size is independent of the wearer's IPD.
+            float rear=Mathf.Clamp(eyeSeparation,.05f,.08f)/(2*FishingFieldWorld.TrackedBinocularScale);
+            var b=new FishingMeshBuilder();
+            foreach(float side in new[]{-1f,1f})
+            {
+                b.Tube(new Vector3(side*rear,0,-.15f),new Vector3(side*rear,0,-.055f),.073f,.073f,Ink,16);
+                b.Tube(new Vector3(side*rear,0,-.055f),new Vector3(side*.125f,0,.24f),.078f,.11f,Ink,16);
+                b.Tube(new Vector3(side*.125f,0,.235f),new Vector3(side*.125f,0,.26f),.115f,.115f,Brass,16);
+                b.Ellipsoid(new Vector3(side*.125f,0,.263f),new Vector3(.10f,.10f,.006f),new Color(.2f,.7f,.75f),16,5);
+            }
+            b.Tube(new Vector3(-rear,0,-.015f),new Vector3(rear,0,-.015f),.04f,.04f,Ink,12);
+            b.Tube(new Vector3(0,.035f,-.035f),new Vector3(0,.035f,.04f),.035f,.035f,Brass,12);
+            return b.Finish("Full size XR binoculars with calibrated eyecups");
+        }
         public static Mesh Animal(LandAnimalKind kind)
         {
             var supplied=FishingV029Art.Animal(kind==LandAnimalKind.Rabbit?"Rabbit":kind==LandAnimalKind.Fox?"Fox":kind==LandAnimalKind.SeaTurtle?"Turtle":null);

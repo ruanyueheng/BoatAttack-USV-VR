@@ -22,7 +22,7 @@ namespace BoatAttack.Fishing
             bool discard=item.item!=FieldItem.FieldGuide && !FishingBackpack.IsQuestItem(item.item);
             _status.text=FishingBackpack.Name(item.item)+" ×"+item.count+"\n第 "+(_itemSlot+1)+" 格\n\n整组移动、合并或交换；也可拆出一半。\n销毁须再次确认，航海遗物与自然手册不能销毁。";
             if(item.item==FieldItem.Binoculars)_status.text+="\n\n"+FishingXRHints.BinocularHelp;
-            Set(0,item.item==FieldItem.Lantern?"装备并挂到腰侧\n右扳机开关 · Y 收回背包":"装备并拿起检视",()=>EquipSlot(_itemSlot));Photo(0,FishingV023Art.Icon(item.item));
+            Set(0,item.item==FieldItem.Lantern?"装备并挂到腰侧\n右扳机开关 · Y 收回背包":item.item==FieldItem.Binoculars?"装备双手望远镜\n双手握住举到眼前":"装备并拿起检视",()=>EquipSlot(_itemSlot));Photo(0,FishingV023Art.Icon(item.item));
             if(item.item==FieldItem.Lantern)Set(5,"熄灯并收回背包\n取下腰挂，腾出双手",()=>{_c.StowLantern();Close();});
             Set(1,"快速转移\n快捷栏 ↔ 储物区",()=>{if(_c.MoveFieldItem(_itemSlot,0,false,true))Open(1);else _c.Notice("另一侧没有可用空间，原物品保留。",4);});
             Set(2,"整组移动 / 合并 / 交换",()=>{_moveHalf=false;Open(MovePage);});

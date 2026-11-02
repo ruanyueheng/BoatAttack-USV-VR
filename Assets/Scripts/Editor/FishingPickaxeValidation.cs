@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Collections.Generic;
 using BoatAttack.Fishing;
 using UnityEngine;
 namespace BoatAttack.EditorTools
@@ -82,7 +83,97 @@ namespace BoatAttack.EditorTools
                 var look=character.HandReferencePosition;
                 c.viewCamera.transform.SetPositionAndRotation(look+character.transform.right*1.7f+Vector3.up*.6f-character.transform.forward*.7f,Quaternion.LookRotation(look-(look+character.transform.right*1.7f+Vector3.up*.6f-character.transform.forward*.7f)));
                 FishingV016Validation.Capture(c,output,item+"-side-view");c.ToggleView();
+                InspectTrackedPick(c,item,output);
             }
+        }
+        private static void InspectTrackedPick(FishingPrototype c,FieldItem item,string output)
+        {
+            var character=c.Shore.Character;var skin=character.FirstPersonSkin;
+            var originalSkin=skin.sharedMesh;bool originalRecalc=skin.forceMatrixRecalculationPerRender;
+            bool originalBodyHidden=character.BodySkin.forceRenderingOff;
+            var camera=c.viewCamera;var cameraPosition=camera.transform.position;var cameraRotation=camera.transform.rotation;float fov=camera.fieldOfView;
+            const string key="FishingXR.RightPalmXY";bool hadPreference=PlayerPrefs.HasKey(key);float prior=PlayerPrefs.GetFloat(key);
+            c.PresentCharacterFrame();
+            var held=c.FieldWorld.HeldTool;var originalMesh=held.GetComponent<MeshFilter>().sharedMesh;
+            var originalVertices=originalMesh.vertices;
+            var frame=Quaternion.Euler(0,character.transform.eulerAngles.y,0);
+            var palm=character.ShoulderPosition(false)+frame*new Vector3(.025f,-.08f,.30f);
+            var controllerPoses=new[]{Vector3.zero,new Vector3(45,20,60),new Vector3(-35,-60,135),new Vector3(75,30,-90)};
+            try
+            {
+                skin.sharedMesh=character.TrackedHandsMesh;skin.forceMatrixRecalculationPerRender=true;
+                character.BodySkin.forceRenderingOff=true;
+                foreach(float calibration in new[]{-30f,0,30})
+                {
+                    FishingHands.SetControllerRoll(false,calibration);
+                    for(int pose=0;pose<controllerPoses.Length;pose++)
+                    {
+                        var controller=frame*Quaternion.Euler(controllerPoses[pose]);
+                        var palmFrame=FishingHands.AlignControllerRotation(false,controller,frame)*Quaternion.Euler(0,0,-90);
+                        Check(c.FieldWorld.ApplyTrackedPickPose(palm,palmFrame),"production XR pose accepts "+item+" calibration="+calibration+" pose="+pose);
+                        character.ApplyHandTargets(c.Hands.Left,c.Hands.Right,true);
+                        var hand=c.Hands.Right;var shaft=(hand.GripEnd-hand.GripStart).normalized;
+                        Check(Mathf.Abs(Vector3.Dot(shaft,character.PalmRotation(false)*Vector3.forward))<.01f,
+                            "the real shaft crosses the fist instead of running along the fingertips");
+                        Check(Vector3.Distance(character.PalmPosition(false),palm)<.003f && Quaternion.Angle(character.PalmRotation(false),palmFrame)<.1f,
+                            "XY calibration does not separate the tracked pick from its actual visible palm");
+                        Check(held.GetComponent<MeshFilter>().sharedMesh==originalMesh && originalMesh.vertices[0]==originalVertices[0]
+                            && originalMesh.vertices[originalVertices.Length-1]==originalVertices[originalVertices.Length-1],
+                            "tracked mounting leaves the supplied pick mesh untouched");
+                        InspectTrackedSkin(c,item+" calibration="+calibration+" pose="+pose);
+                        FishingV038Validation.InspectGrip(c,"tracked-pick "+item+" "+calibration+" "+pose);
+                        if(calibration==30 && (pose==0 || pose==1))
+                        {
+                            var centre=hand.Palm.position;
+                            var offset=hand.Palm.right*.10f-hand.Palm.up*.15f+hand.Palm.forward*.24f;
+                            camera.fieldOfView=62;
+                            camera.transform.SetPositionAndRotation(centre+offset,Quaternion.LookRotation(-offset,Vector3.up));
+                            FishingV016Validation.Capture(c,output,item+"-tracked-grip-"+pose);
+                        }
+                    }
+                }
+                var p=held.position;var q=held.rotation;
+                Check(!c.FieldWorld.ApplyTrackedPickPose(new Vector3(float.NaN,0,0),Quaternion.identity)
+                    && held.position==p && Quaternion.Angle(held.rotation,q)<.001f,"invalid tracked samples cannot corrupt an equipped pick");
+            }
+            finally
+            {
+                if(hadPreference)PlayerPrefs.SetFloat(key,prior);else PlayerPrefs.DeleteKey(key);PlayerPrefs.Save();
+                skin.sharedMesh=originalSkin;skin.forceMatrixRecalculationPerRender=originalRecalc;
+                character.BodySkin.forceRenderingOff=originalBodyHidden;
+                camera.transform.SetPositionAndRotation(cameraPosition,cameraRotation);camera.fieldOfView=fov;
+                c.PresentCharacterFrame();
+            }
+        }
+        private static void InspectTrackedSkin(FishingPrototype c,string phase)
+        {
+            var hand=c.Hands.Right;var skin=c.Shore.Character.FirstPersonSkin;
+            Check(skin.quality==SkinQuality.Bone2,"Contact validation uses the actual two-weight renderer: "+phase);
+            var mesh=skin.sharedMesh;var vertices=mesh.vertices;var weights=mesh.boneWeights;var bones=skin.bones;var bindposes=mesh.bindposes;
+            var matrices=new Matrix4x4[bones.Length];
+            for(int i=0;i<bones.Length;i++)matrices[i]=bones[i].localToWorldMatrix*bindposes[i];
+            var visible=new HashSet<int>(mesh.triangles);
+            var nearest=new[]{float.MaxValue,float.MaxValue,float.MaxValue,float.MaxValue,float.MaxValue};
+            string[] names={"Index","Middle","Ring","Pinky","Thumb"};var axis=hand.GripEnd-hand.GripStart;
+            int inside=0,samples=0;
+            foreach(int i in visible)
+            {
+                var w=weights[i];int digit=-1;
+                for(int d=0;d<5;d++)
+                    if((w.weight0>.2f && bones[w.boneIndex0].name.StartsWith(names[d],StringComparison.Ordinal) && bones[w.boneIndex0].name.EndsWith(".R",StringComparison.Ordinal))
+                        || (w.weight1>.2f && bones[w.boneIndex1].name.StartsWith(names[d],StringComparison.Ordinal) && bones[w.boneIndex1].name.EndsWith(".R",StringComparison.Ordinal))){digit=d;break;}
+                if(digit<0)continue;samples++;
+                // Match the renderer's Bone2 skinning rather than assuming a bake snapshot uses identical influences.
+                float total=w.weight0+w.weight1;
+                var p=(matrices[w.boneIndex0].MultiplyPoint3x4(vertices[i])*w.weight0+matrices[w.boneIndex1].MultiplyPoint3x4(vertices[i])*w.weight1)/total;
+                var q=hand.GripStart+axis*Mathf.Clamp01(Vector3.Dot(p-hand.GripStart,axis)/axis.sqrMagnitude);
+                float distance=Vector3.Distance(p,q);nearest[digit]=Mathf.Min(nearest[digit],distance);
+                if(distance<hand.GripRadius-.002f)inside++;
+            }
+            Debug.Log("[PICKAXE] TRACKED SKIN "+phase+" inside="+inside+" distances="+string.Join(",",nearest));
+            Check(samples>20 && inside==0,"visible tracked fingers clear the solid wooden shaft: "+phase);
+            for(int d=0;d<5;d++)Check(nearest[d]<hand.GripRadius+.014f,
+                "each visible digit contacts the pick, not just the pinky: "+names[d]+" "+phase);
         }
         private static void CheckNear(Vector3 point,float near)
         {

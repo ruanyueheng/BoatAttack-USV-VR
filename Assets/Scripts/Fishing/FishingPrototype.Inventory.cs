@@ -105,12 +105,14 @@ namespace BoatAttack.Fishing
                 case FieldItem.Rake:if(Farm.TryTarget(out int plot,out var root) && plot<12 && Farm.Work(plot)==FarmWork.Till)RequestFarmInteraction(plot,root);else Notice("靠近菜畦，F / 右扳机整地；旧默认锄头入口仍保留。",4);break;
                 case FieldItem.CaptureNet:HomeEcology.UseNet();break;
                 case FieldItem.AnimalTrap:HomeEcology.PlaceTrap();break;
-                case FieldItem.Aquarium:case FieldItem.FishFeed:case FieldItem.RabbitHutch:case FieldItem.FoxDen:case FieldItem.TortoisePen:case FieldItem.BirdAviary:case FieldItem.SeaTurtlePond:HomeEcology.Open();break;
+                case FieldItem.FishFeed:HomeEcology.Open(2);break;
+                case FieldItem.Aquarium:case FieldItem.RabbitHutch:case FieldItem.FoxDen:case FieldItem.TortoisePen:case FieldItem.BirdAviary:case FieldItem.SeaTurtlePond:HomeEcology.Open();break;
                 case FieldItem.Workbench:case FieldItem.Furnace:case FieldItem.Forge:RequestPlaceEquipped();break;
                 case FieldItem.StonePickaxe:case FieldItem.IronPickaxe:RequestHarvest();break;
                 case FieldItem.FieldGuide: OpenFieldGuide();break;
                 case FieldItem.Binoculars:
-                    BinocularsRaised=!BinocularsRaised;Notice(BinocularsRaised?(_xrActive?"望远镜已举起 · "+FishingXRHints.BinocularHelp:"望远镜 · T 记录动物 / F 放下"):"已放下望远镜",5);break;
+                    if(UnityEngine.XR.XRSettings.isDeviceActive){Notice(FishingXRHints.BinocularHelp,7);break;}
+                    BinocularsRaised=!BinocularsRaised;Notice(BinocularsRaised?"望远镜 · T 记录动物 / F 放下":"已放下望远镜",3);break;
                 case FieldItem.Lantern:ToggleLantern();break;
                 default:Notice(UnityEngine.XR.XRSettings.isDeviceActive?"Y 换装备，右扳机使用工具。B → 制作查看配方；设施换入快捷栏后按右扳机放置。":"1–9 选择自然手册、望远镜或提灯，再按 F 使用。I → 制作查看配方；工作台 / 熔炉放入快捷栏后 F 放置。",4);break;
             }

@@ -18,6 +18,7 @@ namespace BoatAttack.Fishing
         private FishingCareer _profile;
         private int _day=-1,_sourceCount,_growthDays;
         private Material _glass;
+        private MeshCollider _homeLand;
         private Vector3 _heartPoint;
         private float _trapAt,_heartUntil,_petTime;
         private Transform _hearts;
@@ -25,8 +26,16 @@ namespace BoatAttack.Fishing
         public int Page;
         public bool NearHome=>_c.Ashore && FishingPrototype.FlatDistance(_c.ExplorerPosition,_c.Home.Origin)<22 && !_c.Shore.Swimming && !_c.Shore.Climbing;
         public Vector3 AquariumPosition=>_c.Home.Origin+new Vector3(2,.25f,-1.5f);
-        public Vector3 HabitatPosition(LandAnimalKind kind)=>_c.Home.Origin+new Vector3(-7.5f+(int)kind*4,0,7.5f);
-        public void Build(FishingPrototype c){_c=c;Refresh();}
+        public Vector3 HabitatPosition(LandAnimalKind kind)
+        {
+            var point=_c.Home.Origin+new Vector3(-7.5f+(int)kind*4,0,7.5f);
+            // These permanent plots belong to the authored home island. General physics ground can
+            // select an overlapping legacy terrain or another fixture and lift the entire enclosure.
+            if(_homeLand!=null && _homeLand.Raycast(new Ray(point+Vector3.up*40,Vector3.down),out var hit,80))point.y=hit.point.y;
+            return point;
+        }
+        public void Build(FishingPrototype c)
+        {_c=c;_homeLand=c.Home.transform.Find("V035 Home HomeLand").GetComponentInChildren<MeshCollider>();Refresh();}
         private bool Active=>_c!=null && !_c.Paused && !_c.XRNotebook.BlocksGameplay && !_c.DockConsole.BlocksGameplay
             && !_c.ShopBlocksGameplay && !_c.StoryBlocksGameplay && (Application.isFocused || _c.Automated);
         private void Update()
@@ -69,17 +78,25 @@ namespace BoatAttack.Fishing
                 if(!_c.Ashore)return null;
                 string key=XRSettings.isDeviceActive?"A ":"E ";
                 if(NearHome && Vector3.Distance(_c.ExplorerPosition,AquariumPosition)<2.4f)return key+"家园水族箱 · 展示、喂养与成长";
-                for(int i=0;i<5;i++)if(NearHome && Vector3.Distance(_c.ExplorerPosition,HabitatPosition((LandAnimalKind)i)+Vector3.forward*1.5f)<2.5f)return key+FishingCareer.HabitatName((LandAnimalKind)i)+" · 饲养与繁殖";
+                for(int i=0;i<5;i++)if(NearHome && Vector3.Distance(_c.ExplorerPosition,HabitatPosition((LandAnimalKind)i)+Vector3.forward*2.6f)<2.5f)return key+FishingCareer.HabitatName((LandAnimalKind)i)+(_c.Career.HabitatLevel((LandAnimalKind)i)==0?" · 部署设施":" · 饲养与繁殖");
                 return NearbyTrap()!=null?key+"诱捕笼 · 上饵、收取或收回":null;
             }
         }
-        public bool TryInteract(){if(NearbyHint==null)return false;Open();return true;}
-        public void Open()
+        public bool TryInteract()
+        {
+            if(NearbyHint==null)return false;
+            int mode=NearbyTrap()!=null?4:0;
+            if(NearHome && Vector3.Distance(_c.ExplorerPosition,AquariumPosition)<2.4f)mode=_c.Career.AquariumLevel>0?2:0;
+            else for(int i=0;i<5;i++)if(NearHome && Vector3.Distance(_c.ExplorerPosition,HabitatPosition((LandAnimalKind)i)+Vector3.forward*2.6f)<2.5f)
+            {mode=_c.Career.HabitatLevel((LandAnimalKind)i)>0?3:0;break;}
+            Open(mode);return true;
+        }
+        public void Open(int mode=0)
         {
             Page=0;
-            if(XRSettings.isDeviceActive){_c.XRNotebook.Open(21);return;}
+            if(XRSettings.isDeviceActive){_c.XRNotebook.OpenHomeEcology(mode);return;}
             if(!_c.InventoryOpen)_c.ToggleInventory();
-            if(_c.InventoryOpen)_c.OpenHomeEcologyPage();
+            if(_c.InventoryOpen)_c.OpenHomeEcologyPage(mode);
         }
         private AnimalTrapData NearbyTrap()
         {
@@ -99,11 +116,12 @@ namespace BoatAttack.Fishing
             void Add(string label,Func<bool> action,string message,bool enabled=true,bool home=true)=>list.Add(new Choice{Label=label,Enabled=enabled,Run=()=>Commit(action,message,home)});
             if(mode==0)
             {
-                Add(c.AquariumLevel==0?"安装水族箱 · 需要水族箱套件":"扩建水族箱至8格 · 潮境蓝图 +300币",c.AquariumLevel==0?(Func<bool>)c.BuildAquarium:c.UpgradeAquarium,"水族箱已更新。",NearHome && c.AquariumLevel<2);
+                int aquariumKit=c.Backpack.Count(FieldItem.Aquarium);
+                Add(c.AquariumLevel==0?"部署水族箱 · 套件 "+aquariumKit+"/1":c.AquariumLevel==1?"扩建水族箱至8格 · 潮境蓝图 +300币":"水族箱 · 已建成8格",c.AquariumLevel==0?(Func<bool>)c.BuildAquarium:c.UpgradeAquarium,"水族箱已更新。",NearHome && c.AquariumLevel<2);
                 for(int i=0;i<5;i++)
                 {
                     var kind=(LandAnimalKind)i;int level=c.HabitatLevel(kind);
-                    Add(FishingCareer.HabitatName(kind)+" "+c.HousedAnimalCount(kind)+"/"+c.HabitatCapacity(kind)+(level==0?" · 安装套件":level==1?" · 林境蓝图+250币扩建":" · 已满级"),()=>level==0?c.BuildAnimalHabitat(kind):c.UpgradeAnimalHabitat(kind),"栖息设施已更新。",NearHome && level<2);
+                    Add(FishingCareer.HabitatName(kind)+(level==0?" · 部署 · 套件 "+c.Backpack.Count(FishingCareer.HabitatKit(kind))+"/1":" · "+c.HousedAnimalCount(kind)+"/"+c.HabitatCapacity(kind)+(level==1?" · 林境蓝图+250币扩建":" · 已满级")),()=>level==0?c.BuildAnimalHabitat(kind):c.UpgradeAnimalHabitat(kind),FishingCareer.HabitatName(kind)+"已部署在菜园西侧的专用地块。",NearHome && level<2);
                 }
             }
             else if(mode==1)
@@ -151,7 +169,7 @@ namespace BoatAttack.Fishing
             }
             return list;
         }
-        public string Status=>"水族箱 "+_c.Career.AquariumCount+"/"+_c.Career.AquariumCapacity+" · 活体载具 "+_c.Career.CarriedAnimalCount+"/4 · 动物 "+_c.Career.HomeAnimalCount+"/16\n鱼需"+_c.Career.AquariumGrowthDays+"日与不同日喂食"+_c.Career.AquariumGrowthDays+"次；幼兽2日成年。暂停/离线不成长；兔吃种子，龟吃萝卜，狐/鸟吃兔肉。";
+        public string Status=>"水族箱 "+_c.Career.AquariumCount+"/"+_c.Career.AquariumCapacity+" · 活体载具 "+_c.Career.CarriedAnimalCount+"/4 · 动物 "+_c.Career.HomeAnimalCount+"/16\n六种设施均可部署：水族箱在屋内，五类动物住所位于菜园西侧。套件可在工作台制作；幼兽2日成年。";
         public bool UseNet()
         {
             if(!Active || !_c.Ashore || _c.Career.Backpack.Equipped!=FieldItem.CaptureNet)return false;
@@ -239,7 +257,7 @@ namespace BoatAttack.Fishing
             }
             for(int i=0;i<5;i++)
             {
-                var kind=(LandAnimalKind)i;var root=new GameObject(FishingCareer.HabitatName(kind)).transform;root.SetParent(_display,false);var desired=HabitatPosition(kind);if(_c.Shore.Ground(new Vector3(desired.x,0,desired.z),out var ground))desired.y=ground.y;root.position=desired;
+                var kind=(LandAnimalKind)i;var root=new GameObject(FishingCareer.HabitatName(kind)).transform;root.SetParent(_display,false);root.position=HabitatPosition(kind);
                 if(_profile.HabitatLevel(kind)>0)
                 {
                     var mesh=FishingHomeHabitatArt.Build(kind,_profile.HabitatLevel(kind));_owned.Add(mesh);
@@ -247,7 +265,13 @@ namespace BoatAttack.Fishing
                     shell.GetComponent<MeshFilter>().sharedMesh=mesh;shell.GetComponent<MeshRenderer>().sharedMaterial=FishingArt.Palette(_owned,_c.PaletteShader,"Coastal animal habitats",.12f,.04f);
                     FishingHomeHabitatArt.AddCollision(root);
                 }
-                string habitatLabel=FishingCareer.HabitatName(kind)+" · "+_profile.HousedAnimalCount(kind)+"/"+_profile.HabitatCapacity(kind);
+                else
+                {
+                    var mesh=FishingHomeHabitatArt.BuildSite();_owned.Add(mesh);
+                    var plot=new GameObject("Marked habitat deployment plot",typeof(MeshFilter),typeof(MeshRenderer));plot.transform.SetParent(root,false);
+                    plot.GetComponent<MeshFilter>().sharedMesh=mesh;plot.GetComponent<MeshRenderer>().sharedMaterial=FishingArt.Palette(_owned,_c.PaletteShader,"Habitat plot stakes",.12f,.04f);
+                }
+                string habitatLabel=FishingCareer.HabitatName(kind)+(_profile.HabitatLevel(kind)==0?" · 待部署套件":" · "+_profile.HousedAnimalCount(kind)+"/"+_profile.HabitatCapacity(kind));
                 FishingV019Art.Sign(habitatLabel,root,new Vector3(0,1.24f,2.6f),.011f,new Color(.85f,.92f,.82f));
                 int slot=0;
                 foreach(var a in _profile.HomeAnimals)if(a.housed && a.kind==kind)

@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.57.0";
+        public const string Version = "0.58.0";
         public FishingHandGames HandGames { get; private set; }
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
@@ -48,6 +48,7 @@ namespace BoatAttack.Fishing
         public void SetCreativeMode(bool enabled)
         {
             CreativeMode=enabled;Career?.SetCreativeMode(enabled);
+            if(!HasIsolatedProfile){PlayerPrefs.SetInt(CreativeModeKey,enabled?1:0);PlayerPrefs.Save();}
             Notice(enabled?"创造模式：无限金币购买已开启，背包容量及解锁条件仍有效。":"创造模式已关闭，恢复正常金币计费。",6);
         }
         public CatchSession Session { get; } = new CatchSession();
@@ -576,20 +577,21 @@ namespace BoatAttack.Fishing
         }
         public int Sell()
         {
-            if(!AtHarbor || Paused)return 0;
+            if(!CanSellFish || Paused || StoryBlocksGameplay || WorldActionBusy)
+            {Notice("请将船停在潮汐渔港，或到潮汐钓具店柜台卖鱼。B → 卖鱼与委托可导航。",5);return 0;}
             int reserved=Career.ReservedCount;
             int sold=Career.Sell();
             if(sold>0)
             {
                 Save();RefreshHold();_feedback.PlayOneShot(_successTone);WorldAudio?.Play("CoinGain",ExplorerPosition,.6f);
-                Notice("出售成功 +"+sold+" 金币"+(reserved>0?"，已为委托保留 "+reserved+" 条鱼（X 可全部出售）。":"！金币可在沙滩钓具店或港口购买装备。"),7f);
+                Notice("出售成功 +"+sold+" 金币"+(reserved>0?"，已为委托保留 "+reserved+" 条鱼。卖鱼页面可选择全部出售。":"！金币可在沙滩钓具店或港口购买装备。"),7f);
             }
-            else Notice(reserved>0?"鱼货都在为委托保留。凑齐后按 E 交付，或按 X 全部出售。":"鱼箱还是空的。前往黄色渔区捕捞，带回这里出售。");
+            else Notice(reserved>0?"鱼货都在为委托保留。可回港交付，或在卖鱼页面选择全部出售。":"鱼箱还是空的。前往黄色渔区捕捞，带回这里出售。");
             return sold;
         }
         public int SellAll()
         {
-            if(!AtHarbor || Paused){Notice("请先回到青色港口再出售。");return 0;}
+            if(!CanSellFish || Paused || StoryBlocksGameplay || WorldActionBusy){Notice("请到潮汐渔港或钓具店柜台，再确认出售鱼货。",5);return 0;}
             int sold=Career.SellAll();
             if(sold>0){Save();RefreshHold();_feedback.PlayOneShot(_successTone);WorldAudio?.Play("CoinGain",ExplorerPosition,.6f);Notice("全部出售 +"+sold+" 金币。",6f);}
             else Notice("鱼箱还是空的。");
@@ -597,8 +599,11 @@ namespace BoatAttack.Fishing
         }
         public bool BuyUpgrade(UpgradeTrack track)
         {
-            if(Paused || InventoryOpen || JournalOpen || HasPendingCatch || (!AtHarbor && (TackleShop == null || !TackleShop.CanPurchase)))
-            {Notice("请到港口交易台，或登岸进入钓具店柜台后购买。");return false;}
+            if(Paused || InventoryOpen || JournalOpen || HasPendingCatch || StartMenuOpen || StoryBlocksGameplay || WorldActionBlocksGameplay
+                || InspectingItem || Expedition.Aligning || (Shore!=null && (Shore.Swimming || Shore.Climbing)) || _shopConsumedFrame==Time.frameCount)
+            {Notice("先结束当前操作、收起检视或处理鱼获，再升级装备。",4);return false;}
+            if(!CreativeMode && !AtHarbor && (TackleShop == null || !TackleShop.CanPurchase))
+            {Notice("请到港口交易台，或登岸进入钓具店柜台后购买；创造模式可直接免费升级。",5);return false;}
             if(Career.SpecializationBlocked(track)){Notice("二级专精只能选择载重、动力或操控中的一项；其他两项可升至一级。",7);return false;}
             int cost=Career.NextUpgradeCost(track);
             if(cost<=0){Notice(FishingText.UpgradeName(track)+"已经升到满级。",4f);return false;}

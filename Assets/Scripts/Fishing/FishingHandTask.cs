@@ -26,6 +26,12 @@ namespace BoatAttack.Fishing
             Kind=kind;_gunParts=gunParts;_fineSpinning=lore!=null && lore.BlueprintUnlocked(0);
         }
         public void Release(){_sample=false;_direction=0;_cooldown=0;}
+        /// <summary>A held tool may leave its workpiece without being dropped. Re-entry starts a new stroke.</summary>
+        public bool SampleContact(float x,float y,float seconds,bool contact)
+        {
+            if(!contact){Release();return false;}
+            return Sample(x,y,seconds);
+        }
         public bool Sample(float x,float y,float seconds)
         {
             if(Complete || !Finite(x) || !Finite(y) || !Finite(seconds) || seconds<=0 || seconds>.15f)

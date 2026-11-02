@@ -39,8 +39,8 @@ namespace BoatAttack.EditorTools
             string directory=Path.GetFullPath("Logs/V055/Visual");Directory.CreateDirectory(directory);
             try
             {
-                Check(new System.Collections.Generic.HashSet<int>{FishingXRNotebook.ClassroomPage,FishingXRNotebook.HandAlignmentPage,FishingXRNotebook.QuitPage,FishingXRNotebook.CreativePage}.Count==4,"Voyage date, hand alignment, quit and creative pages have independent IDs");
-                foreach(int selected in new[]{14,FishingXRNotebook.ClassroomPage,FishingXRNotebook.HandAlignmentPage,FishingXRNotebook.QuitPage,FishingXRNotebook.CreativePage})
+                Check(new System.Collections.Generic.HashSet<int>{FishingXRNotebook.ClassroomPage,FishingXRNotebook.HandAlignmentPage,FishingXRNotebook.QuitPage,FishingXRNotebook.CreativePage,FishingXRNotebook.FishSalesPage}.Count==5,"Voyage date, hand alignment, quit, creative and fish sales pages have independent IDs");
+                foreach(int selected in new[]{14,FishingXRNotebook.ClassroomPage,FishingXRNotebook.HandAlignmentPage,FishingXRNotebook.QuitPage,FishingXRNotebook.CreativePage,FishingXRNotebook.FishSalesPage})
                 {
                     page.SetValue(book,selected);refresh.Invoke(book,null);Canvas.ForceUpdateCanvases();
                     Check(status.preferredHeight<=status.rectTransform.rect.height,"Merged settings text fits page "+selected);

@@ -6,6 +6,17 @@ namespace BoatAttack.Fishing
     {
         private static readonly Color Cedar=new Color(.52f,.34f,.20f), Cream=new Color(.87f,.82f,.66f), Teal=new Color(.18f,.38f,.36f), Sand=new Color(.71f,.64f,.43f), Stone=new Color(.44f,.48f,.43f);
 
+        public static Mesh BuildSite()
+        {
+            var b=new FishingLifeMesh();
+            foreach(float x in new[]{-1.5f,1.5f})foreach(float z in new[]{-.75f,2.55f})
+                b.Box(new Vector3(x,.13f,z),new Vector3(.10f,.26f,.10f),Cedar);
+            foreach(float x in new[]{-1.5f,1.5f})b.Box(new Vector3(x,.018f,.9f),new Vector3(.045f,.035f,3.3f),Sand);
+            foreach(float z in new[]{-.75f,2.55f})b.Box(new Vector3(0,.018f,z),new Vector3(3,.035f,.045f),Sand);
+            b.Box(new Vector3(0,.6f,2.6f),new Vector3(.075f,1.2f,.075f),Cedar);
+            return b.Finish("Marked habitat deployment plot");
+        }
+
         public static Mesh Build(LandAnimalKind kind,int level)
         {
             var b=new FishingLifeMesh();

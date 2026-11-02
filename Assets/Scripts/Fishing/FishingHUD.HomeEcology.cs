@@ -5,7 +5,7 @@ namespace BoatAttack.Fishing
     {
         private bool _ecologyPage;
         private int _ecologyMode;
-        public void OpenHomeEcologyPage(){_ecologyPage=true;_craftPage=false;Controller.HomeEcology.Page=0;}
+        public void OpenHomeEcologyPage(int mode=0){_ecologyPage=true;_craftPage=false;_ecologyMode=Mathf.Clamp(mode,0,4);Controller.HomeEcology.Page=0;}
         private void DrawHomeEcology()
         {
             var world=Controller.HomeEcology;

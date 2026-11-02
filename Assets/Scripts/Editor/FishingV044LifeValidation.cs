@@ -6,6 +6,7 @@ using System.Reflection;
 using BoatAttack.Fishing;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Rendering.Universal;
 
 namespace BoatAttack.EditorTools
 {
@@ -30,6 +31,7 @@ namespace BoatAttack.EditorTools
             NotebookChecks(c,dir,true);
             run=PalmChecks(c,life,dir);while(run.MoveNext())yield return run.Current;
             run=FestivalChecks(c,life,dir);while(run.MoveNext())yield return run.Current;
+            run=BinocularChecks(c,life,dir);while(run.MoveNext())yield return run.Current;
         }
 
         private static void NotebookChecks(FishingPrototype c,string dir,bool withPhotos)
@@ -230,6 +232,166 @@ namespace BoatAttack.EditorTools
             Debug.Log("[V044-LIFE] album journal page index "+albumPage);
         }
 
+        public static IEnumerator BinocularChecks(FishingPrototype c,FishingLifeWorld life,string dir)
+        {
+            var land=Land(c);while(land.MoveNext())yield return land.Current;
+            var snapshot=c.Career.Snapshot();var eye=c.viewCamera.transform;var position=eye.position;var rotation=eye.rotation;
+            float fov=c.viewCamera.fieldOfView,zoom=c.View.BinocularMagnification;
+            GameObject target=null;Material material=null;Mesh mesh=null;
+            Vector3 lp=Vector3.zero,rp=Vector3.zero;
+            try
+            {
+                Check(c.Career.Backpack.TryAdd(FieldItem.Binoculars,1),"Isolated profile owns binoculars for the XR optics regression");
+                var bag=c.Career.Backpack;int slot=Enumerable.Range(0,FishingBackpack.SlotCount).First(i=>bag.At(i).item==FieldItem.Binoculars);
+                if(slot>=FishingBackpack.HotbarCount){Check(bag.Move(slot,1),"Binoculars enter the selectable hotbar");slot=1;}
+                c.SelectFieldSlot(slot);c.PresentCharacterFrame();
+                FishingLifeWorld.ForceVr=true;life.DebugRightHand=new Pose(eye.position+eye.forward*.1f,eye.rotation);
+                int taken=life.PhotosTaken;
+                var cameraTick=typeof(FishingLifeWorld).GetMethod("UpdateVrCamera",BindingFlags.Instance|BindingFlags.NonPublic);
+                cameraTick.Invoke(life,null);life.DebugPressShutter();cameraTick.Invoke(life,null);
+                Check(!life.VrRaised && life.PhotosTaken==taken,"Binocular equipment prevents the near-eye film-camera gesture and shutter from taking over");
+                eye.SetPositionAndRotation(new Vector3(0,300,0),Quaternion.identity);c.viewCamera.fieldOfView=69;
+                var projection=c.viewCamera.projectionMatrix;
+                c.View.AdjustMagnification(-100);
+                var optics=life.Binoculars;Check(optics!=null,"The real life world builds the physical XR binocular optics component");
+                var tool=c.FieldWorld.HeldTool;
+                float scale=FishingFieldWorld.TrackedBinocularScale;
+                var rightBase=Quaternion.Euler((Vector3)typeof(FishingHands).GetField("_rightControllerPalmEuler",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(c.Hands));
+                var leftBase=Quaternion.Euler((Vector3)typeof(FishingHands).GetField("_leftControllerPalmEuler",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(c.Hands));
+                void Hold(float distance,Quaternion turn,Vector3 offset=default)
+                {
+                    var q=eye.rotation*turn;
+                    var root=eye.position+eye.forward*distance+offset-q*(Vector3.forward*FishingXRBinoculars.RearLensZ*scale);
+                    lp=root+q*(FishingFieldWorld.TrackedBinocularLeftPalm*scale);rp=root+q*(FishingFieldWorld.TrackedBinocularRightPalm*scale);
+                    Check(c.FieldWorld.ApplyTrackedBinocularPose(new Pose(lp,q*leftBase),new Pose(rp,q*rightBase),true,true),"Both real palm poses fit the binocular body");
+                    optics.PresentForValidation(true,lp,rp);
+                }
+                Hold(.32f,Quaternion.identity);
+                Check(!optics.Active,"Two hands holding binoculars at arm's length cannot open an optical overlay");
+                Hold(.08f,Quaternion.identity,Vector3.down*.18f);
+                Check(!optics.Active,"A lowered instrument cannot magnify the head view");
+                Hold(.08f,Quaternion.identity);
+                Check(optics.Active && optics.OpticalWindow.gameObject.activeSelf && optics.OpticalCamera.enabled
+                    && optics.OpticalTexture.width==FishingXRBinoculars.Width && optics.OpticalTexture.height==FishingXRBinoculars.Height
+                    && optics.OpticalCamera.stereoTargetEye==UnityEngine.StereoTargetEyeMask.None,
+                    "Both grips raised to the eyes activate the physical optical camera without a use-button toggle");
+                Check(optics.OpticalWindow.parent==tool && Vector3.Distance(optics.LeftEyepiece.position,tool.TransformPoint(FishingXRBinoculars.EyepieceLocal(true,optics.LensSeparation)))<.001f
+                    && Vector3.Distance(optics.RightEyepiece.position,tool.TransformPoint(FishingXRBinoculars.EyepieceLocal(false,optics.LensSeparation)))<.001f
+                    && Mathf.Abs(Vector3.Distance(optics.LeftEyepiece.position,optics.RightEyepiece.position)-FishingXRBinoculars.EyeSeparation(c.viewCamera))<.001f,
+                    "Both rear eyecups follow the headset IPD and remain physically attached to the instrument");
+                Check(Mathf.Abs(FishingXRBinoculars.CalibratedEyeSeparation(Vector3.left*.036f,Vector3.right*.036f)-.072f)<.0001f
+                    && FishingXRBinoculars.CalibratedEyeSeparation(Vector3.zero,Vector3.zero)==FishingXRBinoculars.DefaultEyeSeparation,
+                    "A 72mm wearer gets 72mm eyecups; missing eye tracking uses a safe 64mm fallback");
+                var body=tool.GetComponent<MeshFilter>().sharedMesh.bounds.size*scale;
+                Check(body.z>.16f && body.x>.17f && optics.LeftEyepiece.lossyScale.x>.05f,
+                    "The XR binocular body is full size and both viewing apertures are over 50mm wide");
+                Check(c.FieldWorld.HeldToolRenderer.enabled,"The real binocular body remains visible while looking through its rear lenses");
+                Check((optics.OpticalCamera.cullingMask&(1<<5))==0 && !optics.OpticalCamera.GetUniversalAdditionalCameraData().allowXRRendering,
+                    "The objective camera excludes its own eyepieces and cannot recursively render either HMD eye");
+                optics.PresentForValidation(true,lp,rp,false,true);
+                Check(!optics.Active && !optics.OpticalCamera.enabled,"Releasing either grip closes the lenses immediately");
+                optics.PresentForValidation(true,lp,rp,true,false);
+                Check(!optics.Active,"The right grip is required as well as the left");
+                Hold(.08f,Quaternion.Euler(0,45,0));
+                Check(!optics.Active,"Barrels pointed away from the eyes do not activate");
+                Hold(.08f,Quaternion.Euler(0,0,90));
+                Check(!optics.Active,"Vertically stacked barrels cannot pretend to align with both eyes");
+                Hold(.11f,Quaternion.Euler(15,20,10),Vector3.right*.025f+Vector3.down*.03f);
+                Check(c.FieldWorld.ApplyTrackedBinocularPose(new Pose(lp,eye.rotation*Quaternion.Euler(15,20,10)*leftBase),
+                    new Pose(rp,eye.rotation*Quaternion.Euler(15,20,10)*rightBase),true,true,true),"A raised two-handed grip can request trigger alignment");
+                optics.PresentForValidation(true,lp,rp);
+                var rear=(optics.LeftEyepiece.position+optics.RightEyepiece.position)*.5f;
+                Check(optics.Active && c.FieldWorld.BinocularEyeAlignment && Quaternion.Angle(tool.rotation,eye.rotation)<.01f
+                    && Vector3.Distance(rear,FishingXRBinoculars.EyeCentre(c.viewCamera)+eye.forward*FishingXRBinoculars.ComfortEyeDistance)<.001f,
+                    "Holding a trigger near the face seats both large eyecups at the headset's real eye positions");
+                Check(!FishingXRBinoculars.CanAlignAtEyes(new Pose(eye.position,eye.rotation),lp+Vector3.down*.3f,rp+Vector3.down*.3f)
+                    && !FishingXRBinoculars.CanAlignAtEyes(new Pose(eye.position,eye.rotation),lp+Vector3.forward*.5f,rp+Vector3.forward*.5f),
+                    "Trigger assistance rejects lowered hands and an instrument held at arm's length");
+                Check(c.viewCamera.projectionMatrix==projection,"Trigger alignment preserves the HMD stereo projection");
+                Hold(.08f,Quaternion.identity);
+                target=GameObject.CreatePrimitive(PrimitiveType.Cube);target.name="Binocular real-world scale target";
+                target.transform.position=eye.position+eye.forward*12;target.transform.localScale=new Vector3(.5f,.5f,.05f);
+                mesh=UnityEngine.Object.Instantiate(target.GetComponent<MeshFilter>().sharedMesh);mesh.colors=Enumerable.Repeat(Color.white,mesh.vertexCount).ToArray();target.GetComponent<MeshFilter>().sharedMesh=mesh;
+                material=new Material(c.PaletteShader);material.SetColor("_BaseColor",Color.magenta);material.SetFloat("_Unlit",1);target.GetComponent<Renderer>().sharedMaterial=material;
+                optics.OpticalCamera.Render();int small=OpticalTargetPixels(optics.OpticalTexture);
+                float lowFov=optics.OpticalCamera.fieldOfView;
+                for(int i=0;i<30;i++)optics.ReadZoomAxis(Vector2.up,10+i*.31f);
+                optics.OpticalCamera.Render();int large=OpticalTargetPixels(optics.OpticalTexture);
+                Check(c.View.BinocularMagnification==8 && optics.OpticalCamera.fieldOfView<lowFov*.3f
+                    && small>100 && large>small*8,"2x to 8x enlarges a real distant target through the physical eyepieces");
+                Check(Mathf.Abs(c.viewCamera.fieldOfView-69)<.001f && c.viewCamera.projectionMatrix==projection,
+                    "Physical binocular magnification leaves the main/HMD projection untouched");
+                FishingV016Validation.Capture(c,dir,"life-xr-binocular-physical-body");
+                eye.position-=eye.right*.033f;
+                FishingV016Validation.Capture(c,dir,"life-xr-binocular-through-left-eye");
+                eye.position+=eye.right*.033f;
+                Hold(.08f,Quaternion.Euler(0,12,0));
+                Check(optics.Active && Vector3.Dot(optics.OpticalCamera.transform.forward,tool.forward)>.999f
+                    && Vector3.Dot(optics.OpticalCamera.transform.forward,eye.forward)<.99f,
+                    "Distant scenery follows the instrument's objective direction rather than a head-locked window");
+                // Render the actual shore and the source-skinned tracked hands, not only the high-altitude colour target.
+                c.PresentCharacterFrame();c.viewCamera.fieldOfView=95;
+                Hold(.08f,Quaternion.identity);
+                var character=c.Shore.Character;
+                character.ApplyHandTargets(c.Hands.Left,c.Hands.Right,true);
+                Check(c.Hands.Left.HasGripSurface && c.Hands.Right.HasGripSurface
+                    && Vector3.Distance(character.PalmPosition(true),lp)<.035f
+                    && Vector3.Distance(character.PalmPosition(false),rp)<.035f,
+                    "Both real source-skinned palms hold the instrument at their physical controller positions");
+                var skin=character.FirstPersonSkin;var oldMesh=skin.sharedMesh;bool oldRecalc=skin.forceMatrixRecalculationPerRender,oldEnabled=skin.enabled,oldOff=skin.forceRenderingOff;
+                skin.sharedMesh=character.TrackedHandsMesh;skin.forceMatrixRecalculationPerRender=true;skin.enabled=true;skin.forceRenderingOff=false;
+                var baked=new Mesh();
+                try
+                {
+                    skin.BakeMesh(baked,false);var vertices=baked.vertices;var weights=skin.sharedMesh.boneWeights;var bones=skin.bones;
+                    var visible=new System.Collections.Generic.HashSet<int>(skin.sharedMesh.triangles);
+                    foreach(bool left in new[]{true,false})
+                    {
+                        var wrist=left?character.LeftWrist:character.RightWrist;var hand=left?c.Hands.Left:c.Hands.Right;
+                        var a=hand.GripStart;var ab=hand.GripEnd-a;float nearest=float.MaxValue;int samples=0;
+                        foreach(int index in visible)
+                        {
+                            var weight=weights[index];
+                            if(!((weight.weight0>.4f && bones[weight.boneIndex0].IsChildOf(wrist))
+                                ||(weight.weight1>.4f && bones[weight.boneIndex1].IsChildOf(wrist))))continue;
+                            var point=skin.transform.TransformPoint(vertices[index]);samples++;
+                            nearest=Mathf.Min(nearest,Vector3.Distance(point,a+ab*Mathf.Clamp01(Vector3.Dot(point-a,ab)/ab.sqrMagnitude)));
+                        }
+                        Check(samples>20 && nearest<hand.GripRadius+.02f,"Visible tracked "+(left?"left":"right")+" hand skin contacts its physical barrel");
+                    }
+                    optics.OpticalCamera.Render();
+                    FishingV016Validation.Capture(c,dir,"life-xr-binocular-real-shore-grip");
+                    var centre=eye.position;eye.position-=eye.right*.033f;
+                    FishingV016Validation.Capture(c,dir,"life-xr-binocular-real-shore-left-eye");eye.position=centre;
+                }
+                finally{UnityEngine.Object.Destroy(baked);skin.sharedMesh=oldMesh;skin.forceMatrixRecalculationPerRender=oldRecalc;skin.enabled=oldEnabled;skin.forceRenderingOff=oldOff;}
+                Hold(.08f,Quaternion.identity);
+                optics.PresentForValidation(false,lp,rp);
+                Check(!optics.Active && !optics.OpticalCamera.enabled && !optics.OpticalWindow.gameObject.activeSelf,
+                    "Tracking loss immediately hides the lenses and stops the objective camera");
+                optics.PresentForValidation(true,lp,rp);c.TogglePause();optics.PresentForValidation(true,lp,rp);
+                Check(!optics.Active && !optics.OpticalCamera.enabled,"Pause cannot leave physical binocular rendering active");c.TogglePause();
+                c.SelectFieldSlot(0);optics.PresentForValidation(true,lp,rp);
+                Check(!optics.Active && !optics.OpticalWindow.gameObject.activeSelf,"Switching equipment clears the rear-lens images");
+            }
+            finally
+            {
+                FishingLifeWorld.ForceVr=false;life.DebugRightHand=null;life.Binoculars.PresentForValidation(false,lp,rp);
+                if(c.Paused)c.TogglePause();c.RestoreShopTestProfile(snapshot);c.View.AdjustMagnification(-100);c.View.AdjustMagnification((zoom-2)*2);
+                eye.SetPositionAndRotation(position,rotation);c.viewCamera.fieldOfView=fov;
+                if(target!=null)UnityEngine.Object.Destroy(target);if(material!=null)UnityEngine.Object.Destroy(material);if(mesh!=null)UnityEngine.Object.Destroy(mesh);
+            }
+        }
+        private static int OpticalTargetPixels(RenderTexture rt)
+        {
+            var active=RenderTexture.active;var image=new Texture2D(rt.width,rt.height,TextureFormat.RGB24,false);
+            try
+            {
+                RenderTexture.active=rt;image.ReadPixels(new Rect(0,0,rt.width,rt.height),0,0);image.Apply();
+                return image.GetPixels().Count(p=>p.r>.5f && p.b>.5f && p.g<.2f);
+            }
+            finally{RenderTexture.active=active;UnityEngine.Object.Destroy(image);}
+        }
         private static IEnumerator PalmChecks(FishingPrototype c,FishingLifeWorld life,string dir)
         {
             FishingLifeWorld.ForceVr=true;
@@ -283,10 +445,17 @@ namespace BoatAttack.EditorTools
                     Check(!life.VrRaised && life.PhotosTaken==taken+1,"Raising "+item+" cannot open or fire the camera");
                     if(item==FieldItem.Binoculars)
                     {
-                        Check(FishingXRHints.Current(c)==FishingXRHints.Context.Binocular && FishingXRHints.Guidance(c).Contains("先按右扳机举镜"),"Selected binoculars explain how to activate observation");
-                        c.UseFieldItem();
-                        Check(c.BinocularsRaised && FishingXRHints.Guidance(c).Contains("22 米") && FishingXRHints.Guidance(c).Contains("A 记录"),"Raised binoculars explain the real range and record button");
-                        c.UseFieldItem();
+                        string guidance=FishingXRHints.Guidance(c);
+                        Check(FishingXRHints.Current(c)==FishingXRHints.Context.Binocular && guidance.Contains("双手")
+                            && guidance.Contains("握") && guidance.Contains("22 米") && guidance.Contains("A 记录"),
+                            "Selected binoculars explain both physical grips, the real range and the record button");
+                        if(UnityEngine.XR.XRSettings.isDeviceActive)
+                        {
+                            c.UseFieldItem();
+                            Check(!c.BinocularsRaised,"An XR use-button press cannot bypass the physical binocular grip gate");
+                        }
+                        life.Binoculars.PresentForValidation(false,Vector3.zero,Vector3.zero);
+                        Check(!life.Binoculars.Active,"Selected binoculars without tracked palms cannot activate physical optics");
                     }
                 }
                 c.SelectFieldSlot(previous);

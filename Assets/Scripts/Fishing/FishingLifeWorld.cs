@@ -12,6 +12,7 @@ namespace BoatAttack.Fishing
         private Transform _root;
         private Material _palette, _glow;
         private readonly List<Object> _owned = new List<Object>();
+        public FishingXRBinoculars Binoculars {get;private set;}
 
         public void Build(FishingPrototype c)
         {
@@ -21,6 +22,7 @@ namespace BoatAttack.Fishing
             _glow = Own(new Material(Resources.Load<Shader>("FishingNightSky")) { name = "Festival lantern glow" });
             _glow.SetFloat("_Solid", 1); _glow.SetFloat("_Visibility", 1); _glow.SetColor("_Tint", Color.white);
             BuildCamera(); BuildPalmMap(); BuildFestival();
+            Binoculars=gameObject.AddComponent<FishingXRBinoculars>();Binoculars.Build(c);
         }
         private T Own<T>(T asset) where T : Object { _owned.Add(asset); return asset; }
         private void OnDestroy()

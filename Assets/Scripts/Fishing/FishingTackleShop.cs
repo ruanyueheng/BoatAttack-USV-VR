@@ -54,6 +54,7 @@ namespace BoatAttack.Fishing
         public FishingShopCashier EnsureCashier()
         {
             if (Cashier == null) Cashier = FishingShopCashier.Create(this);
+            if(Cashier!=null && Controller!=null)Cashier.Bind(Controller);
             return Cashier;
         }
         private void ResolveLandingDeck()

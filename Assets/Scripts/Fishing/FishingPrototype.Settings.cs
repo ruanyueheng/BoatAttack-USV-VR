@@ -11,6 +11,7 @@ namespace BoatAttack.Fishing
     public sealed partial class FishingPrototype
     {
         private const string SettingsKey="Fishing.V032.";
+        private const string CreativeModeKey=SettingsKey+"CreativeMode";
         internal const float WindMixBase=.025f,WindRainMixBoost=.05f;
         public float MasterVolume { get; private set; }=1;
         public float MusicVolume { get; private set; }=1;
@@ -124,6 +125,7 @@ namespace BoatAttack.Fishing
         }
         private void InitializeSettings()
         {
+            LoadCreativeModeSetting();
             CoastPresentation=gameObject.AddComponent<FishingCoastalPresentation>();CoastPresentation.Build(this);
             if(_feedback!=null)_feedback.mute=false;
             RegisterAudioSource(_feedback,FishingAudioCategory.Effects,.45f);
@@ -164,6 +166,11 @@ namespace BoatAttack.Fishing
             FishingPerformanceCapture.AttachIfRequested(this);
             FishingDrawBreakdown.AttachIfRequested(this);
             FishingHitchTour.AttachIfRequested(this);
+        }
+        private void LoadCreativeModeSetting()
+        {
+            CreativeMode=!HasIsolatedProfile && PlayerPrefs.GetInt(CreativeModeKey,0)==1;
+            Career?.SetCreativeMode(CreativeMode);
         }
         private void CoastalWorldRendered(UnityEngine.Rendering.ScriptableRenderContext context,Camera camera)
         {

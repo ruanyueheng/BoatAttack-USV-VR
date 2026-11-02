@@ -29,7 +29,8 @@ namespace BoatAttack.Fishing
         private static readonly string[] DesktopTabs={"鱼获图鉴","传说线索","自然观察","海岸调查","海湾日历","群岛航记","世界与秘境","相册图鉴","信件"};
         private static readonly int[] DesktopPages={10,29,15,33,3,6,32,25,24};
         private static readonly string[] DesktopChapters={"海的收藏","夕照中的金帆","与万物相遇","沿着潮线走","听潮与候风","寄自远方的信","找回四段回响","镜头里的回潮海","漂流瓶与回信"};
-        private bool DesktopJournalPage=>_page==10 || _page==29 || _page==15 || _page==33 || _page==3 || _page==6 || _page==9 || _page==32 || _page==25 || _page==26 || _page==24 || _page==31;
+        // The photo album has a dedicated 16:9 layout and large selected-photo preview.
+        private bool DesktopJournalPage=>_page==10 || _page==29 || _page==15 || _page==33 || _page==3 || _page==6 || _page==9 || _page==32 || _page==26 || _page==24 || _page==31;
         private static Color DesktopRule=>FishingUITheme.Blend(new Color(.65f,.48f,.29f,.38f),new Color(.62f,.71f,.77f,.38f));
 
         private Text DesktopText(Transform parent,string name,Rect rect,string text,int size,Color color,bool heading=false)
@@ -140,7 +141,7 @@ namespace BoatAttack.Fishing
             {HomeImage(_desktopBag.transform,"Wildlife note paper "+i,new Rect(696,158+i*93,290,i==2?102:81),FishingUITheme.Light,null,false);_bagNotes[i]=DesktopText(_desktopBag.transform,"Windows wildlife note "+i,new Rect(710,166+i*93,264,i==2?88:67),"",19,FishingUITheme.Ink);}
             DesktopText(_desktopBag.transform,"Windows tool heading",new Rect(696,462,290,30),"工具使用",24,FishingUITheme.Gold,true);
             DesktopText(_desktopBag.transform,"VR tool mapping",new Rect(696,498,290,101),"Y 换装备 · A 互动 · 扳机使用\n握把拿取 · 提灯夜间照路\n生兽肉 + 燃料 → 熔炉炭烤",20,FishingUITheme.Muted);
-            var ecology=DesktopButton(_desktopBag.transform,"Windows home ecology entry",143,new Rect(696,605,290,31),"家园生态 · 鱼缸 / 活捉 / 繁殖",()=>{_ecologyMode=-1;Open(21);},18);ecology.color=Color.clear;
+            var ecology=DesktopButton(_desktopBag.transform,"Windows home ecology entry",143,new Rect(696,605,290,31),"家园建设 · 六类设施 / 饲养",()=>OpenHomeEcology(),18);ecology.color=Color.clear;
             var craft=DesktopButton(_desktopBag.transform,"Windows crafting tab",144,new Rect(677,30,145,34),"制作 / 熔炼",()=>Open(2),20);craft.color=Color.clear;
             var close=DesktopButton(_desktopBag.transform,"Windows bag close",145,new Rect(866,30,124,38),"B 关闭",Close,20);close.color=Color.clear;
             _desktopBag.SetActive(false);
