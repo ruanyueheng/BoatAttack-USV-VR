@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SIM = ROOT / 'Logs' / 'XRSimulator'
 NEUTRAL = dict(a=False, b=False, x=False, y=False, leftClick=False, rightClick=False,
                leftTrigger=0, rightTrigger=0, leftGrip=0, rightGrip=0,
-               leftStick=dict(x=0, y=0), rightStick=dict(x=0, y=0), table=-1)
+               leftStick=dict(x=0, y=0), rightStick=dict(x=0, y=0), table=-1, orchard=-1)
 NORMAL_LEFT = dict(x=-.24, y=1.2, z=.35)
 NORMAL_RIGHT = dict(x=.24, y=1.2, z=.35)
 ZERO = dict(x=0, y=0, z=0)
@@ -88,10 +88,10 @@ class NativeChecks:
         self.evidence['checks'][name] = state
 
     def send(self, frames=9, seconds=0, **changes):
-        before = self.read('state.json')['frame']
         command = self.read('command.json')
         command.update(capture='', fixture='', equip='')
         command.update(changes)
+        command['sequence'] = command.get('sequence', 0)+1
         temporary = SIM / 'v058-command.tmp'
         temporary.write_text(json.dumps(command), encoding='utf-8')
         os.replace(temporary, SIM / 'command.json')
@@ -102,7 +102,9 @@ class NativeChecks:
             if failure.exists() and failure.stat().st_mtime >= self.started:
                 raise RuntimeError(failure.read_text(encoding='utf-8-sig'))
             state = self.read('state.json')
-            if state['frame'] >= before+frames and state['focused'] and time.monotonic() >= not_before:
+            if (state.get('commandSequence') == command['sequence']
+                    and state['frame'] >= state['commandFrame']+frames
+                    and state['focused'] and time.monotonic() >= not_before):
                 assert state['xr'] and state['isolated'] and not state['automated'], state
                 assert state['leftTracked'] and state['rightTracked'] and state['seatReady'], state
                 return state
@@ -247,6 +249,69 @@ class NativeChecks:
         self.output.parent.mkdir(parents=True, exist_ok=True)
         self.output.write_text(json.dumps(self.evidence, ensure_ascii=False, indent=2), encoding='utf-8')
 
+    def move_palm(self, side, target):
+        state = self.read('state.json')
+        for _ in range(2):
+            command = self.read('command.json')
+            correction = rotate(subtract(target, xyz(state[side+'Palm'])), state['originEuler'], inverse=True)
+            state = self.send(**{side: vector(add(xyz(command[side]), correction))})
+        assert distance(xyz(state[side+'Palm']), target) < .01, state
+        return state
+
+    def handcraft(self):
+        for table, material in ((2, 'driftwood'), (3, 'ironIngots')):
+            state = self.send(**dict(NEUTRAL, fixture='ShoreFirstPerson', table=table, equip='FieldGuide',
+                                    head=dict(x=0, y=1.65, z=0), headEuler=ZERO,
+                                    left=NORMAL_LEFT, right=NORMAL_RIGHT, leftEuler=ZERO, rightEuler=ZERO))
+            before = state[material]
+            palm = add(xyz(state['toolGrip']), rotate((0, .026, 0), state['rightPalmEuler']))
+            self.move_palm('right', palm)
+            state = self.send(rightGrip=1)
+            assert state['handcraftActive'] and state['handcraftHeld'] and state['handcraftKind'] == table, state
+            self.remember('directGripStartsCraft'+str(table), state)
+            lifted = add(palm, add((0, .28, 0), rotate((.24, 0, 0), state['originEuler'])))
+            state = self.move_palm('right', lifted)
+            assert state['handcraftHeld'] and state['handcraftStrokes'] == 0, state
+            assert distance(xyz(state['toolGrip']), xyz(state['rightPalm'])) < .08, state
+            self.remember('liftedToolStaysHeldWithoutProgress'+str(table), state)
+            state = self.move_palm('right', palm)
+            strokes = state['handcraftStrokes']
+            if table == 3:
+                self.move_palm('right', add(palm, (0, .14, 0)))
+                state = self.move_palm('right', add(palm, (0, -.08, 0)))
+                assert state['handcraftStrokes'] == strokes+1, state
+            else:
+                axis = rotate((0, 1, 0), state['toolEuler'])
+                for sign in (1, -1, 1):
+                    state = self.move_palm('right', add(palm, tuple(sign*.09*x for x in axis)))
+                assert state['handcraftStrokes'] > strokes, state
+            self.remember('physicalCraftMotionCounts'+str(table), state)
+            self.send(seconds=.7, capture='review-craft-'+str(table))
+            state = self.send(rightGrip=0)
+            assert not state['handcraftHeld'], state
+            state = self.send(b=True)
+            assert not state['handcraftActive'] and state[material] == before, state
+            self.remember('cancelPreservesUnfinishedMaterials'+str(table), state)
+            self.send(b=False)
+
+    def orchard(self):
+        # Prepare a fallen fruit through production shaking; pickup itself uses native grip input.
+        for tree, side in ((0, 'left'), (1, 'right')):
+            self.send(**dict(NEUTRAL, fixture='HomeInterior', equip='FieldGuide',
+                             head=dict(x=0, y=1.65, z=0), headEuler=ZERO,
+                             left=NORMAL_LEFT, right=NORMAL_RIGHT, leftEuler=ZERO, rightEuler=ZERO))
+            self.send(orchard=tree)
+            state = self.send(seconds=2.3)
+            assert state['orchardFruitLanded'], state
+            before = state['islandFruit']
+            self.move_palm(side, add(xyz(state['orchardFruit']), (0, .08, 0)))
+            state = self.send(**{side+'Grip': 1})
+            assert state['islandFruit'] == before+1 and not state['orchardFruitLanded'], state
+            state = self.send(seconds=.5)
+            assert state['islandFruit'] == before+1, 'Held grip repeated the fruit harvest'
+            self.remember(side+'GripPicksOneRealFruit', state)
+            self.send(**NEUTRAL)
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -259,8 +324,10 @@ def main():
         assert initial['xr'] and initial['isolated'] and not initial['automated'], 'Start the isolated native XR simulator first'
         checks.purchases_and_facilities()
         checks.binoculars()
+        checks.handcraft()
+        checks.orchard()
         checks.save(True)
-        print('V058 NATIVE XR PASS: paid real backpack purchases, trigger edge, six facilities, dual-grip assisted optics')
+        print('V058 NATIVE XR PASS: purchases, trigger edge, six facilities, optics, tracked saw/hammer, both-hand fruit pickup')
         print(args.output)
     except BaseException as error:
         checks.save(False, error)

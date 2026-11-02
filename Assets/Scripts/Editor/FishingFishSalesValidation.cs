@@ -20,6 +20,20 @@ namespace BoatAttack.EditorTools
             var original=c.Career.Snapshot();
             try
             {
+                var paged=new FishingCareer();paged.SetCreativeMode(true);
+                Check(paged.Upgrade(UpgradeTrack.Hold),"Paging fixture has room for more than six fish");
+                for(int i=0;i<7;i++)Check(paged.Store(Fish("sale-page-"+i,FishKind.Coral)),"Paging fixture stores fish "+i);
+                c.RestoreShopTestProfile(paged.Snapshot());
+                const System.Reflection.BindingFlags flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+                var notebook=c.XRNotebook;var type=typeof(FishingXRNotebook);
+                type.GetField("_page",flags).SetValue(notebook,13);type.GetField("_offset",flags).SetValue(notebook,0);
+                type.GetMethod("Refresh",flags).Invoke(notebook,null);
+                var actions=(Action[])type.GetField("_actions",flags).GetValue(notebook);
+                var labels=(UnityEngine.UI.Text[])type.GetField("_labels",flags).GetValue(notebook);
+                Check(actions[8]!=null,"Fish box exposes the second page");actions[8]();
+                Check((int)type.GetField("_offset",flags).GetValue(notebook)==6 && labels[6].text=="上一页" && actions[6]!=null,"The sale shortcut preserves the previous-page button");
+                actions[6]();
+                Check((int)type.GetField("_offset",flags).GetValue(notebook)==0 && labels[7].text.Contains("卖鱼") && actions[7]!=null,"The first fish page and sale shortcut remain reachable together");
                 var fixture=new FishingCareer();fixture.MarkOrder();
                 var line=fixture.CurrentOrder.Line(0);
                 var reserved=Fish("sale-reserved",line.Kind,line.Rare);

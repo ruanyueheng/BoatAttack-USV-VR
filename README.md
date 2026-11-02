@@ -2,6 +2,8 @@
 
 海岛生活冒险：驾驶小艇航行、VR 钓鱼、四岛探索、手作生产、家园种养与商店交易。0.58 修复双筒望远镜尺寸与头显双眼对齐、握把拿起锤锯和转轮手作、左右手握把拾果、六类栖地建设入口和落地显示、菜单真实快购，并为汐禾加入呼吸、招呼和交谈动作。操作与验证见[0.58 修复记录](Docs/VALIDATION_V058_VR_INTERACTIONS.md)。
 
+本地审阅已确认 PR #65 包含 #64、两者无合并冲突；补修鱼箱“上一页”被卖鱼入口覆盖的问题，并增加锯锤和左右手拾果的原生 OpenXR 回归。详见[两份 PR 的审阅与本轮验证](Docs/PR64_PR65_REVIEW_AND_VALIDATION.md)。
+
 ## 0.56 与此前整合
 
 本版在已合并的 0.55 上，同步同学 [PR #59](https://github.com/ruanyueheng/BoatAttack-USV-VR/pull/59) 截至 `984a6cf3` 的新增改动：左手夹鱼器与重力悬挂检视、随实际鱼线方向弯曲的 VR 鱼竿、统一震动倍率、提灯显式收回背包和左扳机岸上疾跑。补齐实际背包网格的收灯入口，保留原手部校准、创造模式、航程日期、速度调节、确认退出及 [PR #60](https://github.com/ruanyueheng/BoatAttack-USV-VR/pull/60) 的家园集市修复。详见[0.56 整合与验证](Docs/VALIDATION_V056.md)和[0.55 验证记录](Docs/VALIDATION_V055.md)。

@@ -323,7 +323,7 @@ namespace BoatAttack.Fishing
                 for(int i=0;i<6;i++)
                 {int index=_offset+i;if(index>=_c.Career.Count)break;var fish=_c.Career.Inventory[index];Set(i,FishingSpecies.Name(fish.kind)+(fish.rare?" · 珍珠":"")+"\n"+FishingText.Weight(fish.grams)+" · "+fish.value+" 金币",null);Photo(i,Resources.Load<Texture2D>("FishingFish/"+fish.kind+"Thumbnail"));}
                 Pager(_c.Career.Count);
-                Set(6,"卖鱼 / 鱼货回收",OpenFishSales);
+                Set(7,"卖鱼 / 鱼货回收",OpenFishSales);
             }
             else if(_page==14)
             {
