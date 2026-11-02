@@ -16,6 +16,19 @@ def dot(a, b):
     return sum(x*y for x, y in zip(a, b))
 
 
+def face_cashier(checks):
+    state = checks.send()
+    for _ in range(3):
+        local = base.rotate(base.subtract(base.xyz(state['cashierFace']), base.xyz(state['camera'])),
+                            state['originEuler'], inverse=True)
+        yaw = math.degrees(math.atan2(local[0], local[2]))
+        pitch = -math.degrees(math.atan2(local[1], math.hypot(local[0], local[2])))
+        state = checks.send(headEuler=dict(x=pitch, y=yaw, z=0))
+        if state['cashierVisible']:
+            return state
+    raise AssertionError(('The native headset cannot see the cashier face', state))
+
+
 def walk(checks, target):
     for _ in range(100):
         state = checks.read('state.json')
@@ -101,10 +114,12 @@ def run(checks):
     checks.remember('outdoorAquariumInteraction', state)
     checks.send(b=True)
     checks.send(b=False)
-    state = checks.send(**base.NEUTRAL, fixture='ShopAttendant', headEuler=dict(x=0, y=180, z=0), seconds=.8)
+    state = checks.send(**base.NEUTRAL, fixture='ShopAttendant', headEuler=base.ZERO, seconds=.8)
+    face_cashier(checks)
     gestures = set()
     for index in range(18):
         state = checks.send(seconds=2)
+        assert state['cashierVisible'], state
         gestures.add(state['cashierGesture'])
         if index in (0, 5, 10):
             checks.send(seconds=.7, capture='v060-native-cashier-'+str(index))
