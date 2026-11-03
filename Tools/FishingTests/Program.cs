@@ -21,6 +21,8 @@ internal static class Program
         try
         {
             ClassroomDemoTests.Run(Check);
+            CreativeMaterialTests.Run(Check);
+            RealmDemoTests.Run(Check);
             MusicMathTests.Run(Check);
             AudioTimingTests.Run(Check);
             HomeStorageTests.Run(Check);

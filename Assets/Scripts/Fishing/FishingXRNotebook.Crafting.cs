@@ -78,9 +78,9 @@ namespace BoatAttack.Fishing
             }
             _craftPageNumber.text=(_craftListOffset/8+1)+" / "+Mathf.Max(1,(recipes.Length+7)/8);
             _craftPicture.texture=FishingV023Art.Icon(recipe.Output)??FishingItemIcons.Get(recipe.Output);_craftName.text=FishingBackpack.Name(recipe.Output)+" ×"+recipe.Count;
-            _craftRequirement.text="需要："+FishingRecipes.StationName(recipe.Station)+(smelt?" · 每份 8 秒，关手册后继续":" · 材料齐全后立即制作");
+            _craftRequirement.text="需要："+FishingRecipes.StationName(recipe.Station)+(bag.FreeMaterials?" · 创造模式免普通材料 / 燃料":smelt?" · 每份 8 秒，关手册后继续":" · 材料齐全后立即制作");
             _craftCosts.text="";bool enough=true;int quantity=smelt?_craftQuantity:1;
-            foreach(var cost in recipe.Costs){int needed=cost.count*quantity;int have=bag.Count(cost.item);enough&=have>=needed;_craftCosts.text+=FishingBackpack.Name(cost.item)+"   "+have+" / "+needed+"\n";}
+            foreach(var cost in recipe.Costs){int needed=cost.count*quantity;int have=bag.Count(cost.item);bool free=bag.FreeMaterials && !FishingBackpack.IsQuestItem(cost.item);enough&=free || have>=needed;_craftCosts.text+=FishingBackpack.Name(cost.item)+"   "+(free?"免材料":have+" / "+needed)+"\n";}
             _craftCosts.text=_craftCosts.text.TrimEnd();_craftCosts.fontSize=recipe.Costs.Length>4?19:21;
             _craftQuantityButton.gameObject.SetActive(smelt);_craftFuelButton.gameObject.SetActive(smelt);
             _craftQuantityLabel.text="数量："+_craftQuantity+"  [切换]";var fuel=_craftFuels[_craftFuel];_craftFuelLabel.text="燃料："+FishingBackpack.Name(fuel)+"  [切换]";
@@ -89,7 +89,7 @@ namespace BoatAttack.Fishing
             {
                 int fuelNeeded=(_craftQuantity+FishingRecipes.FuelUnits(fuel)-1)/FishingRecipes.FuelUnits(fuel);
                 foreach(var cost in recipe.Costs)if(cost.item==fuel)fuelNeeded+=cost.count*_craftQuantity;
-                enough&=bag.Count(fuel)>=fuelNeeded;available&=station!=null && station.remaining==0 && station.ready==0;
+                enough&=bag.FreeMaterials || bag.Count(fuel)>=fuelNeeded;available&=station!=null && station.remaining==0 && station.ready==0;
                 _craftMakeLabel.text=!available?"需空闲熔炉":!enough?"材料 / 燃料不足":"加入熔炉";
             }
             else _craftMakeLabel.text=!available?"靠近"+FishingRecipes.StationName(recipe.Station):!enough?"材料不足":"制作  "+FishingBackpack.Name(recipe.Output);

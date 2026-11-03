@@ -276,10 +276,11 @@ namespace BoatAttack.Fishing
         private static readonly int[,] UpgradeCosts = { { 30, 90 }, { 40, 100 }, { 50, 120 }, { 80, 180 }, { 65, 150 }, { 90, 220 } };
 
         public int Coins { get; private set; }
-        // Session-only purchasing policy; never replaces or serializes the real wallet.
+        // Session-only resource policy; real balances and progression remain in the save.
         public bool CreativeMode { get; private set; }
         public string CoinDisplay => CreativeMode ? "∞" : Coins.ToString();
-        public void SetCreativeMode(bool enabled) => CreativeMode=enabled;
+        public void SetCreativeMode(bool enabled)
+        {CreativeMode=enabled;Backpack.FreeMaterials=enabled;Farm.FreeMaterials=enabled;}
         public bool CanAfford(int amount) => amount>=0 && (CreativeMode || Coins>=amount);
         public bool SpendCoins(int amount)
         {
@@ -495,7 +496,7 @@ namespace BoatAttack.Fishing
         {
             var result = new FishingSaveData
             {
-                prologueSeen = PrologueSeen, barbecue = _barbecue.Copy(), homeEcology = _ecology.Copy(), combat = _combat.Copy(),
+                prologueSeen = PrologueSeen, barbecue = PracticeBarbecue?new FishingBarbecueData():_barbecue.Copy(), homeEcology = _ecology.Copy(), combat = _combat.Copy(),
                 calendar = Calendar.Snapshot(), hunting = Hunting.Snapshot(), lore = Lore.Snapshot(), farm=Farm.Snapshot(),
                 engineLevel = EngineLevel, rudderLevel = RudderLevel, cabinLevel = CabinLevel, adventure = Adventure.Snapshot(),
                 hasPendingCatch = HasPendingCatch, pendingCatch = _pending?.Copy(), releasedCatches = ReleasedCatches, orderMarked = OrderMarked,

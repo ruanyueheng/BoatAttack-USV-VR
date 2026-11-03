@@ -8,6 +8,7 @@ namespace BoatAttack.Fishing
     /// Tags show while the player looks at a controller, and once (about 12 s) the first time each context is entered.
     /// The same table feeds the notebook's 操作说明 page and Docs/VR_CONTROLS_V044.md.
     /// </summary>
+    [DefaultExecutionOrder(1600)]
     public sealed class FishingXRHints : MonoBehaviour
     {
         public const string NotebookHelp="B 手册：地图 / 背包 / 设置与救援";
@@ -185,6 +186,7 @@ namespace BoatAttack.Fishing
         }
         /// <summary>Validation capture: fills a tag for a context without needing a headset.</summary>
         public Canvas PreviewForValidation(Context context,bool left){Fill(context);_context=context;var tag=_tags[left?0:1];tag.Group.alpha=1;return tag.Canvas;}
+        public bool IsVisible(bool left){var tag=_tags[left?0:1];return tag!=null && tag.Canvas.gameObject.activeInHierarchy && tag.Group.alpha>0;}
         private void LateUpdate()
         {
             if(_c==null)return;
@@ -210,6 +212,11 @@ namespace BoatAttack.Fishing
             for(int h=0;h<2;h++)
             {
                 var tag=_tags[h];bool show=false;
+                var life=_c.Life;
+                bool optical=life!=null && (life.CameraVisible || life.OwnsVrTrigger || (life.Binoculars!=null && life.Binoculars.Active));
+                bool chart=h==0 && life!=null && life.PalmMap!=null && life.PalmMap.gameObject.activeInHierarchy;
+                // The chart and tags share the same hand anchor; optical views must clear immediately, including fade-out frames.
+                if(optical || chart){tag.Alpha=0;tag.Group.alpha=0;tag.Canvas.gameObject.SetActive(false);continue;}
                 if(FishingXRTracking.TryPose(_c.viewCamera,h==0?XRNode.LeftHand:XRNode.RightHand,out var hand,out _))
                 {
                     var toHand=hand-eye.position;

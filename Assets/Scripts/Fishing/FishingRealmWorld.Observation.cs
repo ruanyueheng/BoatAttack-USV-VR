@@ -66,19 +66,19 @@ namespace BoatAttack.Fishing
         private bool BeginObservation()
         {
             if(!Inside || Island!=3 || _observing || _c.Paused)return false;
-            _observationDesktop=_c.DesktopDisplay;_observationFov=_c.viewCamera.fieldOfView;_observing=true;_focusReady=false;_exitHeld=true;
+            _observationDesktop=_c.DesktopDisplay;_observationFov=_c.viewCamera.fieldOfView;_observing=true;_focusReady=false;_exitHeld=true;_handAim=false;
             _c.StoryModalChanged();_c.FieldWorld.ClearToolPresentation();
             if(_observationDesktop)
             {
                 foreach(var renderer in _scopeSurfaces)renderer.forceRenderingOff=true;
                 _c.Shore.Character.SetTabletopView(true);_c.View.Pointer.LockState=CursorLockMode.Locked;_c.View.Pointer.Visible=false;
             }
-            _c.Notice("寻找「"+StarPatternName(Trial.StarStage)+"」轮廓，保持对焦。",6);return true;
+            _c.Notice("寻找「"+StarPatternName(Trial.StarStage)+"」轮廓。"+(_observationDesktop?"方向键 / 鼠标调镜，按住左键对焦，Esc 收起。":"右摇杆调镜；先松开再按住右扳机持续对焦，自动记录星图，B 收起。"),9);return true;
         }
         public void CancelObservation()
         {
             if(!_observing)return;
-            _observing=false;Trial?.ReleaseFocus();_aimMarker.gameObject.SetActive(false);
+            _observing=false;_handAim=false;Trial?.ReleaseFocus();_aimMarker.gameObject.SetActive(false);
             if(_observationDesktop)
             {
                 foreach(var renderer in _scopeSurfaces)renderer.forceRenderingOff=false;

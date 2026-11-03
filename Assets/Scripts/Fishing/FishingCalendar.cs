@@ -17,6 +17,13 @@ namespace BoatAttack.Fishing
         public double Minute { get; private set; } = 480;
         public bool Automatic { get; private set; } = true;
         public void ToggleAutomatic() => Automatic = !Automatic;
+        public bool AdvanceToDate(int year,int season,int date,int hour)
+        {
+            if(year<1 || year>999 || season<0 || season>3 || date<1 || date>DaysPerSeason || hour<0 || hour>23)return false;
+            int target=(year-1)*DaysPerYear+season*DaysPerSeason+date-1;
+            if(target<Day || (target==Day && hour*60<Minute))return false;
+            Day=target;Minute=hour*60;return true;
+        }
         public bool AdvanceToHour(float hour)
         {
             if(float.IsNaN(hour) || float.IsInfinity(hour) || hour<0 || hour>=24)return false;

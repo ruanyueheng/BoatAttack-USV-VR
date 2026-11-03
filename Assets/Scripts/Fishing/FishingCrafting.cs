@@ -94,7 +94,7 @@ namespace BoatAttack.Fishing
         public static bool CanCraft(FishingBackpack bag,CraftRecipe r,CraftStation station)
         {
             if(bag==null || r==null || r.Station==CraftStation.Furnace || (r.Station!=CraftStation.Hand && station!=r.Station))return false;
-            foreach(var cost in r.Costs)if(bag.Count(cost.item)<cost.count)return false;return true;
+            return bag.CanSupply(r.Costs);
         }
         public static bool Craft(FishingBackpack bag,string id,CraftStation station)
         {var r=Find(id);return CanCraft(bag,r,station) && bag.Exchange(r.Costs,r.Output,r.Count);}

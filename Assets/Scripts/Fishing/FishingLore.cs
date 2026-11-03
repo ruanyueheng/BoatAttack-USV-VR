@@ -11,6 +11,8 @@ namespace BoatAttack.Fishing
         public int rewardedShrines;
         // v20: 2-bit stage checkpoint per realm, 12 echo-shell bits, 2-bit (variant+1) per realm.
         public int realmStages, realmShells, realmVariants;
+        // Optional four-bit masks keep replay checkpoints separate from historical completion and payment.
+        public int realmReplay, realmShellRewards;
         // v20 (V044 sea events): bit layout in FishingSeaLetters.
         public int seaLog;
         // v20: tideLog bit0-11 low-tide finds; keeperLog bit0-5 boats home, bit6-11 letters read, bit12-21 nights kept.
@@ -62,7 +64,8 @@ namespace BoatAttack.Fishing
             : island == 2 ? "先退潮，再下舱\n推货上铜台，回阀迎归潮"
             : "拾级望星\n认清海鸥、船锚与归航星";
         public bool Met(int id) => id >= 0 && id < ResidentCount && (_data.residents & (1 << id)) != 0;
-        public bool Cleared(int island) => island >= 0 && island < 4 && (_data.shrines & (1 << island)) != 0;
+        public bool Replaying(int island) => island >= 0 && island < 4 && (_data.realmReplay & (1 << island)) != 0;
+        public bool Cleared(int island) => island >= 0 && island < 4 && (_data.shrines & (1 << island)) != 0 && !Replaying(island);
         public int ClearCount { get { int n = 0; for (int i = 0; i < 4; i++) if (Cleared(i)) n++; return n; } }
         public bool Finale => _data.finale;
         public bool MayorAccepted => _data.mayorAccepted;
@@ -98,6 +101,20 @@ namespace BoatAttack.Fishing
         {
             if (island < 0 || island >= 4 || shell < 0 || shell >= 3 || ShellFound(island, shell)) return false;
             _data.realmShells |= 1 << (island * 3 + shell); return true;
+        }
+        public bool TryClaimShellReward(int island)
+        {
+            if(island<0 || island>=4 || ShellCount(island)!=3 || (_data.realmShellRewards & (1<<island))!=0)return false;
+            _data.realmShellRewards|=1<<island;return true;
+        }
+        public bool ResetRealm(int island)
+        {
+            if(island<0 || island>=4)return false;
+            // Older saves have no reward flag; a complete shell set was already settled before this reset.
+            if(ShellCount(island)==3)_data.realmShellRewards|=1<<island;
+            _data.realmStages&=~(3<<(island*2));_data.realmShells&=~(7<<(island*3));_data.realmVariants&=~(3<<(island*2));
+            if((_data.shrines&(1<<island))!=0)_data.realmReplay|=1<<island;
+            return true;
         }
         /// <summary>Per-save puzzle variant, chosen once on first entry so revisits stay consistent.</summary>
         public int RealmVariant(int island, Func<int> choose)
@@ -152,6 +169,7 @@ namespace BoatAttack.Fishing
         public int Clear(int island)
         {
             if (island < 0 || island >= 4 || Cleared(island)) return 0;
+            if(Replaying(island)){_data.realmReplay&=~(1<<island);return 0;}
             _data.shrines |= 1 << island; return 90;
         }
         public int Finish()
@@ -161,7 +179,7 @@ namespace BoatAttack.Fishing
         }
         public LoreData Snapshot() => new LoreData { residents = _data.residents, shrines = _data.shrines, finale = _data.finale,
             mayorAccepted = MayorAccepted, chartFound = ChartFound, grandTreasureFound = GrandTreasureFound, rewardedShrines = RewardedShrines,
-            realmStages = _data.realmStages, realmShells = _data.realmShells, realmVariants = _data.realmVariants, seaLog = _data.seaLog, tideLog = _data.tideLog, keeperLog = _data.keeperLog, photoLog = _data.photoLog, seaPost = _data.seaPost, seaPostDay = _data.seaPostDay };
+            realmStages = _data.realmStages, realmShells = _data.realmShells, realmVariants = _data.realmVariants, realmReplay = _data.realmReplay, realmShellRewards = _data.realmShellRewards, seaLog = _data.seaLog, tideLog = _data.tideLog, keeperLog = _data.keeperLog, photoLog = _data.photoLog, seaPost = _data.seaPost, seaPostDay = _data.seaPostDay };
         public static bool TryRestore(LoreData data, out FishingLore lore, int version = FishingSaveData.CurrentVersion)
         {
             lore = null;
@@ -171,7 +189,8 @@ namespace BoatAttack.Fishing
                 || (data.grandTreasureFound && (!data.chartFound || data.shrines != 15 || data.rewardedShrines != 15))
                 || (version < 16 && !QuestPristine(data))
                 || data.realmStages < 0 || data.realmStages > 255 || data.realmShells < 0 || data.realmShells > 4095 || data.realmVariants < 0 || data.realmVariants > 255
-                || (version < 20 && (data.realmStages != 0 || data.realmShells != 0 || data.realmVariants != 0))
+                || data.realmReplay<0 || data.realmReplay>15 || (data.realmReplay & ~data.shrines)!=0 || data.realmShellRewards<0 || data.realmShellRewards>15
+                || (version < 20 && (data.realmStages != 0 || data.realmShells != 0 || data.realmVariants != 0 || data.realmReplay != 0 || data.realmShellRewards != 0))
                 || data.seaLog < 0 || data.seaLog >= FishingSeaLetters.LogLimit || (version < 20 && data.seaLog != 0)
                 || data.tideLog < 0 || data.tideLog >= 1 << 12 || data.keeperLog < 0 || data.keeperLog >= 1 << 22 || (version < 20 && (data.tideLog != 0 || data.keeperLog != 0))
                 || data.photoLog < 0 || data.photoLog >= 1 << 24 || (version < 20 && data.photoLog != 0)
@@ -179,7 +198,7 @@ namespace BoatAttack.Fishing
             for (int i = 0; i < 4; i++) if (((data.realmStages >> (i * 2)) & 3) > MaxStage(i)) return false;
             lore = new FishingLore { _data = new LoreData { residents = data.residents, shrines = data.shrines, finale = data.finale,
                 mayorAccepted = data.mayorAccepted, chartFound = data.chartFound, grandTreasureFound = data.grandTreasureFound, rewardedShrines = data.rewardedShrines,
-                realmStages = data.realmStages, realmShells = data.realmShells, realmVariants = data.realmVariants, seaLog = data.seaLog, tideLog = data.tideLog, keeperLog = data.keeperLog, photoLog = data.photoLog, seaPost = data.seaPost, seaPostDay = data.seaPostDay } }; return true;
+                realmStages = data.realmStages, realmShells = data.realmShells, realmVariants = data.realmVariants, realmReplay = data.realmReplay, realmShellRewards = data.realmShellRewards, seaLog = data.seaLog, tideLog = data.tideLog, keeperLog = data.keeperLog, photoLog = data.photoLog, seaPost = data.seaPost, seaPostDay = data.seaPostDay } }; return true;
         }
     }
 
@@ -304,14 +323,14 @@ namespace BoatAttack.Fishing
         public FishingLore Lore { get; private set; } = new FishingLore();
         public int CompleteShrine(int island)
         {
-            if (Coins > 100000000 - 90) return 0;
+            if (!Lore.Replaying(island) && Coins > 100000000 - 90) return 0;
             int pay = Lore.Clear(island); Coins += pay; return pay;
         }
         /// <summary>-1 if already found; otherwise coins paid (30 when the realm's third shell completes its set).</summary>
         public int CollectRealmShell(int island, int shell)
         {
             if (!Lore.FindShell(island, shell)) return -1;
-            if (Lore.ShellCount(island) < 3 || Coins > 100000000 - 30) return 0;
+            if (Coins > 100000000 - 30 || !Lore.TryClaimShellReward(island)) return 0;
             Coins += 30; return 30;
         }
         public int CompleteEchoVoyage()

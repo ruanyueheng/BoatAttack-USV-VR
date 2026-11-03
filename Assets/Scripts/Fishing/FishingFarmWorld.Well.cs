@@ -47,7 +47,7 @@ namespace BoatAttack.Fishing
         }
         private void UpdateCanWater()
         {
-            if(_canWater==null)return;int water=_c.Career.Farm.Water;
+            if(_canWater==null)return;int water=_c.Career.Farm.AvailableWater;
             _canWater.gameObject.SetActive(water>0);if(water<=0)return;
             var normal=_can.InverseTransformDirection(Vector3.up).normalized;
             if(water==_liquidAmount && (normal-_liquidNormal).sqrMagnitude<1e-10f)return;

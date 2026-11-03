@@ -22,6 +22,7 @@ namespace BoatAttack.Fishing
         public int Selected { get; private set; }
         public int CollectedMask { get; private set; }
         public int AnimalMask { get; private set; }
+        public bool FreeMaterials { get; internal set; }
         public FieldItem Equipped => _slots[Selected].item;
         public int UsedSlots { get { int n=0;foreach(var s in _slots)if(s.count>0)n++;return n; } }
         public FishingBackpack(bool starter=true,int capacity=SlotCount)
@@ -121,15 +122,31 @@ namespace BoatAttack.Fishing
             }
             return result;
         }
-        /// <summary>Copy, consume, then add; no loss/duplication on missing input or a full output bag.</summary>
-        public bool Exchange(FieldStack[] costs,FieldItem output,int count)
+        public bool CanSupply(FieldStack[] costs)
+        {
+            if(costs==null)return false;
+            for(int i=0;i<costs.Length;i++)
+            {
+                var cost=costs[i];
+                if(cost==null || !Defined(cost.item) || cost.item==FieldItem.Empty || cost.count<=0)return false;
+                if(FreeMaterials && !IsQuestItem(cost.item))continue;
+                long needed=0;
+                for(int j=0;j<=i;j++)if(costs[j].item==cost.item)needed+=costs[j].count;
+                if(Count(cost.item)<needed)return false;
+            }
+            return true;
+        }
+        /// <summary>Atomic material exchange. Quest keys and explicit sales always consume real items.</summary>
+        public bool Exchange(FieldStack[] costs,FieldItem output,int count,bool allowFreeMaterials=true)
         {
             if(costs==null || count<0 || (output==FieldItem.Empty)!=(count==0))return false;
             var next=new FishingBackpack(false,Capacity);
             for(int i=0;i<Capacity;i++)next._slots[i]=_slots[i].Copy();
             foreach(var cost in costs)
             {
-                if(cost==null || !Defined(cost.item) || cost.item==FieldItem.Empty || cost.count<=0 || next.Count(cost.item)<cost.count)return false;
+                if(cost==null || !Defined(cost.item) || cost.item==FieldItem.Empty || cost.count<=0)return false;
+                if(FreeMaterials && allowFreeMaterials && !IsQuestItem(cost.item))continue;
+                if(next.Count(cost.item)<cost.count)return false;
                 int left=cost.count;
                 foreach(var slot in next._slots)
                 {

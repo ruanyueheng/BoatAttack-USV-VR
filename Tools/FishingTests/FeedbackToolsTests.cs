@@ -40,6 +40,34 @@ internal static class FeedbackToolsTests
         check(liftedSaw.Strokes==0,"Lifting a saw out of the kerf and replacing it cannot join disconnected points into a cut");
         liftedSaw.SampleContact(0,0,.02f,true);
         check(liftedSaw.Strokes==1,"The same saw resumes a real push through the wood after being replaced");
+        foreach(var kind in new[]{FishingHandTaskKind.Saw,FishingHandTaskKind.Sieve})foreach(int sign in new[]{-1,1})
+        {
+            var shortStroke=new FishingHandTask(kind);float previous=0;shortStroke.Sample(0,0,.02f);
+            for(int frame=1;frame<=20;frame++)shortStroke.Sample(sign*.045f*frame/20,0,.02f);
+            check(shortStroke.Strokes==0,"The initial 4.5 cm half-stroke stays below the unchanged 7.5 cm threshold "+kind+" / "+sign);
+            previous=sign*.045f;
+            for(int stroke=0;stroke<14 && !shortStroke.Complete;stroke++)
+            {
+                float next=stroke%2==0?-sign*.045f:sign*.045f;
+                for(int frame=1;frame<=20;frame++)shortStroke.Sample(previous+(next-previous)*frame/20,0,.02f);
+                previous=next;
+                if(stroke==0)check(shortStroke.Strokes==1,"A real 9 cm reversal starts from its turning point rather than the initial centre "+kind+" / "+sign);
+            }
+            check(shortStroke.Complete,"Continuous centre-started short strokes finish without an artificial long priming gesture "+kind+" / "+sign);
+            var longStroke=new FishingHandTask(kind);longStroke.Sample(0,0,.02f);
+            for(int frame=1;frame<=24;frame++)longStroke.Sample(sign*.12f*frame/24,0,.02f);
+            check(longStroke.Strokes==1,"A normal smooth 12 cm initial push still counts once "+kind+" / "+sign);
+            for(int frame=0;frame<80;frame++)longStroke.Sample(sign*.12f+(frame%2==0?.004f:-.004f),0,.02f);
+            check(longStroke.Strokes==1,"Stationary millimetre jitter cannot add a stroke after normal work "+kind+" / "+sign);
+            var noisyPush=new FishingHandTask(kind);noisyPush.Sample(0,0,.02f);
+            for(int centimetre=1;centimetre<=12;centimetre++)
+            {
+                noisyPush.Sample(sign*centimetre*.01f,0,.02f);
+                noisyPush.Sample(sign*(centimetre*.01f-.00075f),0,.02f);
+                noisyPush.Sample(sign*centimetre*.01f,0,.02f);
+            }
+            check(noisyPush.Strokes==1,"A real 12 cm first push survives 0.75 mm tracking rebounds and counts once "+kind+" / "+sign);
+        }
         var looseCrank=new FishingHandTask(FishingHandTaskKind.Winder);
         looseCrank.SampleContact(.1f,0,.02f,true);looseCrank.SampleContact(0,.1f,.02f,false);
         looseCrank.SampleContact(-.1f,0,.02f,true);

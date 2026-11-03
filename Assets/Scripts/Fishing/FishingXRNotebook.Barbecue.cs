@@ -8,11 +8,17 @@ namespace BoatAttack.Fishing
         private void RefreshBarbecuePage()
         {
             var data=_c.Career.Barbecue;bool near=_c.CoastWorld!=null && _c.CoastWorld.NearGrill;
-            _status.text="海风烧烤 · 渔屋鱼箱\n选一尾海鱼取出上架，炭烤18秒\n收起手册后继续烤制；进度自动保存\n香烤海鱼使用后恢复50%体力\n"+(near?_c.VisibleMessage:"请先走到渔屋旁的烧烤架前");
+            bool practice=data.fish!=null?_c.Career.PracticeBarbecue:_c.CreativeMode;
+            _status.text="海风烧烤 · 渔屋鱼箱\n"+(practice?FishingCoastRules.PracticeRoastHint:"选一尾海鱼取出上架，炭烤18秒\n收起手册后继续烤制；进度自动保存")+"\n香烤海鱼使用后恢复50%体力\n"+(near?_c.VisibleMessage:"请先走到渔屋旁的烧烤架前");
             if(data.fish!=null)
             {
                 _status.text+="\n"+FishingSpecies.Name(data.fish.kind)+(_c.Career.BarbecueReady?" · 已烤熟":" · 余下 "+Mathf.CeilToInt(data.remaining)+"秒");
                 Set(0,_c.Career.BarbecueReady?"领取香烤海鱼":"海鱼烤制中",near && _c.Career.BarbecueReady?(Action)(()=>{_c.CoastWorld.Collect();Refresh();}):null);
+                Photo(0,Resources.Load<Texture2D>("FishingV039/GrilledFishThumbnail"));
+            }
+            else if(_c.CreativeMode)
+            {
+                Set(0,"零材料练习烤鱼\n不消耗鱼箱中的真实鱼获",near?(Action)(()=>{_c.CoastWorld.StartRoasting();Refresh();}):null);
                 Photo(0,Resources.Load<Texture2D>("FishingV039/GrilledFishThumbnail"));
             }
             else

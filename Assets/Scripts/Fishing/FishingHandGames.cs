@@ -48,7 +48,7 @@ namespace BoatAttack.Fishing
         private bool _ready,_calibrated,_exitHeld,_desktopLabels;
         private int _index,_lastPercent=-1,_lastInteractionState=-1;
         private float _started,_cameraFov;
-        private float _motionSpeed;
+        private float _motionSpeed,_sawMotion,_sawCutX=-.12f;
         private float _hapticAt,_audioAt;
         public static Vector2 SieveMotionPoint(Vector3 trackedPosition,Vector3 calibratedCenter,Quaternion calibratedFrame)
         {var relative=Quaternion.Inverse(calibratedFrame)*(trackedPosition-calibratedCenter);return new Vector2(relative.x,relative.y);}
@@ -59,7 +59,7 @@ namespace BoatAttack.Fishing
         public Vector3 Approach(int index)=>_stations[index].TransformPoint(new Vector3(0,0,.60f));
         public Transform ActiveTool=>!Active?null:_index==1?_crank:_tools[_index];
         public Vector3 HandlePoint=>!Active?Vector3.zero:_rightGrip.position;
-        public Vector3 WorkPoint=>!Active || _index<2?Vector3.zero:_stations[_index].TransformPoint(_index==2?new Vector3(-.12f,1.025f,0):new Vector3(-.10f,ForgeSurface(_task.Progress),-.12f));
+        public Vector3 WorkPoint=>!Active || _index<2?Vector3.zero:_stations[_index].TransformPoint(_index==2?new Vector3(_sawCutX,1.025f,0):new Vector3(-.10f,ForgeSurface(_task.Progress),-.12f));
         public Vector3 ToolContact=>!Active || _index<2?Vector3.zero:_tools[_index].TransformPoint(_index==2?new Vector3(.08f,.35f,0):new Vector3(.132f,.40f,0));
         public static string Name(int index)=>index==0?"潮汐摇筛":index==1?"手摇绕绳":index==2?"往复锯木":"锻锤塑形";
         public static string StartHint(bool desktop)=>desktop?"E 动手试试":"握柄旁按握把 · 摇筛支持左右手";
@@ -211,7 +211,7 @@ namespace BoatAttack.Fishing
                 _c.Shore.SetCrouch(false);
                 if(_c.Shore.Crouched){_c.Notice("站起身后再开始桌边手作。",4);return false;}
             }
-            _index=index;_task=task;_career=_c.Career;_ready=_calibrated=false;_exitHeld=_recipeHeld=true;_mouse=_motion=new Vector2(.1f,0);
+            _index=index;_task=task;_career=_c.Career;if(index==2)_sawCutX=-.12f;_ready=_calibrated=false;_exitHeld=_recipeHeld=true;_mouse=_motion=new Vector2(.1f,0);
             BeginWorkpiece(index);
             _motionSpeed=_visualSpeed=_shakePhase=_emission=0;_trackedToolHeld=_hasTrackedContact=_sieveHeldLeft=false;_lastInteractionState=-1;
             _frame=Quaternion.Euler(0,_c.Shore.Actor.eulerAngles.y,0);_toolHome=_tools[index].localPosition;_toolRest=_tools[index].localRotation;
@@ -245,7 +245,7 @@ namespace BoatAttack.Fishing
                 _c.Shore.Character.InteractionLean=_c.Shore.Actor.forward*.16f-Vector3.up*(index==0?.15f:.06f);
                 _cameraPosition=_c.Shore.Character.EyePosition;
             }
-            _canvas.gameObject.SetActive(!_c.DesktopDisplay);_title.text=Name(index);
+            _canvas.gameObject.SetActive(!_c.DesktopDisplay);_title.text=Name(index)+(_c.CreativeMode?" · 材料免消耗":"");
             Cursor.lockState=CursorLockMode.None;Cursor.visible=true;return true;
         }
         public void SwitchForgeOutput()
@@ -297,11 +297,17 @@ namespace BoatAttack.Fishing
             var local=_stations[_index].InverseTransformPoint(ToolContact)-_stations[_index].InverseTransformPoint(WorkPoint);
             if(_index==2)
             {
-                var a=tool.TransformPoint(new Vector3(.08f,.20f,0));var b=tool.TransformPoint(new Vector3(.08f,.60f,0));
-                var blade=b-a;var nearest=a+blade*Mathf.Clamp01(Vector3.Dot(WorkPoint-a,blade)/blade.sqrMagnitude);
-                point=new Vector2(-_stations[2].InverseTransformPoint(palm).z,0);
-                return Vector3.Distance(nearest,WorkPoint)<.08f && Mathf.Abs(Vector3.Dot(tool.up,_stations[2].forward))>.6f
-                    && Vector3.Dot(tool.right,Vector3.down)>.5f;
+                // Follow the blade, not a hidden point or the table's forward axis, when the player chooses a cut.
+                if(_hasTrackedContact)_sawMotion+=Vector3.Dot(palm-_lastTrackedContact,tool.up);else _sawMotion=0;
+                _lastTrackedContact=palm;_hasTrackedContact=true;point=new Vector2(_sawMotion,0);
+                var a=_stations[2].InverseTransformPoint(tool.TransformPoint(new Vector3(.08f,.20f,0)));
+                var b=_stations[2].InverseTransformPoint(tool.TransformPoint(new Vector3(.08f,.60f,0)));
+                if(Mathf.Abs(b.z-a.z)<.01f || Mathf.Abs(Vector3.Dot(tool.up,_stations[2].forward))<=.6f
+                    || Vector3.Dot(tool.right,Vector3.down)<=.5f)return false;
+                var cut=Vector3.Lerp(a,b,Mathf.Clamp01(-a.z/(b.z-a.z)));
+                if(Mathf.Abs(cut.x)>.275f || Mathf.Abs(cut.z)>.11f || cut.y<.95f || cut.y>1.065f)return false;
+                if(_task.Strokes==0)_sawCutX=Mathf.Clamp(cut.x,-.25f,.25f);
+                return Mathf.Abs(cut.x-_sawCutX)<.08f;
             }
             var previous=_lastTrackedContact;bool observed=_hasTrackedContact;_lastTrackedContact=local;_hasTrackedContact=true;
             point=new Vector2(local.x,local.y);
@@ -426,7 +432,7 @@ namespace BoatAttack.Fishing
             {
                 _lastPercent=percent;_lastInteractionState=interactionState;
                 _status.text=FishingXRText.Adapt((interactionState==0?"松开握把，对准桌上握柄再握住。":interactionState==1?(_index==0?"靠近任一筛柄，按住左或右握把拿起。":"伸手靠近握柄，按住右握把拿起。"):interactionState==2?(_index==0?"握住筛柄 · 左右往复":_index==1?"已握住摇柄 · 围绕轮轴画圈":_index==2?"锯子仍在手中 · 将锯齿放回木料":"锤子仍在手中 · 对准铁坯再敲击"):_index==1?"右握把握住摇柄 · 转三圈绕线":_index==3?"右握把抬锤 · 锤面落到铁坯":_index==2?"右握把握锯 · 沿木料前后推拉":(_sieveHeldLeft?"左":"右")+"握把握住筛柄 · 左右往复")
-                    +"\n"+(_index==3?FishingBackpack.Name(_task.Output)+" · A切换配方\n":_index==1?"纤维×3 → 绳索×"+_task.OutputCount+"\n":"")+(_index==1?Count+" / 3 圈":_task.Strokes+" / "+_task.StrokeTarget+" 次")+"    B 收起");
+                    +"\n"+(_index==3?FishingBackpack.Name(_task.Output)+" · A切换配方\n":_index==1?(_c.CreativeMode?"":"纤维×3 → ")+"绳索×"+_task.OutputCount+"\n":"")+(_index==1?Count+" / 3 圈":_task.Strokes+" / "+_task.StrokeTarget+" 次")+"    B 收起");
             }
             if(_task.Complete && held && _ready && tracked && (!xr || _trackedToolHeld))
             {

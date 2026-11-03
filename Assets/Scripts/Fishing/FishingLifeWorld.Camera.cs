@@ -12,6 +12,7 @@ namespace BoatAttack.Fishing
         public const int PhotoWidth = 320, PhotoHeight = 180, AlbumLimit = 36, JpegQuality = 80;
         public bool Viewfinding { get; private set; }
         public bool VrRaised { get; private set; }
+        public bool CameraVisible => (_prop!=null && _prop.gameObject.activeInHierarchy) || (_frame!=null && _frame.gameObject.activeInHierarchy);
         public int PhotosTaken { get; private set; }
         public int LastEntry { get; private set; } = -1;
         public string LastPhotoPath { get; private set; } = "";
@@ -140,16 +141,21 @@ namespace BoatAttack.Fishing
             int entry = Subject(_photoCamera);
             bool propWasOn = _prop.gameObject.activeSelf, frameWasOn = _frame.gameObject.activeSelf;
             _prop.gameObject.SetActive(false); _frame.gameObject.SetActive(false);
-            var previous = RenderTexture.active; Texture2D image = null; string path = "";
+            var previous = RenderTexture.active; Texture2D image = null; string path = "", failure="照片生成失败，请重试。";
             try
             {
                 _photoCamera.Render(); RenderTexture.active = _film;
                 image = new Texture2D(PhotoWidth, PhotoHeight, TextureFormat.RGB24, false); image.ReadPixels(new Rect(0, 0, PhotoWidth, PhotoHeight), 0, 0); image.Apply();
                 path = SaveToAlbum(image.EncodeToJPG(JpegQuality), entry);
             }
-            catch (Exception ex) { Debug.LogWarning("[LIFE] Photo not saved: " + ex.Message); }
+            catch (Exception ex)
+            {
+                failure=ex is UnauthorizedAccessException?"相册目录不可写，请退出游戏后重试；原有照片已保留。"
+                    :ex is IOException?"照片保存失败，请检查剩余空间后重试；原有照片已保留。":"照片生成失败，请重试；原有照片已保留。";
+                Debug.LogWarning("[LIFE] Photo not saved ("+ex.GetType().Name+"): " + ex.Message);
+            }
             finally { RenderTexture.active = previous; if (image != null) Destroy(image); _prop.gameObject.SetActive(propWasOn); _frame.gameObject.SetActive(frameWasOn); }
-            if (path.Length == 0) { _c.Notice("照片没能冲洗出来（存储不可用），请检查空间或权限后重试。", 5); return ""; }
+            if (path.Length == 0) { _c.Notice(failure, 5); return ""; }
             _shutter.Play(); _flash = Time.unscaledTime; PhotosTaken++; LastEntry = entry; LastPhotoPath = path;
             if (Vr) Haptic();
             int pay = entry >= 0 ? _c.Career.RecordPhoto(entry) : 0;
@@ -169,9 +175,11 @@ namespace BoatAttack.Fishing
         }
         private string SaveToAlbum(byte[] jpg, int entry)
         {
+            PrepareAlbumStorage();
             var dir = AlbumDirectory; Directory.CreateDirectory(dir);
             var files = AlbumFiles(dir);
-            int next = files.Count == 0 ? 0 : files.Max(f => f.sequence) + 1;
+            var all=PhotoFiles();
+            int next = all.Count == 0 ? 0 : all.Max(f => f.sequence) + 1;
             var path = Path.Combine(dir, FishingPhotoCodex.FileName(next, _c.Career.Calendar.Day, entry));
             var temporary = path + ".tmp";
             try { File.WriteAllBytes(temporary, jpg); File.Move(temporary, path); }
@@ -184,6 +192,58 @@ namespace BoatAttack.Fishing
                 { Debug.LogWarning("[LIFE] Old photo retained: " + ex.Message); }
             }
             return path;
+        }
+
+        private string _preparedAlbumDirectory,_loadedAlbumDirectory;
+        private bool _legacyAlbumFallback;
+        private void PrepareAlbumStorage()
+        {
+            string dir=AlbumDirectory;
+            if(_preparedAlbumDirectory==dir)return;
+            _legacyAlbumFallback=!ImportLegacyAlbum(_c.LegacyAlbumDirectory,dir);
+            _preparedAlbumDirectory=dir;
+        }
+        /// <summary>Copy old external photos once; keep originals and retry interrupted imports on the next session.</summary>
+        public static bool ImportLegacyAlbum(string legacy,string destination)
+        {
+            if(legacy==destination || !Directory.Exists(legacy))return true;
+            string marker=Path.Combine(destination,".external-imported");
+            if(File.Exists(marker))return true;
+            bool complete=true;
+            try
+            {
+                Directory.CreateDirectory(destination);
+                foreach(var photo in AlbumFiles(legacy))
+                {
+                    string target=Path.Combine(destination,photo.name),temporary=target+".import.tmp";
+                    if(File.Exists(target))continue;
+                    try{File.Copy(Path.Combine(legacy,photo.name),temporary,true);File.Move(temporary,target);}
+                    catch(Exception ex) when(ex is IOException || ex is UnauthorizedAccessException)
+                    {complete=false;Debug.LogWarning("[LIFE] Original photo retained during import ("+ex.GetType().Name+"): "+ex.Message);}
+                    finally{if(File.Exists(temporary))File.Delete(temporary);}
+                }
+                if(complete)File.WriteAllText(marker,"Original external photos retained.");
+            }
+            catch(Exception ex) when(ex is IOException || ex is UnauthorizedAccessException)
+            {complete=false;Debug.LogWarning("[LIFE] Legacy album retained ("+ex.GetType().Name+"): "+ex.Message);}
+            return complete;
+        }
+        private List<(string path,int sequence,int day,int entry)> PhotoFiles()
+        {
+            PrepareAlbumStorage();
+            var result=new List<(string path,int sequence,int day,int entry)>();
+            foreach(var dir in _legacyAlbumFallback?new[]{AlbumDirectory,_c.LegacyAlbumDirectory}:new[]{AlbumDirectory})
+            {
+                try
+                {
+                    foreach(var photo in AlbumFiles(dir))
+                        if(!result.Any(p=>Path.GetFileName(p.path)==photo.name))result.Add((Path.Combine(dir,photo.name),photo.sequence,photo.day,photo.entry));
+                }
+                catch(Exception ex) when(ex is IOException || ex is UnauthorizedAccessException)
+                {Debug.LogWarning("[LIFE] Album cannot be read ("+ex.GetType().Name+"): "+ex.Message);}
+            }
+            result.Sort((a,b)=>a.sequence.CompareTo(b.sequence));
+            return result;
         }
         public static List<(string name, int sequence, int day, int entry)> AlbumFiles(string dir)
         {
@@ -204,15 +264,18 @@ namespace BoatAttack.Fishing
         {
             get
             {
-                if (!_albumDirty) return _album;
+                if (!_albumDirty && _loadedAlbumDirectory==AlbumDirectory) return _album;
+                _loadedAlbumDirectory=AlbumDirectory;
                 _albumDirty = false;
                 foreach (var a in _album) if (a.tex != null) Destroy(a.tex);
                 _album.Clear();
-                foreach (var f in AlbumFiles(AlbumDirectory))
+                var files=PhotoFiles();
+                foreach (var f in files.Skip(Math.Max(0,files.Count-AlbumLimit)))
                 {
-                    var tex = new Texture2D(2, 2, TextureFormat.RGB24, false) { name = f.name, wrapMode = TextureWrapMode.Clamp };
-                    try { if (tex.LoadImage(File.ReadAllBytes(Path.Combine(AlbumDirectory, f.name)), true)) { _album.Add((tex, f.day, f.entry)); continue; } }
-                    catch (IOException) { }
+                    var tex = new Texture2D(2, 2, TextureFormat.RGB24, false) { name = Path.GetFileName(f.path), wrapMode = TextureWrapMode.Clamp };
+                    try { if (tex.LoadImage(File.ReadAllBytes(f.path), true)) { _album.Add((tex, f.day, f.entry)); continue; } }
+                    catch (Exception ex) when(ex is IOException || ex is UnauthorizedAccessException)
+                    {Debug.LogWarning("[LIFE] Photo cannot be read ("+ex.GetType().Name+"): "+ex.Message);}
                     Destroy(tex);
                 }
                 return _album;

@@ -234,12 +234,40 @@ namespace BoatAttack.Fishing
             }
         }
         public bool TryPickupTarget(out Pickup pickup,bool refresh=true){if(refresh)Sense();pickup=_nearby;return pickup!=null;}
+        public bool TryPickupTarget(Vector3 palm,out Pickup pickup)
+        {
+            pickup=null;float nearest=FishingXRGrab.Reach;
+            if(!_c.Ashore || _c.Paused)return false;
+            foreach(var candidate in _pickups)
+            {
+                if(!PickupAvailable(candidate) || !PickupContact(candidate,palm,out float distance) || distance>=nearest)continue;
+                pickup=candidate;nearest=distance;
+            }
+            return pickup!=null;
+        }
+        private bool PickupAvailable(Pickup pickup)
+        {
+            if(pickup==null || pickup.Root==null || !pickup.Root.gameObject.activeInHierarchy || _c.Career.Backpack.Collected(pickup.Id)
+                || Vector3.Distance(pickup.Feet,_c.Shore.Position)>=2.5f)return false;
+            var eye=UnityEngine.XR.XRSettings.isDeviceActive?_c.viewCamera.transform.position:_c.Shore.Character.EyePosition;
+            return _c.Shore.ClearSight(eye,pickup.Root.position+(pickup.Cache?Vector3.up*.3f:Vector3.zero),pickup.Root);
+        }
+        private bool PickupContact(Pickup pickup,Vector3 palm,out float distance)
+        {
+            var contact=FishingContactGeometry.ClosestPoint(pickup.Root,palm);distance=Vector3.Distance(palm,contact);
+            return distance<FishingXRGrab.Reach && _c.Shore.ClearSight(palm,contact,pickup.Root);
+        }
         public bool PickupById(int id,FieldItem expectedItem,int expectedCount)
         {
             if(_c.Paused || !_c.Ashore)return false;
             Pickup pickup=null;foreach(var p in _pickups)if(p.Id==id){pickup=p;break;}
-            if(pickup==null || pickup.Item!=expectedItem || pickup.Count!=expectedCount || pickup.Root==null || !pickup.Root.gameObject.activeInHierarchy
-                || Vector3.Distance(pickup.Feet,_c.Shore.Position)>=2.5f || !_c.Shore.ClearSight(_c.Shore.Character.EyePosition,pickup.Root.position+(pickup.Cache?Vector3.up*.3f:Vector3.zero),pickup.Cache?pickup.Root:null))return false;
+            if(!PickupAvailable(pickup) || pickup.Item!=expectedItem || pickup.Count!=expectedCount)return false;
+            if(UnityEngine.XR.XRSettings.isDeviceActive && !_c.Automated)
+            {
+                if(!_c.Hands.TryControllerPalm(false,out var right,out _) || !_c.Hands.TryControllerPalm(true,out var left,out _)
+                    || !Application.isFocused || _c.XRSeat.HeadBlocked || _c.XRNotebook.BlocksGameplay || _c.StoryBlocksGameplay || _c.ShopBlocksGameplay || _c.WorldActionBusy
+                    || (!PickupContact(pickup,right,out _) && !PickupContact(pickup,left,out _)))return false;
+            }
             bool collected=_c.CollectFieldItem(id,expectedItem,expectedCount);
             if(collected){if(pickup.Cache){pickup.OpenedAt=Time.time;_c.WorldAudio?.Play("MechanismClick",pickup.Root.position,.4f);}RefreshPickups();ShowPickupPreview(expectedItem);}
             return collected;

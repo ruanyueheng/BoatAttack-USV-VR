@@ -19,7 +19,7 @@ namespace BoatAttack.Fishing
         private FarmWork _actionWork;
         public Transform Root {get;private set;}
         public bool Nearby=>_c!=null && _c.Ashore && FishingPrototype.FlatDistance(_c.Shore.Position,Root.position+new Vector3(19,0,0))<22;
-        public string Status=>"回潮菜园 · 水壶"+(CarryingCan?"在手中 ":"在井边 ")+_c.Career.Farm.Water+" / "+FishingFarm.WaterCapacity+" · 种子 "+_c.Career.Backpack.Count(FieldItem.TurnipSeeds)+" · 萝卜 "+_c.Career.Backpack.Count(FieldItem.Turnip);
+        public string Status=>"回潮菜园 · "+(_c.CreativeMode?"创造模式：种子 / 水免耗 · ":"")+"水壶"+(CarryingCan?"在手中 ":"在井边 ")+_c.Career.Farm.AvailableWater+" / "+FishingFarm.WaterCapacity+" · 种子 "+_c.Career.Backpack.Count(FieldItem.TurnipSeeds)+" · 萝卜 "+_c.Career.Backpack.Count(FieldItem.Turnip);
         public Transform Target(int id)=>id>=0 && id<_targets.Length?_targets[id]:null;
         public Vector3 Aim(int id)=>Target(id).position+Vector3.up*(id<12?.38f:id==12?1.0f:id==15?0:.9f);
         public static Vector3 PlotOffset(int id)=>new Vector3(14+id%4*3.6f,.06f,-5+id/4*5);
@@ -82,11 +82,11 @@ namespace BoatAttack.Fishing
         {
             string key=_c.DesktopDisplay?"E ":"右手柄 A ";var work=Work(id);
             if(id==12)return key+(CarryingCan?"摇井绳打水 · 灌满手中的水壶":"先拿起井边木架上的水壶");
-            if(id==15)return key+(CarryingCan?"把水壶放回井边木架":"拿起井边水壶 · "+_c.Career.Farm.Water+" / "+FishingFarm.WaterCapacity);
-            if(id==13)return key+(_c.Career.Farm.StarterClaimed?"购买萝卜种子 ×6 · 12 海币":"领取首次种子 ×12");
+            if(id==15)return key+(CarryingCan?"把水壶放回井边木架":"拿起井边水壶 · "+_c.Career.Farm.AvailableWater+" / "+FishingFarm.WaterCapacity)+(_c.CreativeMode?" · 创造模式水量不消耗":"");
+            if(id==13)return key+(_c.Career.Farm.StarterClaimed?(_c.CreativeMode?"免费领取萝卜种子 ×6":"购买萝卜种子 ×6 · 12 海币"):"领取首次种子 ×12")+(_c.CreativeMode?" · 创造模式播种免种子":"");
             if(id==14)return key+"出售背包里的萝卜 · 每颗 18 海币";
             string action=work==FarmWork.Till?"翻土":work==FarmWork.Plant?"播种海风萝卜":work==FarmWork.Water?(CarryingCan?"倾壶浇水":"先去井边拿起水壶"):work==FarmWork.Harvest?"收获萝卜与种子":"今日已浇水 · 生长 "+_c.Career.Farm.Plot(id).growth+" / 3 夜";
-            return key+"菜畦 "+(id+1)+" · "+action;
+            return key+"菜畦 "+(id+1)+" · "+action+(_c.CreativeMode && (work==FarmWork.Plant || work==FarmWork.Water)?" · 创造模式免消耗":"");
         }
         public bool InteractAt(int id)
         {

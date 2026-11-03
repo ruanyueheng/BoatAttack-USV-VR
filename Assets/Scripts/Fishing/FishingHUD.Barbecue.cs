@@ -8,9 +8,10 @@ namespace BoatAttack.Fishing
         private void DrawBarbecue()
         {
             var c=Controller;var coast=c.CoastWorld;var data=c.Career.Barbecue;
+            bool practice=data.fish!=null?c.Career.PracticeBarbecue:c.CreativeMode;
             var panel=new Rect(300,110,1000,Mathf.Min(650,_height-130));MenuSheet(panel);
             Label(330,130,650,46,Spaced("海风烧烤·渔屋鱼箱"),30,InkText,true);
-            Label(331,187,780,48,"从共用鱼箱挑选一尾海鱼，取出后放上烤架。\n炭烤18秒；收起面板继续，烤熟后领取到背包。",16,Muted);
+            Label(331,187,780,48,practice?FishingCoastRules.PracticeRoastHint:"从共用鱼箱挑选一尾海鱼，取出后放上烤架。\n炭烤18秒；收起面板继续，烤熟后领取到背包。",16,Muted);
             if(Button(new Rect(1130,138,138,36),"Esc 收起",true,false,15)){coast.CloseMenu();return;}
             var photo=Resources.Load<Texture2D>("FishingV039/GrilledFishThumbnail");
             if(photo!=null)GUI.DrawTexture(new Rect(1000,228,250,190),photo,ScaleMode.ScaleToFit,true);
@@ -18,8 +19,12 @@ namespace BoatAttack.Fishing
             {
                 string status=c.Career.BarbecueReady?"鱼皮微焦，柠檬清香 · 已烤熟":"正在烤制 "+FishingSpecies.Name(data.fish.kind)+" · 余下 "+Mathf.CeilToInt(data.remaining)+" 秒";
                 Label(332,255,660,38,status,23,c.Career.BarbecueReady?Gold:InkText,true);
-                Label(332,309,630,58,"烤架里的鱼与烤制进度会保存。\n领取后将香烤海鱼放入快捷栏，按 F 食用，恢复50%体力。",17,Muted);
+                Label(332,309,630,58,(practice?"练习计时不跨重启保存，真实鱼箱保留。":"烤架里的鱼与烤制进度会保存。")+"\n领取后将香烤海鱼放入快捷栏，按 F 食用，恢复50%体力。",17,Muted);
                 if(Button(new Rect(332,394,270,46),c.Career.BarbecueReady?"领取香烤海鱼":"炭火慢烤中…",c.Career.BarbecueReady,false,18))coast.Collect();
+            }
+            else if(c.CreativeMode)
+            {
+                if(Button(new Rect(332,264,460,46),"零材料练习烤鱼 · 真实鱼获保留",true,false,18))coast.StartRoasting();
             }
             else
             {

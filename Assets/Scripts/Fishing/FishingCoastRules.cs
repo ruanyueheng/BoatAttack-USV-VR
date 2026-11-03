@@ -14,6 +14,7 @@ namespace BoatAttack.Fishing
     {
         public const float RoastSeconds=18;
         public const int TreasureCoins=80;
+        public const string PracticeRoastHint="创造模式零材料练习，真实鱼获保留。\n收起面板后烤制18秒；练习计时不跨重启保存。";
         public static string FindQuip(FieldItem item)=>item==FieldItem.OldBoot?"哈哈，原来是鞋子……这条鱼还挺有脚气！"
             :item==FieldItem.RustyCan?"罐头上钩了！可惜海鲜已经下班了。"
             :item==FieldItem.SeaTreasure?"这回真捞着了！海底也有神秘快递。":"海风送来了一份意外收获。";
@@ -35,6 +36,8 @@ namespace BoatAttack.Fishing
     public sealed partial class FishingCareer
     {
         private FishingBarbecueData _barbecue=new FishingBarbecueData();
+        // shortcut: practice roast progress is session-only; add an explicit save contract if demonstrations must resume across restarts.
+        public bool PracticeBarbecue {get;private set;}
         public FishingBarbecueData Barbecue=>_barbecue.Copy();
         public bool BarbecueReady=>_barbecue.fish!=null && _barbecue.remaining<=0;
         public bool CollectSeaFind(CatchRecord source,FieldItem item)
@@ -47,12 +50,20 @@ namespace BoatAttack.Fishing
         public bool OpenSeaTreasure()
         {
             if(Coins>100000000-FishingCoastRules.TreasureCoins
-                || !Backpack.Exchange(new[]{FishingRecipes.Stack(FieldItem.SeaTreasure,1)},FieldItem.Empty,0))return false;
+                || !Backpack.Exchange(new[]{FishingRecipes.Stack(FieldItem.SeaTreasure,1)},FieldItem.Empty,0,allowFreeMaterials:false))return false;
             Coins+=FishingCoastRules.TreasureCoins;return true;
         }
         public bool BeginBarbecue(string id)
         {
-            if(_barbecue.fish!=null || HasPendingCatch || string.IsNullOrWhiteSpace(id))return false;
+            if(_barbecue.fish!=null || HasPendingCatch)return false;
+            if(CreativeMode)
+            {
+                int grams=FishingSpecies.Grams(FishKind.Coral,.5f);
+                _barbecue=new FishingBarbecueData{fish=new CatchRecord{id="practice-"+Guid.NewGuid().ToString("N"),kind=FishKind.Coral,
+                    grams=grams,value=FishingSpecies.Value(FishKind.Coral,false,grams)},remaining=FishingCoastRules.RoastSeconds};
+                PracticeBarbecue=true;return true;
+            }
+            if(string.IsNullOrWhiteSpace(id))return false;
             int index=_inventory.FindIndex(f=>f.id==id);
             if(index<0 || !FishingCoastRules.Edible(_inventory[index].kind))return false;
             _barbecue=new FishingBarbecueData{fish=_inventory[index].Copy(),remaining=FishingCoastRules.RoastSeconds};
@@ -66,7 +77,7 @@ namespace BoatAttack.Fishing
         public bool CollectGrilledFish()
         {
             if(!BarbecueReady || !Backpack.TryAdd(FieldItem.GrilledFish,1))return false;
-            _barbecue=new FishingBarbecueData();return true;
+            _barbecue=new FishingBarbecueData();PracticeBarbecue=false;return true;
         }
         private bool RestoreBarbecue(FishingBarbecueData data,int version)
         {

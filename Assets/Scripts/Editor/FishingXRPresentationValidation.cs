@@ -52,7 +52,21 @@ namespace BoatAttack.EditorTools
                 foreach(int page in new[]{0,1,2,3,7,12,13,14,15,16,FishingXRNotebook.ClassroomPage,FishingXRNotebook.HandAlignmentPage,FishingXRNotebook.QuitPage,FishingXRNotebook.CreativePage,FishingXRNotebook.FishSalesPage})
                 {
                     Field("_page").SetValue(notebook,page);Field("_offset").SetValue(notebook,0);refresh.Invoke(notebook,null);
-                    Check(status.text.Length>0 && actions[7]!=null,"Shared game feature page has content and a return path: "+page);
+                    if(page==3 || page==FishingXRNotebook.ClassroomPage)
+                    {
+                        var calendar=(GameObject)Field("_calendarSurface").GetValue(notebook);
+                        var buttons=calendar.GetComponentsInChildren<FishingNotebookButton>(true);
+                        var dates=buttons.Where(b=>b.Index>=700 && b.Index<728).OrderBy(b=>b.Index).ToArray();
+                        Check(calendar.activeSelf && ((Text)Field("_calendarHeading").GetValue(notebook)).text.Length>0
+                            && dates.Length==28 && Enumerable.Range(0,28).All(i=>dates[i].Index==700+i && dates[i].Command!=null),"Shared calendar page has twenty-eight real date callbacks: "+page);
+                        int originalDate=c.ClassroomDate,selectedDate=originalDate==28?1:originalDate+1;
+                        dates[selectedDate-1].Command();
+                        Check(c.ClassroomDate==selectedDate,"The actual calendar date callback selects its day: "+page);
+                        dates[originalDate-1].Command();
+                        Check(buttons.Single(b=>b.Index==760).Command!=null && buttons.Single(b=>b.Index==765).Command!=null
+                            && buttons.Single(b=>b.Index==766).Command!=null,"Shared calendar page retains date jump, settings return and close callbacks: "+page);
+                    }
+                    else Check(status.text.Length>0 && actions[7]!=null,"Shared game feature page has content and a return path: "+page);
                     if(page>=FishingXRNotebook.ClassroomPage)CaptureCanvas(screen,Path.Combine(evidence,"settings-"+page+".png"));
                     if(page==12)
                     {

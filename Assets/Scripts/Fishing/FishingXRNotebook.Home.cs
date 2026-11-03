@@ -9,7 +9,7 @@ namespace BoatAttack.Fishing
         private enum HomeState { Normal, Hover, Pressed, Selected, Disabled }
         private static Color HomePaper=>FishingUITheme.Paper;private static Color HomeInk=>FishingUITheme.Ink;private static Color HomeMuted=>FishingUITheme.Muted;
         private static Color HomeGold=>FishingUITheme.Gold;private static Color HomeSage=>FishingUITheme.Sage;private static Color HomeLight=>FishingUITheme.Light;
-        private static readonly string[] HomeTitles={"随身行囊","海岸工坊","航海图","航海手札","卖鱼与委托","钓具百货","群岛航记","设置","快速回家"};
+        private static readonly string[] HomeTitles={"随身行囊","海岸工坊","航海图","航海手札","卖鱼与委托","钓具百货","主线剧情","设置","快速回家"};
         private static readonly string[] HomeCaptions={"装备与物资","制作与锻造","海湾与航点","图鉴与日历","卖鱼回收与委托","补给与升级"};
         private GameObject _homeDecor;
         private Sprite _homePaperSprite,_homeEdgeSprite;
@@ -156,7 +156,7 @@ namespace BoatAttack.Fishing
             _homeWallet.text="金币    "+_c.Career.CoinDisplay;
             _homeCapacity.text="鱼箱 "+_c.Career.Count+"/"+_c.Career.Capacity+" · 行囊 "+bag.UsedSlots+"/36";
             _homeEquipment.text="当前装备  ·  "+FishingBackpack.Name(bag.Equipped);
-            _homeMessage.text=_c.VisibleMessage;
+            _homeMessage.text=string.IsNullOrEmpty(_c.VisibleMessage)?"主线："+_c.Career.MainObjective:_c.VisibleMessage;
             for(int i=0;i<9;i++)
             {
                 _plates[i].gameObject.SetActive(true);

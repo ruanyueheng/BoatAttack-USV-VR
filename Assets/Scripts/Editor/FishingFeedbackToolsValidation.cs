@@ -207,8 +207,9 @@ namespace BoatAttack.EditorTools
             finally{probe.Sample=null;UnityEngine.Object.Destroy(probe);}
             Check(c.Shore.Relocate(c.HomeEcology.AquariumPosition+Vector3.back*1.5f,Quaternion.identity),"XR routing fixture approaches the new aquarium point");yield return null;
             Check(c.HomeEcology.NearbyHint!=null,"The new ecology point is the real nearby interaction");
+            Check(!UnityEngine.XR.XRSettings.isDeviceActive && !c.Hands.TryControllerPalm(false,out _,out _),"This routing fixture has no XR device or tracked palm; it checks contextual dispatch, not physical A input");
             typeof(FishingXRNotebook).GetMethod("InteractTracked",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(c.XRNotebook,null);
-            Check(c.InventoryOpen,"The actual XR A-button routing reaches new world interactions before legacy hand-only fallback");c.ToggleInventory();
+            Check(c.InventoryOpen,"Contextual aquarium routing precedes hand-only fallback without fabricating a tracked hand");c.ToggleInventory();
             Debug.Log("[FEEDBACK-TOOLS] LIMIT: bounded rule samples and direct XR routing are tested; physical controller calibration is not certified.");
         }
     }

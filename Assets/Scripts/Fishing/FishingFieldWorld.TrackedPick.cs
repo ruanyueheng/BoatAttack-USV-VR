@@ -19,10 +19,11 @@ namespace BoatAttack.Fishing
                 || !FinitePick(palmFrame.x) || !FinitePick(palmFrame.y) || !FinitePick(palmFrame.z)
                 || !FinitePick(palmFrame.w) || Quaternion.Dot(palmFrame,palmFrame)<.5f)return false;
             palmFrame=palmFrame.normalized;
-            var hand=item==FieldItem.Shovel?Quaternion.identity:TrackedPickPalmRotation;
+            // Keep the D-grip across the fingers and the shovel shaft forward along the knuckles.
+            var hand=item==FieldItem.Shovel?ShovelHandRotation:TrackedPickPalmRotation;
             float scale=WorkToolScale(item);
             var rotation=palmFrame*Quaternion.Inverse(hand);
-            var localPalm=WorkHandle(item)+hand*TrackedPickPalmOffset/scale;
+            var localPalm=WorkHandle(item)+hand*WorkPalmOffset(item)/scale;
             _held.localScale=Vector3.one*scale;
             _held.SetPositionAndRotation(palm-rotation*(localPalm*scale),rotation);
             _c.Hands.SetToolTarget(false,_held,localPalm,hand,.94f,fingers:PickFingers);

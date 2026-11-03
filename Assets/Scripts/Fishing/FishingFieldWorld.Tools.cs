@@ -52,10 +52,13 @@ namespace BoatAttack.Fishing
             {var bounds=FishingV023Art.ItemMesh(item).bounds;point=new Vector3(bounds.center.x,bounds.max.y,bounds.center.z);WorkTips[item]=point;}
             return point;
         }
-        public static Vector3 WorkHandle(FieldItem item)=>new Vector3(0,item==FieldItem.Axe?.22f:item==FieldItem.Shovel?-.155f:item==FieldItem.Rake?.45f:0,0);
-        public static Quaternion WorkHandRotation(FieldItem item,Quaternion tool,Quaternion frame)=>item==FieldItem.Shovel?Quaternion.identity:PickHandRotation(tool,frame);
+        public static Vector3 WorkHandle(FieldItem item)=>new Vector3(0,item==FieldItem.Axe?.22f:item==FieldItem.Shovel?-.2f:item==FieldItem.Rake?.45f:0,0);
+        public static readonly Quaternion ShovelHandRotation=Quaternion.LookRotation(Vector3.up,Vector3.back);
+        public static readonly Vector3 ShovelGripPalmOffset=new Vector3(0,.025f,-.025f);
+        public static Vector3 WorkPalmOffset(FieldItem item)=>item==FieldItem.Shovel?ShovelGripPalmOffset:TrackedPickPalmOffset;
+        public static Quaternion WorkHandRotation(FieldItem item,Quaternion tool,Quaternion frame)=>item==FieldItem.Shovel?ShovelHandRotation:PickHandRotation(tool,frame);
         public static Vector3 WorkGripPalm(FieldItem item,Quaternion tool,Quaternion frame)=>FishingUserTools.IsPick(item)?PickGripPalm(tool,frame)
-            :WorkHandle(item)+WorkHandRotation(item,tool,frame)*TrackedPickPalmOffset;
+            :WorkHandle(item)+WorkHandRotation(item,tool,frame)*WorkPalmOffset(item);
         public static Quaternion WorkContactRotation(FieldItem item,Vector3 heading)=>Quaternion.LookRotation(heading)*Quaternion.FromToRotation(WorkToolTip(item)-WorkGripPalm(item,Quaternion.identity,Quaternion.identity),new Vector3(0,-.24f,.30f));
         public static Vector3 WorkContactPalm(FieldItem item,Vector3 contact,Quaternion rotation,Quaternion frame)=>contact+rotation*((WorkGripPalm(item,rotation,frame)-WorkToolTip(item))*WorkToolScale(item));
         private Mesh ToolMesh(FieldItem item)
@@ -135,7 +138,7 @@ namespace BoatAttack.Fishing
                     rightPalm=WorkGripPalm(item,rotation,bodyFrame);
                     position=shoulderFrame+bodyFrame*new Vector3(_c.Shore.Character.HandSide(false)*.12f,XRSettings.isDeviceActive?-.065f:-.035f,.53f)-rotation*(rightPalm*scale);break;
                 case FieldItem.HuntingSpear:
-                    scale=1;rightPalm=SpearPalm;rightRotation=Quaternion.LookRotation(Vector3.up,Vector3.right);
+                    scale=1;rightPalm=SpearPalm;rightRotation=SpearHandRotation;
                     fingers=FishingFingerPose.Handle;position=eye+frame*new Vector3(.20f,-.32f,.35f);
                     if(_huntTarget!=null)
                     {
@@ -225,7 +228,7 @@ namespace BoatAttack.Fishing
                 _held.rotation=palmFrame*Quaternion.Inverse(rightRotation);
                 var controller=_c.Hands.ControllerGripRotation(palmFrame);
                 if(item==FieldItem.Lantern)_held.rotation=Quaternion.Euler(0,controller.eulerAngles.y,0); // Suspended lantern stays upright under its handle.
-                else if(item==FieldItem.Binoculars || item==FieldItem.HuntingSpear || facility)_held.rotation=controller;
+                else if(item==FieldItem.Binoculars || facility)_held.rotation=controller;
                 rightRotation=Quaternion.Inverse(_held.rotation)*palmFrame;
                 _held.position=palm-_held.rotation*(rightPalm*scale);
                 twoHands=twoHands && _c.Hands.Left.Visible && Vector3.Distance(_c.Hands.Left.Palm.position,_held.TransformPoint(leftPalm))<.18f;
