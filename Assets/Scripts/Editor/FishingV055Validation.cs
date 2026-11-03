@@ -44,12 +44,18 @@ namespace BoatAttack.EditorTools
                 {
                     page.SetValue(book,selected);refresh.Invoke(book,null);Canvas.ForceUpdateCanvases();
                     Check(status.preferredHeight<=status.rectTransform.rect.height,"Merged settings text fits page "+selected);
-                    Check(actions[7]!=null && actions[8]!=null,"Merged settings page retains reachable navigation "+selected);
+                    if(selected!=FishingXRNotebook.ClassroomPage)Check(actions[7]!=null && actions[8]!=null,"Merged settings page retains reachable navigation "+selected);
                     if(selected==14)Check(labels[6].text.Contains("日期") && labels[8].text.Contains("手部"),"Date/materials and hand alignment are both present in Settings");
-                    if(selected==FishingXRNotebook.ClassroomPage)Check(title.text=="航程设置" && labels[6].text.Contains("日期"),"The original date/materials page is preserved");
+                    if(selected==FishingXRNotebook.ClassroomPage)
+                    {
+                        var calendar=(GameObject)typeof(FishingXRNotebook).GetField("_calendarSurface",Private).GetValue(book);
+                        var dateButtons=calendar.GetComponentsInChildren<FishingNotebookButton>(true);
+                        Check(calendar.activeSelf && Array.FindAll(dateButtons,b=>b.Index>=700 && b.Index<728).Length==28
+                            && Array.Find(dateButtons,b=>b.Index==765)?.Command!=null && Array.Find(dateButtons,b=>b.Index==766)?.Command!=null,"Date/materials entry uses the shared calendar grid with reachable navigation");
+                    }
                     if(selected==FishingXRNotebook.HandAlignmentPage)
                     {
-                        Check(title.text=="手部对齐" && labels[7].text.Contains("退出"),"Alignment keeps its own title and a visible quit entry");
+                        Check(title.text=="手部角度" && labels[7].text.Contains("退出"),"Alignment keeps its own title and a visible quit entry");
                         FishingHands.SetControllerRoll(true,0);FishingHands.SetControllerRoll(false,0);actions[0]();
                         Check(FishingHands.ControllerRoll(true)==5 && FishingHands.ControllerRoll(false)==0,"Left UI calibration changes only the left hand");
                         actions[3]();Check(FishingHands.ControllerRoll(true)==5 && FishingHands.ControllerRoll(false)==-5,"Right UI calibration changes only the right hand");

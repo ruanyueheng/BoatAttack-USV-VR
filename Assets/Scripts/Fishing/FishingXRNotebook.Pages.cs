@@ -7,10 +7,10 @@ namespace BoatAttack.Fishing
     {
         private readonly string[] _pageContent=new string[9];
         private GameObject _pageDecor;
-        private Text _pageTitle,_pageDate,_pageDetail,_pageSubtitle;
+        private Text _pageTitle,_pageDate,_pageDetail,_pageSubtitle,_pageFooterHint,_pageLeftHint;
         private Image _pageLeaf,_pageLeafEdge;
         private int _pageHover=-1;
-        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","自然日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","群岛航记","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤","储物箱 · 存入","储物箱 · 取出","声音混音","家园生态","VR 舒适","操作说明","信件","相册","照片图鉴","物品与整理","选择目标格","夕照中的金帆","航程存档","航海手札","世界与秘境","沿岸调查","航程设置","手部对齐","退出游戏","创造模式","卖鱼回收"};
+        private static readonly string[] PageTitles={"潮汐手册","随身行囊","海岸工坊","海湾日历","钓具百货","探索补给","群岛来信","港口事务","海岛居民","主线剧情","海湾图鉴","手柄教学","航海图","鱼箱与委托","海湾设置","自然观察","航行帮助","海边烧烤","储物箱 · 存入","储物箱 · 取出","声音混音","家园生态","VR 舒适","操作说明","信件","相册","照片图鉴","物品与整理","选择目标格","夕照中的金帆","航程存档","航海手札","世界与秘境","沿岸调查","海湾日历","手部角度","退出游戏","创造模式","卖鱼回收","秘境课堂演示","确认重置秘境","海上集市"};
 
         private void BuildNotebookPages()
         {
@@ -27,16 +27,22 @@ namespace BoatAttack.Fishing
             _pageLeaf=HomeImage(p,"Left journal leaf",new Rect(42,171,375,555),HomeLight,_homePaperSprite);
             _pageLeafEdge=HomeImage(p,"Left leaf edge",new Rect(42,171,375,555),HomeGold,_homeEdgeSprite);
             _pageDetail=HomeText(p,new Rect(62,191,335,471),"",22,HomeInk);
-            HomeText(p,new Rect(62,680,335,34),"指向卡片，查看完整信息",20,HomeMuted);
+            _pageLeftHint=HomeText(p,new Rect(62,680,335,34),"指向卡片，查看完整信息",20,HomeMuted);
             HomeImage(p,"Footer reading strip",new Rect(35,733,1030,43),HomePaper,_homePaperSprite);
             HomeImage(p,"Footer rule",new Rect(42,733,1020,1),HomeGold);
-            var hint=HomeText(p,new Rect(44,741,1018,32),"左握把握住书边  ·  右握把横扫翻页  ·  扳机选择  ·  B 收起",20,HomeMuted);hint.alignment=TextAnchor.MiddleRight;
+            _pageFooterHint=HomeText(p,new Rect(44,741,1018,32),"左握把握住书边  ·  右握把横扫翻页  ·  扳机选择  ·  B 收起",20,HomeMuted);_pageFooterHint.alignment=TextAnchor.MiddleRight;
             BuildAlbumPreview();
             _pageDecor.SetActive(false);
         }
 
         private void PresentNotebookPage()
         {
+            if(_calendarSurface!=null)_calendarSurface.SetActive(false);
+            _pageTitle.gameObject.SetActive(!CalendarPage);
+            _pageSubtitle.gameObject.SetActive(!CalendarPage);
+            _pageDate.gameObject.SetActive(!CalendarPage);
+            _pageLeftHint.gameObject.SetActive(!CalendarPage);
+            _pageFooterHint.gameObject.SetActive(!CalendarPage);
             _pageDecor.SetActive(true);
             var root=(RectTransform)_canvas.transform;root.sizeDelta=new Vector2(1100,780);root.localScale=Vector3.one*.00105f;
             _homeScaler.dynamicPixelsPerUnit=4;
@@ -44,7 +50,7 @@ namespace BoatAttack.Fishing
             var panel=_canvas.GetComponent<Image>();panel.sprite=FishingPaperDesign.Surface(theme);panel.type=Image.Type.Sliced;panel.color=FishingPaperDesign.PaperTint;
             FishingUITheme.StyleHeading(_pageTitle,theme==FishingPaperTheme.Celestial?1:theme==FishingPaperTheme.Herbarium?2:theme==FishingPaperTheme.DreamSettings?4:0);
             _pageTitle.fontSize=42;
-            _pageTitle.text=_page==ClassroomPage?"航程设置":_page==HandAlignmentPage?"手部对齐":_page==QuitPage?"退出游戏":_page==CreativePage?"创造模式":_page>=0 && _page<PageTitles.Length?PageTitles[_page]:"潮汐手册";
+            _pageTitle.text=_page==ClassroomPage?"航程设置":_page==HandAlignmentPage?"手部角度":_page==QuitPage?"退出游戏":_page==CreativePage?"创造模式":_page>=0 && _page<PageTitles.Length?PageTitles[_page]:"潮汐手册";
             _pageDate.text=_c.Career.Calendar.DateLabel+"  /  "+_c.Career.Calendar.TimeLabel;
             bool guide=_page==11;
             _pageSubtitle.text=guide?"安全练习 "+(_guideLesson+1)+" / 3  ·  "+(_guideLesson<2?PracticeCount(_guidePracticed)+" / 5 项已完成":"航行与生活") : "潮汐手册  /  回潮海";
@@ -111,6 +117,7 @@ namespace BoatAttack.Fishing
             }
             foreach(var graphic in _canvas.GetComponentsInChildren<Graphic>(true))graphic.material=graphic==_map && _mapPalette!=null?_mapPalette:_homeMaterial;
             PresentAlbumPage();
+            if(CalendarPage)PresentCalendarSurface();
             UpdatePagePointer(_pageHover,false);
         }
 
@@ -129,7 +136,8 @@ namespace BoatAttack.Fishing
         private void UpdatePagePointer(int index,bool held)
         {
             _pageHover=index;
-            if(_page==AlbumPage || _page==ClassroomPage || _page==HandAlignmentPage || _page==QuitPage || _page==CreativePage){_pageDetail.gameObject.SetActive(false);_status.gameObject.SetActive(true);for(int i=0;i<9;i++)ApplyPageState(i,held,false);return;}
+            if(CalendarPage){UpdateCalendarPointer(index);return;}
+            if(_page==AlbumPage || _page==ClassroomPage || _page==HandAlignmentPage || _page==QuitPage || _page==CreativePage || _page==RealmDemoPage || _page==RealmResetPage || _page==SeaMarketPage){_pageDetail.gameObject.SetActive(false);_status.gameObject.SetActive(true);for(int i=0;i<9;i++)ApplyPageState(i,held,false);return;}
             bool detail=index>=0 && index<6 && !string.IsNullOrEmpty(_pageContent[index]) && _pageContent[index]!="—";
             _pageDetail.gameObject.SetActive(detail);_status.gameObject.SetActive(!detail);
             if(detail)

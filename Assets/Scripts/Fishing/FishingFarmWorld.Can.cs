@@ -118,7 +118,7 @@ namespace BoatAttack.Fishing
         {
             if(!CanUseWateringCan || Busy || Target(id)==null || FishingPrototype.FlatDistance(_c.Shore.Position,Target(id).position)>2.25f)return false;
             if(work!=FarmWork.TakeCan && !CarryingCan){_c.Notice("水壶就在水井右侧木架上 · 先靠近拿起。",4);return false;}
-            if(work==FarmWork.Water && _c.Career.Farm.Water<=0){_c.Notice("水壶空了 · 提着水壶到水井打水。",4);return false;}
+            if(work==FarmWork.Water && _c.Career.Farm.AvailableWater<=0){_c.Notice("水壶空了 · 提着水壶到水井打水。",4);return false;}
             bool tracked=XRSettings.isDeviceActive;bool handling=work==FarmWork.TakeCan || work==FarmWork.ReturnCan;
             if(tracked)
             {

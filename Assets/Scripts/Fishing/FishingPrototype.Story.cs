@@ -13,6 +13,22 @@ namespace BoatAttack.Fishing
         public FishingHome Home { get; private set; }
         public FishingPrologue Prologue { get; private set; }
         private int _storyConsumedFrame = -1;
+        public int MainStoryNavigationTarget
+        {
+            get
+            {
+                if(!Career.Lore.MayorAccepted)return 0;
+                if(!Career.Lore.ChartFound || Career.PirateKing)return HomeNavigationIndex;
+                for(int i=0;i<FishingAdventure.Count;i++)if(!Career.Lore.Cleared(i))return IslandNavigationIndex(i);
+                for(int i=0;i<FishingAdventure.Count;i++)if(!Career.Lore.RewardClaimed(i))return IslandNavigationIndex(i);
+                return Career.Backpack.Count(FieldItem.VoyageCompass)>0?HomeNavigationIndex+1:HomeNavigationIndex;
+            }
+        }
+        public void TrackMainStory()
+        {
+            if(Paused)return;
+            SelectNavigation(MainStoryNavigationTarget);Notice("主线："+Career.MainObjective,9);
+        }
         public bool DialogueOpen => Residents != null && Residents.Open;
         public bool StoryBlocksGameplay => HomeChartBlocksGameplay || (HandGames!=null && HandGames.Active) || DialogueOpen || (CoastWorld != null && CoastWorld.MenuOpen) || (Letter != null && Letter.Open) || (Prologue != null && Prologue.Open)
             || (Home != null && (Home.Sleeping || Home.Lounging)) || (Realms != null && (Realms.Transitioning || Realms.ObservingStars)) || _storyConsumedFrame == Time.frameCount;

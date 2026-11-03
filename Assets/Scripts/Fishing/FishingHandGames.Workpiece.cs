@@ -115,7 +115,7 @@ namespace BoatAttack.Fishing
             ClearWorkGeometry();
             if(station==2)
             {
-                const float cut=-.12f,bottom=.975f,top=1.025f;
+                const float bottom=.975f,top=1.025f;float cut=_sawCutX;
                 float cutY=top-progress*(top-bottom),gap=progress<=0?0:Mathf.Lerp(.003f,.014f,progress);
                 float split=Mathf.SmoothStep(0,.035f,Mathf.InverseLerp(.9f,1,progress));
                 var wood=new Color(.59f,.32f,.14f);
@@ -172,7 +172,7 @@ namespace BoatAttack.Fishing
                 int i=visual.Next++%visual.Age.Length;float side=particle%2==0?-1:1;
                 float scatter=Mathf.Repeat((particle+stroke*7)*.618034f,1);
                 visual.Age[i]=0;visual.Life[i]=station==3?.30f+scatter*.32f:.35f+scatter*.2f;
-                visual.DebrisStart[i]=station==3?new Vector3(-.10f,ForgeSurface(visual.Progress),-.12f):new Vector3(-.12f,1.025f,-.065f+scatter*.13f);
+                visual.DebrisStart[i]=station==3?new Vector3(-.10f,ForgeSurface(visual.Progress),-.12f):new Vector3(_sawCutX,1.025f,-.065f+scatter*.13f);
                 visual.Velocity[i]=station==3?new Vector3(side*(.55f+scatter*.65f),.4f+scatter*.8f,(Mathf.Repeat(particle*.381966f,1)-.5f)*.8f)
                     :new Vector3(side*(.08f+scatter*.15f),.15f+scatter*.25f,(scatter-.5f)*.3f);
             }

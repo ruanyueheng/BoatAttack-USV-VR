@@ -190,12 +190,12 @@ namespace BoatAttack.Fishing
             if(mode==0)
             {
                 int aquariumKit=c.Backpack.Count(FieldItem.Aquarium);
-                if(_habitatFilter<0)Add(c.AquariumLevel==0?"部署水族箱 · 套件 "+aquariumKit+"/1":c.AquariumLevel==1?"扩建水族箱至8格 · 潮境蓝图 +300币":"水族箱 · 已建成8格",c.AquariumLevel==0?(Func<bool>)c.BuildAquarium:c.UpgradeAquarium,"水族箱已更新。",NearHome && c.AquariumLevel<2);
+                if(_habitatFilter<0)Add(c.AquariumLevel==0?"部署水族箱 · "+(c.CreativeMode?"免套件":"套件 "+aquariumKit+"/1"):c.AquariumLevel==1?"扩建水族箱至8格 · 潮境蓝图"+(c.CreativeMode?" · 免费":" +300币"):"水族箱 · 已建成8格",c.AquariumLevel==0?(Func<bool>)c.BuildAquarium:c.UpgradeAquarium,"水族箱已更新。",NearHome && c.AquariumLevel<2);
                 for(int i=0;i<5;i++)
                 {
                     if(_habitatFilter>=0 && _habitatFilter!=i)continue;
                     var kind=(LandAnimalKind)i;int level=c.HabitatLevel(kind);
-                    Add(FishingCareer.HabitatName(kind)+(level==0?" · 部署 · 套件 "+c.Backpack.Count(FishingCareer.HabitatKit(kind))+"/1":" · "+c.HousedAnimalCount(kind)+"/"+c.HabitatCapacity(kind)+(level==1?" · 林境蓝图+250币扩建":" · 已满级")),()=>level==0?c.BuildAnimalHabitat(kind):c.UpgradeAnimalHabitat(kind),FishingCareer.HabitatName(kind)+"已部署在菜园西侧的专用地块。",NearHome && level<2);
+                    Add(FishingCareer.HabitatName(kind)+(level==0?" · 部署 · "+(c.CreativeMode?"免套件":"套件 "+c.Backpack.Count(FishingCareer.HabitatKit(kind))+"/1"):" · "+c.HousedAnimalCount(kind)+"/"+c.HabitatCapacity(kind)+(level==1?" · 林境蓝图"+(c.CreativeMode?"免费扩建":"+250币扩建"):" · 已满级")),()=>level==0?c.BuildAnimalHabitat(kind):c.UpgradeAnimalHabitat(kind),FishingCareer.HabitatName(kind)+"已部署在菜园西侧的专用地块。",NearHome && level<2);
                 }
             }
             else if(mode==1)

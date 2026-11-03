@@ -60,6 +60,7 @@ namespace BoatAttack.Fishing
             data=career.Snapshot();data.farm.starterClaimed=true;
             for(int i=0;i<FishingFarm.PlotCount;i++)data.farm.plots[i]=new FarmPlotData{tilled=true,planted=true,growth=i<6?3:0};
             Require(FishingCareer.TryRestore(data,out career),"complete classroom save");
+            for(int island=0;island<4;island++)Require(career.Lore.ResetRealm(island),"replayable classroom realm");
             return career;
         }
         private static void Add(FishingBackpack bag,FieldItem item,int count)=>Require(bag.TryAdd(item,count),FishingBackpack.Name(item));

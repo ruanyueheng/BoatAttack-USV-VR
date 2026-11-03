@@ -25,6 +25,8 @@ namespace BoatAttack.Fishing
         public int Day {get;private set;}
         public int Water {get;private set;}=WaterCapacity;
         public bool StarterClaimed {get;private set;}
+        public bool FreeMaterials {get;internal set;}
+        public int AvailableWater=>FreeMaterials?WaterCapacity:Water;
         public FishingFarm(int day=0){Day=day;for(int i=0;i<PlotCount;i++)_plots[i]=new FarmPlotData();}
         public FarmPlotData Plot(int id)=>id>=0 && id<PlotCount?_plots[id].Copy():null;
         public bool Ready(int id)=>id>=0 && id<PlotCount && _plots[id].planted && _plots[id].growth==GrowingDays;
@@ -45,8 +47,8 @@ namespace BoatAttack.Fishing
         }
         public bool WaterPlot(int id)
         {
-            if(id<0 || id>=PlotCount || Water<=0 || !_plots[id].planted || Ready(id) || _plots[id].wateredDay==Day)return false;
-            _plots[id].wateredDay=Day;Water--;return true;
+            if(id<0 || id>=PlotCount || AvailableWater<=0 || !_plots[id].planted || Ready(id) || _plots[id].wateredDay==Day)return false;
+            _plots[id].wateredDay=Day;if(!FreeMaterials)Water--;return true;
         }
         public bool Harvest(int id,FishingBackpack bag)
         {
@@ -97,7 +99,7 @@ namespace BoatAttack.Fishing
         public int SellTurnips()
         {
             int count=Backpack.Count(FieldItem.Turnip),value=count*18;
-            if(count==0 || Coins>100000000-value || !Backpack.Exchange(new[]{FishingRecipes.Stack(FieldItem.Turnip,count)},FieldItem.Empty,0))return 0;
+            if(count==0 || Coins>100000000-value || !Backpack.Exchange(new[]{FishingRecipes.Stack(FieldItem.Turnip,count)},FieldItem.Empty,0,allowFreeMaterials:false))return 0;
             Coins+=value;return value;
         }
     }

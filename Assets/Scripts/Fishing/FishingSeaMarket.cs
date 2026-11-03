@@ -89,6 +89,7 @@ namespace BoatAttack.Fishing
         private bool _greeted;
         public MarketGoods? Target { get; private set; }
         public int TargetPhrase { get; private set; }
+        public string FeedbackMessage=>Time.unscaledTime<_feedbackUntil?_feedback:string.Empty;
         /// <summary>Tests force the market open regardless of weekday.</summary>
         public bool ForceOpen;
 
@@ -245,14 +246,19 @@ namespace BoatAttack.Fishing
                 FishingXRText.Bind(s.label,text);
             }
         }
-        private bool Sold(MarketGoods g)=>g==MarketGoods.Bait?_baitDay==_c.Career.Calendar.Day
+        public bool Sold(MarketGoods g)=>g==MarketGoods.Bait?_baitDay==_c.Career.Calendar.Day
             :g==MarketGoods.Souvenir?FishingSeaMarket.Bit(_c.Career.Lore.SeaPost,FishingSeaMarket.SouvenirBit+_c.Career.Calendar.Season)==1
             :g==MarketGoods.Keepsake && Festival>=0 && FishingSeaMarket.Bit(_c.Career.Lore.SeaPost,FishingSeaMarket.KeepsakeBit+Festival)==1;
         private static string PurchaseAction(MarketGoods goods)=>goods==MarketGoods.Buyback?"按 E 出售":goods==MarketGoods.Letter?"按 E 寄出":"按 E 购买";
-        private bool InReach => !_c.Ashore && Visible && !_c.Paused && !_c.HasPendingCatch && !_c.StoryBlocksGameplay
+        public bool CanBrowse => Visible && !_c.Paused && !_c.HasPendingCatch && !_c.StoryBlocksGameplay
             && !_c.WorldActionBlocksGameplay && !_c.InventoryOpen && !_c.JournalOpen && !_c.ShopBlocksGameplay
-            && (_c.XRNotebook==null || !_c.XRNotebook.BlocksGameplay) && (_c.DockConsole==null || !_c.DockConsole.BlocksGameplay)
-            && _c.Session.Phase==CatchPhase.Idle && FishingPrototype.FlatDistance(_c.Player.transform.position, _ship.position) < 14 && _c.Speed < 2.5f;
+            && (_c.DockConsole==null || !_c.DockConsole.BlocksGameplay) && ShouldShow
+            && !_c.Shore.Swimming && !_c.Shore.Climbing
+            && _c.CanChangeBait && Vector3.Distance(_c.ExplorerPosition, _ship.position)<14 && (_c.Ashore || _c.Speed<2.5f)
+            && _c.Shore.ClearSight(_c.viewCamera.transform.position,_checkout.transform.position,_ship);
+        private bool InReach=>CanBrowse && (_c.XRNotebook==null || !_c.XRNotebook.BlocksGameplay);
+        private bool TrackedTradeReady=>!UnityEngine.XR.XRSettings.isDeviceActive || (Application.isFocused && _c.XRSeat.Ready && !_c.XRSeat.HeadBlocked
+            && _c.Hands.TryControllerPalm(true,out _,out _) && _c.Hands.TryControllerPalm(false,out _,out _));
         private void Gaze()
         {
             var previous=Target;int phrase=TargetPhrase;
@@ -276,6 +282,7 @@ namespace BoatAttack.Fishing
             string text=FishingSeaMarket.Owner+" · 海上集市\n";
             if(Time.unscaledTime<_feedbackUntil)text+=_feedback;
             else if(Target.HasValue)text+=FishingSeaMarket.Name(Target.Value,_c.Career.Calendar.Season,Festival)+" · "+(Sold(Target.Value)?"已购":PurchaseAction(Target.Value));
+            else if(UnityEngine.XR.XRSettings.isDeviceActive)text+=_c.Speed>=2.5f && !_c.Ashore?"先减速停稳，再按 A 浏览商品":"靠近商船 · 按 A 浏览商品\n手柄指向商品后按扳机选择";
             else text+=_c.Speed>=2.5f?"靠近挂商品牌的一侧 · 按住 Shift 减速":"靠近挂商品牌的一侧\n注视货牌 · 按 E 购买 · 无需登船";
             text+="\n余额 "+_c.Career.CoinDisplay+" 金币";
             if(_checkout.text!=FishingXRText.Adapt(text))FishingXRText.Bind(_checkout,text);
@@ -286,7 +293,23 @@ namespace BoatAttack.Fishing
         }
 
         /// <summary>Interact hook: true when the press was spent on the market.</summary>
-        public bool TryInteract() { Gaze();if (!InReach || Target == null) return false; Trade(Target.Value, TargetPhrase); return true; }
+        public bool TryInteract()
+        {
+            if(UnityEngine.XR.XRSettings.isDeviceActive)
+            {
+                if(!InReach || !TrackedTradeReady)return false;
+                _c.XRNotebook.Open(FishingXRNotebook.SeaMarketPage);return true;
+            }
+            Gaze();if(!InReach || Target==null)return false;Trade(Target.Value,TargetPhrase);return true;
+        }
+        public bool TradeFromNotebook(MarketGoods goods,int phrase=0)
+        {
+            if(!CanBrowse || !TrackedTradeReady || _c.XRNotebook==null || !_c.XRNotebook.SeaMarketOpen)
+            {Feedback("交易未发生：请靠近营业中的商船并停稳，确认双手追踪正常。");return false;}
+            bool bought=Trade(goods,phrase);
+            if(bought && _c.Letter!=null && _c.Letter.Open)_c.XRNotebook.Close();
+            return bought;
+        }
         public bool Trade(MarketGoods g, int phrase = 0)
         {
             var career = _c.Career; var lore = career.Lore; var cal = career.Calendar; int season = cal.Season, festival = Festival;

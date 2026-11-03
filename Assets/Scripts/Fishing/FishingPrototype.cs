@@ -26,7 +26,7 @@ namespace BoatAttack.Fishing
     [DefaultExecutionOrder(100)]
     public sealed partial class FishingPrototype : MonoBehaviour
     {
-        public const string Version = "0.61.0";
+        public const string Version = "0.63.0";
         public FishingHandGames HandGames { get; private set; }
         public FishingFleetPresentation Fleet { get; private set; }
         public FishingIslandWorld Islands { get; private set; }
@@ -49,7 +49,7 @@ namespace BoatAttack.Fishing
         {
             CreativeMode=enabled;Career?.SetCreativeMode(enabled);
             if(!HasIsolatedProfile){PlayerPrefs.SetInt(CreativeModeKey,enabled?1:0);PlayerPrefs.Save();}
-            Notice(enabled?"创造模式：无限金币购买已开启，背包容量及解锁条件仍有效。":"创造模式已关闭，恢复正常金币计费。",6);
+            Notice(enabled?"创造模式：金币、普通材料、燃料和壶水免消耗；动作、容量和主线条件仍有效。":"创造模式已关闭，恢复正常金币及材料消耗。",6);
         }
         public CatchSession Session { get; } = new CatchSession();
         public bool Anchored { get; private set; }

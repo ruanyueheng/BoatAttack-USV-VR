@@ -4,6 +4,19 @@ internal static class ClassroomDemoTests
 {
     public static void Run(Action<bool,string> check)
     {
+        var calendar=new FishingCalendar();calendar.ToggleAutomatic();
+        check(calendar.AdvanceToDate(1,0,14,10) && calendar.Day==13 && calendar.Hour==10 && !calendar.Automatic,"Calendar jumps to a festival without changing fixed-clock policy");
+        check(!calendar.AdvanceToDate(1,0,14,9) && !calendar.AdvanceToDate(1,0,13,23)
+            && calendar.Day==13 && calendar.Hour==10,"Calendar refuses past dates and hours without mutating time");
+        foreach(var invalid in new[]{new[]{0,0,1,10},new[]{1000,0,1,10},new[]{1,-1,1,10},new[]{1,4,1,10},new[]{1,0,0,10},new[]{1,0,29,10},new[]{1,0,14,-1},new[]{1,0,14,24}})
+            check(!calendar.AdvanceToDate(invalid[0],invalid[1],invalid[2],invalid[3]) && calendar.Day==13,"Calendar rejects invalid date components without mutation");
+        check(calendar.AdvanceToDate(999,3,28,23) && calendar.Day==FishingCalendar.MaxDay
+            && FishingCalendar.TryRestore(calendar.Snapshot(),out _),"Calendar supports the final legal date and round trips");
+        var retained=FishingClassroomDemo.Create(1,0,14,10);retained.Lore.Clear(0);
+        int balance=retained.Coins,animals=retained.HomeAnimalCount;
+        check(retained.Calendar.AdvanceToDate(2,1,14,10) && retained.Farm.AdvanceDay(retained.Calendar.Day)
+            && retained.Coins==balance && retained.HomeAnimalCount==animals && retained.Lore.Cleared(0)
+            && FishingCareer.TryRestore(retained.Snapshot(),out _),"Forward classroom date jump preserves wallet, animals and realm progress with a valid save");
         foreach(var d in new[]{new[]{1,0,1,0},new[]{1,1,14,12},new[]{2,3,28,23},new[]{999,3,28,23}})
         {
             var c=FishingClassroomDemo.Create(d[0],d[1],d[2],d[3]);var day=c.Calendar;

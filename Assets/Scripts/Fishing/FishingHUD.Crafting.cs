@@ -33,14 +33,14 @@ namespace BoatAttack.Fishing
             var r=recipes[_recipeIndex];bool smelt=r.Station==CraftStation.Furnace;
             FieldIcon(new Rect(743,291,38,40),r.Output);
             Label(797,286,425,38,FishingBackpack.Name(r.Output)+" ×"+r.Count,25,Color.white,true);
-            Label(744,335,490,24,"需要："+FishingRecipes.StationName(r.Station)+(smelt?"  ·  每份 8 秒，关背包后继续":"  ·  材料齐全后立即制作"),15,Muted);
+            Label(744,335,490,24,"需要："+FishingRecipes.StationName(r.Station)+(bag.FreeMaterials?"  ·  创造模式免普通材料 / 燃料":smelt?"  ·  每份 8 秒，关背包后继续":"  ·  材料齐全后立即制作"),15,Muted);
             int quantity=smelt?_batch:1;float y=375;bool enough=true;
             float costHeight=r.Costs.Length>4?25:33;
             foreach(var cost in r.Costs)
             {
-                int needed=cost.count*quantity,have=bag.Count(cost.item);enough &= have>=needed;
+                int needed=cost.count*quantity,have=bag.Count(cost.item);bool free=bag.FreeMaterials && !FishingBackpack.IsQuestItem(cost.item);enough &= free || have>=needed;
                 FieldIcon(new Rect(746,y,costHeight-3,costHeight-3),cost.item);
-                Label(784,y,442,costHeight,FishingBackpack.Name(cost.item)+"   "+have+" / "+needed,r.Costs.Length>4?16:19,have>=needed?Mint:Danger);y+=costHeight;
+                Label(784,y,442,costHeight,FishingBackpack.Name(cost.item)+"   "+(free?"免材料":have+" / "+needed),r.Costs.Length>4?16:19,free || have>=needed?Mint:Danger);y+=costHeight;
             }
             if(smelt)
             {
@@ -48,8 +48,8 @@ namespace BoatAttack.Fishing
                 if(Button(new Rect(966,456,302,34),"燃料："+FishingBackpack.Name(_fuels[_fuelIndex])+"  [切换]",true,false,15))_fuelIndex=(_fuelIndex+1)%_fuels.Length;
                 var fuel=_fuels[_fuelIndex];int fuelCount=(_batch+FishingRecipes.FuelUnits(fuel)-1)/FishingRecipes.FuelUnits(fuel);
                 int needed=fuelCount;foreach(var cost in r.Costs)if(cost.item==fuel)needed+=cost.count*_batch;
-                bool fuelReady=bag.Count(fuel)>=needed;
-                Label(746,500,516,32,"燃料 "+fuelCount+" 个 · "+FishingBackpack.Name(fuel)+" 合计需 "+needed+" / 持有 "+bag.Count(fuel),15,fuelReady?Muted:Danger);
+                bool fuelReady=bag.FreeMaterials || bag.Count(fuel)>=needed;
+                Label(746,500,516,32,bag.FreeMaterials?"创造模式：燃料不消耗":"燃料 "+fuelCount+" 个 · "+FishingBackpack.Name(fuel)+" 合计需 "+needed+" / 持有 "+bag.Count(fuel),15,fuelReady?Muted:Danger);
                 var station=world.State.Station(world.SelectedStation);
                 bool available=context==CraftStation.Furnace && station!=null && station.remaining==0 && station.ready==0;
                 if(Button(new Rect(746,542,255,40),!available?"需空闲熔炉":!enough || !fuelReady?"材料 / 燃料不足":"加入熔炉",available && enough && fuelReady,false,17))world.Smelt(r.Id,_batch,fuel);

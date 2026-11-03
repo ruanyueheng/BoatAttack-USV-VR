@@ -7,7 +7,7 @@ namespace BoatAttack.Fishing
     /// <summary>Metres relative to the player's hands; desktop supplies the same bounded motion.</summary>
     public sealed class FishingHandTask
     {
-        private float _x,_y,_angle,_turns,_cooldown;
+        private float _x,_y,_angle,_turns,_cooldown,_initialMin,_initialMax;
         private bool _sample;
         private readonly bool _gunParts,_fineSpinning;
         private int _direction;
@@ -38,7 +38,7 @@ namespace BoatAttack.Fishing
             {Release();return false;}
             _cooldown=Math.Max(0,_cooldown-seconds);
             float angle=(float)(Math.Atan2(y,x)*180/Math.PI),radius=(float)Math.Sqrt(x*x+y*y);
-            if(!_sample){_x=x;_y=y;_angle=angle;_sample=true;return false;}
+            if(!_sample){_x=_initialMin=_initialMax=x;_y=y;_angle=angle;_sample=true;return false;}
             // Tracking teleports, jitter and long frame gaps must never count as deliberate gestures.
             if(Math.Abs(x-_x)>.30f || Math.Abs(y-_y)>.30f){Release();return false;}
             if(Kind==FishingHandTaskKind.Forge)
@@ -50,6 +50,12 @@ namespace BoatAttack.Fishing
             }
             if(Kind!=FishingHandTaskKind.Winder)
             {
+                // Initial travel spans its observed extremes; tiny tracking rebounds must not restart a real push.
+                if(_direction==0)
+                {
+                    _initialMin=Math.Min(_initialMin,x);_initialMax=Math.Max(_initialMax,x);
+                    if(x==_initialMin)_x=_initialMax;else if(x==_initialMax)_x=_initialMin;
+                }
                 float delta=x-_x;int direction=delta>=0?1:-1;
                 if(direction==_direction){_x=x;return false;}
                 if(Math.Abs(delta)<.075f || _cooldown>0)return false;
@@ -67,7 +73,7 @@ namespace BoatAttack.Fishing
             :Kind==FishingHandTaskKind.Winder?new[]{FishingRecipes.Stack(FieldItem.Fiber,3)}
             :Kind==FishingHandTaskKind.Saw?new[]{FishingRecipes.Stack(FieldItem.Driftwood,1)}:new[]{FishingRecipes.Stack(FieldItem.IronIngot,_gunParts?6:3)};
         public bool HasMaterials(FishingBackpack bag)
-        {if(bag==null)return false;foreach(var cost in Costs)if(bag.Count(cost.item)<cost.count)return false;return true;}
+        =>bag!=null && bag.CanSupply(Costs);
         public bool Claim(FishingBackpack bag)
         {
             if(Claimed || !Complete || !HasMaterials(bag) || !bag.Exchange(Costs,Output,OutputCount))return false;

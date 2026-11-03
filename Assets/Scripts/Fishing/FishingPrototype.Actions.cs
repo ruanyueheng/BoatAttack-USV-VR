@@ -476,7 +476,8 @@ namespace BoatAttack.Fishing
     {
         private static readonly System.Collections.Generic.List<MeshFilter> Filters=new System.Collections.Generic.List<MeshFilter>();
         private static readonly System.Collections.Generic.List<Vector3> Vertices=new System.Collections.Generic.List<Vector3>();
-        /// <summary>优先取实际可读网格的最近顶点；只读网格退回其渲染包围盒，仍须经过实际臂长与视线检查。</summary>
+        private static readonly System.Collections.Generic.List<int> Triangles=new System.Collections.Generic.List<int>();
+        /// <summary>取实际三角面的最近点；只读网格退回其渲染包围盒，仍须经过实际臂长与视线检查。</summary>
         public static Vector3 ClosestPoint(Transform root,Vector3 from)
         {
             Vector3 best=root.position;float distance=float.MaxValue;
@@ -485,13 +486,20 @@ namespace BoatAttack.Fishing
             {
                 var mesh=filter.sharedMesh;var renderer=filter.GetComponent<Renderer>();
                 if(mesh==null || renderer==null || !renderer.enabled || !renderer.gameObject.activeInHierarchy)continue;
+                if(renderer.bounds.SqrDistance(from)>=distance)continue;
                 if(mesh.isReadable)
                 {
                     mesh.GetVertices(Vertices);var matrix=filter.transform.localToWorldMatrix;
-                    foreach(var local in Vertices)
+                    for(int sub=0;sub<mesh.subMeshCount;sub++)
                     {
-                        var p=matrix.MultiplyPoint3x4(local);float d=(p-from).sqrMagnitude;
-                        if(d<distance){distance=d;best=p;}
+                        if(mesh.GetTopology(sub)!=MeshTopology.Triangles)continue;
+                        mesh.GetTriangles(Triangles,sub);
+                        for(int i=0;i<Triangles.Count;i+=3)
+                        {
+                            var p=ClosestTriangle(from,matrix.MultiplyPoint3x4(Vertices[Triangles[i]]),matrix.MultiplyPoint3x4(Vertices[Triangles[i+1]]),matrix.MultiplyPoint3x4(Vertices[Triangles[i+2]]));
+                            float d=(p-from).sqrMagnitude;
+                            if(d<distance){distance=d;best=p;}
+                        }
                     }
                 }
                 else
@@ -501,6 +509,24 @@ namespace BoatAttack.Fishing
                 }
             }
             return best;
+        }
+        private static Vector3 ClosestSegment(Vector3 from,Vector3 a,Vector3 b)
+        {
+            var ab=b-a;float length=ab.sqrMagnitude;
+            return length>0?a+ab*Mathf.Clamp01(Vector3.Dot(from-a,ab)/length):a;
+        }
+        private static Vector3 ClosestTriangle(Vector3 from,Vector3 a,Vector3 b,Vector3 c)
+        {
+            var normal=Vector3.Cross(b-a,c-a);float area=normal.sqrMagnitude;
+            if(area>1e-16f)
+            {
+                var projected=from-normal*(Vector3.Dot(from-a,normal)/area);
+                if(Vector3.Dot(Vector3.Cross(b-a,projected-a),normal)>=0 && Vector3.Dot(Vector3.Cross(c-b,projected-b),normal)>=0
+                    && Vector3.Dot(Vector3.Cross(a-c,projected-c),normal)>=0)return projected;
+            }
+            var ab=ClosestSegment(from,a,b);var bc=ClosestSegment(from,b,c);var ca=ClosestSegment(from,c,a);
+            var best=(from-ab).sqrMagnitude<(from-bc).sqrMagnitude?ab:bc;
+            return (from-best).sqrMagnitude<(from-ca).sqrMagnitude?best:ca;
         }
     }
 }

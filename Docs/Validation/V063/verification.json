@@ -1,0 +1,168 @@
+{
+  "version": "0.63.0",
+  "date": "2026-11-04",
+  "runtimeLog": "Logs/usv-validation-108ebfa62e8b4a2cb6faaaaf5c51da61.log",
+  "runtimePassed": true,
+  "native": [
+    {
+      "file": "Logs/V063/NativeXR/native-realms-final.json",
+      "passed": true,
+      "observations": 32
+    },
+    {
+      "file": "Logs/V063/NativeXR/native-stars-final-clean.json",
+      "passed": true,
+      "observations": 18
+    },
+    {
+      "file": "Logs/V063/NativeXR/native-calendar-r2.json",
+      "passed": true,
+      "observations": 12
+    },
+    {
+      "file": "Logs/CollectionReview/native-collection.json",
+      "passed": true,
+      "observations": 9
+    },
+    {
+      "file": "Logs/V063/NativeXR/native-calendar-final-clean.json",
+      "passed": true,
+      "observations": 6
+    },
+    {
+      "file": "Logs/CollectionReview/native-context-routing.json",
+      "passed": true,
+      "observations": 3
+    },
+    {
+      "file": "Logs/CollectionReview/native-animal-showcase-views.json",
+      "passed": true,
+      "observations": 7
+    },
+    {
+      "file": "Logs/V063/NativeXR/native-gull-optics-closeup.json",
+      "passed": true,
+      "observations": 1
+    }
+  ],
+  "nativeScope": "Native Mock OpenXR; PICO quality; real button/axis/pose routing with explicit isolated fixtures",
+  "rules": 5162,
+  "inputRules": 74,
+  "pureCi": [
+    {
+      "output": "Logs/V063/final-pure-ci-input.txt",
+      "passed": true,
+      "checks": 74,
+      "scope": "Pure input/render policy logic only; not Unity/device validation."
+    },
+    {
+      "output": "Logs/V063/final-pure-ci-fishing.txt",
+      "passed": true,
+      "checks": 5162,
+      "scope": "Pure fishing rules only."
+    }
+  ],
+  "animalSave": "Logs/V063/PicoAnimalShowcase/20261103T182650720Z-f6ebbfc1/manifest.json",
+  "animalSavePrepared": true,
+  "deviceSaveUpdated": true,
+  "deviceInstalled": true,
+  "castingConnected": true,
+  "gameplayCastVerified": true,
+  "deviceAnimalGameplayVerified": false,
+  "deviceAnimalSaveRoundtripVerified": true,
+  "safetyBoundaryBlocking": false,
+  "deviceDelivery": {
+    "verifiedDate": "2026-11-04",
+    "installLog": "Logs/V063/pico-install.txt",
+    "installVerification": "Logs/V063/pico-install-verification.json",
+    "installedVersion": "0.63.0",
+    "installedVersionCode": 63,
+    "installedApkSha256": "fe06e4a5445e4005bfaeb9a1c3f3e86033f9464e3b9a7b3125eae67369125359",
+    "releaseHashMatches": true,
+    "applicationDataPreserved": true,
+    "freshBackup": "Logs/V063/PicoDevice/20261104-022326",
+    "animalApplyLog": "Logs/V063/pico-animal-apply.json",
+    "addedAnimals": 10,
+    "onlyHomeEcologyChanged": true,
+    "slotHeaderAndResumePreserved": true,
+    "existingBackupClassroomAndPhotosPreserved": true,
+    "fileOwnershipAndModePreserved": true,
+    "mode": "0660",
+    "sourceSaveSha256": "73e2f86e3058bee0cd50436cc7d5a9aa2278b997b1854c713483cdbdef66b2e3",
+    "deviceReadbackSaveSha256": "430b7a174c96debd28e99b5b2cfa80d7a8df14393b10a6c2f9dae1f3f21fa48c",
+    "normalProcessObserved": true,
+    "gameplayInitializationVerified": true,
+    "normalSaveVerified": true,
+    "afterLaunchSaveVerification": "Logs/V063/pico-after-launch-save-check.json",
+    "normalSavedLocalTime": "2026-11-04T02:34:10+08:00",
+    "animalsRetainedAfterNormalSave": 10,
+    "sameVoyageAfterNormalSave": true,
+    "castingEvidence": "Live PICO gameplay video: 1280x720, readyState 4, paused false, advancing playback time; UnityPlayerActivity in foreground.",
+    "castingVerification": "Logs/V063/pico-edge-cast-verification.json",
+    "castingImage": "Docs/Validation/V063/pico-device-live.jpg",
+    "blockingUi": null
+  },
+  "deviceFrameRateMeasured": false,
+  "buildsVerified": true,
+  "builds": {
+    "verifiedDate": "2026-11-04",
+    "manifest": "Builds/v0.63.0-builds.json",
+    "releaseLog": "Logs/V063/build-release-run.txt",
+    "windows": {
+      "passed": true,
+      "runtimeLog": "Logs/usv-validation-64247b1063a041f0a22a410bd80164da.log",
+      "executable": "Builds/FishingPrototype-v0.63.0/FishingPrototype.exe",
+      "zip": "Builds/FishingPrototype-v0.63.0-Windows.zip",
+      "files": 210,
+      "zipEntryHashesMatched": true,
+      "sha256": "BFB066F3ECBD3CB52E6BC62716288796E309F5A5811BC59A788F6C511C0A9B48"
+    },
+    "android": {
+      "passed": true,
+      "output": "Logs/V063/build-android-code63-run.txt",
+      "runtimeLog": "Logs/usv-validation-586352d3a07a47cb9fd9556b6ba406ff.log",
+      "apk": "Builds/FishingPrototype-v0.63.0-Android/FishingPrototype.apk",
+      "packageName": "com.ruanyueheng.tidefin.vr",
+      "versionName": "0.63.0",
+      "versionCode": 63,
+      "architecture": "arm64-v8a",
+      "badgingLog": "Logs/V063/apk-badging.txt",
+      "signatureLog": "Logs/V063/apk-signature.txt",
+      "v2SignatureVerified": true,
+      "certificateSha256": "9e285a6d982524c420722d7ebc157fa0643b62c65eca5a0285c5311e000b5437",
+      "zipEntriesReadable": true,
+      "lz4DataStoredWithoutOuterCompression": true,
+      "sha256": "FE06E4A5445E4005BFAEB9A1C3F3E86033F9464E3B9A7B3125EAE67369125359"
+    },
+    "structure": {
+      "passed": true,
+      "runtimeLog": "Logs/usv-validation-2895de558dee4958bb903379d21ede20.log",
+      "scope": "Import, shared input settings and three scene structures; not gameplay, rendering or headset certification."
+    }
+  },
+  "relatedRegressions": [
+    {
+      "output": "Logs/V063/regression-FishingFeedbackTools-r2-run.txt",
+      "runtimeLog": "Logs/usv-validation-31f60fb2cda6416a8aae739e1d58d024.log",
+      "passed": true
+    },
+    {
+      "output": "Logs/V063/regression-FishingV062-r2-run.txt",
+      "runtimeLog": "Logs/usv-validation-e441cee117ee4443accb34aea8fd5cdc.log",
+      "passed": true
+    },
+    {
+      "output": "Logs/V063/regression-FishingV055-r4-run.txt",
+      "runtimeLog": "Logs/usv-validation-a2a871a42dfc4a71adf862268e570af2.log",
+      "passed": true
+    }
+  ],
+  "jev": {
+    "model": "jev-1.14.0",
+    "questions": 3,
+    "result": "supports",
+    "source": "Logs/V063/jev-source-review.json",
+    "confidenceIsAccuracy": false
+  },
+  "animalVisualReview": "Inspected two rabbits, foxes, tortoises and sea turtles in their habitats; two gulls seen on lower perch through the in-game binoculars. No HUD/collision bypass; native walking views and optics preserved the same isolated career."
+}

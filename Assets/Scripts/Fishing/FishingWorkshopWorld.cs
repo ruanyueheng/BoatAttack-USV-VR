@@ -209,6 +209,35 @@ namespace BoatAttack.Fishing
             return stationId>=0 || resource!=null;
         }
         public bool TryHarvestTarget(out ResourceNode resource){Sense();resource=_nearNode;return resource!=null;}
+        public bool TryHarvestTarget(Vector3 from,float reach,out ResourceNode resource)
+        {
+            resource=null;float nearest=reach;
+            if(!_c.Ashore || _c.Paused)return false;
+            foreach(var node in _nodes)
+            {
+                if(!ResourceContact(node,from,reach,out float distance) || distance>=nearest)continue;
+                resource=node;nearest=distance;
+            }
+            return resource!=null;
+        }
+        private bool ResourceContact(ResourceNode node,Vector3 from,float reach,out float distance)
+        {
+            distance=float.MaxValue;
+            if(node==null || node.Root==null || !node.Root.gameObject.activeInHierarchy || Vector3.Distance(_c.Shore.Actor.position,node.Feet)>2.8f)return false;
+            var renderer=node.Root.GetComponent<Renderer>();if(renderer!=null && renderer.bounds.SqrDistance(from)>reach*reach)return false;
+            var contact=FishingContactGeometry.ClosestPoint(node.Root,from);distance=Vector3.Distance(from,contact);
+            return distance<=reach && _c.Shore.ClearSight(from,contact,node.Root) && _c.Shore.ClearSight(_c.viewCamera.transform.position,contact,node.Root);
+        }
+        private bool TrackedResourceContact(ResourceNode node,FieldItem tool)
+        {
+            if(!_c.Hands.TryControllerPalm(false,out var right,out _) || !_c.Hands.TryControllerPalm(true,out var left,out _)
+                || !Application.isFocused || _c.XRSeat.HeadBlocked || _c.XRNotebook.BlocksGameplay || _c.StoryBlocksGameplay || _c.ShopBlocksGameplay || _c.WorldActionBusy)return false;
+            if(!FishingBackpack.IsGatherTool(tool))return ResourceContact(node,right,FishingXRGrab.Reach,out _) || ResourceContact(node,left,FishingXRGrab.Reach,out _);
+            var held=_c.FieldWorld.HeldTool;
+            return held!=null && held.gameObject.activeInHierarchy && _c.FieldWorld.PresentedItem==tool
+                && ResourceContact(node,held.TransformPoint(FishingFieldWorld.WorkToolTip(tool)),.10f,out _)
+                && _c.Shore.ClearSight(held.position,held.TransformPoint(FishingFieldWorld.WorkToolTip(tool)),node.Root);
+        }
         public bool OpenStation(int id)
         {
             if(_c.Paused || !ReachStation(id))return false;
@@ -218,7 +247,9 @@ namespace BoatAttack.Fishing
         {
             if(_c.Paused || !_c.Ashore || _c.Career.Backpack.Equipped!=expectedTool)return false;
             ResourceNode node=null;foreach(var candidate in _nodes)if(candidate.Id==id){node=candidate;break;}
-            if(node==null || node.Item!=expectedItem || node.Root==null || !node.Root.gameObject.activeInHierarchy || !Reach(node.Feet))return false;
+            if(node==null || node.Item!=expectedItem || node.Root==null || !node.Root.gameObject.activeInHierarchy)return false;
+            if(UnityEngine.XR.XRSettings.isDeviceActive && !_c.Automated){if(!TrackedResourceContact(node,expectedTool))return false;}
+            else if(!Reach(node.Feet))return false;
             bool pick=expectedTool==FieldItem.StonePickaxe || expectedTool==FieldItem.IronPickaxe;
             if(NeedsPick(node.Item) && !pick){_c.Notice(UnityEngine.XR.XRSettings.isDeviceActive?"矿石需要石镐或铁镐：B 查看制作配方，Y 换装备；镐尖贴近矿石后按 A 或右扳机。":"矿石需要手持石镐或铁镐：I 查看配方，1–9 装备。",4);return false;}
             if(!FishingBackpack.ToolMatchesResource(expectedTool,node.Item))return false;

@@ -29,17 +29,24 @@ namespace BoatAttack.Fishing
             bool grip=FishingXRInput.Grip(InputDevices.GetDeviceAtXRNode(XRNode.RightHand));
             bool leftGrip=FishingXRInput.Grip(InputDevices.GetDeviceAtXRNode(XRNode.LeftHand));
             bool rightTracked=_c.Hands.TryControllerPalm(false,out var palm,out _),leftTracked=_c.Hands.TryControllerPalm(true,out var leftPalm,out _);
-            bool pressed=_grip.Step(ready && rightTracked,grip),leftPressed=_leftGrip.Step(ready && leftTracked,leftGrip);
+            bool pressed=_grip.Step(ready && rightTracked && leftTracked,grip),leftPressed=_leftGrip.Step(ready && rightTracked && leftTracked,leftGrip);
             if(pressed && _c.Home.TryGripOrchardFruit(palm) || leftPressed && _c.Home.TryGripOrchardFruit(leftPalm))return;
             if(ready && TryFarmHand(pressed,grip,leftPressed))return;
-            if(!pressed || !rightTracked)return;
-            if(_c.FieldWorld.TryPickupTarget(out var pickup) && Vector3.Distance(palm,FishingContactGeometry.ClosestPoint(pickup.Root,palm))<Reach)
-            {_c.FieldWorld.PickupById(pickup.Id,pickup.Item,pickup.Count);return;}
+            if(pressed && TryGrab(palm))return;
+            if(leftPressed)TryGrab(leftPalm);
+        }
+        private bool TryGrab(Vector3 palm)
+        {
+            if(_c.FieldWorld.TryPickupTarget(palm,out var pickup))
+            {_c.FieldWorld.PickupById(pickup.Id,pickup.Item,pickup.Count);return true;}
+            if(!FishingBackpack.IsGatherTool(_c.Career.Backpack.Equipped) && _c.WorkshopWorld.TryHarvestTarget(palm,Reach,out var resource))
+            {_c.WorkshopWorld.HarvestNode(resource.Id,resource.Item,_c.Career.Backpack.Equipped);return true;}
             if(_c.RifleHunting.TryLootTarget(out var animal))
             {
                 var contact=FishingContactGeometry.ClosestPoint(animal.Root,palm);
-                if(Vector3.Distance(palm,contact)<Reach && _c.Shore.ClearSight(palm,contact))_c.RifleHunting.CollectAnimal(animal.Id);
+                if(Vector3.Distance(palm,contact)<Reach && _c.Shore.ClearSight(palm,contact))return _c.RifleHunting.CollectAnimal(animal.Id);
             }
+            return false;
         }
         private bool TryFarmHand(bool pressed,bool held,bool leftPressed)
         {

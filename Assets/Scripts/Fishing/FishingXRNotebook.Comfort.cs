@@ -21,7 +21,7 @@ namespace BoatAttack.Fishing
             Set(3,"移动时视野收窄\n"+FishingXRComfort.VignetteName+"\n点击切换",()=>{FishingXRComfort.Vignette=(FishingXRComfort.Vignette+1)%4;Refresh();});
             Set(4,"舒适航行\n"+(_c.ComfortMode?"开启：船速 65% · 起伏衰减":"标准动力"),()=>{_c.ToggleComfort();Refresh();});
             Set(5,"秘境阵风\n"+(FishingXRComfort.GustComfort?"舒适：不推动身体":"慢速推动"),()=>{FishingXRComfort.GustComfort=!FishingXRComfort.GustComfort;Refresh();});
-            Set(6,"校准眼高",()=>{_c.XRSeat.Recenter();Close();});
+            Set(6,"手部角度",()=>Open(HandAlignmentPage));
             Set(7,"操作说明\n各情境按键表",()=>Open(23));Set(8,"返回设置",()=>Open(14));
         }
         private void RefreshHandAlignment()

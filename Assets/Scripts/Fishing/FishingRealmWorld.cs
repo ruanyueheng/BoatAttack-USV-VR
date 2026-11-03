@@ -26,6 +26,7 @@ namespace BoatAttack.Fishing
         private readonly BoxCollider[] _gangwayRails=new BoxCollider[2];
         private Transform _sunWell,_seedReceiver;
         private readonly RaycastHit[] _targetHits=new RaycastHit[64];
+        private readonly Collider[] _demoEntranceHits=new Collider[64];
         private bool _pushing;
         public int Island { get; private set; }=-1;
         public bool Inside=>Island>=0;
@@ -81,9 +82,10 @@ namespace BoatAttack.Fishing
                 BuildTrialScenery(i);
             }
         }
-        private bool ClearTarget(Transform target)
+        private bool ClearTarget(Transform target)=>ClearTarget(_c.ExplorerPosition,target);
+        private bool ClearTarget(Vector3 feet,Transform target)
         {
-            var from=_c.ExplorerPosition+Vector3.up*1.4f;float height=Inside && Island==2 && target==_devices[0]?.45f:1.2f;
+            var from=feet+Vector3.up*1.4f;float height=Inside && Island==2 && target==_devices[0]?.45f:1.2f;
             var to=target.position+Vector3.up*height;var delta=to-from;
             int count=Physics.RaycastNonAlloc(from,delta.normalized,_targetHits,delta.magnitude,~(1<<4),QueryTriggerInteraction.Ignore);
             if(count==_targetHits.Length)return false;
@@ -199,7 +201,7 @@ namespace BoatAttack.Fishing
             }
             else
             {
-                moved=_c.Shore.Relocate(_returnFeet,_returnRotation);
+                moved=RelocateReturnFeet();
                 if(moved){Island=-1;Trial=null;_rooms[old].gameObject.SetActive(false);}
             }
             _c.View.ResetLook();_c.Shore.ResetMoveInput();_c.LowerFieldTools();
@@ -209,6 +211,66 @@ namespace BoatAttack.Fishing
             _c.WorldAudio?.Play("PortalPass",_c.ExplorerPosition+Vector3.up,.5f);
             _c.Regions.Show(Inside?FishingLore.ShrineName(Island):FishingAdventure.Name(old),Inside?FishingLore.TrialObjective(Island)+" · 归航门位于探索终点":FishingLore.Subtitle(old),Inside?Island:old);
         }
+        private bool RelocateReturnFeet()
+        {
+            if(_c.Shore.Relocate(_returnFeet,_returnRotation))return true;
+            if(TryEntranceFooting(Island,out var entrance,out _) && _c.Shore.Relocate(entrance,_returnRotation))return true;
+            return TryFootingNear(_returnFeet,Island,out var nearby) && _c.Shore.Relocate(nearby,_returnRotation);
+        }
+        public bool TryEntranceFooting(int island,out Vector3 feet,out Quaternion rotation)
+        {
+            feet=Vector3.zero;rotation=Quaternion.identity;
+            if(_c==null || island<0 || island>=_portals.Length || _portals[island]==null
+                || !TryFootingNear(PortalApproach(island),island,out feet))return false;
+            var forward=Vector3.ProjectOnPlane(_portals[island].position-feet,Vector3.up);
+            rotation=forward.sqrMagnitude>.001f?Quaternion.LookRotation(forward):_portals[island].rotation;
+            return true;
+        }
+        public bool TryDemoEntranceFooting(int island,out Vector3 feet,out Quaternion rotation)
+        {
+            feet=Vector3.zero;rotation=Quaternion.identity;
+            if(_c==null || island<0 || island>=_portals.Length || _portals[island]==null)return false;
+            var approach=PortalApproach(island);
+            var outward=Vector3.ProjectOnPlane(approach-_portals[island].position,Vector3.up).normalized;
+            foreach(var anchor in new[]{approach+outward*.65f,approach})
+            {
+                if(TryDemoEntranceCandidate(anchor,approach,island,out feet,out rotation))return true;
+                for(int ring=1;ring<=3;ring++)for(int step=0;step<16;step++)
+                {
+                    var candidate=anchor+Quaternion.Euler(0,step*22.5f,0)*Vector3.forward*(ring*.4f);
+                    if(TryDemoEntranceCandidate(candidate,approach,island,out feet,out rotation))return true;
+                }
+            }
+            return false;
+        }
+        private bool TryDemoEntranceCandidate(Vector3 candidate,Vector3 approach,int island,out Vector3 feet,out Quaternion rotation)
+        {
+            rotation=Quaternion.identity;
+            if(!ClearFooting(candidate,island,out feet) || Mathf.Abs(feet.y-approach.y)>.3f)return false;
+            var forward=Vector3.ProjectOnPlane(_portals[island].position-feet,Vector3.up);
+            if(forward.sqrMagnitude<.001f)return false;
+            rotation=Quaternion.LookRotation(forward);
+            // The classroom menu needs room for the low controller ray and the open book, not only the standing capsule.
+            int count=Physics.OverlapBoxNonAlloc(feet+Vector3.up*1.45f+rotation*Vector3.forward*.65f,
+                new Vector3(.6f,.65f,.65f),_demoEntranceHits,rotation,~((1<<4)|(1<<5)),QueryTriggerInteraction.Ignore);
+            if(count==_demoEntranceHits.Length)return false;
+            for(int i=0;i<count;i++)if(_demoEntranceHits[i]!=_c.Shore.Body && !FishingShore.NonSolidSurface(_demoEntranceHits[i]))return false;
+            return true;
+        }
+        private bool TryFootingNear(Vector3 anchor,int island,out Vector3 feet)
+        {
+            if(ClearFooting(anchor,island,out feet))return true;
+            // A player may enter beside a railing; return to supported ground nearby instead of trapping them inside.
+            for(int ring=1;ring<=3;ring++)for(int step=0;step<8;step++)
+                {
+                    var candidate=anchor+Quaternion.Euler(0,step*45,0)*Vector3.forward*(ring*.4f);
+                    if(ClearFooting(candidate,island,out feet) && Mathf.Abs(feet.y-anchor.y)<=.3f)return true;
+                }
+            return false;
+        }
+        private bool ClearFooting(Vector3 candidate,int island,out Vector3 feet)=>_c.Shore.Ground(candidate,out feet)
+            && Mathf.Abs(feet.y-candidate.y)<=.3f && Vector3.Distance(feet,_portals[island].position)<2.7f
+            && _c.Shore.Clearance(feet) && ClearTarget(feet,_portals[island]);
         public void Abort()
         {
             CancelObservation();_pushing=false;StopAllCoroutines();

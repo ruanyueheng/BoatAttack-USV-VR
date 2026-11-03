@@ -119,6 +119,14 @@ namespace BoatAttack.EditorTools
         }
         private static IEnumerator Checks(FishingPrototype c,string suite)
         {
+            if(suite=="V063" || suite=="V063-REALMS")
+            {
+                var run=suite=="V063"?FishingV063Validation.Checks(c):FishingV063RealmValidation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V062")
+            {
+                var run=FishingV062Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
             if(suite=="LIFE-CAMERA")
             {
                 var run=FishingV044LifeValidation.CameraReviewChecks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;

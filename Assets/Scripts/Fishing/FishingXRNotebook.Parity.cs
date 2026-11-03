@@ -54,7 +54,7 @@ namespace BoatAttack.Fishing
             Set(1,"鱼获图鉴 · 已发现",()=>{_knownCatalog=true;Open(10);});
             Set(2,"传说线索 / 调查航点",()=>Open(LegendPage));
             Set(3,"自然观察 / 海岸调查",()=>Open(15));Set(4,"海湾日历",()=>Open(3));
-            Set(5,"群岛航记 / 主线",()=>Open(9));Set(6,"世界与秘境",()=>Open(LorePage));
+            Set(5,"主线剧情 / 当前目标",()=>Open(9));Set(6,"世界与秘境",()=>Open(LorePage));
             Set(7,"相册 / 照片图鉴",()=>Open(AlbumPage));Set(8,"信件 / 漂流瓶",()=>Open(LettersPage));
         }
         private string CatalogDetail(FishKind kind)

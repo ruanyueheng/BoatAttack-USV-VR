@@ -5,7 +5,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingHUD
     {
-        private static readonly string[] JournalTabs={"鱼获图鉴","传说线索","自然观察","海岸调查","海湾日历","群岛航记","世界与秘境","相册图鉴","信件"};
+        private static readonly string[] JournalTabs={"鱼获图鉴","传说线索","自然观察","海岸调查","海湾日历","主线剧情","世界与秘境","相册图鉴","信件"};
         private static readonly string[] ChapterNotes={"海的收藏","夕照中的金帆","与万物相遇","沿着潮线走","听潮与候风","寄自远方的信","找回四段回响","镜头里的回潮海","漂流瓶与回信"};
         private int _catalogPage,_selectedFish,_natureSelection;
         private bool _knownFishOnly,_journalDrawn,_journalOrderOpen;

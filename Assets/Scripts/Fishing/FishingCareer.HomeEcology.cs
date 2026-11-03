@@ -98,6 +98,31 @@ namespace BoatAttack.Fishing
         public int AnimalAgeDays(int id)
         {var animal=_ecology.animals.Find(a=>a.id==id);return animal==null?-1:Calendar.Day-animal.birthDay;}
         public bool AnimalAdult(int id)=>AnimalAgeDays(id)>=AnimalAdultDays;
+        public bool PrepareAnimalShowcase()
+        {
+            if(!CreativeMode)return false;
+            var additions=new List<HomeAnimalData>();var levels=(int[])_ecology.habitatLevels.Clone();
+            var sources=new[]{0,1,2,8,11};int nextId=_ecology.nextAnimalId;
+            for(int kind=0;kind<5;kind++)
+            {
+                levels[kind]=Math.Max(1,levels[kind]);
+                for(int sex=0;sex<2;sex++)
+                {
+                    bool female=sex==1;
+                    if(!_ecology.animals.Exists(a=>a.housed && (int)a.kind==kind && a.female==female && Calendar.Day-a.birthDay>=AnimalAdultDays))
+                        additions.Add(new HomeAnimalData{id=nextId++,sourceId=sources[kind],kind=(LandAnimalKind)kind,female=female,birthDay=Calendar.Day-AnimalAdultDays,housed=true});
+                }
+                int housed=HousedAnimalCount((LandAnimalKind)kind)+additions.FindAll(a=>(int)a.kind==kind).Count;
+                if(housed>levels[kind]*4)
+                {
+                    if(levels[kind]!=1 || !Lore.BlueprintUnlocked(1) || housed>8)return false;
+                    levels[kind]=2;
+                }
+            }
+            if(HomeAnimalCount+additions.Count>MaxHomeAnimals || nextId>1000000)return false;
+            _ecology.habitatLevels=levels;_ecology.animals.AddRange(additions);_ecology.nextAnimalId=nextId;
+            return true;
+        }
         public float AquariumGrowth(string id)
         {var fish=_ecology.fish.Find(f=>f.fish.id==id);return fish==null?0:Math.Min(fish.fedDays,Math.Min(AquariumGrowthDays,Calendar.Day-fish.placedDay))/(float)AquariumGrowthDays;}
         private bool AquariumContains(string id)=>_ecology.fish.Exists(f=>f.fish.id==id);

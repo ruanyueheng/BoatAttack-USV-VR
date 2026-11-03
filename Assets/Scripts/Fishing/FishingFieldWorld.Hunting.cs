@@ -4,7 +4,9 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingFieldWorld
     {
-        public static readonly Vector3 SpearPalm=new Vector3(.03f,0,-.02f),SpearTip=new Vector3(0,0,.92f);
+        public static readonly Quaternion SpearHandRotation=Quaternion.LookRotation(Vector3.down,Vector3.right);
+        public static Vector3 SpearPalm=>SpearHandRotation*TrackedPickPalmOffset;
+        public static readonly Vector3 SpearTip=new Vector3(0,0,.92f);
         private Animal _huntTarget;
         private float _thrust,_nextHunt;
         private Vector3 _lastSpear;

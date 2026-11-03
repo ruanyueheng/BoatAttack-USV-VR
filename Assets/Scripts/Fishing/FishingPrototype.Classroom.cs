@@ -39,6 +39,30 @@ namespace BoatAttack.Fishing
             else if(field==2)ClassroomDate=Mathf.Clamp(ClassroomDate+step,1,28);
             else if(field==3)ClassroomHour=(ClassroomHour+step+24)%24;
         }
+        public void SelectCurrentCalendarDate()
+        {
+            var date=Career.Calendar;ClassroomYear=date.Year;ClassroomSeason=date.Season;ClassroomDate=date.Date;
+            ClassroomHour=Mathf.Min(23,Mathf.CeilToInt(date.Hour));ClassroomMessage=string.Empty;
+        }
+        public void SelectNextSeasonFestival()
+        {
+            int year=Mathf.Max(ClassroomYear,Career.Calendar.Year);
+            int day=(year-1)*FishingCalendar.DaysPerYear+ClassroomSeason*FishingCalendar.DaysPerSeason+FishingFestival.Date-1;
+            if(day*1440d+600<Career.Calendar.TotalMinutes)year++;
+            if(year>999){ClassroomMessage="当前季节已没有可跳转的节日，请选择其他季节或独立展示档。";return;}
+            ClassroomYear=year;ClassroomDate=FishingFestival.Date;ClassroomHour=10;
+            ClassroomMessage="已选中下次"+FishingFestival.Name(ClassroomSeason)+"，10:00集市船营业。";
+        }
+        public bool JumpToSelectedCalendarDate()
+        {
+            if(!CanSaveCheckpoint() || !CanSetTime){ClassroomMessage="请先结束捕鱼、秘境、游泳或手作，再调整日期。";return false;}
+            if(!Career.Calendar.AdvanceToDate(ClassroomYear,ClassroomSeason,ClassroomDate,ClassroomHour))
+            {ClassroomMessage="保留进度只能向前跳转；要展示过去的日期，请创建独立展示档。";return false;}
+            Career.Farm.AdvanceDay(Career.Calendar.Day);Farm?.Refresh();HomeEcology?.Refresh();
+            Weather.ApplyEnvironment();Save();
+            ClassroomMessage="已跳转至"+Career.Calendar.DateLabel+" "+Career.Calendar.TimeLabel+"，航程进度保留。";
+            Notice(ClassroomMessage,6);return true;
+        }
         public void ContinueClassroomDemo()=>LoadClassroom(false);
         public void ApplyClassroomDate()=>LoadClassroom(true);
         private void LoadClassroom(bool reset)

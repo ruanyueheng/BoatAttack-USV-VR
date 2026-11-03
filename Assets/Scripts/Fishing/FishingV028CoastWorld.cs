@@ -31,7 +31,7 @@ namespace BoatAttack.Fishing
         public bool MenuOpen {get;private set;}
         public bool NearGrill=>TryTarget(out _);
         public Vector3 CookingPoint=>Grill.position+Vector3.up*.97f;
-        public string InteractionTitle=>(XRSettings.isDeviceActive?"A ":"E ")+(_c.Career.BarbecueReady?"领取香烤海鱼":"鱼箱 / 海风烧烤");
+        public string InteractionTitle=>(XRSettings.isDeviceActive?"A ":"E ")+(_c.Career.BarbecueReady?"领取香烤海鱼":_c.CreativeMode?"零材料练习烤鱼":"鱼箱 / 海风烧烤");
         public void Build(FishingPrototype c)
         {
             enabled=false;
@@ -107,11 +107,11 @@ namespace BoatAttack.Fishing
             if(keyboard!=null && (keyboard.escapeKey.wasPressedThisFrame || keyboard.eKey.wasPressedThisFrame || keyboard.iKey.wasPressedThisFrame))CloseMenu();
             return true;
         }
-        public bool StartRoasting(string id)
+        public bool StartRoasting(string id=null)
         {
             if(!NearGrill || _c.Paused || _c.ShopBlocksGameplay || (_c.StoryBlocksGameplay && !MenuOpen) || !_c.Career.BeginBarbecue(id))return false;
             _transfer=1;_c.RefreshBarbecueHold();_c.Save();RefreshFishView();
-            _c.Notice("从鱼箱取出海鱼，放上烤架 · 炭烤18秒；收起面板后继续烤制。",6);return true;
+            _c.Notice(_c.Career.PracticeBarbecue?FishingCoastRules.PracticeRoastHint:"从鱼箱取出海鱼，放上烤架 · 炭烤18秒；收起面板后继续烤制。",6);return true;
         }
         public bool Collect()
         {
@@ -141,7 +141,7 @@ namespace BoatAttack.Fishing
             _cooked.SetActive(cooking && (_c.Career.BarbecueReady || _transfer<=0));
             _embers.intensity=cooking?Mathf.Lerp(.35f,.55f,Mathf.Sin(Time.time*4)*.5f+.5f):.06f;
             string interact=_c.DesktopDisplay?"E":"右手柄 A";
-            _sign.text=cooking?(_c.Career.BarbecueReady?"香烤海鱼已熟\n"+interact+" 领取":Mathf.CeilToInt(data.remaining)+" 秒 · 海风炭烤\n收起面板后继续"):"海风烧烤\n"+interact+" 从鱼箱取鱼";
+            _sign.text=cooking?(_c.Career.PracticeBarbecue?"创造练习 · ":"")+(_c.Career.BarbecueReady?"香烤海鱼已熟\n"+interact+" 领取":Mathf.CeilToInt(data.remaining)+" 秒 · 海风炭烤\n收起面板后继续"):_c.CreativeMode?"零材料练习烤鱼\n"+interact+" 打开烧烤菜单":"海风烧烤\n"+interact+" 从鱼箱取鱼";
             _sign.color=FishingUITheme.Ink;
             _sign.gameObject.SetActive((_c.ExplorerPosition-Grill.position).sqrMagnitude<18*18);
             if(_sign.gameObject.activeSelf)_sign.transform.rotation=Quaternion.LookRotation(_sign.transform.position-_c.viewCamera.transform.position);

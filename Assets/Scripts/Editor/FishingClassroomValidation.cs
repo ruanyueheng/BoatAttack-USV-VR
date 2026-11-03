@@ -33,10 +33,12 @@ namespace BoatAttack.EditorTools
             const BindingFlags flags=BindingFlags.Instance|BindingFlags.NonPublic;
             typeof(FishingXRNotebook).GetField("_page",flags).SetValue(c.XRNotebook,FishingXRNotebook.ClassroomPage);
             typeof(FishingXRNotebook).GetMethod("Refresh",flags).Invoke(c.XRNotebook,null);
-            var actions=(Action[])typeof(FishingXRNotebook).GetField("_actions",flags).GetValue(c.XRNotebook);
-            Check(actions[6]!=null && actions[7]!=null,"XR page exposes explicit reset and return-to-voyage actions");
-            var status=(Text)typeof(FishingXRNotebook).GetField("_status",flags).GetValue(c.XRNotebook);
-            Check(status.preferredHeight<=status.rectTransform.rect.height,"classroom summary fits XR reading leaf");
+            var calendar=(GameObject)typeof(FishingXRNotebook).GetField("_calendarSurface",flags).GetValue(c.XRNotebook);
+            var calendarButtons=calendar.GetComponentsInChildren<FishingNotebookButton>(true);
+            Check(Array.Find(calendarButtons,b=>b.Index==763)?.Command!=null && Array.Find(calendarButtons,b=>b.Index==764)?.Command!=null,"Unified XR calendar exposes explicit independent reset and return-to-voyage actions");
+            Check(Array.FindAll(calendarButtons,b=>b.Index>=700 && b.Index<728).Length==28,"XR calendar has twenty-eight selectable date cells");
+            var status=(Text)typeof(FishingXRNotebook).GetField("_calendarSelection",flags).GetValue(c.XRNotebook);
+            Check(status.preferredHeight<=status.rectTransform.rect.height,"calendar selection details fit the reading panel");
             c.LeaveClassroomDemo();
             Check(!c.ClassroomDemoActive && c.SavePath==normalPath && c.ActiveSaveSlot==normalSlot && c.Career.Coins==coins,"leaving restores original voyage and active slot");
             c.ContinueClassroomDemo();
