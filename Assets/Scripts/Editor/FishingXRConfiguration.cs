@@ -57,7 +57,7 @@ namespace BoatAttack.EditorTools
             EditorUserBuildSettings.androidBuildSubtarget=MobileTextureSubtarget.ASTC;
             FishingPicoQuality.Ensure();
             PlayerSettings.bundleVersion=FishingPrototype.Version;
-            PlayerSettings.Android.bundleVersionCode=60;
+            PlayerSettings.Android.bundleVersionCode=61;
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android,ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures=AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion=AndroidSdkVersions.AndroidApiLevel29;

@@ -98,7 +98,7 @@ namespace BoatAttack.Fishing
         private void LateUpdate()
         {
             if(IsOpen)_canvas.GetComponent<Image>().color=FishingPaperDesign.PaperTint;
-            if(_mapPalette!=null){FishingUITheme.StyleMap(_mapPalette);_map.material=_mapPalette;}
+            if(IsOpen && _map.gameObject.activeInHierarchy && _mapPalette!=null){FishingUITheme.StyleMap(_mapPalette);_map.material=_mapPalette;}
             if(_c==null || _feedback==null)return;
             if(IsOpen && !_c.Automated && !_notebookHeld)FollowHead();
             if(IsOpen && !_c.Automated)_canvas.transform.localScale=Vector3.one*.00105f*Mathf.Lerp(.985f,1,Mathf.SmoothStep(0,1,(Time.unscaledTime-_pageOpenedAt)/.12f));

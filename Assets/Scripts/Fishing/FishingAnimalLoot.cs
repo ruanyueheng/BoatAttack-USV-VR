@@ -46,10 +46,12 @@ namespace BoatAttack.Fishing
             if(!CanAfford(HuntingRiflePrice) || Backpack.Count(FieldItem.HuntingRifle)>0 || !Backpack.TryAdd(FieldItem.HuntingRifle,1))return false;
             SpendCoins(HuntingRiflePrice);return true;
         }
-        public HuntedAnimalData HuntedAnimal(int id)
+        public HuntedAnimalData HuntedAnimal(int id)=>FindHuntedAnimal(id)?.Copy();
+        private HuntedAnimalData FindHuntedAnimal(int id)
         {
-            var a=_huntedAnimals.Find(entry=>entry.id==id);
-            return a==null || (a.collected && (a.activeRecovery?a.respawnSeconds<=0:a.respawnAt>0 && Calendar.TotalMinutes>=a.respawnAt))?null:a.Copy();
+            foreach(var a in _huntedAnimals)
+                if(a.id==id)return a.collected && (a.activeRecovery?a.respawnSeconds<=0:a.respawnAt>0 && Calendar.TotalMinutes>=a.respawnAt)?null:a;
+            return null;
         }
         public bool KillLandAnimal(int id,LandAnimalKind kind,float x,float y,float z,float yaw)
         {

@@ -1,0 +1,93 @@
+{
+  "v061": {
+    "log": "Logs/usv-validation-bfcc5169a99c42bf9375c1ad08c07e57.log",
+    "pass": [
+      "[V061] PASS: v0.61.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。"
+    ],
+    "checks": 172
+  },
+  "v060": {
+    "log": "Logs/usv-validation-216379783b0a412985d4c45140d88984.log",
+    "pass": [
+      "[V060] PASS: v0.61.0 源场景/运行时断言完成；不等同于人工画面、实体输入或头显验收。"
+    ],
+    "checks": 660
+  },
+  "windows": {
+    "log": "Logs/usv-validation-2309986224774b918551d8764af6fb54.log",
+    "pass": [
+      "[FISHING] PASS: Windows prototype built: Builds/FishingPrototype-v0.61.0/FishingPrototype.exe"
+    ]
+  },
+  "android": {
+    "log": "Logs/usv-validation-a3309a398d614a39b68fc3837968e62f.log",
+    "pass": [
+      "[XR-BUILD] PASS: ARM64 APK built: Builds/FishingPrototype-v0.61.0-Android/FishingPrototype.apk. Build validation does not certify headset comfort or controller calibration."
+    ]
+  },
+  "structure": {
+    "log": "Logs/usv-validation-7da2112f08704ddf87287e089e789182.log",
+    "pass": [
+      "[USV-VALIDATION] PASS: import, input settings and three scene structures only; no Play Mode, build, rendering or headset test."
+    ]
+  },
+  "core": {
+    "log": "Logs/V061/core-tests.log",
+    "pass": "TOTAL: 4868 passed. Pure fishing rules only.",
+    "allocation": [
+      "PASS 10,000 warm wildlife availability queries allocate zero bytes (actual: 0)"
+    ]
+  },
+  "packages": {
+    "version": "0.61.0",
+    "windowsFiles": 210,
+    "windowsZip": "Builds/FishingPrototype-v0.61.0-Windows.zip",
+    "windowsSha256": "F34D9AF387EA05D0E1B8490D3FF9F0E39DA30F979FD83EBCFA57EAA053B5722B",
+    "androidApk": "Builds/FishingPrototype-v0.61.0-Android/FishingPrototype.apk",
+    "androidSha256": "AC9754155BF0F1AC6B11474C378AE5C6AE54D11DCC9C9517D9174FAC6B6BB9A2"
+  },
+  "finalV061": {
+    "log": "Logs/usv-validation-7644bf9399544ad2aeeab055f83317c1.log",
+    "checks": 182,
+    "pass": "[V061] PASS: v0.61.0"
+  },
+  "picoBudgetRegression": {
+    "log": "Logs/V061/pico-final-regression-2.log",
+    "pass": "[V061] PASS: v0.61.0"
+  },
+  "native": {
+    "log": "Logs/V061/native-xr.log",
+    "sourceVersion": "0.61.0",
+    "toolAndHome": "native-v061.json",
+    "handcraft": "native-handcraft.json",
+    "normalShutdown": true
+  },
+  "finalApk": {
+    "versionName": "0.61.0",
+    "versionCode": 61,
+    "packageName": "com.ruanyueheng.tidefin.vr",
+    "architecture": "arm64-v8a",
+    "signatureV2Verified": true,
+    "certificateSha256": "9e285a6d982524c420722d7ebc157fa0643b62c65eca5a0285c5311e000b5437"
+  },
+  "finalPerformance": {
+    "label": "v061-final-pico",
+    "strictAnalyzerPassed": true,
+    "phases": 18,
+    "measuredFrames": 38781,
+    "gc0": 23,
+    "ordinaryPlayerSaveUsed": false
+  },
+  "prLocalChecks": {
+    "input": {
+      "log": "Logs/V061/pr-input-tests.log",
+      "assertions": 74,
+      "passed": true
+    },
+    "fishing": {
+      "log": "Logs/V061/pr-core-tests.log",
+      "assertions": 4868,
+      "passed": true
+    }
+  }
+}

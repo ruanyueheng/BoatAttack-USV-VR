@@ -102,6 +102,8 @@ namespace BoatAttack.Fishing
                     {visible.Add(triangles[i]);visible.Add(triangles[i+1]);visible.Add(triangles[i+2]);}
                 _xrTabletopMesh.SetTriangles(visible,sub,false);
             }
+            // The XR masks leave unused source vertices; compact buffers after both masks are complete, preserving their indexed surfaces.
+            _xrFirstPersonMesh.OptimizeReorderVertexBuffer();_xrTabletopMesh.OptimizeReorderVertexBuffer();
             if(HiddenNeckTriangles==0 || HiddenTorsoTriangles==0)throw new InvalidOperationException("源人物没有可识别的头颈/躯干区域，拒绝静默跳过第一人称遮罩");
             var go=new GameObject("Beach_Body_FirstPerson");go.layer=BodySkin.gameObject.layer;
             go.transform.SetParent(BodySkin.transform,false);

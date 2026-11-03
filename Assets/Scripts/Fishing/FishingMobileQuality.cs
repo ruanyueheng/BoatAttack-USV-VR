@@ -11,8 +11,9 @@ namespace BoatAttack.Fishing
         public const string PreviewFlag="-fishing-pico-quality";
         public const float RenderScale=1f;
         public const float LodBias=.65f;
-        public static bool Requested=>Application.platform==RuntimePlatform.Android || System.Array.IndexOf(System.Environment.GetCommandLineArgs(),PreviewFlag)>=0;
-        private static bool Has(string flag)=>System.Array.IndexOf(System.Environment.GetCommandLineArgs(),flag)>=0;
+        private static readonly string[] Arguments=System.Environment.GetCommandLineArgs();
+        public static bool Requested=>Application.platform==RuntimePlatform.Android || Has(PreviewFlag);
+        private static bool Has(string flag)=>System.Array.IndexOf(Arguments,flag)>=0;
         public static float ShadowCasterSize=>Has("-pico-keep-small-shadows")?4:8;
         // Desktop PICO preview drops desktop-only work the headset never does (IMGUI HUD, planar reflection camera), so counters match the headset.
         public static bool HeadsetPreview=>Application.platform!=RuntimePlatform.Android && Requested && !Has("-pico-keep-desktop-extras");

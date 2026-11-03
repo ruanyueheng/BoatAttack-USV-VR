@@ -12,6 +12,7 @@ namespace BoatAttack.Fishing
     {
         private FishingPrototype _c;private Canvas _canvas;private Text _title,_status,_message,_hint;private LineRenderer _ray;
         private RawImage _fishPortrait;private string _pendingId;private bool _catchPoseReady;
+        private bool? _layoutPending;
         private readonly Dictionary<FishingDockAction,Image> _buttons=new Dictionary<FishingDockAction,Image>();
         private readonly Dictionary<FishingDockAction,Text> _buttonLabels=new Dictionary<FishingDockAction,Text>();
         private readonly FishingPressEdge _edge=new FishingPressEdge();
@@ -153,15 +154,15 @@ namespace BoatAttack.Fishing
         public void Present()
         {
             if(_canvas==null)return;
-            string id=_c.Career.PendingCatch?.fish.id;
-            if(id!=_pendingId){_pendingId=id;_pendingDismissed=false;_catchPoseReady=false;_message.text="";ClearOffer();_fishPortrait.texture=id==null?null:Resources.Load<Texture2D>("FishingFish/"+_c.Career.PendingCatch.fish.kind+"Thumbnail");}
+            var pending=_c.Career.PendingCatch;string id=pending?.fish.id;
+            if(id!=_pendingId){_pendingId=id;_pendingDismissed=false;_catchPoseReady=false;_message.text="";ClearOffer();_fishPortrait.texture=id==null?null:Resources.Load<Texture2D>("FishingFish/"+pending.fish.kind+"Thumbnail");}
             if(!_c.HasPendingCatch){_pendingDismissed=false;_catchPoseReady=false;}
             _canvas.gameObject.SetActive((XRSettings.isDeviceActive && (!_c.Ashore || _c.HasPendingCatch) && !_c.StoryBlocksGameplay && (_requested || (_c.HasPendingCatch && !_pendingDismissed)) && (_c.XRNotebook==null || !_c.XRNotebook.IsOpen)) || _preview);
             if(!_canvas.gameObject.activeSelf)return;
-            _title.text=_c.HasPendingCatch?"钓到了！":"码头事务";
+            if(!_c.HasPendingCatch)_title.text="码头事务";
             FishingUITheme.StyleHeading(_title);
             Layout(_c.HasPendingCatch);
-            if(_c.HasPendingCatch){PresentCatch();return;}
+            if(_c.HasPendingCatch){PresentCatch(pending);return;}
             var yaw=Quaternion.Euler(0,_c.Player.transform.eulerAngles.y+(_c.Anchored?35:0),0);
             var boat=_c.Player.transform.position;
             float height=_c.XRSeat.Ready?_c.XRSeat.Origin.transform.position.y+1.3f:boat.y+1.55f;
@@ -169,20 +170,22 @@ namespace BoatAttack.Fishing
             for(int i=0;i<_rings.Length;i++)_rings[i].gameObject.SetActive(_c.Career.LineLevel>i);
             foreach(var p in _buttons)p.Value.color=!Allowed(p.Key)?FishingUITheme.Disabled:_offer==p.Key?FishingUITheme.Selected:_hover!=null && _hover.Action==p.Key?FishingUITheme.Selected:FishingUITheme.Light;
             string state=_c.HasPendingCatch?"待处理："+FishingSpecies.Name(_c.Career.PendingCatch.fish.kind)+" "+FishingText.Weight(_c.Career.PendingCatch.fish.grams)+(_c.Career.PendingCatch.measured?"（已测量）":""):_c.Anchored?"驻钓中":"航行："+(_c.Speed*3.6f).ToString("0")+" 千米/时";
-            _status.text=FishingXRText.Adapt("潮汐渔港  ·  "+state+"\n金币 "+_c.Career.Coins+"    鱼箱 "+_c.Career.Count+"/"+_c.Career.Capacity+"    鱼线 "+_c.Career.LineLevel+" 级\n委托「"+_c.Career.CurrentOrder.Name+"」"+(_c.Career.OrderReady?" · 可交付":"")+"\n");
-            for(int i=0;i<_c.Career.CurrentOrder.LineCount;i++){var line=_c.Career.CurrentOrder.Line(i);_status.text+=FishingSpecies.Name(line.Kind)+" ×"+line.Count+(line.Rare?" 珍珠":"")+"  ";}
-            _status.text+="\n"+(!_c.Anchored?"动力温度 "+(_c.Boost.Heat*100).ToString("0")+"%"+(_c.Boost.Overheated?" · 冷却至 25%":"")
+            string status=FishingXRText.Adapt("潮汐渔港  ·  "+state+"\n金币 "+_c.Career.Coins+"    鱼箱 "+_c.Career.Count+"/"+_c.Career.Capacity+"    鱼线 "+_c.Career.LineLevel+" 级\n委托「"+_c.Career.CurrentOrder.Name+"」"+(_c.Career.OrderReady?" · 可交付":"")+"\n");
+            for(int i=0;i<_c.Career.CurrentOrder.LineCount;i++){var line=_c.Career.CurrentOrder.Line(i);status+=FishingSpecies.Name(line.Kind)+" ×"+line.Count+(line.Rare?" 珍珠":"")+"  ";}
+            status+="\n"+(!_c.Anchored?"动力温度 "+(_c.Boost.Heat*100).ToString("0")+"%"+(_c.Boost.Overheated?" · 冷却至 25%":"")
                 :_c.Session.Phase==CatchPhase.Fighting?"鱼线张力 "+(_c.Session.Tension*100).ToString("0")+"% · "+(_c.Session.Beat==FishBeat.Rest?"回气时转轮收线":"冲刺或跃水时松开左握把")
                 :_c.Session.Phase==CatchPhase.Landing?"抄网："+_c.Session.Remaining.ToString("0.0")+" 秒 · 套住后举起":"抄网套住举起 · 鱼箱轻放 / 缓慢倾倒");
             var delta=_c.NavigationPosition-_c.Player.transform.position;
             float bearing=Mathf.DeltaAngle(_c.Player.transform.eulerAngles.y,Mathf.Atan2(delta.x,delta.z)*Mathf.Rad2Deg);
             string turn=Mathf.Abs(bearing)<12?"正前方":(bearing<0?"向左 ":"向右 ")+Mathf.Abs(bearing).ToString("0")+"°";
-            _status.text+="\n"+_c.NavigationName+" "+FishingPrototype.FlatDistance(_c.ExplorerPosition,_c.NavigationPosition).ToString("0")+"m  "+turn;
+            _status.text=status+"\n"+_c.NavigationName+" "+FishingPrototype.FlatDistance(_c.ExplorerPosition,_c.NavigationPosition).ToString("0")+"m  "+turn;
         }
         private static void Rect(RectTransform t,float x,float y,float width,float height)
         {t.anchorMin=t.anchorMax=t.pivot=new Vector2(0,1);t.anchoredPosition=new Vector2(x,-y);t.sizeDelta=new Vector2(width,height);}
         private void Layout(bool pending)
         {
+            if(_layoutPending==pending)return;
+            _layoutPending=pending;
             ((RectTransform)_canvas.transform).sizeDelta=pending?new Vector2(860,580):new Vector2(680,820);
             _canvas.GetComponent<Image>().sprite=pending?FishingUITheme.TornParchmentSprite:FishingUITheme.StorybookPaperSprite;
             _canvas.transform.localScale=Vector3.one*(pending?.0012f:.0015f);
@@ -203,7 +206,7 @@ namespace BoatAttack.Fishing
                 var label=_buttonLabels[pair.Key];Rect(label.rectTransform,14,pending?16:9,width-28,pending?46:42);label.fontSize=pending?27:21;label.text=Name(pair.Key);i++;
             }
         }
-        private void PresentCatch()
+        private void PresentCatch(PendingCatchData pending)
         {
             var eye=_c.viewCamera.transform;var direction=Vector3.ProjectOnPlane(eye.forward,Vector3.up).normalized;
             if(direction.sqrMagnitude<.5f)direction=_c.Player.transform.forward;
@@ -211,10 +214,10 @@ namespace BoatAttack.Fishing
             {
                 _canvas.transform.SetPositionAndRotation(eye.position+direction*1.25f-Vector3.up*.14f,Quaternion.LookRotation(direction));_catchPoseReady=true;
             }
-            var fish=_c.Career.PendingCatch.fish;bool legend=FishingSpecies.Of(fish.kind).Legendary;
+            var fish=pending.fish;bool legend=FishingSpecies.Of(fish.kind).Legendary;
             _title.text=FishingSpecies.Name(fish.kind)+(fish.rare?" · 珍珠收获":" · 本次收获");
             _status.text=FishingText.Weight(fish.grams)+"\n"+(legend?"传说鱼 · 测量后放生留念":"预计鱼价 "+fish.value+" 金币")+"\n鱼箱 "+_c.Career.Count+" / "+_c.Career.Capacity
-                +"\n\n"+(legend?(_c.Career.PendingCatch.measured?"按 A 确认放生；再按一次完成。":"按 A 测量，再选择放生。"):_c.Ashore?"按 A 放入鱼箱，即可继续探索。":"按 A 放入鱼箱，即可继续抛竿。");
+                +"\n\n"+(legend?(pending.measured?"按 A 确认放生；再按一次完成。":"按 A 测量，再选择放生。"):_c.Ashore?"按 A 放入鱼箱，即可继续探索。":"按 A 放入鱼箱，即可继续抛竿。");
             _buttonLabels[FishingDockAction.Store].text=legend?"测量并记录":"A  放入鱼箱";
             _buttonLabels[FishingDockAction.Release].text=_offer==FishingDockAction.Release?"再次选择 · 确认放生":"放生 · 保留图鉴";
             foreach(var pair in _buttons)pair.Value.color=!Allowed(pair.Key)?FishingUITheme.Disabled:_offer==pair.Key || _hover!=null && _hover.Action==pair.Key?FishingUITheme.Selected:pair.Key==FishingDockAction.Store?FishingUITheme.Selected:FishingUITheme.Light;

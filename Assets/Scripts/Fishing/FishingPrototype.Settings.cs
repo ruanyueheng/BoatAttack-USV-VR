@@ -192,7 +192,7 @@ namespace BoatAttack.Fishing
         }
         private void ApplyGraphicsQuality()
         {
-            if(!DesktopDisplay || !isActiveAndEnabled)return;
+            if(!DesktopDisplay || FishingMobileQuality.Requested || !isActiveAndEnabled)return;
             if(!_graphicsCaptured)
             {
                 _graphicsCaptured=true;_originalShadows=QualitySettings.shadows;_originalShadowResolution=QualitySettings.shadowResolution;_originalLodBias=QualitySettings.lodBias;

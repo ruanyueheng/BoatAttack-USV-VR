@@ -9,6 +9,7 @@ namespace BoatAttack.Fishing
     {
         public const string Resource="FishingCharacter/9SCharacter";
         private Animation _animation;
+        private readonly List<(AnimationState State,string Name)> _animationStates=new List<(AnimationState,string)>();
         private Transform _model,_body,_head,_leftThigh,_rightThigh,_leftShin,_rightShin,_leftAnkle,_rightAnkle,_leftFoot,_rightFoot;
         private LocalPose _modelRest;
         private Renderer[] _renderers;
@@ -106,8 +107,10 @@ namespace BoatAttack.Fishing
             // FBX animation bounds include exporter unit-conversion transforms and are not
             // a reliable measure of this rig. Normalize the *sampled skin*, in our local frame.
             _activeClip=_clips["Idle"];
-            foreach(AnimationState state in _animation)
-            {state.enabled=state.name==_activeClip;state.weight=state.enabled?1:0;state.speed=0;state.time=0;}
+            // Animation enumeration and native name reads allocate; keep these stable clip handles for sampling.
+            foreach(AnimationState state in _animation)_animationStates.Add((state,state.name));
+            foreach(var (state,name) in _animationStates)
+            {state.enabled=name==_activeClip;state.weight=state.enabled?1:0;state.speed=0;state.time=0;}
             _animation.Sample();
             var bounds=new Bounds();bool first=true;
             foreach(var renderer in _model.GetComponentsInChildren<SkinnedMeshRenderer>())
@@ -229,17 +232,18 @@ namespace BoatAttack.Fishing
             if(_activeClip==clip)return;
             _activeClip=clip;_fadeAge=0;_fadeStart.Clear();
             if(_animation[clip].wrapMode==WrapMode.ClampForever)_animation[clip].time=0;
-            foreach(AnimationState state in _animation)_fadeStart[state.name]=state.weight;
+            foreach(var (state,name) in _animationStates)_fadeStart[name]=state.weight;
         }
         private void SampleLocomotion(float dt)
         {
             _fadeAge=Mathf.Min(.15f,_fadeAge+dt);
             float fade=Mathf.SmoothStep(0,1,_fadeAge/.15f);
-            foreach(AnimationState state in _animation)
+            foreach(var (state,name) in _animationStates)
             {
-                float start=_fadeStart.TryGetValue(state.name,out var weight)?weight:(state.name==_activeClip?1:0);
-                state.weight=Mathf.Lerp(start,state.name==_activeClip?1:0,fade);
-                state.enabled=state.weight>0 || state.name==_activeClip;
+                bool active=name==_activeClip;
+                float start=_fadeStart.TryGetValue(name,out var weight)?weight:(active?1:0);
+                state.weight=Mathf.Lerp(start,active?1:0,fade);
+                state.enabled=state.weight>0 || active;
                 state.speed=0;
                 if(state.enabled && state.length>0)state.time=state.wrapMode==WrapMode.ClampForever?Mathf.Min(state.time+dt,state.length):Mathf.Repeat(state.time+dt,state.length);
             }

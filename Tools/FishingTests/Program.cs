@@ -32,6 +32,7 @@ internal static class Program
             CashierConversationTests.Run(Check);
             ShopEconomyTests.Run(Check);
             HuntingTests.Run(Check);
+            RuntimePerformanceTests.Run(Check);
             ForgeTests.Run(Check);
             AdventureTests.Run(Check);
             LoreTests.Run(Check);
