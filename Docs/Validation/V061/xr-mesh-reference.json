@@ -1,0 +1,16 @@
+{
+  "meshes": [
+    {
+      "field": "_xrFirstPersonMesh",
+      "hash": "6E92D4D12FE187708C55C306E8D92AB0B7897290F3FA2F900CE53888CD36ABA9",
+      "originalVertices": 9555,
+      "compactVertices": 5855
+    },
+    {
+      "field": "_xrTabletopMesh",
+      "hash": "05290BD76B532D700DC336EC16330F03663DB94CD5BCBD488CE4876FCB8A9608",
+      "originalVertices": 9555,
+      "compactVertices": 5367
+    }
+  ]
+}

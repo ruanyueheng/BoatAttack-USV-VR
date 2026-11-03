@@ -5,6 +5,7 @@ namespace BoatAttack.Fishing
     /// <summary>使用原美女店员模型，交谈由居民系统处理，交易由原商店处理。</summary>
     public sealed class FishingShopCashier : MonoBehaviour
     {
+        private static readonly string[] Activities={"整理柜台","舒展手臂","环顾店铺","放松等候"};
         public const string ResourcePath = "FishingCashier/FantasyGirl/Cashier";
         public const float AdultHeight = 1.98f;
         public Vector3 FacePosition => transform.TransformPoint(new Vector3(0, 1.80f, .07f));
@@ -94,7 +95,7 @@ namespace BoatAttack.Fishing
             if(!talking && greeting<=0 && _clock>=_activityUntil)
             {_activity=(_activity+1)%4;_activityUntil=_clock+Random.Range(4f,7f);_activityBlend=0;}
             _activityBlend=Mathf.MoveTowards(_activityBlend,1,Time.deltaTime*2);
-            Gesture=greeting>0?"招手欢迎":speaking?"交谈":talking?"倾听":new[]{"整理柜台","舒展手臂","环顾店铺","放松等候"}[_activity];
+            Gesture=greeting>0?"招手欢迎":speaking?"交谈":talking?"倾听":Activities[_activity];
             float gaze=0;
             if(nearby)
             {

@@ -123,6 +123,14 @@ namespace BoatAttack.EditorTools
             {
                 var run=FishingV044LifeValidation.CameraReviewChecks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
             }
+            if(suite=="V061-PICO-PROBE")
+            {
+                var run=FishingV061Validation.PicoProbeChecks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
+            if(suite=="V061")
+            {
+                var run=FishingV061Validation.Checks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;
+            }
             if(suite=="V060-WELL")
             {
                 var run=FishingV060Validation.WellChecks(c);try{while(run.MoveNext())yield return run.Current;}finally{(run as IDisposable)?.Dispose();}yield break;

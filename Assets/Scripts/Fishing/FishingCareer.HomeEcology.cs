@@ -146,7 +146,7 @@ namespace BoatAttack.Fishing
         public bool IsWildAnimalCaptured(int id)
         {foreach(var capture in _ecology.captures)if(capture.sourceId==id && capture.remaining>0)return true;return false;}
         public bool WildAnimalAvailable(int id,LandAnimalKind kind)=>FishingAnimalLoot.Valid(id,kind) && !IsWildAnimalCaptured(id)
-            && HuntedAnimal(id)==null && (id>=FishingHunting.SpawnCount || Hunting.Available(id,Calendar.TotalMinutes));
+            && FindHuntedAnimal(id)==null && (id>=FishingHunting.SpawnCount || Hunting.Available(id,Calendar.TotalMinutes));
         public int CaptureAnimalWithNet(int sourceId,LandAnimalKind kind)
         {
             if(Backpack.Equipped!=FieldItem.CaptureNet || CarriedAnimalCount>=AnimalCarrierCapacity)return 0;

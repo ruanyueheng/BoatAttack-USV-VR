@@ -1,4 +1,6 @@
-# BoatAttack USV VR — v0.60.0 VR 模拟审阅与修复
+# BoatAttack USV VR — v0.61.0 运行性能优化
+
+0.61 保留现有内容、PICO 画质与电脑高帧率，减少角色动画与动物查询的临时分配、VR 面板重复布局和隐藏地图刷新，并压紧 VR 第一人称网格的无用顶点。核心规则、网格精确校验及原生 OpenXR 工具/手作/家园回归通过；真机帧率尚未验收。详见[优化、代价与验证记录](Docs/VALIDATION_V061_PERFORMANCE.md)。本地双端产物位于 `Builds/FishingPrototype-v0.61.0/` 和 `Builds/FishingPrototype-v0.61.0-Android/`。
 
 2026-11-03 已对当前 0.60.0 源码完成一轮原生 OpenXR 模拟试玩，修复附近互动、岸上快门冲突、近眼遮挡和照片写入失败保护；验证范围、截图及未验证项见[本轮审阅记录](Docs/VR_SIMULATION_REVIEW_20261103.md)。
 
