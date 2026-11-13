@@ -239,7 +239,7 @@ namespace BoatAttack.Fishing
             if(HasArgument(FishingFeedbackCapture.EnableFlag))gameObject.AddComponent<FishingFeedbackCapture>().Begin(this);
             if(HasArgument(FishingUICapture.EnableFlag))gameObject.AddComponent<FishingUICapture>().Begin(this);
             if(FishingPicoTour.Requested)gameObject.AddComponent<FishingPicoTour>().Begin(this);
-            Debug.Log("[FISHING] Prototype v"+Version+" initialized. Procedural and Hunyuan fish; desktop/XR input.");
+            Debug.Log("[FISHING] Prototype v"+Version+" initialized. Procedural and Textured fish; desktop/XR input.");
         }
 
         private void Update()

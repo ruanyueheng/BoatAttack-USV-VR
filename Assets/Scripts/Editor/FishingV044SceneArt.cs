@@ -11,7 +11,7 @@ namespace BoatAttack.EditorTools
 {
     /// <summary>Installs the V044 AI-remodelled scenery: one textured URP Lit material per remodelled V035 model
     /// (Resources/FishingV044/Scene/&lt;Name&gt;.mat, picked up by FishingV035Materials at runtime) and re-points the
-    /// already-placed scene instances at it. Geometry is swapped in place by Tools/Art/build_v044_scene.py.</summary>
+    /// already-placed scene instances at it. Geometry is replaced while preserving scene placement.</summary>
     public static class FishingV044SceneArt
     {
         public const string Folder="Assets/Resources/FishingV044/Scene/";

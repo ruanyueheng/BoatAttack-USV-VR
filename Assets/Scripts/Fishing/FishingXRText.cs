@@ -5,7 +5,7 @@ using UnityEngine.XR;
 namespace BoatAttack.Fishing
 {
     /// <summary>
-    /// Rewrites desktop key hints into PICO controller wording (Docs/VR_CONTROLS_V044.md) at every XR text sink.
+    /// Rewrites desktop key hints into PICO controller wording at every XR text sink.
     /// A/B/X/Y are PICO buttons and are never rewritten.
     /// </summary>
     public static class FishingXRText

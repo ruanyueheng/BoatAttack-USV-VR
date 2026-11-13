@@ -1,5 +1,0 @@
-World audio generated with the project owner's Meowa account.
-Project: https://meowa.ai/canvas?projectId=proj-1792601700097-ukfrrsxf
-Original files, prompts, observed URLs, costs and hashes are archived in ArtSource/Audio/MeowaWorld.
-User music and local project files were not uploaded. Generated outputs are not declared CC0; retain provider/account licensing records.
-WaterFinish is edited from the WaterPourLoop source.

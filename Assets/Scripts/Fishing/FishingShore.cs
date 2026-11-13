@@ -106,7 +106,7 @@ namespace BoatAttack.Fishing
 
         // Surveyed heights keep docks below awnings from being mistaken for roofs.
         private Material _plankLight,_plankDark;
-        /// <summary>[Claude v0.41] 原栈桥是一整块棕色长方体。保留它作为隐形碰撞体，视觉改为横向木板、纵梁与入水桩柱。</summary>
+        /// <summary>原栈桥是一整块棕色长方体。保留它作为隐形碰撞体，视觉改为横向木板、纵梁与入水桩柱。</summary>
         private void BuildPlankedJetty(FishingPrototype c,Transform root,Transform deck,float length)
         {
             deck.GetComponent<Renderer>().enabled=false;

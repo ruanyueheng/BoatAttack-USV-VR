@@ -14,7 +14,7 @@ namespace BoatAttack.EditorTools
     public static class FishingV044PerfValidation
     {
         public static void Run()=>FishingV011Validation.Begin("V044-PERF");
-        // PICO 4 Ultra budget (Docs/PLAN_V044.md). Editor counts are one eye; Single Pass Instanced keeps draw calls per eye equal.
+        // PICO 4 Ultra budget. Editor counts are one eye; Single Pass Instanced keeps draw calls per eye equal.
         public const int PicoDrawCalls=150,PicoTriangles=300000;
         // Hard ceilings = V044 measured upper bounds + ~10%, so content cannot grow while art LODs bring spots under the PICO budget (rows tagged PICO-OVER).
         // Tighten toward PicoDrawCalls/PicoTriangles as LOD work lands.

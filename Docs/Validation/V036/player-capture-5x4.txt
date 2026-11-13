@@ -1,2 +1,0 @@
-Acceptance Capture (1280 x 1024), PID 29952, evidence: Logs/desktop-acceptance-effea02e09e9425fbf7c031e0e6428a5
-[FISHING] PASS: desktop acceptance cases, isolated profiles and production-rule state checks completed. Physical input is not certified.

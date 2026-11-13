@@ -11,7 +11,7 @@
 
 ## Verification
 
-- [ ] Hardware-free input/render-policy regression passed (see Docs/TESTING.md)
+- [ ] Hardware-free input/render-policy regression passed (see README.md)
 - [ ] Unity batch import/scene structures and component regression passed
 - [ ] Headless Play Mode flow passed (not visual, hardware-input, build or device acceptance)
 

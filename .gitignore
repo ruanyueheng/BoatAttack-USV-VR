@@ -81,3 +81,35 @@ Assets/ActualImages*
 
 # Python bytecode from local art tooling.
 __pycache__/
+
+# Local reports and production working files
+/Docs/
+/ArtSource/
+/Archive/
+/outputs/
+/期末报告/
+/Tools/Art/
+/Tools/AudioGen/
+/Tools/Run-Validation-Lanes.ps1
+*.doc
+*.docx
+*.ppt
+*.pptx
+*.pdf
+/Assets/BuildReports.meta
+
+# Local assistant configuration and planning notes
+.claude/
+.codex/
+.agents/
+.planning/
+.workbuddy-ai/
+.lanes/
+AGENTS.md
+CLAUDE.md
+SKILL.md
+task_plan.md
+findings.md
+progress.md
+plan.md
+todo.md

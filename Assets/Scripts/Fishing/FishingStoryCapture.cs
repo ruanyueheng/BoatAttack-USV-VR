@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace BoatAttack.Fishing
 {
-    /// <summary>[Claude v0.41] 仅命令行开启：逐段播放全部剧情过场并截图（临时存档），用于审阅 CG 效果。</summary>
+    /// <summary>仅命令行开启：逐段播放全部剧情过场并截图（临时存档），用于审阅 CG 效果。</summary>
     public sealed class FishingStoryCapture : MonoBehaviour
     {
         public const string EnableFlag="-fishing-story-capture";

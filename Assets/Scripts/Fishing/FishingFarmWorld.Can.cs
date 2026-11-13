@@ -306,7 +306,7 @@ namespace BoatAttack.Fishing
             if(audio!=null)
             {
                 // A separately supplied soil-sprinkling recording can replace the
-                // existing real Meowa pour. Until it exists, reuse that actual clip;
+                // existing recorded water pour. Until it exists, reuse that actual clip;
                 // never claim a missing/new synthetic asset was generated.
                 string cue=soil && audio.HasCue("WaterSprinkleLoop")?"WaterSprinkleLoop":"WaterPourLoop";
                 audio.MaintainLoop("farm-water",cue,Vector3.Lerp(from,to,.6f),soil?.11f:.08f,true,10,FishingAudioCategory.Effects);

@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 namespace BoatAttack.Fishing
 {
-    /// <summary>V044 life features: film camera + album, VR palm chart, seasonal festival decorations (Docs/LIFE_V044.md).</summary>
+    /// <summary>V044 life features: film camera + album, VR palm chart, seasonal festival decorations.</summary>
     public sealed partial class FishingLifeWorld : MonoBehaviour
     {
         private FishingPrototype _c;

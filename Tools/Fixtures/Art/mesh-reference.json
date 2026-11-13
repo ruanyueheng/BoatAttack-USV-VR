@@ -1,0 +1,40 @@
+{
+  "sourceLicense": "Kenney Food Kit 2.0 CC0",
+  "radishSource": "Tools/Fixtures/Art/radish.glb",
+  "radishSourceSha256": "9cad692ec80a03d726a9ff7e284e99407ebc91e54102ebbadebcbcdcbca922e3",
+  "akSourceSha256": "475d45ae14c309cc5590c00550b9ee8e70a892347007aa37c78ece5bc06743cb",
+  "akFbxSha256": "aadd06a13925a1925fc7db0eadea1fcd70c0add32e6c8be067151427c1122460",
+  "akTriangles": 12000,
+  "models": [
+    {
+      "name": "OrchardTree",
+      "triangles": 24208,
+      "vertices": 20886,
+      "fbxSha256": "5590d6b66e0dcbcb50d8a144e84e6ed2f39eb20a84639efda6f397aecca6f022"
+    },
+    {
+      "name": "Turnip0",
+      "triangles": 784,
+      "vertices": 444,
+      "fbxSha256": "8722d848c3edce2a286f59ee2dadbe6fc1713903216b73f8dca8498e3797340b"
+    },
+    {
+      "name": "Turnip1",
+      "triangles": 664,
+      "vertices": 1992,
+      "fbxSha256": "7f091438a92ffd3f8a7845dfb67166f7fcda3c6861fff52c537a05f781d0626b"
+    },
+    {
+      "name": "Turnip2",
+      "triangles": 664,
+      "vertices": 1992,
+      "fbxSha256": "9c9a6eabde2dfa6b740597a3943828bb3fb412bf9980dd6c75e4a5d19d29695c"
+    },
+    {
+      "name": "HomeLandscaping",
+      "triangles": 36880,
+      "vertices": 20358,
+      "fbxSha256": "8d781416c2a945a2e551efb376680aa43bfa639b3e820b74279e86886f32c4d8"
+    }
+  ]
+}

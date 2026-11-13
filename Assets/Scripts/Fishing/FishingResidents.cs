@@ -59,9 +59,9 @@ namespace BoatAttack.Fishing
         }
         private void Create(int id, Vector3 feet)
         {
-            // v044: skinned humanoid residents (Tools/Art/build_v044_residents.py), animated by FishingResidentBrain.
+            // v044: skinned humanoid residents, animated by FishingResidentBrain.
             var prefab=Resources.Load<GameObject>("FishingV044/Residents/Resident"+id);
-            if(prefab==null)throw new System.InvalidOperationException("Missing animated resident "+id+"; run Tools/Art/build_v044_residents.py");
+            if(prefab==null)throw new System.InvalidOperationException("Missing animated resident "+id+"; fetch the project Git LFS assets");
             // Logical body (facing, collider, brain) wraps the animated model so the brain can correct a backwards avatar.
             var t=new GameObject().transform;t.SetParent(transform,false);t.SetPositionAndRotation(feet,Quaternion.Euler(0,180,0));
             Instantiate(prefab,t,false).name="Body";
@@ -156,7 +156,7 @@ namespace BoatAttack.Fishing
         public static FishingResidentBrain SpawnMerchant(FishingPrototype c,Transform deck,Vector3 local,Quaternion rotation)
         {
             var prefab=Resources.Load<GameObject>("FishingV044/Residents/Resident6");
-            if(prefab==null)throw new System.InvalidOperationException("Missing merchant model; run Tools/Art/build_v044_residents.py");
+            if(prefab==null)throw new System.InvalidOperationException("Missing merchant model; fetch the project Git LFS assets");
             var t=new GameObject().transform;t.SetParent(deck,false);Instantiate(prefab,t,false).name="Body";t.localPosition=local;t.localRotation=rotation;t.name="潮商·阿汛";
             var go=new GameObject("Voice",typeof(AudioSource));go.transform.SetParent(t,false);go.transform.localPosition=Vector3.up*1.55f;
             var source=go.GetComponent<AudioSource>();source.playOnAwake=false;source.spatialBlend=1;source.rolloffMode=AudioRolloffMode.Logarithmic;

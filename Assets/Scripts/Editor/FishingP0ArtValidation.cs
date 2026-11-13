@@ -57,11 +57,11 @@ namespace BoatAttack.EditorTools
 
         public static IEnumerator Checks(FishingPrototype c)
         {
-            var record=JsonUtility.FromJson<ArtManifest>(File.ReadAllText("ArtSource/Feedback-20261026/P0Art-manifest.json"));
+            var record=JsonUtility.FromJson<ArtManifest>(File.ReadAllText("Tools/Fixtures/Art/mesh-reference.json"));
             Check(record!=null && record.models!=null && record.models.Length==5,"five scoped home model records exist");
-            Check(Hash(record.radishSource)==record.radishSourceSha256 && File.Exists("ArtSource/Feedback-20261026/Sources/License.txt")
-                && File.Exists("ArtSource/Feedback-20261026/Sources/Textures/colormap.png"),"self-contained CC0 radish source, palette and license are present");
-            Check(Hash("ArtSource/HuntingRifle/NewAK.glb")==record.akSourceSha256,"supplied AK source is unchanged");
+            Check(Hash(record.radishSource)==record.radishSourceSha256 && File.Exists("Tools/Fixtures/Art/License.txt")
+                && File.Exists("Tools/Fixtures/Art/Textures/colormap.png"),"self-contained CC0 radish source, palette and license are present");
+            Check(Hash("Tools/Fixtures/Art/NewAK.glb")==record.akSourceSha256,"supplied AK source is unchanged");
             Check(Hash("Assets/Resources/FishingHunting/Rifle.fbx")==record.akFbxSha256,"runtime AK matches recorded export");
             foreach(var model in record.models)
             {

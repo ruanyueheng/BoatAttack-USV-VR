@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace BoatAttack.Fishing
 {
-    /// <summary>Tide timetable, the low-tide reef collection and the lamp keeper's late boats (Docs/LIGHTHOUSE_TIDE_V044.md).</summary>
+    /// <summary>Tide timetable, the low-tide reef collection and the lamp keeper's late boats.</summary>
     public static class FishingTide
     {
         /// <summary>The reef path is walkable below this tide level.</summary>

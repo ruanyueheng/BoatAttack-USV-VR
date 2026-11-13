@@ -7,7 +7,7 @@ namespace BoatAttack.EditorTools
 {
     /// <summary>
     /// v044 residents: skinned Quaternius characters as Humanoids, URP atlas material, 1024 textures.
-    /// Clips: ResidentClips.fbx (UAL takes cut by Tools/Art/build_v044_residents.py), renamed to the brain's short names.
+    /// Clips: ResidentClips.fbx (imported UAL animation takes), renamed to the brain's short names.
     /// </summary>
     public sealed class FishingV044ResidentImporter : AssetPostprocessor
     {

@@ -36,7 +36,7 @@ namespace BoatAttack.EditorTools
                 float span=i>=12?Mathf.Max(mesh.bounds.size.x,mesh.bounds.size.y,mesh.bounds.size.z):mesh.bounds.size.z;
                 Check(Mathf.Abs(span-FishingSpecies.LengthMeters(kind))<.001f,"Metre-scaled marine model "+kind);
                 foreach(var v in mesh.vertices)CheckFinite(v);
-                if(i>=4)Check((i<12?fish.name.StartsWith("Hunyuan") && fish.GetComponent<Renderer>().sharedMaterial.GetTexture("_BaseMap")!=null:mesh.colors32.Length==mesh.vertexCount)
+                if(i>=4)Check((i<12?fish.name.StartsWith("Textured") && fish.GetComponent<Renderer>().sharedMaterial.GetTexture("_BaseMap")!=null:mesh.colors32.Length==mesh.vertexCount)
                     && Resources.Load<Texture2D>("FishingFish/"+kind+"Thumbnail")!=null,"Imported fish, texture and journal preview "+kind);
                 report.AppendLine(kind+","+triangles+","+mesh.vertexCount+","+mesh.bounds.size.z.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 Object.Destroy(fish);foreach(var item in owned)Object.Destroy(item);

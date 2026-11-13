@@ -15,7 +15,7 @@ namespace BoatAttack.EditorTools
     /// A batch editor never runs the OpenXR frame loop, so runtime head poses cannot reach input here; instead the
     /// camera's head-local pose is written the way TrackedPoseDriver writes it, and every frame of game code must leave
     /// it intact in world space. The device-side input step is covered by the driver configuration checks and the
-    /// XR SDK fallback, and must be confirmed on the headset (Docs/VR_CONTROLS_V044.md, 实机验收清单).
+    /// XR SDK fallback, and must be confirmed on the headset.
     /// </summary>
     public static class FishingXRMockHeadValidation
     {

@@ -60,7 +60,7 @@ namespace BoatAttack.EditorTools
                 for(int i=0;i<vertices.Length;i++)vertices[i]=matrix.MultiplyPoint3x4(vertices[i]);
                 for(int i=0;i<normals.Length;i++)normals[i]=normalMatrix.MultiplyVector(normals[i]).normalized;
                 mesh.vertices=vertices;mesh.normals=normals;mesh.RecalculateBounds();
-                Debug.Log("[HUNYUAN] Imported "+assetPath+" bounds="+mesh.bounds.size.ToString("F5")+" transform="+matrix);
+                Debug.Log("[ASSET_IMPORT] Imported "+assetPath+" bounds="+mesh.bounds.size.ToString("F5")+" transform="+matrix);
             }
             foreach(var node in root.GetComponentsInChildren<Transform>())
             {node.localPosition=Vector3.zero;node.localRotation=Quaternion.identity;node.localScale=Vector3.one;}

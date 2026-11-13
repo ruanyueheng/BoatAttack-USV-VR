@@ -86,7 +86,7 @@ namespace BoatAttack.Fishing
             var wreckSource = Resources.Load<GameObject>("FishingV044/TideWreck");
             if (wreckSource != null)
             {
-                // Hunyuan skiff by scene-art: origin at the keel, bow +Z; sunk 0.4 m into the sand.
+                // Textured skiff by scene-art: origin at the keel, bow +Z; sunk 0.4 m into the sand.
                 var wreck = new GameObject("Half-buried skiff wreck").transform; wreck.SetParent(Root, false);
                 wreck.localPosition = new Vector3(.4f, -.65f, 39.2f); wreck.localRotation = Quaternion.Euler(0, 18, -6);
                 Instantiate(wreckSource, wreck, false); FishingV035Materials.Apply(wreck, false);

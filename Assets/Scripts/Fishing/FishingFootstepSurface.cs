@@ -256,7 +256,7 @@ namespace BoatAttack.Fishing
         private static FishingGroundAudio Atlas(Vector2 uv)
         {
             if (!Finite(uv.x) || !Finite(uv.y)) return FishingGroundAudio.Unknown;
-            // ArtSource/V035/atlas-regions.json: 4x4 atlas, numbered left-to-right from the top.
+            // 4x4 atlas, numbered left-to-right from the top.
             int x = Mathf.Clamp(Mathf.FloorToInt(Mathf.Repeat(uv.x, 1) * 4), 0, 3);
             int y = Mathf.Clamp(Mathf.FloorToInt((1 - Mathf.Repeat(uv.y, 1)) * 4), 0, 3);
             switch (y * 4 + x)

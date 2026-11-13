@@ -285,7 +285,7 @@ namespace BoatAttack.Fishing
             foreach(var filter in Controller.transform.Find("Tide and Fin floating fish market").GetComponentsInChildren<MeshFilter>())
             {
                 var mesh=filter.sharedMesh;
-                if(mesh==null || !(filter.name.StartsWith("Hunyuan / ") || filter.name.StartsWith("Coastal fauna / ") || mesh.name.StartsWith(FishingMeshBuilder.FishMeshPrefix)))continue;
+                if(mesh==null || !(filter.name.StartsWith("Textured / ") || filter.name.StartsWith("Coastal fauna / ") || mesh.name.StartsWith(FishingMeshBuilder.FishMeshPrefix)))continue;
                 fishMeshes++;
                 if(filter.GetComponentsInChildren<Renderer>().Length!=1)throw new Exception("A fish must draw as a single renderer.");
                 ValidateFishMesh(mesh);

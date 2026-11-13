@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace BoatAttack.EditorTools
 {
-    /// <summary>[Claude v0.44] NPC behaviour, look-at limits, talk turn/return, voice-line integrity and per-activity pose captures (Logs/V044/npc).</summary>
+    /// <summary>NPC behaviour, look-at limits, talk turn/return, voice-line integrity and per-activity pose captures (Logs/V044/npc).</summary>
     public static class FishingV044NpcValidation
     {
         public static void Run()=>FishingV011Validation.Begin("V044-NPC");

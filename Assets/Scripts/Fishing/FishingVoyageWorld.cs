@@ -146,7 +146,7 @@ namespace BoatAttack.Fishing
         private void ReadChart()
         {
             _c.Career.AcceptMayorship(); bool first = _c.Career.DiscoverChart(); _c.Save();
-            if (first) _c.Prologue.Queue(FishingPrologue.Sequence.Chart); // [Claude v0.41] 发现旧海图过场
+            if (first) _c.Prologue.Queue(FishingPrologue.Sequence.Chart); // 发现旧海图过场
             _c.Home.InteractAt(2);
             _c.Notice("祖父沈望潮的旧海图被撕成四页，指向风、林、潮、星四座灯塔。J → 世界与秘境查看进展。", 12);
         }
@@ -179,7 +179,7 @@ namespace BoatAttack.Fishing
             if (_c.Career.OpenGrandTreasure() == 0)
             { _c.Notice(_c.Career.Lore.ClearCount < 4 ? "四枚印记仍不完整。风、林、潮、星的图页会指出开启的方法。" : _c.Career.Backpack.Count(FieldItem.VoyageCompass) == 0 ? "锁孔像一面罗盘。组装远航罗盘并随身带来，再试一试。" : "金币余额已近上限；宝藏和罗盘为你保留，先到商店准备村庄建设物资。",10); return; }
             _c.Save(); _c.WorldAudio?.Play("MechanismClick", _chest.position,.5f);
-            _c.Prologue.Queue(FishingPrologue.Sequence.Finale); // [Claude v0.41] 宝藏终章过场
+            _c.Prologue.Queue(FishingPrologue.Sequence.Finale); // 宝藏终章过场
             _c.Regions.Show("大航海宝藏 · 海贼王", "+1200 金币 · 永久称号已记录",3);
             _c.Notice("宝藏开启！远航罗盘嵌入古锁，海贼王的名号属于你。+1200 金币；回村建设、收藏与自由远航仍可继续。",12);
         }

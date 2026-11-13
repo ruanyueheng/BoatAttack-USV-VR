@@ -1,11 +1,13 @@
 # Contributing
 
-Please read `Docs/TEAM_COLLABORATION.md` before changing the project.
+Use Unity 2022.3.62f1 and fetch Git LFS assets before opening the project.
 
-## Pull Requests
+- Keep each pull request focused on one feature or fix.
+- Describe the gameplay change and the steps used to verify it.
+- State whether the change was tested on Windows, PICO, or both.
+- Include relevant scene/prefab names and screenshots when useful.
+- Commit matching `.meta` files with Unity assets.
+- Exclude local settings, generated folders, reports, credentials and build output.
+- Keep unrelated Unity reserialization out of gameplay changes.
 
-- Keep one PR focused on one feature or fix.
-- State the Unity version used and whether the change was tested on desktop, PICO, or both.
-- Include scene/prefab names changed and screenshots only when they help review.
-- Do not include generated folders or user-specific settings.
-- Keep unrelated Unity reserialization out of gameplay PRs.
+Run the applicable checks listed in [README.md](README.md) before submitting.

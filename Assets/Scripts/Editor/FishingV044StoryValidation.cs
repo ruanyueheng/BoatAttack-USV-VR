@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace BoatAttack.EditorTools
 {
-    /// <summary>[Claude v0.44] 实时剧情演出：每段在真实场景位置抽 5 帧拼成联系表（Logs/V044/story），检查字幕、光照还原与旧档解锁。</summary>
+    /// <summary>实时剧情演出：每段在真实场景位置抽 5 帧拼成联系表（Logs/V044/story），检查字幕、光照还原与旧档解锁。</summary>
     public static class FishingV044StoryValidation
     {
         public static void Run()=>FishingV011Validation.Begin("V044-STORY");

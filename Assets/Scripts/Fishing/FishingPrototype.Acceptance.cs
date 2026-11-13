@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections;
 using UnityEngine;
@@ -134,8 +134,8 @@ namespace BoatAttack.Fishing
                     break;
                 case FishingAcceptanceCase.Details: ToggleDetails(); break;
                 case FishingAcceptanceCase.Journal: ToggleJournal(); break;
-                case FishingAcceptanceCase.HunyuanCatalog: _hud.JournalPage=0;_hud.CatalogPage=1;ToggleJournal();break;
-                case FishingAcceptanceCase.HunyuanNightCatalog: _hud.JournalPage=0;_hud.CatalogPage=2;ToggleJournal();break;
+                case FishingAcceptanceCase.TexturedCatalog: _hud.JournalPage=0;_hud.CatalogPage=1;ToggleJournal();break;
+                case FishingAcceptanceCase.TexturedNightCatalog: _hud.JournalPage=0;_hud.CatalogPage=2;ToggleJournal();break;
                 case FishingAcceptanceCase.CastFlight: Cast(1);CastMotion.Tick(.1f);CastMotion.Tick(.1f);CastMotion.Tick(.1f);CastMotion.Tick(.1f);break;
                 case FishingAcceptanceCase.Calendar: _hud.JournalPage=4;ToggleJournal();break;
                 case FishingAcceptanceCase.NightBoat: ToggleView();break;

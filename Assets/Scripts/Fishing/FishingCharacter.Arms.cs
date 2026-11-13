@@ -50,7 +50,7 @@ namespace BoatAttack.Fishing
             public FishingFingerPose GripFingers;
             public float GripRadius;
             public bool GripCached,GripPointing;
-            // [Claude v0.41] IK 过渡状态（角色本地空间）：权重渐变 + 目标跳变惯性偏移。
+            // IK 过渡状态（角色本地空间）：权重渐变 + 目标跳变惯性偏移。
             public float Weight,LastForearmRoll;
             public bool HasLast;
             public int BlendFrame=-1;
@@ -256,7 +256,7 @@ namespace BoatAttack.Fishing
         {
             foreach(var bone in arm.Overlay)bone.Sample.Apply(bone.Bone);
             bool valid=!((_armsPaused && !allowPaused) || _armBaseFrame!=Time.frameCount || target==null || !target.Visible || target.IsLeft!=left);
-            // [Claude v0.41] 原实现按帧开关 IK：目标出现瞬间吸附、消失瞬间弹回，是动作僵直的主因。
+            // 原实现按帧开关 IK：目标出现瞬间吸附、消失瞬间弹回，是动作僵直的主因。
             // 现在桌面模式用权重渐入(≈0.16s)/渐出(≈0.24s)，并对目标跳变做衰减偏移；XR 追踪保持 1:1。
             float dt=arm.BlendFrame==Time.frameCount?0:Mathf.Clamp(Time.unscaledDeltaTime,0,.05f);arm.BlendFrame=Time.frameCount;
             if(!valid)
@@ -304,7 +304,7 @@ namespace BoatAttack.Fishing
             if(tracked)arm.Wrist.position=wristTarget;
             ApplyFingers(arm,target);
         }
-        /// <summary>[Claude v0.41] 按权重在动画姿势与 IK 解之间插值上臂/前臂/腕部旋转。</summary>
+        /// <summary>按权重在动画姿势与 IK 解之间插值上臂/前臂/腕部旋转。</summary>
         private void BlendSolve(Arm arm,Vector3 wrist,Quaternion rotation,float weight,float forearmRoll)
         {
             arm.Wrist.localScale=arm.WristScale;

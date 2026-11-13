@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 namespace BoatAttack.Fishing
 {
-    /// <summary>Shared procedural art and the supplied Hunyuan fish assets.</summary>
+    /// <summary>Shared procedural art and the supplied Textured fish assets.</summary>
     public static class FishingArt
     {
         public static GameObject Shape(string name, PrimitiveType type, Transform parent, Vector3 position, Vector3 scale, Material material, bool solid = false)
@@ -37,7 +37,7 @@ namespace BoatAttack.Fishing
             renderer.sharedMaterial = Palette(owned, palette, "Fishing v0.4 fish gloss", .55f, .3f);
             if(imported!=null)
             {
-                go.name=(kind>=FishKind.SeaTurtle?"Coastal fauna / ":"Hunyuan / ")+kind+(rare?" pearl":"");
+                go.name=(kind>=FishKind.SeaTurtle?"Coastal fauna / ":"Textured / ")+kind+(rare?" pearl":"");
                 var material=Palette(owned,palette,"Marine model / "+kind+(rare?" pearl":""),.22f,.12f);
                 var texture=kind==FishKind.SeaTurtle?Resources.Load<Texture2D>("FishingV029/TurtleAlbedo"):Resources.Load<Texture2D>("FishingFish/"+kind+"Albedo");
                 material.SetTexture("_BaseMap",texture);

@@ -1,9 +1,0 @@
-{
-  "passed": true,
-  "models": 77,
-  "triangles": 1030912,
-  "embeddedImages": 3,
-  "bytes": 80545328,
-  "sha256": "407d025be120ba6d0fc1e6c9195cabe7945019f5e31cbb234827f2a6eb2c15c2",
-  "unexpectedStartupObjects": 0
-}

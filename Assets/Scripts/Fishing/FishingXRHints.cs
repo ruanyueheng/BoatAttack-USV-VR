@@ -6,7 +6,7 @@ namespace BoatAttack.Fishing
     /// <summary>
     /// VR controller hints: a small paper tag floats above each controller with the buttons of the current context.
     /// Tags show while the player looks at a controller, and once (about 12 s) the first time each context is entered.
-    /// The same table feeds the notebook's 操作说明 page and Docs/VR_CONTROLS_V044.md.
+    /// The same table feeds the notebook's 操作说明 page and controller hints.
     /// </summary>
     [DefaultExecutionOrder(1600)]
     public sealed class FishingXRHints : MonoBehaviour

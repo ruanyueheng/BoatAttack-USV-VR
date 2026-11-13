@@ -21,7 +21,7 @@ namespace BoatAttack.EditorTools
         {public string field,hash;public int originalVertices,compactVertices;}
         [Serializable] private sealed class MeshReferences
         {public List<MeshReference> meshes=new List<MeshReference>();}
-        private const string MeshReferencePath="Docs/Validation/V061/xr-mesh-reference.json";
+        private const string MeshReferencePath="Tools/Fixtures/xr-mesh-reference.json";
         private static string SurfaceHash(Mesh mesh)
         {
             using(var bytes=new MemoryStream())

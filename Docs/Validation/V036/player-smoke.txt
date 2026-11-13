@@ -1,2 +1,0 @@
-Acceptance Smoke (1600 x 900), PID 62312, evidence: Logs/desktop-acceptance-19f578888c7948db9dd0a1c182aa8f74
-[FISHING] PASS: desktop acceptance cases, isolated profiles and production-rule state checks completed. Physical input is not certified.

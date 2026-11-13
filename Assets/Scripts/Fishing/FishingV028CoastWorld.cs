@@ -16,7 +16,7 @@ namespace BoatAttack.Fishing
     /// <summary>The home grill is a view of a saved transaction; animations never own fish or rewards.</summary>
     public sealed class FishingV028CoastWorld : MonoBehaviour
     {
-        public const string CookedFishName="Hunyuan charcoal-grilled sea bream";
+        public const string CookedFishName="Textured charcoal-grilled sea bream";
         private FishingPrototype _c;
         private Material _palette;
         private readonly List<UnityEngine.Object> _owned=new List<UnityEngine.Object>();

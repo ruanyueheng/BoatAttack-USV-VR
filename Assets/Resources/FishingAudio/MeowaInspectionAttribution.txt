@@ -1,6 +1,0 @@
-Additional action audio generated using the project owner's Meowa account.
-Source project: https://meowa.ai/canvas?projectId=proj-1792601700097-ukfrrsxf
-4 action categories, two generated variations each.
-Prompts, original MP3s, generation cost and hashes are retained in ArtSource/Audio/MeowaInspection.
-No provided background music or local project files were uploaded to the generation service.
-These generated outputs are not declared CC0; retain the account/provider licensing records for any distribution.

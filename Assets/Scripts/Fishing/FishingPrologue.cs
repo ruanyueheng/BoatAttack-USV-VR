@@ -7,7 +7,7 @@ using UnityEngine.XR;
 namespace BoatAttack.Fishing
 {
     /// <summary>
-    /// [Claude v0.41] 剧情过场系统：序章、发现旧海图、四境回响重现、宝藏终章。
+    /// 剧情过场系统：序章、发现旧海图、四境回响重现、宝藏终章。
     /// 每个镜头可以是手绘插画 CG（缓慢推拉）或引擎内实时运镜；宽银幕、逐字字幕、渐隐转场。
     /// XR 仍观看固定在世界中的影院屏幕，保留头部自由度。
     /// </summary>
@@ -18,7 +18,7 @@ namespace BoatAttack.Fishing
         public const float ShotSeconds=8.5f;
         private const float Fade=.7f,TypeSpeed=16;
 
-        // [Claude v0.44] 全部改为引擎内实时演出（不再混用 AI 插画），剧情见 Docs/STORY_V044.md。
+        // 剧情采用引擎内实时演出。
         // Camera：镜头预设（PresentCamera）；Mood：0 原光照，1 黄昏金光，2 清晨冷金；Island：岛屿镜头用的岛序号。
         private struct Cut
         {
@@ -27,7 +27,7 @@ namespace BoatAttack.Fishing
             public Cut(int camera,int mood,string title,string caption,int island=0,int alt=-1,int altTarget=0,bool act=false,string sting=null)
             {Camera=camera;Mood=mood;Island=island;Title=title;Caption=caption;Alt=alt;AltTarget=altTarget;Act=act;Sting=sting;}
         }
-        // 每段镜头数与 FishingV042/Story 配乐长度绑定（6/3/2/2/2/2/4 × 8.5s），改时长需同时运行 Tools/Art/bake_story_audio.py。
+        // 每段镜头数与 FishingV042/Story 配乐长度绑定（6/3/2/2/2/2/4 × 8.5s），改时长需同步重新烘焙配乐。
         private static readonly Dictionary<Sequence,Cut[]> Films=new Dictionary<Sequence,Cut[]>
         {
             {Sequence.Prologue,new[]{
@@ -99,7 +99,7 @@ namespace BoatAttack.Fishing
             _picture=Picture(root.transform,"CG film");_picture.texture=_film;
             // 非 16:9 屏幕裁切而不是拉伸，保证角色比例。
             var fit=_picture.gameObject.AddComponent<AspectRatioFitter>();fit.aspectMode=AspectRatioFitter.AspectMode.EnvelopeParent;fit.aspectRatio=16f/9f;
-            // V044 绘本字幕：细海军蓝遮幅 + 底部柔和暗晕托字 + 金线，样式取自 FishingUITheme（Docs/UI_STYLE_V044.md）。
+            // V044 绘本字幕：细海军蓝遮幅 + 底部柔和暗晕托字 + 金线，样式取自 FishingUITheme。
             Band(root.transform,"Top letterbox",new Vector2(0,1),new Vector2(1,1),new Vector2(0,-58),new Vector2(0,0));
             Band(root.transform,"Bottom letterbox",new Vector2(0,0),new Vector2(1,0),new Vector2(0,0),new Vector2(0,46));
             // 底部纵向渐变托字（亮海面上也保证字幕对比度），上方再叠主题暗晕让过渡更柔。

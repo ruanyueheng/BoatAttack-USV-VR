@@ -23,7 +23,7 @@ namespace BoatAttack.Fishing
         private Material[] _plainToolMaterials;
         private MaterialPropertyBlock _lanternGlow;
         private bool _lanternGlowApplied;
-        public const float BinocularScale=.42f; // [Claude v0.41] 原 .52 时镜筒占满画面中心
+        public const float BinocularScale=.42f; // 原 .52 时镜筒占满画面中心
         private Renderer _heldRenderer;
         private FieldItem _materialItem=FieldItem.Empty;
         private FieldItem _previewItem;
@@ -111,7 +111,7 @@ namespace BoatAttack.Fishing
                 case FieldItem.FieldGuide:
                     twoHands=true;scale=.48f;curl=.3f;fingers=new FishingFingerPose(.06f,.08f,.10f,.12f,.65f);
                     float opening=_c.GuideOpening?_c.GuideOpenAmount:0;
-                    // [Claude v0.41] 不阅读时手册放低到腰前，避免常态遮挡近半屏；展开时平滑抬到阅读位。
+                    // 不阅读时手册放低到腰前，避免常态遮挡近半屏；展开时平滑抬到阅读位。
                     float raise=_c.GuideOpening?Mathf.SmoothStep(0,1,Mathf.Clamp01(_c.GuideOpenAmount*3)):0;
                     position=shoulderFrame+frame*Vector3.Lerp(Vector3.Lerp(new Vector3(.02f,-.17f,.36f),new Vector3(0,.065f,.43f),raise),new Vector3(.10f,-.005f,.43f),opening);rotation=frame*Quaternion.Euler(Mathf.Lerp(-58,-32,raise),0,0);
                     var coverRotation=Quaternion.Euler(0,0,168*opening);

@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace BoatAttack.Fishing
 {
     /// <summary>
-    /// v044 resident behaviour (see Docs/NPC_V044.md): role work loops with idle fidgets, head/neck-only look-at inside a
+    /// v044 resident behaviour: role work loops with idle fidgets, head/neck-only look-at inside a
     /// clamped cone, body turns only while talking (smooth, delayed), then returns to the home facing and resumes work.
     /// Occasional voiced barks with a world-space bubble. Far or unseen residents are not evaluated.
     /// </summary>

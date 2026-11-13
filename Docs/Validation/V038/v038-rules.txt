@@ -1,4 +1,0 @@
-PASS V038: loaded floating bridge reaches its upper landing
-PASS V038: closing the filled valve preserves the floating crossing
-PASS V038: actually draining the hold lowers the crossing
-TOTAL: 4356 passed. Pure fishing rules only.

@@ -2,7 +2,7 @@ namespace BoatAttack.Fishing
 {
     public sealed partial class FishingXRNotebook
     {
-        /// <summary>Calendar-page lines for the tide timetable, low-tide finds and lamp watch (Docs/LIGHTHOUSE_TIDE_V044.md).</summary>
+        /// <summary>Calendar-page lines for the tide timetable, low-tide finds and lamp watch.</summary>
         internal string TideStatus()
         {
             var lore = _c.Career.Lore; int finds = 0;

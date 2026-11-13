@@ -1,9 +1,0 @@
-Island Level children=1501
-WindZone children=0
-__SceneView__POV__ children=0
-Fishing Main Camera children=0
-Fishing Prototype children=796
-BeachTackleShop children=594
-V018 explorable islands children=555
-V019 Tide sanctuaries children=419
-Fishing player boat children=60

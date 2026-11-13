@@ -1,3 +1,0 @@
-1600x900 capture / 88 scenarios: [FISHING] PASS: desktop acceptance cases, isolated profiles and production-rule state checks completed. Physical input is not certified.
-1280x1024 capture / 88 scenarios: [FISHING] PASS: desktop acceptance cases, isolated profiles and production-rule state checks completed. Physical input is not certified.
-Headless Player smoke / 88 scenarios: [FISHING] PASS: desktop acceptance cases, isolated profiles and production-rule state checks completed. Physical input is not certified.

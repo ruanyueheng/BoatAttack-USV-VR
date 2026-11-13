@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace BoatAttack.Fishing
 {
-    /// <summary>[Claude v0.41] 仅命令行开启（-fishing-frame-probe 路径）：记录可见窗口下每帧耗时、GC 次数与 >40ms 卡顿尖峰。</summary>
+    /// <summary>仅命令行开启（-fishing-frame-probe 路径）：记录可见窗口下每帧耗时、GC 次数与 >40ms 卡顿尖峰。</summary>
     public sealed class FishingFrameProbe : MonoBehaviour
     {
         public const string EnableFlag="-fishing-frame-probe";

@@ -187,7 +187,7 @@ namespace BoatAttack.Fishing
                 throw new InvalidOperationException("Harbor fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.MaxUpgrades && (c.Career.LineLevel != 2 || c.Career.ReelLevel != 2 || c.Career.HoldLevel != 2)) throw new InvalidOperationException("Upgrade fixture failed.");
             if (CurrentCase == FishingAcceptanceCase.Details && (!c.ShowDetails || c.HarborDeskOpen)) throw new InvalidOperationException("Details fixture failed.");
-            if ((CurrentCase == FishingAcceptanceCase.Journal || CurrentCase==FishingAcceptanceCase.HunyuanCatalog || CurrentCase==FishingAcceptanceCase.HunyuanNightCatalog)
+            if ((CurrentCase == FishingAcceptanceCase.Journal || CurrentCase==FishingAcceptanceCase.TexturedCatalog || CurrentCase==FishingAcceptanceCase.TexturedNightCatalog)
                 && (!c.JournalOpen || !c.Paused)) throw new InvalidOperationException("Journal fixture failed.");
             if(CurrentCase==FishingAcceptanceCase.CastFlight && (!c.CastMotion.Casting || c.CastMotion.FlightProgress<=0 || c.CastMotion.FlightProgress>=1))
                 throw new InvalidOperationException("Cast flight fixture failed.");

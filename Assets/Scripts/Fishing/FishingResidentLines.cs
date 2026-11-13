@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BoatAttack.Fishing
 {
-    /// <summary>v044 resident line table (Resources/FishingV044/Voice/lines.txt), shared with Tools/Art/build_v044_voice.py.</summary>
+    /// <summary>v044 resident line table (Resources/FishingV044/Voice/lines.txt), used by the resident voice system.</summary>
     public static class FishingResidentLines
     {
         private static Dictionary<string,string> _text;
